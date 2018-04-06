@@ -1,6 +1,6 @@
 # CLARIAH - VRE - demo
 
-0. [X] Start LaMachine
+0. [X] Start [LaMachine](https://proycon.github.io/LaMachine/)
 ```
 vagrant up
 vagrant ssh
