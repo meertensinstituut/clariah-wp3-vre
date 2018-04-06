@@ -1,0 +1,23 @@
+# Common
+**/.idea/*
+.DS_Store
+**/*.iml
+*.log
+.settings
+.project
+.classpath
+
+# Java
+**/target/*
+  
+# Owncloud
+owncloud/vendor/*
+  
+# Recognizer
+fits-1.2.0.zip
+
+# Environment variables:
+.env
+!/.env
+!/registry/.env
+
