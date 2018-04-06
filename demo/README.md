@@ -99,11 +99,11 @@ __NOTE__: the demo currently (april 2018) breaks here due to a failing trigger!
 32. [ ] Deposit the SIP into TLA-FLAT
 33. [ ] Show the AIP in TLA-FLAT
 
-99. [ ] Stop the VRE
+99. [X] Stop the VRE
 ```sh
 ./stop-vre.sh
 ```
-99. [ ] Stop LaMachine
+99. [X] Stop LaMachine
 ```
 vagrant halt
 ```
