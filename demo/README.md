@@ -90,9 +90,9 @@ __NOTE__: the demo currently (april 2018) breaks here due to a failing trigger!
     - set sort to `created desc`
   - http://localhost:8087/solr/vrecore/select?q=mtas_text:SEARCHTERM 
 21. [ ] Run a CQL query
-  - http://localhost:8087/solr/vrecore/select?q=mtas_text:de
-  - http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="&lt;s/&gt;+containing+[t_lc=\"de\"]"}
-  - http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="&lt;s/&gt;+containing+[t_lc=\"de\"]"}&rows=0&mtas=true&mtas.termvector=true&mtas.termvector.0.key=frequentielijst&mtas.termvector.0.field=mtas_text&mtas.termvector.0.type=n,sum&mtas.termvector.0.prefix=t_lc&mtas.termvector.0.number=10&mtas.termvector.0.sort.type=n&&mtas.termvector.0.sort.direction=desc
+  - `http://localhost:8087/solr/vrecore/select?q=mtas_text:de`
+  - `http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="<s/>+containing+[t_lc=\"de\"]"}`
+  - `http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="<s/>+containing+[t_lc=\"de\"]"}&rows=0&mtas=true&mtas.termvector=true&mtas.termvector.0.key=frequentielijst&mtas.termvector.0.field=mtas_text&mtas.termvector.0.type=n,sum&mtas.termvector.0.prefix=t_lc&mtas.termvector.0.number=10&mtas.termvector.0.sort.type=n&&mtas.termvector.0.sort.direction=desc`
 
 30. [ ] Create a CMD record via CMDI Forms
 31. [ ] Upload the CMD record and associate it with the output file
