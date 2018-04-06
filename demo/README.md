@@ -1,11 +1,12 @@
 # CLARIAH - VRE - demo
 
 0. [X] Start [LaMachine](https://proycon.github.io/LaMachine/)
+   - This automatically downloads and starts a LaMachine VM
 ```
+vagrant init proycon/lamachine
 vagrant up
-vagrant ssh
-sudo /usr/src/LaMachine/startwebservices.sh
 ```
+
 0. [X] Make sure the VRE doesn't have clashing ports
   - change the port mapping in `recognizer/docker-compose.yml` into
 ```yml
@@ -88,7 +89,7 @@ __NOTE__: the demo currently (april 2018) breaks here due to a failing trigger!
 20. [ ] Show the entries in the Solr
   - http://localhost:8087/solr/#/vrecore/query
     - set sort to `created desc`
-  - http://localhost:8087/solr/vrecore/select?q=mtas_text:SEARCHTERM 
+  - http://localhost:8087/solr/vrecore/select?q=mtas_text:SEARCHTERM
 21. [ ] Run a CQL query
   - `http://localhost:8087/solr/vrecore/select?q=mtas_text:de`
   - `http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="<s/>+containing+[t_lc=\"de\"]"}`
