@@ -1,0 +1,50 @@
+[
+	{
+		"id": 1,
+		"name": "Services",
+		"description": "Access services",
+		"is_active": true,
+		"created_date": "PACKAGE_TIME",
+		"last_modified_date": "PACKAGE_TIME",
+		"created_by_id": "1",
+		"last_modified_by_id": null,
+		"role_service_access_by_role_id": [{
+			"id": 1,
+			"role_id": 1,
+			"service_id": 8,
+			"component": "*",
+			"verb_mask": 31,
+			"requestor_mask": 1,
+			"filters": [],
+			"filter_op": "AND",
+			"created_date": "PACKAGE_TIME",
+			"last_modified_date": "PACKAGE_TIME",
+			"created_by_id": null,
+			"last_modified_by_id": null
+		}]
+	},
+	{
+		"id": 2,
+		"name": "Objects",
+		"description": "Access objects",
+		"is_active": true,
+		"created_date": "PACKAGE_TIME",
+		"last_modified_date": "PACKAGE_TIME",
+		"created_by_id": "1",
+		"last_modified_by_id": null,
+		"role_service_access_by_role_id": [{
+			"id": 2,
+			"role_id": 2,
+			"service_id": 9,
+			"component": "*",
+			"verb_mask": 31,
+			"requestor_mask": 1,
+			"filters": [],
+			"filter_op": "AND",
+			"created_date": "PACKAGE_TIME",
+			"last_modified_date": "PACKAGE_TIME",
+			"created_by_id": null,
+			"last_modified_by_id": null
+		}]
+	}
+]

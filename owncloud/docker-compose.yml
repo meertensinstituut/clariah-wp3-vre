@@ -1,0 +1,47 @@
+version: '3.4'
+
+services:
+  owncloud:
+    build: .
+#    restart: always
+    ports:
+      - "8082:80"
+    volumes:
+      - ./:/var/www/html/apps/vre
+    environment:
+      KAFKA_BROKER: localhost
+    extra_hosts:
+    - moby:127.0.0.1
+    depends_on:
+      - kafka
+    links:
+      - kafka
+    environment:
+      - OWNCLOUD_APP_NAME=${OWNCLOUD_APP_NAME}
+      - KAFKA_PORT=${KAFKA_PORT}
+      - OWNCLOUD_TOPIC_NAME=${OWNCLOUD_TOPIC_NAME}
+      - OWNCLOUD_GROUP_NAME=${OWNCLOUD_GROUP_NAME}
+      - OWNCLOUD_DB_TYPE=${OWNCLOUD_DB_TYPE}
+      - OWNCLOUD_DB_NAME=${OWNCLOUD_DB_NAME}
+      - OWNCLOUD_DB_USER=${OWNCLOUD_DB_USER}
+      - OWNCLOUD_DB_PASSWORD=${OWNCLOUD_DB_PASSWORD}
+      - OWNCLOUD_DB_HOST=${OWNCLOUD_DB_HOST}
+      - OWNCLOUD_ADMIN_NAME=${OWNCLOUD_ADMIN_NAME}
+      - OWNCLOUD_ADMIN_PASSWORD=${OWNCLOUD_ADMIN_PASSWORD}
+      - OWNCLOUD_DATA_DIR=${OWNCLOUD_DATA_DIR}
+
+  kafka:
+    image: wurstmeister/kafka:1.0.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.rmi.port=1099"
+      JMX_PORT: 1099
+    extra_hosts:
+     - moby:127.0.0.1
+    ports:
+      - ${KAFKA_PORT}
+
+  zookeeper:
+    image: zookeeper:3.4

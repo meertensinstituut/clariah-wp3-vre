@@ -1,0 +1,6 @@
+<deploymentService>
+    <workingFolder>/tmp/wd</workingFolder>
+    <userConfFile>conf.json</userConfFile>
+    <inputDirectory>input</inputDirectory>
+    <outputDirectory>output</outputDirectory>
+</deploymentService>

@@ -1,0 +1,54 @@
+version: '3.4'
+
+services:
+  indexer:
+    build: ./indexer
+    tty: true
+    working_dir: /usr/local/indexer
+    command: ./docker-run-indexer.sh
+    ports:
+      - 8088:80
+    volumes:
+      - ./:/usr/local/indexer
+      # share maven repository of host:
+      - ${HOME}/.m2/repository:/root/.m2/repository
+    depends_on:
+      - solr
+      - kafka
+    extra_hosts:
+     - moby:127.0.0.1
+    links:
+      - solr:solr
+      - kafka:kafka
+    environment:
+      KAFKA_BROKER: localhost
+      KAFKA_PORT: ${KAFKA_PORT}
+      OWNCLOUD_TOPIC_NAME: ${OWNCLOUD_TOPIC_NAME}
+      OWNCLOUD_GROUP_NAME: ${OWNCLOUD_GROUP_NAME}
+      RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}
+      RECOGNIZER_GROUP_NAME: ${RECOGNIZER_GROUP_NAME}
+      INDEXER_TOPIC_NAME: ${INDEXER_TOPIC_NAME}
+      INDEXER_GROUP_NAME: ${INDEXER_GROUP_NAME}
+      SOLR_URL: ${SOLR_URL}
+
+  solr:
+    build: ./solr
+    tty: true
+    volumes:
+      - ./files:/storage
+    ports:
+      - 8087:8983
+
+  kafka:
+    image: wurstmeister/kafka:1.0.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    extra_hosts:
+     - moby:127.0.0.1
+    ports:
+      - ${KAFKA_PORT}
+
+  zookeeper:
+    image: zookeeper:3.4

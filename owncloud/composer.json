@@ -1,0 +1,19 @@
+{
+    "name": "vre/owncloud-with-kafka-client",
+    "description": "Owncloud with kafka",
+    "authors": [
+        {
+            "name": "VRE",
+            "email": "a@b.c"
+        }
+    ],
+    "require": {
+        "php": ">=7",
+        "kwn/php-rdkafka-stubs": "^1.0.2",
+        "superbalist/php-pubsub": "^2.0",
+        "superbalist/php-pubsub-kafka": "^2.0"
+    },
+    "provide": {
+        "ext-rdkafka": "*"
+    }
+}

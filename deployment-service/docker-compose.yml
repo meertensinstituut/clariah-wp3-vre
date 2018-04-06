@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+  deployment:
+    build: ./
+    tty: true
+    working_dir: /conf
+#    command: /bin/bash -c "ls -la && source ./docker-get-objects-token.sh"
+    volumes:
+      - ./conf:/conf
+      - deployment-volume:/tmp/wd/
+      - data-volume:/usr/local/owncloud
+      # share maven repository of host:
+      - ${HOME}/.m2/repository:/root/.m2/repository
+    ports:
+      - 80:8080
+
+volumes:
+  deployment-volume:

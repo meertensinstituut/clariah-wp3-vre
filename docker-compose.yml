@@ -1,0 +1,95 @@
+version: '3.4'
+
+services:
+  integration:
+    build: ./integration
+    volumes:
+      - ./integration:/usr/local/integration
+
+  switchboard:
+    build: ./switchboard/docker
+    command: ./docker/docker-run-switchboard.sh
+    volumes:
+      - ./switchboard:/usr/local/switchboard
+    links:
+      - dreamfactory
+      - deployment
+    environment:
+      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
+      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
+      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+      DB_SERVICES_DATABASE: ${DB_SERVICES_DATABASE}
+      DB_SERVICES_USER: ${DB_SERVICES_USER}
+      DB_SERVICES_PASSWORD: ${DB_SERVICES_PASSWORD}
+
+  owncloud:
+    build: ./owncloud
+    volumes:
+      - ./owncloud:/var/www/html/apps/vre
+      - data-volume:/var/www/html/data
+
+  recognizer:
+    build: ./recognizer/recognizer
+    volumes:
+      - ./recognizer:/usr/local/recognizer
+    links:
+      - dreamfactory:dreamfactory
+    environment:
+      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
+      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
+      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+
+  fits:
+    build: ./recognizer/fits
+    volumes:
+      - data-volume:/tmp/recognizer
+
+  dreamfactory:
+    build: ./registry/dreamfactory
+
+  postgres:
+    build: ./registry/postgres
+
+  trifecta:
+    image: janschultecom/docker-trifecta
+    ports:
+      - 9000:9000
+    environment:
+      ZK_HOST: zookeeper:2181
+    depends_on:
+      - zookeeper
+    links:
+      - zookeeper
+
+  zookeeper:
+    image: zookeeper:3.4
+
+  deployment:
+    build: ./deployment-service
+    volumes:
+      - ./deployment-service/conf:/conf
+    depends_on:
+      - dreamfactory
+    environment:
+      USER_SERVICES_EMAIL: ${USER_SERVICES_EMAIL}
+      USER_SERVICES_PASSWORD: ${USER_SERVICES_PASSWORD}
+      APP_KEY_SERVICES: ${APP_KEY_SERVICES}
+
+  indexer:
+    build: ./indexer/indexer
+    volumes:
+      - ./indexer:/usr/local/indexer
+    links:
+      - dreamfactory:dreamfactory
+    environment:
+      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
+      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
+      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+      
+  solr:
+    build: ./indexer/solr
+    volumes:
+      - data-volume:/storage      
+
+volumes:
+  data-volume:

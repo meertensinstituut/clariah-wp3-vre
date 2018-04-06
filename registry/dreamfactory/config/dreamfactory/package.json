@@ -1,0 +1,27 @@
+{
+	"version": "0.1",
+	"df_version": "2.11.1",
+	"secured": false,
+	"description": "",
+	"created_date": "PACKAGE_TIME",
+	"service": {
+		"system": {
+			"service": [
+				"services",
+				"objects"
+			],
+			"role": [
+				"Services",
+				"Objects"
+			],
+			"user": [
+				"USER_OBJECTS_EMAIL",
+				"USER_SERVICES_EMAIL"
+			],
+			"app": [
+			  "objects",
+			  "services"
+			]
+		}
+	}
+}

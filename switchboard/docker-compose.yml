@@ -1,0 +1,45 @@
+version: '3.4'
+
+services:
+  switchboard:
+    build: ./docker
+    working_dir: /usr/local/switchboard
+    command: ./docker/docker-run-switchboard.sh
+    tty: true
+    extra_hosts:
+      - moby:127.0.0.1
+    ports:
+      - 9010:8080
+    depends_on:
+      - kafka
+    links:
+      - kafka
+    volumes:
+      - ./:/usr/local/switchboard
+      # share maven repository of host:
+      - ${HOME}/.m2/repository:/root/.m2/repository
+      - data-volume:/usr/local/owncloud
+      - deployment-volume:/tmp/deployment
+    environment:
+      SWITCHBOARD_TOPIC_NAME: ${SWITCHBOARD_TOPIC_NAME}
+      KAFKA_PORT: ${KAFKA_PORT}
+      OWNCLOUD_VOLUME: ${SWITCHBOARD_OWNCLOUD_VOLUME}
+      DEPLOYMENT_VOLUME: ${SWITCHBOARD_DEPLOYMENT_VOLUME}
+
+  kafka:
+    image: wurstmeister/kafka:1.0.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    extra_hosts:
+     - moby:127.0.0.1
+    ports:
+      - ${KAFKA_PORT}
+
+  zookeeper:
+    image: zookeeper:3.4
+
+volumes:
+  data-volume:
+  deployment-volume:

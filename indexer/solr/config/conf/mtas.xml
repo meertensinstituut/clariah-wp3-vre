@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mtas>
+  <configurations type="mtas.analysis.util.MtasTokenizerFactory">
+    <configuration name="folia" file="mtas/folia.xml" />   
+  </configurations>
+  <configurations type="mtas.analysis.util.MtasCharFilterFactory">
+    <configuration name="default" type="file" prefix="/storage/" />    
+  </configurations>
+</mtas>

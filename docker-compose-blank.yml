@@ -1,0 +1,3 @@
+version: '3.4'
+# Blank docker-compose file: makes docker use current directory as its root directory
+# when combining docker-compose files of components (see start-vre.sh).

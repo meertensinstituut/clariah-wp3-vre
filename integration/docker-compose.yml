@@ -1,0 +1,45 @@
+version: '3.4'
+
+#
+# Should not be run stand-alone: needs vre-components
+#
+
+services:
+  integration:
+    build: .
+    tty: true
+    depends_on:
+      - recognizer
+      - owncloud
+    links:
+      - recognizer
+      - owncloud
+      - postgres
+      - kafka
+      - switchboard
+      - deployment
+    volumes:
+      - ./:/usr/local/integration
+      # share maven repository of host:
+      - ${HOME}/.m2/repository:/root/.m2/repository
+    extra_hosts:
+     - moby:127.0.0.1
+    environment:
+      - KAFKA_PORT=${KAFKA_PORT}
+      - OWNCLOUD_TOPIC_NAME=${OWNCLOUD_TOPIC_NAME}
+      - OWNCLOUD_GROUP_NAME=${OWNCLOUD_GROUP_NAME}
+      - OWNCLOUD_ADMIN_NAME=${OWNCLOUD_ADMIN_NAME}
+      - OWNCLOUD_ADMIN_PASSWORD=${OWNCLOUD_ADMIN_PASSWORD}
+      - FITS_FILES_ROOT=${FITS_FILES_ROOT}
+      - RECOGNIZER_TOPIC_NAME=${RECOGNIZER_TOPIC_NAME}
+      - RECOGNIZER_GROUP_NAME=${RECOGNIZER_GROUP_NAME}
+      - DB_OBJECTS_DATABASE=${DB_OBJECTS_DATABASE}
+      - DB_OBJECTS_USER=${DB_OBJECTS_USER}
+      - DB_OBJECTS_PASSWORD=${DB_OBJECTS_PASSWORD}
+      - DB_SERVICES_DATABASE=${DB_SERVICES_DATABASE}
+      - DB_SERVICES_USER=${DB_SERVICES_USER}
+      - DB_SERVICES_PASSWORD=${DB_SERVICES_PASSWORD}
+
+    command: tail -f /dev/null # keep container up. TODO: BL, why doesn't tty work?
+    ports:
+      - "8085:8085"
