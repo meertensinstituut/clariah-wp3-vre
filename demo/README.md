@@ -22,6 +22,10 @@ docker cp ucto.cmdi vre_postgres_1:/tmp/ucto.xml
 docker cp ucto.sql vre_postgres_1:/tmp/ucto.sql
 docker exec -it vre_postgres_1 psql -U services services -f /tmp/ucto.sql
 ```
+Or
+```sh
+./VRE-demo-init.sh
+```
 
 1. [X] Upload a sample text file
   - create a fresh one with a news item from nos.nl
@@ -46,6 +50,12 @@ curl -v 'http://localhost:8082/remote.php/webdav/nos.txt' \
   - enable all fields in the `Fields` tab
   - remember the object id (OID)
 
+Or for the upload steps above:
+```sh
+vi nos.txt
+./VRE-demo-upload.sh
+```
+
 10. [X] Show the entries in the Service Registry
   - goto http://localhost:8089
   - (login `noreply@dreamfactory.dev:password`)
@@ -61,20 +71,28 @@ curl -X POST http://localhost:9010/switchboard/rest/exec/UCTO -H "Content-Type: 
 ```sh
 curl http://localhost:9010/switchboard/rest/exec/task/WD
 ```
+
+Or for the execution steps above
+```sh
+./VRE-demo-exec.sh OID
+```
+
 13. [X] Show the project in LaMachine
   - http://127.0.0.1:8080/ucto/
 14. [X] Show the output in OwnCloud
   - goto http://localhost:8082/
   - (login `admin:admin`)
 
-20. [X] Show the entries in the Solr
+__NOTE__: the demo currently (april 2018) breaks here due to a failing trigger!
+
+20. [ ] Show the entries in the Solr
   - http://localhost:8087/solr/#/vrecore/query
     - set sort to `created desc`
   - http://localhost:8087/solr/vrecore/select?q=mtas_text:SEARCHTERM 
-21. [X] Run a CQL query
+21. [ ] Run a CQL query
   - http://localhost:8087/solr/vrecore/select?q=mtas_text:de
-  - http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="<s/>+containing+[t_lc=\"de\"]"}
-  - http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="<s/>+containing+[t_lc=\"de\"]"}&rows=0&mtas=true&mtas.termvector=true&mtas.termvector.0.key=frequentielijst&mtas.termvector.0.field=mtas_text&mtas.termvector.0.type=n,sum&mtas.termvector.0.prefix=t_lc&mtas.termvector.0.number=10&mtas.termvector.0.sort.type=n&&mtas.termvector.0.sort.direction=desc
+  - http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="\<s/>+containing+[t_lc=\"de\"]"}
+  - http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="\<s/>+containing+[t_lc=\"de\"]"}&rows=0&mtas=true&mtas.termvector=true&mtas.termvector.0.key=frequentielijst&mtas.termvector.0.field=mtas_text&mtas.termvector.0.type=n,sum&mtas.termvector.0.prefix=t_lc&mtas.termvector.0.number=10&mtas.termvector.0.sort.type=n&&mtas.termvector.0.sort.direction=desc
 
 30. [ ] Create a CMD record via CMDI Forms
 31. [ ] Upload the CMD record and associate it with the output file
