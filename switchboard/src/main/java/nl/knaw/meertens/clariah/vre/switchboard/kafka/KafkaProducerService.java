@@ -22,7 +22,7 @@ public class KafkaProducerService {
         this.mapper = mapper;
     }
 
-    public void produceToSwitchboardTopic(KafkaDeploymentDto kafkaMsg) throws IOException {
+    public void send(KafkaDto kafkaMsg) throws IOException {
         producer.getKafkaProducer().send(new ProducerRecord<>(
                 topic, "key", mapper.writeValueAsString(kafkaMsg)
         ));

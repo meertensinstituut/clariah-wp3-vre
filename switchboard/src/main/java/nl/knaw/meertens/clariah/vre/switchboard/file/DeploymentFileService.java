@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
-import nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -35,6 +34,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.handleException;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -61,14 +61,14 @@ public class DeploymentFileService implements FileService {
     }
 
     @Override
-    public String unstage(String workDir, List<String> inputFiles) {
-        if(inputFiles.isEmpty()) {
+    public List<Path> unstage(String workDir, List<String> inputFiles) {
+        if (inputFiles.isEmpty()) {
             throw new IllegalArgumentException("Cannot move output when no input file is provided");
         }
         unlockFiles(inputFiles);
         Path outputFilesDir = moveOutputFiles(workDir, inputFiles.get(0));
         unlockOutputFiles(outputFilesDir);
-        return outputFilesDir.toString();
+        return getRelativePathsIn(outputFilesDir);
     }
 
     @Override
@@ -120,6 +120,7 @@ public class DeploymentFileService implements FileService {
 
     /**
      * Move output files back to src
+     *
      * @return output dir
      */
     private Path moveOutputFiles(String workDir, String file) {
@@ -138,11 +139,12 @@ public class DeploymentFileService implements FileService {
     }
 
     private void unlockOutputFiles(Path outputDir) {
-        List<String> outputFiles = Arrays
-                .stream(requireNonNull(outputDir.toFile().listFiles()))
-                .map(file -> srcPath.relativize(file.toPath()).toString())
-                .collect(Collectors.toList());
-        for(String file : outputFiles) {
+        List<Path> outputFilePaths = getRelativePathsIn(outputDir);
+        List<String> filePaths = outputFilePaths
+                .stream()
+                .map(Path::toString)
+                .collect(toList());
+        for (String file : filePaths) {
             unlock(file);
             try {
                 unlockParents(toSrcPath(file), srcPath.getFileName().toString());
@@ -152,12 +154,19 @@ public class DeploymentFileService implements FileService {
         }
     }
 
+    private List<Path> getRelativePathsIn(Path outputDir) {
+        return Arrays
+                    .stream(requireNonNull(outputDir.toFile().listFiles()))
+                    .map(file -> srcPath.relativize(file.toPath()))
+                    .collect(toList());
+    }
+
     private void unlockParents(Path path, String stopAt) throws IOException {
         logger.info(String.format("unlocking [%s]", path.toString()));
         Path parent = path.getParent();
         chown(parent, "www-data");
         setPosixFilePermissions(parent, get755());
-        if(!parent.getFileName().toString().equals(stopAt)) {
+        if (!parent.getFileName().toString().equals(stopAt)) {
             unlockParents(parent, stopAt);
         } else {
             logger.info(String.format("found endpoint [%s], stop unlocking", stopAt));

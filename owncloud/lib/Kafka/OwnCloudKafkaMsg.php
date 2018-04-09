@@ -14,11 +14,6 @@ class OwnCloudKafkaMsg
     public $user;
 
     /**
-     * @var String
-     */
-    public $path;
-
-    /**
      * @var string
      */
     public $userPath;
@@ -30,7 +25,6 @@ class OwnCloudKafkaMsg
 
     public static function makeWithPath($action, $user, $path) : OwnCloudKafkaMsg {
         $msg = self::setCommonFields($action, $user, $path);
-        $msg->path = $path;
         return $msg;
     }
 

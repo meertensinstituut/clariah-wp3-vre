@@ -13,6 +13,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.file.DeploymentFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentResultDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentStartDto;
+import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaOwncloudCreateFileDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryService;
@@ -25,21 +26,25 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.KAFKA_HOST_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.OUTPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.App.OWNCLOUD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.SWITCHBOARD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.handleException;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 
@@ -63,7 +68,8 @@ public class ExecService {
     private static final int WORK_DIR_LENGTH = 8;
 
     private final ObjectMapper mapper;
-    private final KafkaProducerService kafkaProducerService;
+    private final KafkaProducerService kafkaSwitchboardService;
+    private final KafkaProducerService kafkaOwncloudService;
     private final FileService owncloudFileService;
     private final DeploymentService deploymentService;
 
@@ -76,7 +82,8 @@ public class ExecService {
     ) {
         this.mapper = mapper;
         this.objectsRegistryService = objectsRegistryService;
-        this.kafkaProducerService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
+        this.kafkaSwitchboardService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
+        this.kafkaOwncloudService = new KafkaProducerService(OWNCLOUD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.owncloudFileService = new DeploymentFileService(OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR);
         this.deploymentService = deploymentService;
     }
@@ -124,14 +131,20 @@ public class ExecService {
                 serviceRequest.getService(),
                 serviceRequest.getWorkDir()
         ));
-        String outputDir = owncloudFileService.unstage(serviceRequest.getWorkDir(), inputFiles);
-        report.setOutputDir(getPathRelativeToOwncloud(outputDir));
+        List<Path> outputFiles = owncloudFileService.unstage(serviceRequest.getWorkDir(), inputFiles);
+        logger.info("outputFiles: " + Arrays.toString(outputFiles.toArray()));
+        Path path = outputFiles.get(0);
+        report.setOutputDir(isNull(path) ? "" : path.getParent().toString());
+        logger.info("outputDir: " + report.getWorkDir());
         report.setWorkDir(serviceRequest.getWorkDir());
-        sendKafkaResultMsg(serviceRequest, report);
+        sendKafkaSwitchboardMsg(serviceRequest, report);
+        sendKafkaOwncloudMsgs(outputFiles);
     }
 
-    private String getPathRelativeToOwncloud(String outputDir) {
-        return new File(OWNCLOUD_VOLUME).toURI().relativize(new File(outputDir).toURI()).getPath();
+    private String getPathRelativeTo(String dir, String base) {
+        String result = new File(base).toURI().relativize(new File(dir).toURI()).getPath();
+        logger.info(String.format("getPathRelativeTo with dir [%s] and base [%s] results in [%s]", dir, base, result));
+        return result;
     }
 
     private void createConfig(
@@ -168,7 +181,7 @@ public class ExecService {
         return deploymentService.pollStatus(workDir);
     }
 
-    private void sendKafkaResultMsg(
+    private void sendKafkaSwitchboardMsg(
             DeploymentRequest serviceRequest,
             DeploymentStatusReport report
     ) throws IOException {
@@ -176,7 +189,19 @@ public class ExecService {
         kafkaMsg.service = serviceRequest.getService();
         kafkaMsg.dateTime = LocalDateTime.now();
         kafkaMsg.status = report.getStatus();
-        kafkaProducerService.produceToSwitchboardTopic(kafkaMsg);
+        kafkaSwitchboardService.send(kafkaMsg);
+    }
+
+    private void sendKafkaOwncloudMsgs(List<Path> outputFiles) throws IOException {
+        for (Path file : outputFiles) {
+            KafkaOwncloudCreateFileDto msg = new KafkaOwncloudCreateFileDto();
+            msg.action = "create";
+            msg.userPath = file.toString();
+            msg.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+            msg.user = file.getName(0).toString();
+            kafkaOwncloudService.send(msg);
+        }
+
     }
 
     private DeploymentRequest mapServiceRequest(
@@ -212,7 +237,7 @@ public class ExecService {
         msg.service = serviceRequest.getService();
         msg.workDir = serviceRequest.getWorkDir();
         msg.deploymentRequest = mapper.writeValueAsString(serviceRequest.getParams());
-        kafkaProducerService.produceToSwitchboardTopic(msg);
+        kafkaSwitchboardService.send(msg);
     }
 
 }

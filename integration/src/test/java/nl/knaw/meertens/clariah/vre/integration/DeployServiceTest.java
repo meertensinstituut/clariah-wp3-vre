@@ -99,6 +99,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
         assertThat(finishedDeployment.getStatus()).isIn(200, 202);
         assertThatJson(finishedDeployment.getBody()).node("status").matches(containsString("FINISHED"));
+        logger.info("finishedDeployment: " + finishedDeployment.getBody());
         String resultFile = getOutputPath(finishedDeployment);
 
         // Download result:

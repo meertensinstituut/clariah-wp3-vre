@@ -23,7 +23,7 @@ public interface FileService {
      * - Move output files to source
      * @return folder containing output files
      */
-    String unstage(String workDir, List<String> inputFiles);
+    List<Path> unstage(String workDir, List<String> inputFiles);
 
     /**
      * Lock "<source path>/<file string>"

@@ -74,9 +74,11 @@ public class DeploymentServiceImpl implements DeploymentService {
         deployRequestService
                 .getRequest(report.getWorkDir())
                 .getStatusReport();
-        deployRequestService
-                .getConsumer(report.getWorkDir())
-                .accept(report);
+        ExceptionalConsumer<DeploymentStatusReport> consumerMethod = deployRequestService
+                .getConsumer(report.getWorkDir());
+
+        consumerMethod.accept(report);
+
         logger.info(String.format("Deployment [%s] has been unstaged by consumer ", report));
         return report;
     }

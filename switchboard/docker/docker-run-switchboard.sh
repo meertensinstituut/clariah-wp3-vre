@@ -8,3 +8,6 @@ source ./docker/docker-get-objects-token.sh \
 echo "start tomcat..." && \
 export CATALINA_OPTS="-Xmx700m --add-modules java.xml.bind,java.xml.ws --add-exports java.base/jdk.internal.ref=ALL-UNNAMED" && \
 /usr/local/tomcat/bin/catalina.sh run
+
+# keep docker running when redeploying:
+tail -f /dev/null

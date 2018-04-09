@@ -37,6 +37,3 @@ sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_
 
 # activate vre app:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ app:enable vre
-
-# check for new files:
-nohup /var/www/html/apps/vre/docker-scan-files.sh </dev/null &>/dev/null &

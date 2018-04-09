@@ -107,7 +107,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         createResultFile(workDir);
-        TimeUnit.SECONDS.sleep(2);
+        TimeUnit.SECONDS.sleep(3);
 
         // Check status is finished:
         Response finishedResponse = target(String.format("exec/task/%s/", workDir))
@@ -120,7 +120,9 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
         // Check output file is moved:
         File outputFolder = findOutputFolder();
+        logger.info("outputFolder: " + outputFolder);
         assertThat(outputFolder).isNotNull();
+        assertThat(outputFolder.toString()).startsWith("/usr/local/owncloud/admin/files/output-20");
         Path outputFile = Paths.get(outputFolder.getPath(), STUBRESULT_FILENAME);
         assertThat(outputFile.toFile()).exists();
         assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo("Geen resultaat is ook een resultaat.");

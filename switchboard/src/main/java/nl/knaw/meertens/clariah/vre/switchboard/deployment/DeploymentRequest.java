@@ -12,7 +12,7 @@ import static java.util.stream.Collectors.groupingBy;
 public class DeploymentRequest {
 
     /**
-     * Paths of files relative to data directory
+     * Map<Object ID, File path relative to data directory>
      */
     private HashMap<Long, String> files;
 

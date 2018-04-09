@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -70,11 +71,12 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
         logger.info("Uploaded file");
 
         owncloudKafkaConsumer.consumeAll(consumerRecords -> {
+            logger.info("consumerRecords: " + Arrays.toString(consumerRecords.toArray()));
             assertThat(consumerRecords.size()).isGreaterThanOrEqualTo(expectedActions.size());
 
             List<String> resultActions = new ArrayList<>();
             consumerRecords.forEach(record -> {
-                String filePath = JsonPath.parse(record.value()).read("$.path");
+                String filePath = JsonPath.parse(record.value()).read("$.userPath");
                 if(filePath.contains(expectedFilename)) {
                     resultActions.add(JsonPath.parse(record.value()).read("$.action"));
                 }

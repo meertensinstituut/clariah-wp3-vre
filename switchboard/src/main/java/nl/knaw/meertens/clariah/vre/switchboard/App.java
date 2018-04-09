@@ -23,6 +23,7 @@ public class App extends ResourceConfig {
 
     public static final String KAFKA_HOST_NAME = "kafka:" + System.getenv("KAFKA_PORT");
     public static final String SWITCHBOARD_TOPIC_NAME = System.getenv("SWITCHBOARD_TOPIC_NAME");
+    public static final String OWNCLOUD_TOPIC_NAME = System.getenv("OWNCLOUD_TOPIC_NAME");
     public static final String DEPLOYMENT_VOLUME = System.getenv("DEPLOYMENT_VOLUME");
     public static final String OWNCLOUD_VOLUME = System.getenv("OWNCLOUD_VOLUME");
     public static final String OUTPUT_DIR = "output";

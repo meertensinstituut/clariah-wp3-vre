@@ -6,8 +6,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
 import org.slf4j.Logger;
@@ -16,11 +14,9 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.nio.file.Path;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.NOT_FOUND;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

@@ -38,7 +38,7 @@ public class App {
     private static final KafkaProducerService kafkaProducer = new KafkaProducerService(new RecognizerKafkaProducer(kafkaServer), recognizerTopic);
     private static final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(objectsDbUrl, objectsDbKey, objectsDbToken);
 
-    private static final List<String> ACTIONS_TO_RECOGNIZE = newArrayList("create", "read");
+    private static final List<String> ACTIONS_TO_RECOGNIZE = newArrayList("create");
 
     public static void main(String[] args) {
 
@@ -76,11 +76,11 @@ public class App {
             try {
                 OwncloudKafkaDTO msg = objectMapper.readValue(json, OwncloudKafkaDTO.class);
                 if(!ACTIONS_TO_RECOGNIZE.contains(msg.action)) {
-                    logger.info(format("Ignored owncloud kafka message with action '%s'.", msg.action));
+                    logger.info(format("Ignored owncloud kafka message with action [%s]", msg.action));
                     return;
                 }
                 if (StringUtils.isBlank(msg.userPath)) {
-                    throw new RuntimeException("Field userPath is empty of: " + msg.toString());
+                    throw new RuntimeException(String.format("Field userPath is empty of owncloud kafka msg [%s]", msg.toString()));
                 }
                 String fitsPath = new File(fitsFilesRoot + "/" + msg.userPath).getCanonicalPath();
                 Report report = fitsService.checkFile(fitsPath);
@@ -89,8 +89,7 @@ public class App {
                 report.setObjectId(objectsRepository.perist(report));
                 kafkaProducer.produceToRecognizerTopic(report);
             } catch (Exception e) {
-                logger.info("What we've got here is failure to recognize:");
-                e.printStackTrace();
+                logger.error("What we've got here is failure to recognize:", e);
             }
         });
     }
