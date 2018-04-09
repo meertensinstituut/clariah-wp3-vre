@@ -57,7 +57,7 @@ public class DeploymentServiceStub implements DeploymentService {
     }
 
     @Override
-    public DeploymentStatusReport start(DeploymentRequest request, ExceptionalConsumer<DeploymentStatusReport> finishRequest) {
+    public DeploymentStatusReport deploy(DeploymentRequest request, ExceptionalConsumer<DeploymentStatusReport> finishRequest) {
         if (request.getFiles().isEmpty()) {
             throw new IllegalArgumentException(
                     "Deployment request always needs at least one input file");
@@ -73,7 +73,7 @@ public class DeploymentServiceStub implements DeploymentService {
     }
 
     @Override
-    public DeploymentStatusReport pollStatus(String workDir){
+    public DeploymentStatusReport getStatus(String workDir){
         if (!allServices.containsKey(workDir)) {
             List<String> keys = allServices.entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toList());
             throw new IllegalArgumentException(String.format(
@@ -123,7 +123,7 @@ public class DeploymentServiceStub implements DeploymentService {
             finished.add(workDir);
             logger.info(String.format("Deployment [%s] finished.", workDir));
         }
-        DeploymentStatusReport report = pollStatus(workDir);
+        DeploymentStatusReport report = getStatus(workDir);
         consumers.get(workDir).accept(report);
         logger.info(String.format("Polled [%s], instance of service [%s], status [%s].",
                 workDir, deploymentRequest.getService(), report.getStatus()));

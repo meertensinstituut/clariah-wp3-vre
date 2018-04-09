@@ -1,7 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceStub;
+import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryServiceImpl;
@@ -40,7 +40,14 @@ public class App extends ResourceConfig {
     private void configAppContext() {
         SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
                 getObjectsRegistryService(),
-                new DeploymentServiceImpl(getMapper(), DEPLOYMENT_HOST_NAME)
+                new DeploymentServiceImpl(
+                        getMapper(),
+                        DEPLOYMENT_HOST_NAME,
+                        new PollService(
+                                getMapper(),
+                                DEPLOYMENT_HOST_NAME
+                        )
+                )
         );
         ObjectsRegistryServiceStub stub = new ObjectsRegistryServiceStub();
         ObjectsRecordDTO testFileRecord = new ObjectsRecordDTO();

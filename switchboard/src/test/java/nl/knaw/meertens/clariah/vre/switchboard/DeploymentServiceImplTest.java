@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
+import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_HOST_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.NOT_FOUND;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
@@ -30,7 +32,7 @@ public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
         ResourceConfig resourceConfig = new ResourceConfig(ExecController.class);
         SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
                 createObjectsRegistryServiceStub(),
-                new DeploymentServiceImpl(getMapper(), "http://localhost:1080")
+                new DeploymentServiceImpl(getMapper(), "http://localhost:1080", new PollService(getMapper(), "http://localhost:1080"))
         );
         resourceConfig.register(diBinder);
         return resourceConfig;

@@ -4,92 +4,94 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.commons.lang3.StringUtils;
+import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.handleException;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.getDeployStatus;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.getPollStatus;
 
 public class DeploymentServiceImpl implements DeploymentService {
 
     private final ObjectMapper mapper;
     private final String hostName;
 
-    private final RequestRepoServiceStub deployRequestService = RequestRepoServiceStub.getInstance();
+    private final RequestRegistryService deployRequestService;
+    private PollService pollService;
 
-    public DeploymentServiceImpl(ObjectMapper mapper, String hostName) {
+    public DeploymentServiceImpl(ObjectMapper mapper, String hostName, PollService pollService) {
         this.mapper = mapper;
         this.hostName = hostName;
+        this.pollService = pollService;
+        deployRequestService = RequestRegistryService.getInstance();
     }
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public DeploymentStatusReport start(
+    public DeploymentStatusReport deploy(
             DeploymentRequest request,
-            ExceptionalConsumer<DeploymentStatusReport> finishRequest
+            ExceptionalConsumer<DeploymentStatusReport> finishRequestConsumer
     ) {
-        deployRequestService.saveDeploymentRequest(request, finishRequest);
+        DeploymentStatusReport report = requestDeployment(request);
+        deployRequestService.saveDeploymentRequest(report, finishRequestConsumer);
+        return report;
+    }
 
-        deployRequestService.getConsumer(request.getWorkDir());
+    private DeploymentStatusReport requestDeployment(DeploymentRequest request) {
+        DeploymentStatusReport report = new DeploymentStatusReport();
+        report.setUri(createDeployServiceUri(request));
+        report.setService(request.getService());
+        report.setFiles(new ArrayList<>(request.getFiles().values()));
+        report.setWorkDir(request.getWorkDir());
 
-        URI uri = URI.create(String.format(
+        HttpResponse<String> response = sendRequest(report.getUri());
+        report.setMsg(response.getBody());
+        report.setStatus(getDeployStatus(response.getStatus()));
+
+        return report;
+    }
+
+    private URI createDeployServiceUri(DeploymentRequest request) {
+        return URI.create(String.format(
                 "%s/%s/%s/%s/",
                 hostName,
                 "deployment-service/a/exec",
                 request.getService(),
                 request.getWorkDir()
         ));
-        return sendDeployRequest(uri);
     }
 
     @Override
-    public DeploymentStatusReport pollStatus(String workDir) {
+    public DeploymentStatusReport getStatus(String workDir) {
         logger.info(String.format("Polling deployment [%s]", workDir));
-        URI uri = URI.create(String.format(
-                "%s/%s/%s/",
-                hostName,
-                "deployment-service/a/exec/task",
-                workDir
-        ));
-        DeploymentStatusResponseDto response = getStatusRequest(uri);
-        DeploymentStatusReport report = mapStatusReport(response);
-        DeploymentStatus status = getPollStatus(response.httpStatus);
-        report.setStatus(status);
-        report.setWorkDir(workDir);
-        if (status == FINISHED) {
+        DeploymentStatusReport report = pollService.getDeploymentStatus(workDir);
+        if (report.getStatus() == FINISHED) {
             logger.info(String.format("Unstage [%s]", workDir));
-            unstageDeployment(report);
+            unstageDeployment(workDir);
         }
         return report;
     }
 
-    private DeploymentStatusReport unstageDeployment(DeploymentStatusReport report) {
-        deployRequestService
-                .getRequest(report.getWorkDir())
-                .getStatusReport();
+    private void unstageDeployment(String workDir) {
+        DeploymentStatusReport report = deployRequestService
+                .getStatusReport(workDir);
         ExceptionalConsumer<DeploymentStatusReport> unstageConsumerMethod = deployRequestService
-                .getConsumer(report.getWorkDir());
-
+                .getConsumer(workDir);
         unstageConsumerMethod.accept(report);
-
         logger.info(String.format("Deployment [%s] has been unstaged by consumer ", report));
-        return report;
     }
 
     @Override
     public boolean stop(String workDir) {
-        // TODO: stop deployment
-        throw new UnsupportedOperationException("Deployments cannot be stopped");
+        throw new UnsupportedOperationException("Stopping deployments has not been implemented");
     }
 
-    private DeploymentStatusReport sendDeployRequest(URI uri) {
+    private HttpResponse<String> sendRequest(URI uri) {
         try {
             HttpResponse<String> response = Unirest.get(uri.toString())
                     .asString();
@@ -97,41 +99,11 @@ public class DeploymentServiceImpl implements DeploymentService {
                     "Started deployment of [%s]",
                     uri.toString())
             );
-            DeploymentStatusReport report = new DeploymentStatusReport();
-            report.setMsg(response.getBody());
-            report.setStatus(getDeployStatus(response.getStatus()));
-            report.setUri(uri);
-            return report;
+            return response;
         } catch (UnirestException e) {
             handleException(e, "Could not start deployment of [%s]", uri.toString());
             return null;
         }
-    }
-
-    private DeploymentStatusResponseDto getStatusRequest(URI uri) {
-        try {
-            HttpResponse<String> httpResponse = Unirest
-                    .get(uri.toString())
-                    .asString();
-            logger.info(String.format("Polled deployment [%s] and received http status [%s] with body [%s]", uri.toString(), httpResponse.getStatus(), httpResponse.getBody()));
-            DeploymentStatusResponseDto response =
-            StringUtils.isBlank(httpResponse.getBody())
-                    ? new DeploymentStatusResponseDto()
-                    : mapper.readValue(httpResponse.getBody(), DeploymentStatusResponseDto.class);
-
-            response.httpStatus = httpResponse.getStatus();
-            return response;
-        } catch (UnirestException | IOException e) {
-            handleException(e, "Status request failed [%s]", uri.toString());
-            return null;
-        }
-    }
-
-    private DeploymentStatusReport mapStatusReport(DeploymentStatusResponseDto response) {
-        DeploymentStatusReport result = new DeploymentStatusReport();
-        result.setStatus(getPollStatus(response.httpStatus));
-        result.setMsg(response.message);
-        return result;
     }
 
 }

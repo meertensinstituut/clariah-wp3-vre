@@ -22,17 +22,14 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -95,9 +92,9 @@ public class ExecService {
         DeploymentRequest request = prepareDeployment(service, body);
         List<String> files = new ArrayList<>(request.getFiles().values());
         owncloudFileService.stage(request.getWorkDir(), files);
-        DeploymentStatusReport statusReport = deploymentService.start(request, (report) -> {
+        DeploymentStatusReport statusReport = deploymentService.deploy(request, (report) -> {
             if (isFinishedOrStopped(report)) {
-                completeDeployment(request, files, report);
+                completeDeployment(report);
             } else {
                 logger.error(String.format("Finish method called with status [%s]", report.getStatus()));
             }
@@ -121,30 +118,18 @@ public class ExecService {
         return serviceRequest;
     }
 
-    private void completeDeployment(
-            DeploymentRequest serviceRequest,
-            List<String> inputFiles,
-            DeploymentStatusReport report
-    ) throws IOException {
-        logger.info(String.format(
-                "Complete deployment of service [%s] with workdir [%s]",
-                serviceRequest.getService(),
-                serviceRequest.getWorkDir()
-        ));
-        List<Path> outputFiles = owncloudFileService.unstage(serviceRequest.getWorkDir(), inputFiles);
-        logger.info("outputFiles: " + Arrays.toString(outputFiles.toArray()));
+    private void completeDeployment(DeploymentStatusReport report) throws IOException {
+        List<Path> outputFiles = owncloudFileService.unstage(report.getWorkDir(), report.getFiles());
         Path path = outputFiles.get(0);
         report.setOutputDir(isNull(path) ? "" : path.getParent().toString());
-        logger.info("outputDir: " + report.getWorkDir());
-        report.setWorkDir(serviceRequest.getWorkDir());
-        sendKafkaSwitchboardMsg(serviceRequest, report);
+        report.setWorkDir(report.getWorkDir());
+        sendKafkaSwitchboardMsg(report);
         sendKafkaOwncloudMsgs(outputFiles);
-    }
-
-    private String getPathRelativeTo(String dir, String base) {
-        String result = new File(base).toURI().relativize(new File(dir).toURI()).getPath();
-        logger.info(String.format("getPathRelativeTo with dir [%s] and base [%s] results in [%s]", dir, base, result));
-        return result;
+        logger.info(String.format(
+                "Completed deployment of service [%s] with workdir [%s]",
+                report.getService(),
+                report.getWorkDir()
+        ));
     }
 
     private void createConfig(
@@ -178,15 +163,14 @@ public class ExecService {
     }
 
     public DeploymentStatusReport getStatus(String workDir) {
-        return deploymentService.pollStatus(workDir);
+        return deploymentService.getStatus(workDir);
     }
 
     private void sendKafkaSwitchboardMsg(
-            DeploymentRequest serviceRequest,
             DeploymentStatusReport report
     ) throws IOException {
         KafkaDeploymentResultDto kafkaMsg = new KafkaDeploymentResultDto();
-        kafkaMsg.service = serviceRequest.getService();
+        kafkaMsg.service = report.getService();
         kafkaMsg.dateTime = LocalDateTime.now();
         kafkaMsg.status = report.getStatus();
         kafkaSwitchboardService.send(kafkaMsg);

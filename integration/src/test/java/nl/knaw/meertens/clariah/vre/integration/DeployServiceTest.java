@@ -7,7 +7,9 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,7 +155,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void filesCanBeAddedAfterDeployment() throws Exception {
+    public void testFilesCanBeAddedAfterDeployment() throws Exception {
         // Upload file:
         String inputFile = uploadTestFile(someContent);
         assertThat(downloadFile(inputFile).getStatus()).isEqualTo(200);

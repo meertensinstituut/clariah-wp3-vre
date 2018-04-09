@@ -6,11 +6,11 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
+import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
 import org.apache.commons.io.FilenameUtils;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
 import org.slf4j.Logger;
@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.CONFIG_FILE_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_HOST_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.OUTPUT_DIR;
@@ -46,7 +47,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         ResourceConfig resourceConfig = new ResourceConfig(ExecController.class);
         SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
                 createObjectsRegistryServiceStub(),
-                new DeploymentServiceImpl(getMapper(), "http://localhost:1080")
+                new DeploymentServiceImpl(getMapper(), "http://localhost:1080", new PollService(getMapper(), "http://localhost:1080"))
         );
         resourceConfig.register(diBinder);
         return resourceConfig;

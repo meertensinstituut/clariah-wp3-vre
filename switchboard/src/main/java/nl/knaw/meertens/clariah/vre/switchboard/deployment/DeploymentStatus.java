@@ -25,6 +25,10 @@ public enum DeploymentStatus {
 
     private final int httpStatus;
 
+    /**
+     * A http status is 'pollable' when it can be received during
+     * poll request, as opposed to deployment request
+     */
     private final boolean pollable;
 
     DeploymentStatus(int httpStatus, boolean pollable) {
@@ -53,11 +57,11 @@ public enum DeploymentStatus {
     }
 
     /**
-     * Get status based on http status code of poll request
+     * Get poll status corresponding to http status code
      */
     public static DeploymentStatus getPollStatus(int httpStatus) {
         for(DeploymentStatus deploymentStatus : DeploymentStatus.values()) {
-            if(deploymentStatus.pollable && deploymentStatus.httpStatus == httpStatus) {
+            if(deploymentStatus.isPollStatus() && deploymentStatus.httpStatus == httpStatus) {
                 return deploymentStatus;
             }
         }
@@ -68,7 +72,7 @@ public enum DeploymentStatus {
     }
 
     /**
-     * Get status based on http status code of deploy request
+     * Get deployment status corresponding to http status code
      */
     public static DeploymentStatus getDeployStatus(int httpStatus) {
         for(DeploymentStatus deploymentStatus : DeploymentStatus.values()) {
