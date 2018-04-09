@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +15,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
@@ -80,7 +83,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testThatResultOfDeployment_isMovedToOwncloud() throws UnirestException, InterruptedException, SQLException {
+    public void testResultOfDeploymentIsMovedToOwncloud() throws UnirestException, InterruptedException, SQLException {
         // Upload file:
         String inputFile = uploadTestFile(someContent);
         assertThat(downloadFile(inputFile).getStatus()).isEqualTo(200);
@@ -106,6 +109,76 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         HttpResponse<String> downloadResultTxt = downloadFile(resultFile);
         assertThat(downloadResultTxt.getBody()).contains("Insanity");
 
+    }
+
+    @Test
+    public void testSwitchboardProducesOwncloudMsgOfDeploymentOutputfile() throws Exception {
+        String outputFilename = "result.txt";
+
+        // Upload file:
+        String inputFile = uploadTestFile(someContent);
+        assertThat(downloadFile(inputFile).getStatus()).isEqualTo(200);
+        TimeUnit.SECONDS.sleep(6);
+        long inputFileId = getObjectIdFromRegistry(inputFile);
+
+        // Start deployment:
+        HttpResponse<String> startDeployment = startDeploymentWithInputFileId(inputFileId);
+        assertThat(startDeployment.getStatus()).isEqualTo(200);
+        String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
+
+        // Wait until finish:
+        TimeUnit.SECONDS.sleep(6);
+
+        // Check that deployment is finished:
+        HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
+        assertThat(finishedDeployment.getStatus()).isIn(200, 202);
+        assertThatJson(finishedDeployment.getBody()).node("status").matches(containsString("FINISHED"));
+
+        // Check that kaka msg is created for output file with action 'create':
+        KafkaConsumerService owncloudKafkaConsumer = getOwncloudTopic();
+        owncloudKafkaConsumer.consumeAll(consumerRecords -> {
+            logger.info("Check owncloud results");
+            assertThat(consumerRecords.size()).isGreaterThan(0);
+            List<String> resultActions = new ArrayList<>();
+            consumerRecords.forEach(record -> {
+                String filePath = JsonPath.parse(record.value()).read("$.userPath");
+                if(filePath.contains(outputFilename)) {
+                    resultActions.add(JsonPath.parse(record.value()).read("$.action"));
+                }
+            });
+            assertThat(resultActions).hasSize(1);
+            assertThat(resultActions.get(0)).isEqualTo("create");
+        });
+
+    }
+
+    @Test
+    public void filesCanBeAddedAfterDeployment() throws Exception {
+        // Upload file:
+        String inputFile = uploadTestFile(someContent);
+        assertThat(downloadFile(inputFile).getStatus()).isEqualTo(200);
+        TimeUnit.SECONDS.sleep(6);
+        long inputFileId = getObjectIdFromRegistry(inputFile);
+
+        // Start deployment:
+        HttpResponse<String> startDeployment = startDeploymentWithInputFileId(inputFileId);
+        assertThat(startDeployment.getStatus()).isEqualTo(200);
+        String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
+
+        // Wait until finish:
+        TimeUnit.SECONDS.sleep(6);
+
+        // Check status is finished:
+        HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
+        assertThat(finishedDeployment.getStatus()).isIn(200, 202);
+        assertThatJson(finishedDeployment.getBody()).node("status").matches(containsString("FINISHED"));
+
+        // Check a new file can be added:
+        String newInputFile = uploadTestFile(someContent);
+        assertThat(downloadFile(newInputFile).getStatus()).isEqualTo(200);
+        TimeUnit.SECONDS.sleep(6);
+        long newInputFileId = getObjectIdFromRegistry(newInputFile);
+        assertThat(newInputFileId).isNotEqualTo(0L);
     }
 
     private String getOutputPath(HttpResponse<String> finishedDeployment) {
@@ -168,5 +241,14 @@ public class DeployServiceTest extends AbstractIntegrationTest {
                     .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
                     .asString();
     }
+
+    private KafkaConsumerService getOwncloudTopic() {
+        KafkaConsumerService recognizerKafkaConsumer = new KafkaConsumerService(
+                KAFKA_ENDPOINT, OWNCLOUD_TOPIC_NAME, getRandomGroupName());
+        recognizerKafkaConsumer.subscribe();
+        recognizerKafkaConsumer.pollOnce();
+        return recognizerKafkaConsumer;
+    }
+
 
 }
