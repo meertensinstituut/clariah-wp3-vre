@@ -37,6 +37,7 @@ public class DeploymentLib {
     public DeploymentLib() throws ConfigurationException {
         
         this.config = new File(this.defaultConfiPath);
+        this.parseConfig(this.config);
     }
     
     public File getConfigFile() {
@@ -147,6 +148,14 @@ public class DeploymentLib {
         in.close();
 
         return response.toString();
+    }
+
+    String getOutputDir() {
+        return this.outputDirectory;
+    }
+    
+    String getInputDir() {
+        return this.inputDirectory;
     }
     
 }

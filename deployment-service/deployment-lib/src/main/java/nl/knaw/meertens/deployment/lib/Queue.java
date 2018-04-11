@@ -55,13 +55,17 @@ public class Queue {
         }
     }
     
-    public void cleanFinishedTask() {
-        executed.entrySet().forEach(entry -> {
-            RecipePlugin value = entry.getValue();
-            if (value.finished()) {
-                executed.remove(entry.getKey());
-            }
-        });
+//    public void cleanFinishedTask() {
+//        executed.entrySet().forEach(entry -> {
+//            RecipePlugin value = entry.getValue();
+//            if (value.finished()) {
+//                executed.remove(entry.getKey());
+//            }
+//        });
+//    }
+    
+    public void removeTask(String key) {
+        executed.remove(key);
     }
 
 

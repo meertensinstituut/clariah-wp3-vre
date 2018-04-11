@@ -28,9 +28,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import static javax.ws.rs.client.Entity.json;
+
 import javax.xml.transform.stream.StreamSource;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
@@ -56,6 +54,27 @@ public class Clam implements RecipePlugin {
     protected int counter = 0;
     protected Boolean isFinished = false;
     
+    protected String projectName;
+    public URL serviceUrl;
+    
+    /**
+     *
+     * @param projectName
+     * @param service
+     * @throws JDOMException
+     * @throws IOException
+     * @throws SaxonApiException
+     */
+    @Override
+    public void init(String projectName, Service service) throws JDOMException, IOException, SaxonApiException {
+        System.out.print("init CLAM plugin");
+        JSONObject json = this.parseSymantics(service.getServiceSymantics());
+        this.projectName = projectName;
+        this.serviceUrl = new URL((String)json.get("serviceLocation"));
+        System.out.print("finish init CLAM plugin");
+
+    }
+    
     @Override
     public Boolean finished() {
         return isFinished;
@@ -63,21 +82,43 @@ public class Clam implements RecipePlugin {
     
     @Override
     public String execute(String projectName) {
-        
+        System.out.println("## Start execution ##");
+                
         JSONObject json = new JSONObject();
         json.put("key", projectName);
         json.put("status", 202);
         JSONObject userConfig = new JSONObject(); 
         try {
             userConfig = this.parseUserConfig(projectName);
+            System.out.println("## Creating project ##");
             this.createProject(projectName);
             
+            System.out.println("## upload files ##");
             this.prepareProject(projectName);
-            this.runProject(projectName);
-            this.downloadProject(projectName);
-//            this.deleteProject(key);
             
-            isFinished = true;
+            System.out.println("## Running project ##");
+            this.runProject(projectName);
+            
+            // keep polling project
+            System.out.println("## Polling the service ##");
+            int i = 0;
+            while (!this.finished()) {
+                System.out.println("polling " + Integer.toString(i));
+                i++;
+                Thread.sleep(3000);
+                this.getStatus(projectName);
+            }
+            
+            System.out.println("## Download result ##");
+            this.downloadProject(projectName);
+            
+            System.out.println("## Removing project ##");
+            if (this.finished()) {
+                this.deleteProject(projectName);
+                Queue queue = new Queue();
+                queue.removeTask(projectName);
+            }
+            
         } catch (IOException ex ) {
             Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ParseException ex) {
@@ -86,21 +127,36 @@ public class Clam implements RecipePlugin {
             Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SaxonApiException ex) {
             Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ConfigurationException ex) {
+            Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return json.toString();
-//        return userConfig.toString();
     }
     
-    public JSONObject parseUserConfig(String key) throws FileNotFoundException, IOException, ParseException {
+    public JSONObject parseUserConfig(String key) throws FileNotFoundException, IOException, ParseException, ConfigurationException {
+        DeploymentLib dplib = new DeploymentLib();
+        
+        String workDir = dplib.getWd();
+        String userConfFile = dplib.getConfFile();
         JSONParser parser = new JSONParser();
-        JSONObject userConfig = (JSONObject) parser.parse(new FileReader("/tmp/wd/"+key+"/config.json")); 
         
-        
+        try {
+            String path = Paths.get(workDir, key, userConfFile).normalize().toString();
+            JSONObject userConfig = (JSONObject) parser.parse(new FileReader(path)); 
+            return userConfig;
+        } catch (Exception ex) {
+            System.out.println(ex.getLocalizedMessage());
+        }
+        JSONObject userConfig = new JSONObject();
+        userConfig.put("parseuserconfig", "failed");
         return userConfig;
     }
     
-    public void runProject(String key) throws MalformedURLException, IOException, JDOMException, ParseException {
+    public JSONObject runProject(String key) throws IOException, MalformedURLException, MalformedURLException, JDOMException, ParseException {
+        
         JSONObject json = new JSONObject();
         JSONParser parser = new JSONParser();
         String user, accessToken;
@@ -126,7 +182,14 @@ public class Clam implements RecipePlugin {
         /*
         end of set output template
         */
-        URL url = new URL("http://docker.for.mac.host.internal:8080/ucto/"+key+"/?user="+user+"&accesstoken="+accessToken);
+        
+        URL url = new URL(
+                this.serviceUrl.getProtocol(), 
+                this.serviceUrl.getHost(), 
+                this.serviceUrl.getPort(), 
+                this.serviceUrl.getFile() + "/" + key + "/?user="+user+"&accesstoken="+accessToken, 
+                null
+        );
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         
         httpCon.setDoOutput(true);
@@ -137,14 +200,15 @@ public class Clam implements RecipePlugin {
         httpCon.getOutputStream().write(postDataBytes);
         
 //        json = (JSONObject) parser.parse(this.getUrlBody(httpCon));
-//        json.put("status", httpCon.getResponseCode());
-//        json.put("message", httpCon.getResponseMessage());
-        String result = this.getUrlBody(httpCon);
+        json.put("status", httpCon.getResponseCode());
+        json.put("message", httpCon.getResponseMessage());
                 
         httpCon.disconnect();
+        return json;
+        
     }
     
-    public JSONObject prepareProject(String key) throws IOException, MalformedURLException, JDOMException, FileNotFoundException, ParseException {
+    public JSONObject prepareProject(String key) throws IOException, MalformedURLException, JDOMException, FileNotFoundException, ParseException, ConfigurationException {
         JSONObject jsonResult = new JSONObject();
         JSONObject json = new JSONObject();
         json = parseUserConfig(key);
@@ -219,32 +283,56 @@ public class Clam implements RecipePlugin {
         user = (String)json.get("user");
         accessToken = (String)json.get("accessToken");
         
-        URL url = new URL("http://docker.for.mac.host.internal:8080/ucto/"+projectName+"/status/?user="+user+"&accesstoken="+accessToken);
+        URL url = new URL(
+                this.serviceUrl.getProtocol(), 
+                this.serviceUrl.getHost(), 
+                this.serviceUrl.getPort(),
+                this.serviceUrl.getFile() + "/" + projectName + "/status/?user="+user+"&accesstoken="+accessToken, 
+                null
+        );
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         httpCon.setDoOutput(true);
         httpCon.setRequestMethod("GET");
         
         json = (JSONObject) parser.parse(this.getUrlBody(httpCon));
+        
+        Long completionCode = (Long)json.get("completion");
+        Long statusCode = (Long)json.get("statuscode");
+        Boolean successCode = (Boolean)json.get("success");
+        
+        if (completionCode == 100L && statusCode == 2L && successCode) {
+            this.isFinished = true;
+        }
+             
         json.put("status", httpCon.getResponseCode());
         json.put("message", httpCon.getResponseMessage());
         json.put("finished", this.finished());
         
-        Long completionCode = (Long)json.get("completion");
-        int statusCode = (int)json.get("status");
-        Boolean successCode = (Boolean)json.get("success");
         
-        if (completionCode == 100 && statusCode == 200 && successCode) {
-            isFinished = true;
-        }
-                
         httpCon.disconnect();
+        
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                Queue queue = new Queue();
+//                queue.cleanFinishedTask();
+//            }
+//        }.start(); 
         return json;
     }
     
     public JSONObject getAccessToken(String projectName) throws MalformedURLException, IOException, JDOMException {
         JSONObject json = new JSONObject();
-        String urlString = "http://docker.for.mac.host.internal:8080/ucto/"+projectName+"/";
-        String xmlString = readStringFromURL(urlString);
+        
+        URL url = new URL(
+                this.serviceUrl.getProtocol(), 
+                this.serviceUrl.getHost(), 
+                this.serviceUrl.getPort(),
+                this.serviceUrl.getFile() + "/" + projectName, 
+                null
+        );
+        String urlString = url.toString();
+        String xmlString = readStringFromURL(url);
         
         SAXBuilder saxBuilder = new SAXBuilder();
         Document doc = saxBuilder.build(new StringReader(xmlString));
@@ -258,20 +346,29 @@ public class Clam implements RecipePlugin {
         return json;
     }
         
-    public static String readStringFromURL(String requestURL) throws IOException {
-        try (Scanner scanner = new Scanner(new URL(requestURL).openStream(),
+//    public static String readStringFromURL(String requestURL) throws IOException {
+//        try (Scanner scanner = new Scanner(new URL(requestURL).openStream(),
+//                StandardCharsets.UTF_8.toString())) {
+//            scanner.useDelimiter("\\A");
+//            return scanner.hasNext() ? scanner.next() : "";
+//        }
+//    }
+    
+    public static String readStringFromURL(URL requestURL) throws IOException {
+        try (Scanner scanner = new Scanner(requestURL.openStream(),
                 StandardCharsets.UTF_8.toString())) {
             scanner.useDelimiter("\\A");
             return scanner.hasNext() ? scanner.next() : "";
         }
     }
         
-    public JSONObject uploadFile(String projectName, String filename, String language, String inputTemplate, String author) throws MalformedURLException, IOException, JDOMException, FileNotFoundException, ParseException, ParseException {
+    public JSONObject uploadFile(String projectName, String filename, String language, String inputTemplate, String author) throws MalformedURLException, IOException, JDOMException, FileNotFoundException, ParseException, ParseException, ConfigurationException {
         JSONObject jsonResult = new JSONObject();
         JSONObject json = new JSONObject();
         json = this.getAccessToken(projectName);
+        DeploymentLib dplib = new DeploymentLib();
         
-        String path = Paths.get("/tmp/wd/", projectName, "/input/", filename).normalize().toString();
+        String path = Paths.get(dplib.getWd(), projectName, dplib.getInputDir(), filename).normalize().toString();
         System.out.println(path);
         
         jsonResult.put("pathUploadFile", path);
@@ -282,7 +379,14 @@ public class Clam implements RecipePlugin {
         byte[] encoded = Files.readAllBytes(Paths.get(path));
         String accessToken = (String)json.get("accessToken");
         String payload = new String(encoded, "UTF-8");
-        URL url = new URL("http://docker.for.mac.host.internal:8080/ucto/"+projectName+"/upload/?inputtemplate="+inputTemplate+"&user=anonymous&accesstoken="+accessToken+"&language="+language+"&documentid=&author="+author+"&filename="+filenameOnly);
+
+        URL url = new URL(
+                this.serviceUrl.getProtocol(), 
+                this.serviceUrl.getHost(), 
+                this.serviceUrl.getPort(),
+                this.serviceUrl.getFile() + "/" +projectName + "/upload/?inputtemplate="+inputTemplate+"&user=anonymous&accesstoken="+accessToken+"&language="+language+"&documentid=&author="+author+"&filename="+filenameOnly, 
+                null
+        );
 
         try {
             
@@ -324,7 +428,16 @@ public class Clam implements RecipePlugin {
     
     public JSONObject getOutputFiles(String projectName) throws MalformedURLException, IOException, JDOMException, SaxonApiException {
         JSONObject json = new JSONObject();
-        String urlString = "http://docker.for.mac.host.internal:8080/ucto/"+projectName+"/";
+        
+        URL url = new URL(
+            this.serviceUrl.getProtocol(), 
+            this.serviceUrl.getHost(), 
+            this.serviceUrl.getPort(),
+            this.serviceUrl.getFile() + "/" + projectName, 
+            null
+        );
+                
+        String urlString = url.toString();
 
         Map<String,String> NS = new LinkedHashMap<>();
         NS.put("xlink", "http://www.w3.org/1999/xlink");
@@ -339,9 +452,13 @@ public class Clam implements RecipePlugin {
     
     }
         
-    public void downloadProject(String projectName) throws MalformedURLException, IOException, JDOMException, SaxonApiException {
+    public JSONObject downloadProject(String projectName) throws MalformedURLException, IOException, JDOMException, SaxonApiException, ConfigurationException {
         JSONObject jsonFiles = this.getOutputFiles(projectName);
-        String path = Paths.get("/tmp/wd/" + projectName + "/output/").normalize().toString();
+        JSONObject json = new JSONObject();
+        DeploymentLib dplib = new DeploymentLib();
+        String workDir = dplib.getWd();
+        String outputDir = dplib.getOutputDir();
+        String path = Paths.get(workDir, projectName, outputDir).normalize().toString();
         
         /* create output directory if not there */
         File theDir = new File(path);
@@ -357,14 +474,17 @@ public class Clam implements RecipePlugin {
         /* end create output directory */
         
         Set<String> keys = jsonFiles.keySet();
-
+        json = jsonFiles;
+        
         keys.forEach((key) -> {
             File file = new File(Paths.get(path, key).normalize().toString());
             System.out.println(Paths.get(path, key).normalize().toString());
             URL url;
+            
             try {
                 String urlString = (String)jsonFiles.get(key);
-                urlString = urlString.replace("127.0.0.1", "docker.for.mac.host.internal");
+                urlString = urlString.replace("127.0.0.1", this.serviceUrl.getHost());
+                System.out.println(urlString);
                 url = new URL(urlString);
                 FileUtils.copyURLToFile(url, file, 10000, 10000);
             } catch (MalformedURLException ex) {
@@ -374,12 +494,20 @@ public class Clam implements RecipePlugin {
             } 
             
         });
-        
+        return json;
     }
     
-    public JSONObject createProject(String projectName) throws MalformedURLException, IOException {
+    public JSONObject createProject(String projectName) throws MalformedURLException, IOException, ConfigurationException {
         JSONObject json = new JSONObject();
-        URL url = new URL("http://docker.for.mac.host.internal:8080/ucto/"+projectName+"/");
+                
+        URL url = new URL(
+                this.serviceUrl.getProtocol(), 
+                this.serviceUrl.getHost(), 
+                this.serviceUrl.getPort(),
+                this.serviceUrl.getFile() + "/" + projectName, 
+                null
+        );
+
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         httpCon.setDoOutput(true);
         httpCon.setRequestMethod("PUT");
@@ -395,8 +523,13 @@ public class Clam implements RecipePlugin {
     
     public JSONObject deleteProject(String projectName) throws MalformedURLException, IOException {
         JSONObject json = new JSONObject();
-        URL url = new URL("http://docker.for.mac.host.internal:8080/ucto/"+projectName+"/");
-        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
+        URL url = new URL(
+                this.serviceUrl.getProtocol(), 
+                this.serviceUrl.getHost(), 
+                this.serviceUrl.getPort(),
+                this.serviceUrl.getFile() + "/" + projectName, 
+                null
+        );        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         httpCon.setDoOutput(true);
         httpCon.setRequestProperty("Content-Type", "application/x-www-form-urlencoded" );
         httpCon.setRequestMethod("DELETE");
