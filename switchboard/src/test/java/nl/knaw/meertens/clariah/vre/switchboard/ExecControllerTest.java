@@ -3,20 +3,15 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
-import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
 import org.apache.commons.io.FilenameUtils;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
@@ -27,12 +22,10 @@ import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.CONFIG_FILE_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_HOST_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.App.OWNCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType.FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -42,19 +35,8 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Override
-    protected Application configure() {
-        ResourceConfig resourceConfig = new ResourceConfig(ExecController.class);
-        SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
-                createObjectsRegistryServiceStub(),
-                new DeploymentServiceImpl(getMapper(), "http://localhost:1080", new PollService(getMapper(), "http://localhost:1080"))
-        );
-        resourceConfig.register(diBinder);
-        return resourceConfig;
-    }
-
     @Before
-    public void beforeUnitTests() {
+    public void beforeExecControllerTests() {
         new MockServerClient("localhost", 1080).reset();
         ObjectsRecordDTO record = new ObjectsRecordDTO();
         record.id = 1L;
@@ -85,6 +67,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, testFile).toFile()).exists();
 
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
+        TimeUnit.SECONDS.sleep(10);
         createResultFile(workDir);
 
         Response pollStatusResponse = target(String.format("exec/task/%s/", workDir))
@@ -108,7 +91,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         createResultFile(workDir);
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(10);
 
         // Check status is finished:
         Response finishedResponse = target(String.format("exec/task/%s/", workDir))
@@ -124,21 +107,9 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         logger.info("outputFolder: " + outputFolder);
         assertThat(outputFolder).isNotNull();
         assertThat(outputFolder.toString()).startsWith("/usr/local/owncloud/admin/files/output-20");
-        Path outputFile = Paths.get(outputFolder.getPath(), STUBRESULT_FILENAME);
+        Path outputFile = Paths.get(outputFolder.getPath(), RESULT_FILENAME);
         assertThat(outputFile.toFile()).exists();
-        assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo("Geen resultaat is ook een resultaat.");
-    }
-
-    private File findOutputFolder() {
-        String pathWithoutFile = FilenameUtils.getPath(testFile);
-        File resultParentFolder = Paths.get(OWNCLOUD_VOLUME, pathWithoutFile).toFile();
-        File outputFolder = null;
-        for (File file : resultParentFolder.listFiles()) {
-            if (file.getName().contains(OUTPUT_DIR)) {
-                outputFolder = file;
-            }
-        }
-        return outputFolder;
+        assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo("Insanity: doing the same thing over and over again and expecting different results.");
     }
 
     @Test
@@ -174,7 +145,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        startStatusMockServer(FINISHED.getHttpStatus(), "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\"}");
+        startStatusMockServer(FINISHED.getHttpStatus(), "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}");
         createResultFile(workDir);
         TimeUnit.SECONDS.sleep(2);
 
@@ -186,6 +157,18 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         String finishedJson = finishedResponse.readEntity(String.class);
         logger.info("finishedJson: " + finishedJson);
         assertThatJson(finishedJson).node("status").isEqualTo("FINISHED");
+    }
+
+    private File findOutputFolder() {
+        String pathWithoutFile = FilenameUtils.getPath(testFile);
+        File resultParentFolder = Paths.get(OWNCLOUD_VOLUME, pathWithoutFile).toFile();
+        File outputFolder = null;
+        for (File file : resultParentFolder.listFiles()) {
+            if (file.getName().contains(OUTPUT_DIR)) {
+                outputFolder = file;
+            }
+        }
+        return outputFolder;
     }
 
 }

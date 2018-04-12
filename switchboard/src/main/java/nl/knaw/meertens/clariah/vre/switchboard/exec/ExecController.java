@@ -68,6 +68,10 @@ public class ExecController {
     public Response getDeploymentStatus(@PathParam("workDir") String workDir) throws JsonProcessingException {
         try {
             DeploymentStatusReport report = execService.getStatus(workDir);
+            logger.info(String.format(
+                    "Responded to status request [%s] with [%s]",
+                    workDir, mapper.writeValueAsString(report))
+            );
             return Response
                     .status(report.getStatus().getHttpStatus())
                     .entity(mapper.writeValueAsString(report))

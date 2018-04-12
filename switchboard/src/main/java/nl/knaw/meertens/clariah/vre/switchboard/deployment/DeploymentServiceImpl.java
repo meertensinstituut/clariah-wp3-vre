@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -17,17 +16,19 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 
 public class DeploymentServiceImpl implements DeploymentService {
 
-    private final ObjectMapper mapper;
     private final String hostName;
+    private final RequestRepositoryService deployRequestService;
 
-    private final RequestRegistryService deployRequestService;
-    private PollService pollService;
+    public DeploymentServiceImpl(
+            String hostName,
+            RequestRepositoryService deployRequestService,
 
-    public DeploymentServiceImpl(ObjectMapper mapper, String hostName, PollService pollService) {
-        this.mapper = mapper;
+            PollService pollService) {
         this.hostName = hostName;
-        this.pollService = pollService;
-        deployRequestService = RequestRegistryService.getInstance();
+        this.deployRequestService = deployRequestService;
+
+        pollService.startPolling();
+
     }
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -69,7 +70,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     @Override
     public DeploymentStatusReport getStatus(String workDir) {
         logger.info(String.format("Polling deployment [%s]", workDir));
-        DeploymentStatusReport report = pollService.getDeploymentStatus(workDir);
+        DeploymentStatusReport report = deployRequestService.getStatusReport(workDir);
         if (report.getStatus() == FINISHED) {
             logger.info(String.format("Unstage [%s]", workDir));
             unstageDeployment(workDir);

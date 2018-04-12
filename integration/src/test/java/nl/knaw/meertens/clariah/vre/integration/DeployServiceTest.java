@@ -8,6 +8,7 @@ import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
@@ -62,15 +63,17 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
         String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
 
+        TimeUnit.SECONDS.sleep(2);
+
         HttpResponse<String> getDeploymentStatus = getDeploymentStatus(workDir);
         assertThat(getDeploymentStatus.getStatus()).isIn(200, 202);
         assertThatJson(getDeploymentStatus.getBody()).node("status").matches(containsString("RUNNING"));
 
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(15);
 
-        HttpResponse<String> getDeploymentStatusAfter5Secs = getDeploymentStatus(workDir);
+        HttpResponse<String> shouldBeFinished = getDeploymentStatus(workDir);
         assertThat(getDeploymentStatus.getStatus()).isIn(200, 202);
-        assertThatJson(getDeploymentStatusAfter5Secs.getBody()).node("status").matches(containsString("FINISHED"));
+        assertThatJson(shouldBeFinished.getBody()).node("status").matches(containsString("FINISHED"));
 
         HttpResponse<String> downloadResult2 = downloadFile(inputFile);
         assertThat(downloadResult2.getBody()).isEqualTo(someContent);
@@ -98,7 +101,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
 
         // Wait until finish:
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(15);
 
         // Find output dir:
         HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
@@ -129,7 +132,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
 
         // Wait until finish:
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(15);
 
         // Check that deployment is finished:
         HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
@@ -159,7 +162,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         // Upload file:
         String inputFile = uploadTestFile(someContent);
         assertThat(downloadFile(inputFile).getStatus()).isEqualTo(200);
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(7);
         long inputFileId = getObjectIdFromRegistry(inputFile);
 
         // Start deployment:
@@ -168,17 +171,17 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
 
         // Wait until finish:
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(15);
 
         // Check status is finished:
         HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
-        assertThat(finishedDeployment.getStatus()).isIn(200, 202);
+        assertThat(finishedDeployment.getStatus()).isIn(200);
         assertThatJson(finishedDeployment.getBody()).node("status").matches(containsString("FINISHED"));
 
         // Check a new file can be added:
         String newInputFile = uploadTestFile(someContent);
         assertThat(downloadFile(newInputFile).getStatus()).isEqualTo(200);
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(7);
         long newInputFileId = getObjectIdFromRegistry(newInputFile);
         assertThat(newInputFileId).isNotEqualTo(0L);
     }

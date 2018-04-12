@@ -2,7 +2,6 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +20,12 @@ public class ExceptionHandler {
 
     public static void handleException(Throwable e, String template, String... args) {
         String msg = String.format(template, Arrays.stream(args).toArray());
-        throw new RuntimeIOException(msg, e);
+        throw new RuntimeException(msg, e);
     }
 
     public static void handleException(String template, String... args) {
         String msg = String.format(template, Arrays.stream(args).toArray());
-        throw new RuntimeIOException(msg);
+        throw new RuntimeException(msg);
     }
 
     public static Response handleInternalServerError(Exception e) throws JsonProcessingException {

@@ -1,7 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryServiceImpl;
@@ -12,41 +11,40 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.ApplicationPath;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getPollService;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getRequestRepositoryService;
 
 @ApplicationPath("resources")
 public class App extends ResourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceConfig.class);
 
-    public static final String DEPLOYMENT_HOST_NAME = "http://deployment:8080";
 
+    public static final String DEPLOYMENT_VOLUME = System.getenv("DEPLOYMENT_VOLUME");
+    public static final String DEPLOYMENT_HOST_NAME = "http://deployment:8080";
     public static final String KAFKA_HOST_NAME = "kafka:" + System.getenv("KAFKA_PORT");
     public static final String SWITCHBOARD_TOPIC_NAME = System.getenv("SWITCHBOARD_TOPIC_NAME");
     public static final String OWNCLOUD_TOPIC_NAME = System.getenv("OWNCLOUD_TOPIC_NAME");
-    public static final String DEPLOYMENT_VOLUME = System.getenv("DEPLOYMENT_VOLUME");
     public static final String OWNCLOUD_VOLUME = System.getenv("OWNCLOUD_VOLUME");
     public static final String OUTPUT_DIR = "output";
     public static final String INPUT_DIR = "input";
     public static final String CONFIG_FILE_NAME = "config.json";
+    public static final String STATUS_FILE_NAME = "switchboard.status.json";
     public static final String OBJECTS_DB_URL = "http://dreamfactory/api/v2/objects";
     public static final String OBJECTS_DB_KEY = System.getenv("APP_KEY_OBJECTS");
     public static final String OBJECTS_DB_TOKEN = System.getenv("OBJECTS_TOKEN");
 
     public App() {
-        configAppContext();
+        configureAppContext();
     }
 
-    private void configAppContext() {
+    private void configureAppContext() {
         SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
                 getObjectsRegistryService(),
                 new DeploymentServiceImpl(
-                        getMapper(),
                         DEPLOYMENT_HOST_NAME,
-                        new PollService(
-                                getMapper(),
-                                DEPLOYMENT_HOST_NAME
-                        )
+                        getRequestRepositoryService(),
+                        getPollService()
                 )
         );
         ObjectsRegistryServiceStub stub = new ObjectsRegistryServiceStub();

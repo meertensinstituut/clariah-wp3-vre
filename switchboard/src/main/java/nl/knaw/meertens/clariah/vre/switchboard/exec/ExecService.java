@@ -6,6 +6,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.ExceptionalConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
@@ -92,16 +93,18 @@ public class ExecService {
         DeploymentRequest request = prepareDeployment(service, body);
         List<String> files = new ArrayList<>(request.getFiles().values());
         owncloudFileService.stage(request.getWorkDir(), files);
-        DeploymentStatusReport statusReport = deploymentService.deploy(request, (report) -> {
-            if (isFinishedOrStopped(report)) {
-                completeDeployment(report);
-            } else {
-                logger.error(String.format("Finish method called with status [%s]", report.getStatus()));
-            }
-        });
+        DeploymentStatusReport statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
         request.setStatusReport(statusReport);
         return request;
     }
+
+    private ExceptionalConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
+        if (isFinishedOrStopped(report)) {
+            completeDeployment(report);
+        } else {
+            logger.error(String.format("Finish method called with status [%s]", report.getStatus()));
+        }
+    };
 
     private boolean isFinishedOrStopped(DeploymentStatusReport report) {
         return report.getStatus() == FINISHED || report.getStatus() == STOPPED;
