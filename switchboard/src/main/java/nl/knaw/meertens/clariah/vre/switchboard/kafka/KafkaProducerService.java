@@ -26,7 +26,7 @@ public class KafkaProducerService {
         producer.getKafkaProducer().send(new ProducerRecord<>(
                 topic, "key", mapper.writeValueAsString(kafkaMsg)
         ));
-        logger.info("Message sent successfully");
+        logger.info("Kafka message sent successfully");
     }
 
 }

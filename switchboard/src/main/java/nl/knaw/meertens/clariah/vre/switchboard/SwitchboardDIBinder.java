@@ -13,9 +13,9 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_HOST_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.STATUS_FILE_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_HOST_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.STATUS_FILE_NAME;
 
 /**
  * Dependency injection using HK2

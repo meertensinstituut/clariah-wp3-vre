@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeploymentStatusResponseDto {
-        public int data;
-        public String id;
+
+        /**
+         * Message of deployment service
+         */
         public String message;
 
         /**

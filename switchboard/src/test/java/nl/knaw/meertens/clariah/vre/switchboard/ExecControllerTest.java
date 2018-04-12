@@ -21,11 +21,11 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.CONFIG_FILE_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.INPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.OUTPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.OWNCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType.FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -66,9 +66,9 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, testFile).toFile()).exists();
 
+        createResultFile(workDir);
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         TimeUnit.SECONDS.sleep(10);
-        createResultFile(workDir);
 
         Response pollStatusResponse = target(String.format("exec/task/%s/", workDir))
                 .request()
@@ -89,8 +89,8 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         createResultFile(workDir);
+        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         TimeUnit.SECONDS.sleep(10);
 
         // Check status is finished:
@@ -145,8 +145,8 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        startStatusMockServer(FINISHED.getHttpStatus(), "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}");
         createResultFile(workDir);
+        startStatusMockServer(FINISHED.getHttpStatus(), "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}");
         TimeUnit.SECONDS.sleep(2);
 
         // Check status is finished:

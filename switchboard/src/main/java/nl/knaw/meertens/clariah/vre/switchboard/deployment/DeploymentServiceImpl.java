@@ -17,15 +17,15 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 public class DeploymentServiceImpl implements DeploymentService {
 
     private final String hostName;
-    private final RequestRepositoryService deployRequestService;
+    private final RequestRepositoryService requestRepositoryService;
 
     public DeploymentServiceImpl(
             String hostName,
-            RequestRepositoryService deployRequestService,
+            RequestRepositoryService requestRepositoryService,
 
             PollService pollService) {
         this.hostName = hostName;
-        this.deployRequestService = deployRequestService;
+        this.requestRepositoryService = requestRepositoryService;
 
         pollService.startPolling();
 
@@ -36,10 +36,10 @@ public class DeploymentServiceImpl implements DeploymentService {
     @Override
     public DeploymentStatusReport deploy(
             DeploymentRequest request,
-            ExceptionalConsumer<DeploymentStatusReport> finishRequestConsumer
+            ExceptionalConsumer<DeploymentStatusReport> deploymentConsumer
     ) {
         DeploymentStatusReport report = requestDeployment(request);
-        deployRequestService.saveDeploymentRequest(report, finishRequestConsumer);
+        requestRepositoryService.saveDeploymentRequest(report, deploymentConsumer);
         return report;
     }
 
@@ -70,21 +70,8 @@ public class DeploymentServiceImpl implements DeploymentService {
     @Override
     public DeploymentStatusReport getStatus(String workDir) {
         logger.info(String.format("Polling deployment [%s]", workDir));
-        DeploymentStatusReport report = deployRequestService.getStatusReport(workDir);
-        if (report.getStatus() == FINISHED) {
-            logger.info(String.format("Unstage [%s]", workDir));
-            unstageDeployment(workDir);
-        }
+        DeploymentStatusReport report = requestRepositoryService.getStatusReport(workDir);
         return report;
-    }
-
-    private void unstageDeployment(String workDir) {
-        DeploymentStatusReport report = deployRequestService
-                .getStatusReport(workDir);
-        ExceptionalConsumer<DeploymentStatusReport> unstageConsumerMethod = deployRequestService
-                .getConsumer(workDir);
-        unstageConsumerMethod.accept(report);
-        logger.info(String.format("Deployment [%s] has been unstaged by consumer ", report));
     }
 
     @Override

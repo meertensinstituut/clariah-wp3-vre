@@ -1,7 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
@@ -35,14 +34,15 @@ import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.CONFIG_FILE_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.INPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.KAFKA_HOST_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.OUTPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.OWNCLOUD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.OWNCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.SWITCHBOARD_TOPIC_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.KAFKA_HOST_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_TOPIC_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.handleException;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 
@@ -98,18 +98,6 @@ public class ExecService {
         return request;
     }
 
-    private ExceptionalConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
-        if (isFinishedOrStopped(report)) {
-            completeDeployment(report);
-        } else {
-            logger.error(String.format("Finish method called with status [%s]", report.getStatus()));
-        }
-    };
-
-    private boolean isFinishedOrStopped(DeploymentStatusReport report) {
-        return report.getStatus() == FINISHED || report.getStatus() == STOPPED;
-    }
-
     private DeploymentRequest prepareDeployment(
             String service,
             String body
@@ -119,6 +107,17 @@ public class ExecService {
         createConfig(serviceRequest);
         sendKafkaRequestMsg(serviceRequest);
         return serviceRequest;
+    }
+
+    private ExceptionalConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
+        logger.info(String.format("Status of [%s] is [%s]",report.getWorkDir(), report.getStatus()));
+        if (isFinishedOrStopped(report)) {
+            completeDeployment(report);
+        }
+    };
+
+    private boolean isFinishedOrStopped(DeploymentStatusReport report) {
+        return report.getStatus() == FINISHED || report.getStatus() == STOPPED;
     }
 
     private void completeDeployment(DeploymentStatusReport report) throws IOException {
@@ -148,7 +147,7 @@ public class ExecService {
             String json = mapper.writeValueAsString(config);
             FileUtils.write(configPath.toFile(), json, UTF_8);
         } catch (IOException e) {
-            ExceptionHandler.handleException(e, "Could create config file [%s]", configPath.toString());
+            handleException(e, "Could create config file [%s]", configPath.toString());
         }
     }
 

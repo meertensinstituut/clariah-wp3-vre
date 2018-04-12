@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.poll;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -16,7 +15,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.handleException;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class PollServiceImpl implements PollService {
@@ -41,7 +39,7 @@ public class PollServiceImpl implements PollService {
 
     @Override
     public void startPolling() {
-        if(polling) {
+        if (polling) {
             logger.error("Already polling");
             return;
         }
@@ -73,11 +71,13 @@ public class PollServiceImpl implements PollService {
 
     private void poll() {
         for (DeploymentStatusReport report : requestRepositoryService.getAllStatusReports()) {
-            if(report.getStatus() != DeploymentStatus.FINISHED) {
-                logger.info(String.format("Polling [%s]", report.getWorkDir()));
+            if (report.getStatus() != DeploymentStatus.FINISHED) {
+                String workDir = report.getWorkDir();
+                logger.info(String.format("Polling [%s]", workDir));
 
                 DeploymentStatusReport updatedReport = getDeploymentStatus(report);
                 requestRepositoryService.saveStatusReport(updatedReport);
+                runConsumer(updatedReport);
 
                 logger.info(String.format(
                         "Polled deployment [%s]; received status [%s]",
@@ -85,6 +85,13 @@ public class PollServiceImpl implements PollService {
                 ));
             }
         }
+    }
+
+
+    private void runConsumer(DeploymentStatusReport report) {
+        requestRepositoryService
+                .getConsumer(report.getWorkDir())
+                .accept(report);
     }
 
     private DeploymentStatusReport getDeploymentStatus(DeploymentStatusReport report) {
