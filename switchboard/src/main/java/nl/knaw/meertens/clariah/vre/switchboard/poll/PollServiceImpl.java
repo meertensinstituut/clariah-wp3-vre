@@ -7,7 +7,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusResponseDto;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepositoryService;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,18 +20,18 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class PollServiceImpl implements PollService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final RequestRepositoryService requestRepositoryService;
+    private final RequestRepository requestRepositoryService;
     private ObjectMapper mapper;
     private final String hostName;
     private volatile boolean polling = false;
     private Thread pollThread;
 
     public PollServiceImpl(
-            RequestRepositoryService requestRepositoryService,
+            RequestRepository requestRepository,
             ObjectMapper mapper,
             String hostName
     ) {
-        this.requestRepositoryService = requestRepositoryService;
+        this.requestRepositoryService = requestRepository;
         this.mapper = mapper;
         this.hostName = hostName;
         startPolling();
@@ -86,7 +86,6 @@ public class PollServiceImpl implements PollService {
             }
         }
     }
-
 
     private void runConsumer(DeploymentStatusReport report) {
         requestRepositoryService

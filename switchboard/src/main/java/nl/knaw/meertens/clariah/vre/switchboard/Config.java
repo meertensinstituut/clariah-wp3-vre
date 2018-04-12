@@ -14,4 +14,5 @@ public class Config {
     public static final String OBJECTS_DB_URL = "http://dreamfactory/api/v2/objects";
     public static final String OBJECTS_DB_KEY = System.getenv("APP_KEY_OBJECTS");
     public static final String OBJECTS_DB_TOKEN = System.getenv("OBJECTS_TOKEN");
+    public static final long DEPLOYMENT_MEMORY = 5; // in seconds
 }

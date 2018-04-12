@@ -10,18 +10,17 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.ArrayList;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.handleException;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
+import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.getDeployStatus;
 
 public class DeploymentServiceImpl implements DeploymentService {
 
     private final String hostName;
-    private final RequestRepositoryService requestRepositoryService;
+    private final RequestRepository requestRepositoryService;
 
     public DeploymentServiceImpl(
             String hostName,
-            RequestRepositoryService requestRepositoryService,
+            RequestRepository requestRepositoryService,
 
             PollService pollService) {
         this.hostName = hostName;
@@ -89,8 +88,7 @@ public class DeploymentServiceImpl implements DeploymentService {
             );
             return response;
         } catch (UnirestException e) {
-            handleException(e, "Could not start deployment of [%s]", uri.toString());
-            return null;
+            return handleException(e, "Could not start deployment of [%s]", uri.toString());
         }
     }
 

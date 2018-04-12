@@ -3,7 +3,8 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepositoryService;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
+import nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
@@ -24,7 +25,7 @@ public class SwitchboardDIBinder extends AbstractBinder {
 
     private static ObjectMapper mapper = null;
     private static PollServiceImpl pollingService = null;
-    private static RequestRepositoryService requestRepositoryService = null;
+    private static RequestRepository requestRepositoryService = null;
 
     private ObjectsRegistryService objectsRegistryService;
     private DeploymentService deploymentService;
@@ -47,6 +48,7 @@ public class SwitchboardDIBinder extends AbstractBinder {
                 ExecService.class
         );
         bind(getMapper()).to(ObjectMapper.class);
+        ExceptionHandler.setMapper(getMapper());
     }
 
     /**
@@ -77,11 +79,11 @@ public class SwitchboardDIBinder extends AbstractBinder {
     }
 
     /**
-     * Get default RequestRepositoryService
+     * Get default RequestRepository
      */
-    static RequestRepositoryService getRequestRepositoryService() {
+    static RequestRepository getRequestRepositoryService() {
         if (isNull(requestRepositoryService)) {
-            requestRepositoryService = new RequestRepositoryService(
+            requestRepositoryService = new RequestRepository(
                     DEPLOYMENT_VOLUME,
                     STATUS_FILE_NAME,
                     getMapper()

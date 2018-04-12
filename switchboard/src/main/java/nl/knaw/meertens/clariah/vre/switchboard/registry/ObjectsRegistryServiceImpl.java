@@ -4,11 +4,10 @@ import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.handleException;
+import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
@@ -40,8 +39,7 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
                     .header("X-DreamFactory-Session-Token", objectsDbToken)
                     .asString();
         } catch (UnirestException e) {
-            handleException(e, "Could not retrieve object record [%d] from objects repository", id.toString());
-            return null;
+            return handleException(e, "Could not retrieve object record [%d] from objects repository", id.toString());
         }
         logger.info(String.format("Requested object with id [%d] from registry: [%s]", id, response.getBody()));
         ObjectsRecordDTO result = new ObjectsRecordDTO();
