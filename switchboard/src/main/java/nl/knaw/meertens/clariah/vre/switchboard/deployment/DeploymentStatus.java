@@ -66,7 +66,7 @@ public enum DeploymentStatus {
             }
         }
         throw new IllegalArgumentException(String.format(
-                "Deployment status with http code [%d] does not exist",
+                "Poll response with http code [%d] does not exist",
                 httpStatus
         ));
     }
@@ -81,7 +81,7 @@ public enum DeploymentStatus {
             }
         }
         throw new IllegalArgumentException(String.format(
-                "Deployment status with http code [%d] does not exist",
+                "Deployment response with http code [%d] does not exist",
                 httpStatus
         ));
     }

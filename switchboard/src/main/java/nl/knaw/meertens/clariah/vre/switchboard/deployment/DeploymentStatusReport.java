@@ -1,9 +1,22 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
+import nl.knaw.meertens.clariah.vre.switchboard.Config;
+
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class DeploymentStatusReport {
+
+    /**
+     * Date and time that deployment was polled
+     */
+    private LocalDateTime polled;
+
+    /**
+     * Interval in seconds between previous and next poll
+     */
+    private int interval = Config.MIN_POLL_INTERVAL;
 
     private DeploymentStatus status;
     private String msg;
@@ -67,5 +80,22 @@ public class DeploymentStatusReport {
 
     public List<String> getFiles() {
         return files;
+    }
+
+    public LocalDateTime getPolled() {
+        return polled;
+    }
+
+    public void setPolled(LocalDateTime polled) {
+        this.polled = polled;
+    }
+
+
+    public int getInterval() {
+        return interval;
+    }
+
+    public void setInterval(int interval) {
+        this.interval = interval;
     }
 }

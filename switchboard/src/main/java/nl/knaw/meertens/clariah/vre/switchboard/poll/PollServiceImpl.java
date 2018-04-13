@@ -13,11 +13,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
+import static java.time.LocalDateTime.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class PollServiceImpl implements PollService {
+
+    private static final double INCREASE_INTERVAL_FACTOR = 1.1;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final RequestRepository requestRepositoryService;
@@ -71,7 +75,7 @@ public class PollServiceImpl implements PollService {
 
     private void poll() {
         for (DeploymentStatusReport report : requestRepositoryService.getAllStatusReports()) {
-            if (report.getStatus() != DeploymentStatus.FINISHED) {
+            if (inNeedOfPolling(report)) {
                 String workDir = report.getWorkDir();
                 logger.info(String.format("Polling [%s]", workDir));
 
@@ -87,6 +91,15 @@ public class PollServiceImpl implements PollService {
         }
     }
 
+    private boolean inNeedOfPolling(DeploymentStatusReport report) {
+        if(report.getStatus() == DeploymentStatus.FINISHED) {
+            return false;
+        }
+        return true;
+//        LocalDateTime nextPollMoment = report.getPolled().plusSeconds(report.getInterval());
+//        return now().isAfter(nextPollMoment);
+    }
+
     private void runConsumer(DeploymentStatusReport report) {
         requestRepositoryService
                 .getConsumer(report.getWorkDir())
@@ -98,7 +111,13 @@ public class PollServiceImpl implements PollService {
         DeploymentStatusResponseDto response = requestDeploymentStatusReport(uri);
         report.setStatus(DeploymentStatus.getPollStatus(response.httpStatus));
         report.setMsg(response.message);
+        report.setPolled(now());
+        report.setInterval(calculateNewInterval(report.getInterval()));
         return report;
+    }
+
+    private int calculateNewInterval(int previousInterval) {
+        return (int) Math.ceil(previousInterval * INCREASE_INTERVAL_FACTOR);
     }
 
     private DeploymentStatusResponseDto requestDeploymentStatusReport(URI uri) {

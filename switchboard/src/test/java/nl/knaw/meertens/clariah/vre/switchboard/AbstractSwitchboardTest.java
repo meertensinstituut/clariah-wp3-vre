@@ -42,7 +42,6 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMa
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getRequestRepositoryService;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType.FILE;
 import static org.assertj.core.util.Lists.newArrayList;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.matchers.Times.exactly;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -50,22 +49,17 @@ import static org.mockserver.model.HttpResponse.response;
 public abstract class AbstractSwitchboardTest extends JerseyTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = new ObjectMapper();
 
-    static String testFile = "admin/files/testfile-switchboard.txt";
-    private static String someText = "De vermeende terugkeer van tante Rosie naar Reetveerdegem werd als " +
-            "een aangename schok ervaren in de levens van onze volstrekt nutteloze mannen, waarvan ik er op dat " +
-            "ogenblik een in wording was.";
-
-    private DeploymentFileService deploymentFileService = new DeploymentFileService(
+    static DeploymentFileService deploymentFileService = new DeploymentFileService(
             OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR);
 
     String longName = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff, Sr.";
 
     static final String RESULT_FILENAME = "result.txt";
-    private String resultSentence = "Insanity: doing the same thing over and over again and expecting different results.";
+    String resultSentence = "Insanity: doing the same thing over and over again and expecting different results.";
 
-    private static ClientAndServer mockServer;
+    static ClientAndServer mockServer;
 
     private static PollServiceImpl pollService = new PollServiceImpl(
             getRequestRepositoryService(),
@@ -90,23 +84,19 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
     }
 
     @BeforeClass
-    public static void beforeAbstractTests() throws IOException {
-        Path path = Paths.get(OWNCLOUD_VOLUME + "/" + testFile);
-        File file = path.toFile();
-        file.getParentFile().mkdirs();
-        Files.write(path, newArrayList(someText), Charset.forName("UTF-8"));
-        mockServer = startClientAndServer(1080);
+    public static void beforeAbstractTests() {
+        mockServer = ClientAndServer.startClientAndServer(1080);
     }
 
     @Before
     public void beforeAbstractTest() {
+        new MockServerClient("localhost", 1080).reset();
         pollService.startPolling();
     }
 
     @After
     public void afterAbstractTest() {
         pollService.stopPolling();
-        deploymentFileService.unlock(testFile);
     }
 
     @AfterClass
@@ -173,8 +163,8 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
 
     void createResultFile(String workDir) {
         Path path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, RESULT_FILENAME);
-        path.toFile().getParentFile().mkdirs();
         logger.info("result file path: " + path.toString());
+        path.toFile().getParentFile().mkdirs();
         try {
             Files.write(path, newArrayList(resultSentence), UTF_8);
         } catch (IOException e) {

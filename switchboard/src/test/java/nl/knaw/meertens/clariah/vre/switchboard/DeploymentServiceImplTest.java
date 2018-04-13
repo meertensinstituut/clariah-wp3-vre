@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -18,13 +19,13 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+
 public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Before
-    public void beforeDeployTests() {
-        new MockServerClient("localhost", 1080).reset();
+    public void beforeDeploymentServiceImplTest() {
         startDeployMockServer(200);
     }
 
