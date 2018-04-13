@@ -17,66 +17,73 @@
         <cmdp:Name>Ucto Tokeniser</cmdp:Name>
         <cmdp:Description>Ucto is a unicode-compliant tokeniser. It takes input in the form of one or more untokenised texts, and subsequently tokenises them. Several languages are supported, but the software is extensible to other languages.</cmdp:Description>
         <cmdp:ServiceDescriptionLocation>
-          <cmdp:Location>http://docker.for.mac.host.internal:8080/ucto</cmdp:Location>
+          <cmdp:Location>http://127.0.0.1:8080/ucto</cmdp:Location>
         </cmdp:ServiceDescriptionLocation>
         <cmdp:Operations>
           <cmdp:Operation>
             <cmdp:Name>main</cmdp:Name>
             <cmdp:Input>
-              <cmdp:Parameter>
+              <cmdp:ParameterGroup>
                 <cmdp:Name>untokinput</cmdp:Name>
                 <cmdp:MIMEType>text/plain</cmdp:MIMEType>
-              </cmdp:Parameter>
-              <cmdp:Parameter>
-                <cmdp:Name>language</cmdp:Name>
-                <cmdp:Description>The language this text is in</cmdp:Description>
-                <cmdp:Values>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>eng</cmdp:Value>
-                    <cmdp:Description>English</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>nld</cmdp:Value>
-                    <cmdp:Description>Dutch</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>nld-twitter</cmdp:Value>
-                    <cmdp:Description>Dutch on Twitter</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>fra</cmdp:Value>
-                    <cmdp:Description>French</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>deu</cmdp:Value>
-                    <cmdp:Description>German</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>ita</cmdp:Value>
-                    <cmdp:Description>Italian</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>fry</cmdp:Value>
-                    <cmdp:Description>Frisian</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>swe</cmdp:Value>
-                    <cmdp:Description>Swedish</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>spa</cmdp:Value>
-                    <cmdp:Description>Spanish</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>por</cmdp:Value>
-                    <cmdp:Description>Portuguese</cmdp:Description>
-                  </cmdp:ParameterValue>
-                  <cmdp:ParameterValue>
-                    <cmdp:Value>tur</cmdp:Value>
-                    <cmdp:Description>Turkish</cmdp:Description>
-                  </cmdp:ParameterValue>
-                </cmdp:Values>
-              </cmdp:Parameter>
+                <cmdp:Parameters>
+                  <cmdp:Parameter>
+                    <cmdp:Name>language</cmdp:Name>
+                    <cmdp:Description>The language this text is in</cmdp:Description>
+                    <cmdp:DataType>string</cmdp:DataType>
+                    <cmdp:Values>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>eng</cmdp:Value>
+                        <cmdp:Description>English</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>nld</cmdp:Value>
+                        <cmdp:Description>Dutch</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>nld-twitter</cmdp:Value>
+                        <cmdp:Description>Dutch on Twitter</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>fra</cmdp:Value>
+                        <cmdp:Description>French</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>deu</cmdp:Value>
+                        <cmdp:Description>German</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>ita</cmdp:Value>
+                        <cmdp:Description>Italian</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>fry</cmdp:Value>
+                        <cmdp:Description>Frisian</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>swe</cmdp:Value>
+                        <cmdp:Description>Swedish</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>spa</cmdp:Value>
+                        <cmdp:Description>Spanish</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>por</cmdp:Value>
+                        <cmdp:Description>Portuguese</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                        <cmdp:Value>tur</cmdp:Value>
+                        <cmdp:Description>Turkish</cmdp:Description>
+                      </cmdp:ParameterValue>
+                    </cmdp:Values>
+                  </cmdp:Parameter>
+                  <cmdp:Parameter>
+                    <cmdp:Name>author</cmdp:Name>
+                    <cmdp:DataType>string</cmdp:DataType>
+                  </cmdp:Parameter>
+                </cmdp:Parameters>
+              </cmdp:ParameterGroup>
             </cmdp:Input>
             <cmdp:Output>
               <cmdp:Parameter>
