@@ -105,9 +105,9 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         createResultFile(workDir);
-        TimeUnit.SECONDS.sleep(3);
+        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
+        TimeUnit.SECONDS.sleep(5);
 
         // Check status is finished:
         Response finishedResponse = target(String.format("exec/task/%s/", workDir))
@@ -123,9 +123,9 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         logger.info("outputFolder: " + outputFolder);
         assertThat(outputFolder).isNotNull();
         assertThat(outputFolder.toString()).startsWith("/usr/local/owncloud/admin/files/output-20");
-        Path outputFile = Paths.get(outputFolder.getPath(), STUBRESULT_FILENAME);
+        Path outputFile = Paths.get(outputFolder.getPath(), RESULT_FILENAME);
         assertThat(outputFile.toFile()).exists();
-        assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo("Geen resultaat is ook een resultaat.");
+        assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo("Insanity: doing the same thing over and over again and expecting different results.");
     }
 
     private File findOutputFolder() {

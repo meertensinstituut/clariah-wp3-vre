@@ -51,11 +51,13 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public DeploymentStatusReport pollStatus(String workDir) {
+        String service = deployRequestService.getRequest(workDir).getService();
         logger.info(String.format("Polling deployment [%s]", workDir));
         URI uri = URI.create(String.format(
-                "%s/%s/%s/",
+                "%s/%s/%s/%s",
                 hostName,
-                "deployment-service/a/exec/task",
+                "deployment-service/a/exec",
+                service,
                 workDir
         ));
         DeploymentStatusResponseDto response = getStatusRequest(uri);
@@ -91,7 +93,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     private DeploymentStatusReport sendDeployRequest(URI uri) {
         try {
-            HttpResponse<String> response = Unirest.get(uri.toString())
+            HttpResponse<String> response = Unirest.put(uri.toString())
                     .asString();
             logger.info(String.format(
                     "Started deployment of [%s]",

@@ -119,7 +119,8 @@ public class DeploymentFileService implements FileService {
     }
 
     /**
-     * Move output files back to src
+     * Move output files to src, next to first input file
+     * in date and time labeled output folder
      *
      * @return output dir
      */

@@ -33,7 +33,6 @@ import static nl.knaw.meertens.clariah.vre.switchboard.App.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.*;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType.FILE;
 import static org.assertj.core.util.Lists.newArrayList;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.matchers.Times.exactly;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -44,7 +43,7 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
 
     static String testFile = "admin/files/testfile-switchboard.txt";
 
-    static final String STUBRESULT_FILENAME = "stubresult.txt";
+    static final String RESULT_FILENAME = "result.txt";
 
     private DeploymentFileService deploymentFileService = new DeploymentFileService(
             OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR);
@@ -59,21 +58,21 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
     private static ClientAndServer mockServer;
 
     @BeforeClass
-    public static void beforeExecTests() throws IOException {
+    public static void beforeAbstractTests() throws IOException {
         Path path = Paths.get(OWNCLOUD_VOLUME + "/" + testFile);
         File file = path.toFile();
         file.getParentFile().mkdirs();
         Files.write(path, newArrayList(someText), Charset.forName("UTF-8"));
-        mockServer = startClientAndServer(1080);
+        mockServer = ClientAndServer.startClientAndServer(1080);
     }
 
     @After
-    public void afterAbstractTests() {
+    public void afterAbstractTest() {
         deploymentFileService.unlock(testFile);
     }
 
     @AfterClass
-    public static void afterDeploymentTests() {
+    public static void afterAbstractTests() {
         mockServer.stop();
     }
 
@@ -108,8 +107,8 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
         new MockServerClient("localhost", 1080)
                 .when(
                         request()
-                                .withMethod("GET") // TODO: atm, should be PUT in the future
-                                .withPath("/deployment-service/a/exec/UCTO/.*/"),
+                                .withMethod("PUT")
+                                .withPath("/deployment-service/a/exec/UCTO/.*"),
                         exactly(1))
                 .respond(
                         response()
@@ -124,7 +123,7 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
                 .when(
                         request()
                                 .withMethod("GET")
-                                .withPath("/deployment-service/a/exec/task/.*/"),
+                                .withPath("/deployment-service/a/exec/UCTO/.*"),
                         exactly(1))
                 .respond(
                         response()
@@ -134,16 +133,15 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
                 );
     }
 
-    Path createResultFile(String workDir) {
-        Path path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, STUBRESULT_FILENAME);
+    void createResultFile(String workDir) {
+        Path path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, RESULT_FILENAME);
         path.toFile().getParentFile().mkdirs();
         logger.info("result file path: " + path.toString());
         try {
-            Files.write(path, newArrayList("Geen resultaat is ook een resultaat."), Charset.forName("UTF-8"));
+            Files.write(path, newArrayList("Insanity: doing the same thing over and over again and expecting different results."), Charset.forName("UTF-8"));
         } catch (IOException e) {
             handleException(e, "DeploymentServiceStub could not create result file");
         }
-        return path;
     }
 
 
