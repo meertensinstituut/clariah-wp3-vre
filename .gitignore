@@ -21,3 +21,5 @@ fits-1.2.0.zip
 !/.env
 !/registry/.env
 
+# vscode
+.vscode/
