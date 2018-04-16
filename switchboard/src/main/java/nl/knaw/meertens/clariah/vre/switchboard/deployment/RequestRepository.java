@@ -132,7 +132,7 @@ public class RequestRepository {
         }
     }
 
-    public Path getStatusFilePath(String workDir) {
+    private Path getStatusFilePath(String workDir) {
         return Paths.get(
                 deploymentRoot,
                 workDir,
