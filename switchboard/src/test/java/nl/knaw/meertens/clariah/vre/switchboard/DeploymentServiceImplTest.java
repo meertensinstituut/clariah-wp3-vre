@@ -66,7 +66,7 @@ public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
         startStatusMockServer(RUNNING.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(2);
+        TimeUnit.SECONDS.sleep(1);
 
         Response statusResponse = target(String.format("exec/task/%s", workDir))
                 .request()
@@ -85,7 +85,7 @@ public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
         startStatusMockServer(NOT_FOUND.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(2);
+        TimeUnit.SECONDS.sleep(1);
 
         Response statusResponse = target(String.format("exec/task/%s", workDir))
                 .request()

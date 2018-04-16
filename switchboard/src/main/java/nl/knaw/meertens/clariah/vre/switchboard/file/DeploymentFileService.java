@@ -89,7 +89,7 @@ public class DeploymentFileService implements FileService {
             chown(parent, "root");
             setPosixFilePermissions(parent, get555());
         } catch (IOException e) {
-            handleException(e, "Could not lock file [%s]", file.toString());
+            logger.error(String.format("Could not unlock file [%s]", fileString), e);
         }
     }
 
@@ -109,7 +109,7 @@ public class DeploymentFileService implements FileService {
             chown(parent.getParent(), "www-data");
             setPosixFilePermissions(parent.getParent(), get755());
         } catch (IOException e) {
-            handleException(e, "Could not unlock file [%s]", fileString);
+            logger.error(String.format("Could not unlock file [%s]", fileString), e);
         }
     }
 

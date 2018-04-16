@@ -40,12 +40,6 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    static String testFile = "admin/files/testfile-switchboard.txt";
-    private static String someText = "De vermeende terugkeer van tante Rosie naar Reetveerdegem werd als " +
-            "een aangename schok ervaren in de levens van onze volstrekt nutteloze mannen, waarvan ik er op dat " +
-            "ogenblik een in wording was.";
-
-
     @BeforeClass
     public static void afterExecControllerTests() throws IOException {
         Path path = Paths.get(OWNCLOUD_VOLUME + "/" + testFile);
@@ -92,7 +86,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         logger.info("postDeploymentRequest_shouldCreateAndRemoveSymbolicLinksToInputFiles has workDir: " + workDir);
         createResultFile(workDir);
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(11);
+        TimeUnit.SECONDS.sleep(5);
 
         Response pollStatusResponse = target(String.format("exec/task/%s/", workDir))
                 .request()
@@ -116,7 +110,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
         createResultFile(workDir);
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(5);
 
         // Check status is finished:
         Response finishedResponse = target(String.format("exec/task/%s/", workDir))
@@ -172,7 +166,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
         createResultFile(workDir);
         startStatusMockServer(FINISHED.getHttpStatus(), "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}");
-        TimeUnit.SECONDS.sleep(2);
+        TimeUnit.SECONDS.sleep(1);
 
         // Check status is finished:
         Response finishedResponse = target(String.format("exec/task/%s/", workDir))

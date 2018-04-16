@@ -67,6 +67,11 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
             "http://localhost:1080"
     );
 
+    static String testFile = "admin/files/testfile-switchboard.txt";
+    static String someText = "De vermeende terugkeer van tante Rosie naar Reetveerdegem werd als " +
+            "een aangename schok ervaren in de levens van onze volstrekt nutteloze mannen, waarvan ik er op dat " +
+            "ogenblik een in wording was.";
+
     @Override
     protected Application configure() {
         ResourceConfig resourceConfig = new ResourceConfig(ExecController.class);
@@ -97,6 +102,7 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
     @After
     public void afterAbstractTest() {
         pollService.stopPolling();
+        deploymentFileService.unlock(testFile);
     }
 
     @AfterClass

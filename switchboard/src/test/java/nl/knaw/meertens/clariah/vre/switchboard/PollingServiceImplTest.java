@@ -28,7 +28,7 @@ public class PollingServiceImplTest extends AbstractSwitchboardTest {
 
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        TimeUnit.SECONDS.sleep(4);
+        TimeUnit.SECONDS.sleep(1);
 
         Path configPath = Paths.get(Config.DEPLOYMENT_VOLUME, workDir, Config.CONFIG_FILE_NAME);
 
