@@ -87,7 +87,6 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     }
 
-    @Ignore
     @Test
     public void testResultOfDeploymentIsMovedToOwncloud() throws UnirestException, InterruptedException, SQLException {
         // Upload file:
@@ -117,7 +116,6 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     }
 
-    @Ignore
     @Test
     public void testSwitchboardProducesOwncloudMsgOfDeploymentOutputfile() throws Exception {
         String outputFilename = "result.txt";
@@ -159,7 +157,6 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     }
 
-    @Ignore
     @Test
     public void testFilesCanBeAddedAfterDeployment() throws Exception {
         // Upload file:

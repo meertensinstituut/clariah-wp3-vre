@@ -65,8 +65,12 @@ public class Test implements RecipePlugin {
         JSONObject json = new JSONObject();
         json.put("key", key);
         json.put("finished", isFinished);
-        json.put("completion", 100L);
-        json.put("success", true);
+        json.put("success", isFinished);
+        if(isFinished) {
+            json.put("completion", 100L);
+        } else {
+            json.put("completion", 80L);
+        }
         return json;
     }
 
