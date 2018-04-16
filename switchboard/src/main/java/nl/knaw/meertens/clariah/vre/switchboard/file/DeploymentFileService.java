@@ -55,16 +55,26 @@ public class DeploymentFileService implements FileService {
 
     @Override
     public void stage(String workDir, List<String> inputFiles) {
-        lockFiles(inputFiles);
-        createSymbolicLinks(inputFiles, workDir);
+        Path inputPath = getInputDir(workDir);
+        for (String file : inputFiles) {
+            lock(file);
+            createSoftLink(inputPath, file);
+        }
     }
 
+    /**
+     * Unlock files and move output files to owncloud
+     *
+     * @return output files
+     */
     @Override
     public List<Path> unstage(String workDir, List<String> inputFiles) {
         if (inputFiles.isEmpty()) {
             throw new IllegalArgumentException("Cannot move output when no input file is provided");
         }
-        unlockFiles(inputFiles);
+        for (String file : inputFiles) {
+            unlock(file);
+        }
         Path outputFilesDir = moveOutputFiles(workDir, inputFiles.get(0));
         unlockOutputFiles(outputFilesDir);
         return getRelativePathsIn(outputFilesDir);
@@ -91,6 +101,7 @@ public class DeploymentFileService implements FileService {
         } catch (IOException e) {
             logger.error(String.format("Could not unlock file [%s]", fileString), e);
         }
+        logger.info(String.format("Locked file [%s]", file));
     }
 
     /**
@@ -111,6 +122,7 @@ public class DeploymentFileService implements FileService {
         } catch (IOException e) {
             logger.error(String.format("Could not unlock file [%s]", fileString), e);
         }
+        logger.info(String.format("Unlocked file [%s]", file));
     }
 
     private Path toSrcPath(String fileString) {
@@ -118,7 +130,8 @@ public class DeploymentFileService implements FileService {
     }
 
     /**
-     * Move output files back to src
+     * Move output files to src, next to first input file
+     * in date and time labeled output folder
      *
      * @return output dir
      */
@@ -127,11 +140,33 @@ public class DeploymentFileService implements FileService {
         String pathWithoutFile = FilenameUtils.getPath(file);
         Path outputDir = Paths.get(srcPath.toString(), pathWithoutFile, generateOutputDirName());
         outputDir.getParent().toFile().mkdirs();
+        if (!deploymentOutput.toFile().exists()) {
+            return createEmptyOutputFolder(workDir, outputDir);
+        }
+        return moveOutputFolder(deploymentOutput, outputDir);
+    }
+
+    private Path createEmptyOutputFolder(String workDir, Path outputDir) {
+        logger.warn(String.format(
+                "No output folder for deployment [%s], created empty output folder [%s]",
+                workDir, outputDir.toString()
+        ));
+        outputDir.toFile().mkdirs();
+        return outputDir;
+    }
+
+    private Path moveOutputFolder(Path deploymentOutput, Path outputDir) {
         try {
             FileUtils.moveDirectory(deploymentOutput.toFile(), outputDir.toFile());
-            logger.info(String.format("Move output files from workdir [%s] to [%s]", deploymentOutput, outputDir));
+            logger.info(String.format(
+                    "Move output files from workdir [%s] to [%s]",
+                    deploymentOutput, outputDir
+            ));
         } catch (IOException e) {
-            handleException(e, "Could not move output folder from deployment [%s] to [%s]", deploymentOutput.toString(), outputDir.toString());
+            handleException(e,
+                    "Could not move output folder from deployment [%s] to [%s]",
+                    deploymentOutput.toString(), outputDir.toString()
+            );
         }
         unlockOutputFiles(outputDir);
         return outputDir;
@@ -155,9 +190,9 @@ public class DeploymentFileService implements FileService {
 
     private List<Path> getRelativePathsIn(Path outputDir) {
         return Arrays
-                    .stream(requireNonNull(outputDir.toFile().listFiles()))
-                    .map(file -> srcPath.relativize(file.toPath()))
-                    .collect(toList());
+                .stream(requireNonNull(outputDir.toFile().listFiles()))
+                .map(file -> srcPath.relativize(file.toPath()))
+                .collect(toList());
     }
 
     private void unlockParents(Path path, String stopAt) throws IOException {
@@ -194,21 +229,6 @@ public class DeploymentFileService implements FileService {
         }
     }
 
-    private void lockFiles(List<String> files) {
-        for (String file : files) {
-            lock(file);
-            logger.info(String.format("Locked [%s]", file));
-        }
-    }
-
-    private void createSymbolicLinks(List<String> files, String workDir) {
-        Path inputPath = getInputDir(workDir);
-        for (String file : files) {
-            createSoftLink(inputPath, file);
-            logger.info(String.format("Created symbolic link for [%s]", file));
-        }
-    }
-
     private Path getInputDir(String workDir) {
         Path workDirPath = Paths.get(tmpPath.toString(), workDir);
         Path absoluteInputDir = Paths.get(workDirPath.toString(), inputDir);
@@ -222,21 +242,18 @@ public class DeploymentFileService implements FileService {
         createFolders(inputPath, relativeFilepath);
         try {
             Files.createSymbolicLink(inputFilePath, owncloudFilePath);
+            logger.info(String.format("Created symbolic link for [%s]", inputFilePath.toString()));
         } catch (IOException e) {
-            handleException(e, "Could not create symbolic link between owncloud [%s] and input [%s]", owncloudFilePath.toString(), inputFilePath.toString());
+            handleException(e,
+                    "Could not create symbolic link between owncloud [%s] and input [%s]",
+                    owncloudFilePath.toString(), inputFilePath.toString()
+            );
         }
     }
 
     private void createFolders(Path inputPath, String relativeFilepath) {
         String relativeFilepathWithoutFilename = FilenameUtils.getPath(relativeFilepath);
         Paths.get(inputPath.toString(), relativeFilepathWithoutFilename).toFile().mkdirs();
-    }
-
-    private void unlockFiles(List<String> files) {
-        for (String file : files) {
-            unlock(file);
-            logger.info(String.format("Unlocked [%s]", file));
-        }
     }
 
     private void chown(Path file, String user) throws IOException {

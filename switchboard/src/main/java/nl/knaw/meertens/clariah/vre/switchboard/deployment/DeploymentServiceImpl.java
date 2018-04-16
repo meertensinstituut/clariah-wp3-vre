@@ -69,8 +69,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     @Override
     public DeploymentStatusReport getStatus(String workDir) {
         logger.info(String.format("Polling deployment [%s]", workDir));
-        DeploymentStatusReport report = requestRepositoryService.getStatusReport(workDir);
-        return report;
+        return requestRepositoryService.getStatusReport(workDir);
     }
 
     @Override
@@ -80,7 +79,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     private HttpResponse<String> sendRequest(URI uri) {
         try {
-            HttpResponse<String> response = Unirest.get(uri.toString())
+            HttpResponse<String> response = Unirest.put(uri.toString())
                     .asString();
             logger.info(String.format(
                     "Started deployment of [%s]",

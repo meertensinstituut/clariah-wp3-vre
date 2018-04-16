@@ -6,19 +6,14 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
 import org.apache.commons.io.FilenameUtils;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.mockserver.client.server.MockServerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,20 +28,11 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType.FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.util.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.containsString;
 
 public class ExecControllerTest extends AbstractSwitchboardTest {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @BeforeClass
-    public static void afterExecControllerTests() throws IOException {
-        Path path = Paths.get(OWNCLOUD_VOLUME + "/" + testFile);
-        File file = path.toFile();
-        file.getParentFile().mkdirs();
-        Files.write(path, newArrayList(someText), Charset.forName("UTF-8"));
-    }
 
     @Before
     public void beforeExecControllerTests() {
@@ -54,11 +40,6 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         record.id = 1L;
         record.filepath = testFile;
         startDeployMockServer(200);
-    }
-
-    @AfterClass
-    public static void afterExecControllerTest () {
-        deploymentFileService.unlock(testFile);
     }
 
     @Test
@@ -83,7 +64,6 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, testFile).toFile()).exists();
 
-        logger.info("postDeploymentRequest_shouldCreateAndRemoveSymbolicLinksToInputFiles has workDir: " + workDir);
         createResultFile(workDir);
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         TimeUnit.SECONDS.sleep(5);

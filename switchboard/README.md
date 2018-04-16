@@ -14,7 +14,7 @@ Tools, languages and techniques:
 
 ## Endpoints
 - `POST /switchboard/rest/exec/<service>`: deploy new service  
-- `GET  /switchboard/rest/exec/task/<workDir>`: poll status of deployment
+- `GET  /switchboard/rest/exec/task/<workDir>`: get status of deployment
 
 ## Deployment
 - Run: `./start-switchboard.sh`. Runs at: `localhost:9010/switchboard`

@@ -1,10 +1,8 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryServiceStub;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +11,7 @@ import javax.ws.rs.ApplicationPath;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.*;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getPollService;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getRequestRepositoryService;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getRequestRepository;
 
 @ApplicationPath("resources")
 public class App extends ResourceConfig {
@@ -29,7 +27,7 @@ public class App extends ResourceConfig {
                 getObjectsRegistryService(),
                 new DeploymentServiceImpl(
                         DEPLOYMENT_HOST_NAME,
-                        getRequestRepositoryService(),
+                        getRequestRepository(),
                         getPollService()
                 )
         );

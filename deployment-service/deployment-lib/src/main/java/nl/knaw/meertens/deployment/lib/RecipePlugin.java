@@ -7,6 +7,7 @@ package nl.knaw.meertens.deployment.lib;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import net.sf.saxon.s9api.SaxonApiException;
 import org.jdom2.JDOMException;
 import org.json.simple.JSONObject;
 
@@ -18,4 +19,6 @@ public interface RecipePlugin {
     Boolean finished();
     String execute(String key);
     JSONObject getStatus(String key) throws IOException, JDOMException, MalformedURLException;
+
+    public void init(String wd, Service serviceObj) throws JDOMException, IOException, SaxonApiException;
 }

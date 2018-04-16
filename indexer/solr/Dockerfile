@@ -8,7 +8,7 @@ WORKDIR "/root"
 
 RUN mkdir lib
 
-ADD https://github.com/meertensinstituut/mtas/releases/download/v7.2.1.1/mtas-7.2.1.1.jar /root/lib/
+ADD https://github.com/meertensinstituut/mtas/releases/download/v7.3.0.0/mtas-7.3.0.0.jar /root/lib/
 
 ADD config /root/config
 
@@ -33,22 +33,22 @@ RUN add-apt-repository -y ppa:webupd8team/java && \
     apt-get install -y oracle-java8-installer && \
     rm -rf /var/lib/apt/lists/*
 
-RUN solrurl=$(curl -s 'http://www.apache.org/dyn/closer.lua/lucene/solr/7.2.1/solr-7.2.1.tgz' |   grep -o '<strong>[^<]*</strong>' |   sed 's/<[^>]*>//g' |   head -1) && \
+RUN solrurl=$(curl -s 'http://www.apache.org/dyn/closer.lua/lucene/solr/7.3.0/solr-7.3.0.tgz' |   grep -o '<strong>[^<]*</strong>' |   sed 's/<[^>]*>//g' |   head -1) && \
     if echo "$solrurl" | grep -q '^.*[^ ].*$'; then \
-      curl -f -o /root/solr-7.2.1.tgz -O $solrurl || true; \
+      curl -f -o /root/solr-7.3.0.tgz -O $solrurl || true; \
     fi && \
-    if [ ! -f /root/solr-7.2.1.tgz ]; then \
-      echo "Solr 7.2.1 not found in mirror, falling back to apache archive"; \ 
-      solrurl="http://archive.apache.org/dist/lucene/solr/7.2.1/solr-7.2.1.tgz"; \
-      curl -f -o /root/solr-7.2.1.tgz -O $solrurl; \ 
+    if [ ! -f /root/solr-7.3.0.tgz ]; then \
+      echo "Solr 7.3.0 not found in mirror, falling back to apache archive"; \ 
+      solrurl="http://archive.apache.org/dist/lucene/solr/7.3.0/solr-7.3.0.tgz"; \
+      curl -f -o /root/solr-7.3.0.tgz -O $solrurl; \ 
     fi && \    
-    tar xzf solr-7.2.1.tgz solr-7.2.1/bin/install_solr_service.sh --strip-components=2 && \
-    bash ./install_solr_service.sh solr-7.2.1.tgz && rm install_solr_service.sh && rm -rf solr-7.2.1.tgz
+    tar xzf solr-7.3.0.tgz solr-7.3.0/bin/install_solr_service.sh --strip-components=2 && \
+    bash ./install_solr_service.sh solr-7.3.0.tgz && rm install_solr_service.sh && rm -rf solr-7.3.0.tgz
     
 RUN printf "echo\n" >> /start.sh && \
     printf "echo \"========================== VRE - SOLR Search ===========================\"\n" >> /start.sh && \
-    printf "echo \"  Lucene/Solr version 7.2.1\"\n" >> /start.sh && \
-    printf "echo \"  Mtas release 7.2.1.1\"\n" >> /start.sh && \
+    printf "echo \"  Lucene/Solr version 7.3.0\"\n" >> /start.sh && \
+    printf "echo \"  Mtas release 7.3.0.0\"\n" >> /start.sh && \
     printf "echo \"  See https://meertensinstituut.github.io/mtas/ for more information\"\n" >> /start.sh && \
     printf "echo \"========================================================================\"\n" >> /start.sh && \
     printf "echo\n" >> /start.sh && \
@@ -58,7 +58,7 @@ RUN printf "echo\n" >> /start.sh && \
     echo "name=vrecore" > vrecore/core.properties && \
     cp -rp config/conf vrecore && \
     cp lib/commons-math3-3.6.1.jar vrecore/lib/ && \
-    cp lib/mtas-7.2.1.1.jar vrecore/lib/ && \
+    cp lib/mtas-7.3.0.0.jar vrecore/lib/ && \
     chmod -R 777 vrecore && \
     mv vrecore /var/solr/data/
     

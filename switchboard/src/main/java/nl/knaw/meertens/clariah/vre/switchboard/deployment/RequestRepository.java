@@ -132,12 +132,18 @@ public class RequestRepository {
         }
     }
 
-    public Path getStatusFilePath(String workDir) {
+    private Path getStatusFilePath(String workDir) {
         return Paths.get(
                 deploymentRoot,
                 workDir,
                 statusFileName
         );
+    }
+
+    public void clearAll() {
+        this.reports.clear();
+        this.consumers.clear();
+        this.finished.clear();
     }
 
 }
