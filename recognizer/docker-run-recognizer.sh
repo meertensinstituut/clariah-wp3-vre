@@ -1,5 +1,5 @@
 #!/bin/bash
+
 mvn install && \
-sleep 20  && \ # TODO: check registry has been started
-source ./docker-get-objects-token.sh  && \
+sleep 20  && \
 java -jar --add-modules java.xml.bind ./target/recognizer-0.1-SNAPSHOT.jar consume

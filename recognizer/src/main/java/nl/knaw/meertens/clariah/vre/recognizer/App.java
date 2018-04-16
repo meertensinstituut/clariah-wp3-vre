@@ -29,14 +29,13 @@ public class App {
     private static final String fitsUrl = "http://fits:8080/fits/";
     private static final String objectsDbUrl = "http://dreamfactory/api/v2/objects";
     private static final String objectsDbKey = System.getenv("APP_KEY_OBJECTS");
-    private static final String objectsDbToken = System.getenv("OBJECTS_TOKEN");
 
     private static final FitsService fitsService = new FitsService(fitsUrl);
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final KafkaConsumerService owncloudConsumerService = new KafkaConsumerService(kafkaServer, owncloudTopic, owncloudGroup);
 
     private static final KafkaProducerService kafkaProducer = new KafkaProducerService(new RecognizerKafkaProducer(kafkaServer), recognizerTopic);
-    private static final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(objectsDbUrl, objectsDbKey, objectsDbToken);
+    private static final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(objectsDbUrl, objectsDbKey);
 
     private static final List<String> ACTIONS_TO_RECOGNIZE = newArrayList("create");
 

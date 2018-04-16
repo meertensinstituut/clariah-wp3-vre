@@ -28,20 +28,18 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class ObjectsRepositoryService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final String objectTable = "/_table/object";
     private final String objectsDbUrl;
     private final String objectsDbKey;
-    private final String objectsDbToken;
 
-    ObjectsRepositoryService(String objectsDbUrl, String objectsDbKey, String objectsDbToken) {
-        mapper.setTimeZone(TimeZone.getTimeZone("Europe/Amsterdam"));
-        mapper.setDateFormat(new SimpleDateFormat("dd-MM-yyyy hh:mm"));
+    ObjectsRepositoryService(String objectsDbUrl, String objectsDbKey) {
         this.objectsDbUrl = objectsDbUrl;
         this.objectsDbKey = objectsDbKey;
-        this.objectsDbToken = objectsDbToken;
     }
 
+    /**
+     * Create new object in object registry
+     * @return ID
+     */
     public Long perist(Report report) throws UnirestException, IOException {
         String recordJson = createJson(report);
         String persistResult = addNewRecord(recordJson);
@@ -51,9 +49,9 @@ public class ObjectsRepositoryService {
     /**
      * Get id of persisted object by json path: $.resource[0].id
      */
-    private Long getId(String persistResult) {
-        Integer read = JsonPath.parse(persistResult).read("$.resource[0].id");
-        logger.info(String.format("persisted result [%s] with id [%s]", persistResult, read));
+    private Long getId(String object) {
+        Integer read = JsonPath.parse(object).read("$.resource[0].id");
+        logger.debug(String.format("persisted result [%s] with id [%s]", object, read));
         return read.longValue();
     }
 
@@ -70,12 +68,14 @@ public class ObjectsRepositoryService {
         if(!hasAllObjectsDbDetails()) {
             return null;
         }
+        String objectTable = "/_table/object";
         RequestBodyEntity request = Unirest
                 .post(objectsDbUrl + objectTable)
                 .header("Content-Type", "application/json")
                 .header("X-DreamFactory-Api-Key", objectsDbKey)
-                .header("X-DreamFactory-Session-Token", objectsDbToken)
                 .body(recordJson);
+
+//        httpCon.setRequestProperty("X-DreamFactory-Api-Key", dbApiKey);
 
         HttpResponse<String> response = request.asString();
         logger.info("Objects registry responded with: " + response.getStatus() + " - " + response.getStatusText());
@@ -106,10 +106,6 @@ public class ObjectsRepositoryService {
     private boolean hasAllObjectsDbDetails() {
         if(isBlank(objectsDbKey)) {
             logger.warn("Key of object registry is not set");
-            return false;
-        }
-        if(isBlank(objectsDbToken)) {
-            logger.warn("Token of object registry is not set");
             return false;
         }
         if(isBlank(objectsDbUrl)) {

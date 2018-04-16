@@ -1,13 +1,16 @@
 # Common
-**/.idea/*
 .DS_Store
-**/*.iml
 *.log
 .settings
+
+# IDE
 .project
 .classpath
 .vscode/
 nb-configuration.xml
+/lib
+**/.idea/*
+**/*.iml
 
 # Java
 **/target/*

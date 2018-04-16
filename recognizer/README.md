@@ -3,6 +3,11 @@ Recognizer
 
 Determine file type using FITS
 
+Development
+---
+- Use java 9.
+- Run `mvn clean install` to generate sources.
+
 Deployment
 ---
 - Run `./start-recognizer.sh`.

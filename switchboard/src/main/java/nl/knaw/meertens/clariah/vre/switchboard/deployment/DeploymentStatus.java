@@ -9,7 +9,7 @@ public enum DeploymentStatus {
     NOT_FOUND(404, true),
 
     /**
-     * TODO: Atm not implemented
+     * Not implemented
      */
     STOPPED(0, false),
 

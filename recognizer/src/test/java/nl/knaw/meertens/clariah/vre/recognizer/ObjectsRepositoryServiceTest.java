@@ -23,7 +23,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
 
     @Before
     public void setup() {
-        objectsRepositoryService = new ObjectsRepositoryService("", "", "");
+        objectsRepositoryService = new ObjectsRepositoryService("", "");
     }
 
     @Test
