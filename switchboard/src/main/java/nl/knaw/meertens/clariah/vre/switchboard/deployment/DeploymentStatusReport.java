@@ -1,13 +1,17 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import java.net.URI;
+import java.util.List;
 
 public class DeploymentStatusReport {
+
     private DeploymentStatus status;
     private String msg;
     private String outputDir;
+    private String service;
     private URI uri;
     private String workDir;
+    private List<String> files;
 
     public DeploymentStatus getStatus() {
         return status;
@@ -47,5 +51,21 @@ public class DeploymentStatusReport {
 
     public String getWorkDir() {
         return workDir;
+    }
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public void setFiles(List<String> files) {
+        this.files = files;
+    }
+
+    public List<String> getFiles() {
+        return files;
     }
 }

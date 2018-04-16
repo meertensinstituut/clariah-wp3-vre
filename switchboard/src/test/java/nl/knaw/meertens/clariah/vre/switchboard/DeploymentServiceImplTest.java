@@ -2,21 +2,17 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.NOT_FOUND;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -25,20 +21,8 @@ public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Override
-    protected Application configure() {
-        ResourceConfig resourceConfig = new ResourceConfig(ExecController.class);
-        SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
-                createObjectsRegistryServiceStub(),
-                new DeploymentServiceImpl(getMapper(), "http://localhost:1080")
-        );
-        resourceConfig.register(diBinder);
-        return resourceConfig;
-    }
-
     @Before
     public void beforeDeployTests() {
-        new MockServerClient("localhost", 1080).reset();
         startDeployMockServer(200);
     }
 
@@ -74,10 +58,12 @@ public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
     }
 
     @Test
-    public void testGetStatus_whenRunning() throws IOException {
-        startStatusMockServer(RUNNING.getHttpStatus(), "{}");
+    public void testGetStatus_whenRunning() throws IOException, InterruptedException {
         Response deployResponse = deploy("UCTO", getDeploymentRequestDto());
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
+
+        startStatusMockServer(RUNNING.getHttpStatus(), "{}");
+        TimeUnit.SECONDS.sleep(2);
 
         Response statusResponse = target(String.format("exec/task/%s", workDir))
                 .request()
@@ -90,10 +76,13 @@ public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
     }
 
     @Test
-    public void testGetStatus_whenNotFound() throws IOException {
-        startStatusMockServer(NOT_FOUND.getHttpStatus(), "{}");
+    public void testGetStatus_whenNotFound() throws Exception {
+        logger.info("start_testGetStatus_whenNotFound");
         Response deployResponse = deploy("UCTO", getDeploymentRequestDto());
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
+
+        startStatusMockServer(NOT_FOUND.getHttpStatus(), "{}");
+        TimeUnit.SECONDS.sleep(2);
 
         Response statusResponse = target(String.format("exec/task/%s", workDir))
                 .request()

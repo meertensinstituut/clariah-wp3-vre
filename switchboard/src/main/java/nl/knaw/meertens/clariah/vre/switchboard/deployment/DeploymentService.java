@@ -11,12 +11,12 @@ public interface DeploymentService {
     /**
      * Deploy requested service.
      */
-    DeploymentStatusReport start(DeploymentRequest request, ExceptionalConsumer<DeploymentStatusReport> finishRequest);
+    DeploymentStatusReport deploy(DeploymentRequest request, ExceptionalConsumer<DeploymentStatusReport> deploymentConsumer);
 
     /**
-     * Polls deployed service until status is finished or stopped
+     * Get status of deployed service
      */
-    DeploymentStatusReport pollStatus(String workDir);
+    DeploymentStatusReport getStatus(String workDir);
 
     /**
      * Returns true when stop signal is send, false otherwise.

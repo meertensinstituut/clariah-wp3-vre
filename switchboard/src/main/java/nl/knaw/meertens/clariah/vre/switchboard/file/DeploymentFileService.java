@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.nio.file.Files.getFileAttributeView;
 import static java.nio.file.Files.setPosixFilePermissions;
@@ -35,7 +34,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.handleException;
+import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class DeploymentFileService implements FileService {
@@ -60,6 +59,10 @@ public class DeploymentFileService implements FileService {
         createSymbolicLinks(inputFiles, workDir);
     }
 
+    /**
+     * Unlock files and move output files to owncloud
+     * @return output files
+     */
     @Override
     public List<Path> unstage(String workDir, List<String> inputFiles) {
         if (inputFiles.isEmpty()) {
@@ -92,6 +95,7 @@ public class DeploymentFileService implements FileService {
         } catch (IOException e) {
             handleException(e, "Could not lock file [%s]", file.toString());
         }
+        logger.info(String.format("Locked file [%s]", file));
     }
 
     /**
@@ -112,6 +116,7 @@ public class DeploymentFileService implements FileService {
         } catch (IOException e) {
             handleException(e, "Could not unlock file [%s]", fileString);
         }
+        logger.info(String.format("Unlocked file [%s]", file));
     }
 
     private Path toSrcPath(String fileString) {
@@ -129,11 +134,33 @@ public class DeploymentFileService implements FileService {
         String pathWithoutFile = FilenameUtils.getPath(file);
         Path outputDir = Paths.get(srcPath.toString(), pathWithoutFile, generateOutputDirName());
         outputDir.getParent().toFile().mkdirs();
+        if(!deploymentOutput.toFile().exists()) {
+            return createEmptyOutputFolder(workDir, outputDir);
+        }
+        return moveOutputFolder(deploymentOutput, outputDir);
+    }
+
+    private Path createEmptyOutputFolder(String workDir, Path outputDir) {
+        logger.warn(String.format(
+                "No output folder for deployment [%s], created empty output folder [%s]",
+                workDir, outputDir.toString()
+        ));
+        outputDir.toFile().mkdirs();
+        return outputDir;
+    }
+
+    private Path moveOutputFolder(Path deploymentOutput, Path outputDir) {
         try {
             FileUtils.moveDirectory(deploymentOutput.toFile(), outputDir.toFile());
-            logger.info(String.format("Move output files from workdir [%s] to [%s]", deploymentOutput, outputDir));
+            logger.info(String.format(
+                    "Move output files from workdir [%s] to [%s]",
+                    deploymentOutput, outputDir
+            ));
         } catch (IOException e) {
-            handleException(e, "Could not move output folder from deployment [%s] to [%s]", deploymentOutput.toString(), outputDir.toString());
+            handleException(e,
+                    "Could not move output folder from deployment [%s] to [%s]",
+                    deploymentOutput.toString(), outputDir.toString()
+            );
         }
         unlockOutputFiles(outputDir);
         return outputDir;

@@ -52,8 +52,8 @@ public class ObjectsRepositoryService {
      * Get id of persisted object by json path: $.resource[0].id
      */
     private Long getId(String persistResult) {
-        logger.info("persisted result: " + persistResult);
         Integer read = JsonPath.parse(persistResult).read("$.resource[0].id");
+        logger.info(String.format("persisted result [%s] with id [%s]", persistResult, read));
         return read.longValue();
     }
 

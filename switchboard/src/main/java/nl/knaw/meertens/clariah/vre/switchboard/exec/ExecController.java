@@ -2,7 +2,6 @@ package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler;
 import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardMsg;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
@@ -19,7 +18,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler.handleInternalServerError;
+import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleControllerException;
 
 @Path("/exec")
 public class ExecController {
@@ -57,7 +56,7 @@ public class ExecController {
                     .entity(mapper.writeValueAsString(switchboardMsg))
                     .build();
         } catch (Exception e) {
-            return handleInternalServerError(e);
+            return handleControllerException(e);
         }
     }
 
@@ -68,12 +67,16 @@ public class ExecController {
     public Response getDeploymentStatus(@PathParam("workDir") String workDir) throws JsonProcessingException {
         try {
             DeploymentStatusReport report = execService.getStatus(workDir);
+            logger.info(String.format(
+                    "Responded to status request [%s] with [%s]",
+                    workDir, mapper.writeValueAsString(report))
+            );
             return Response
                     .status(report.getStatus().getHttpStatus())
                     .entity(mapper.writeValueAsString(report))
                     .build();
         } catch (Exception e) {
-            return handleInternalServerError(e);
+            return handleControllerException(e);
         }
 
     }

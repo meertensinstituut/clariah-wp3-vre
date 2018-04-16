@@ -1,11 +1,11 @@
 package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.switchboard.ExceptionHandler;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.ExceptionalConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
@@ -32,21 +32,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.CONFIG_FILE_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.INPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.KAFKA_HOST_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.OUTPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.OWNCLOUD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.OWNCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.App.SWITCHBOARD_TOPIC_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.KAFKA_HOST_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_TOPIC_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
+import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 
 /**
  * ExecService:
@@ -95,56 +95,58 @@ public class ExecService {
         DeploymentRequest request = prepareDeployment(service, body);
         List<String> files = new ArrayList<>(request.getFiles().values());
         owncloudFileService.stage(request.getWorkDir(), files);
-        DeploymentStatusReport statusReport = deploymentService.start(request, (report) -> {
-            if (isFinishedOrStopped(report)) {
-                completeDeployment(request, files, report);
-            } else {
-                logger.error(String.format("Finish method called with status [%s]", report.getStatus()));
-            }
-        });
+        DeploymentStatusReport statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
         request.setStatusReport(statusReport);
         return request;
-    }
-
-    private boolean isFinishedOrStopped(DeploymentStatusReport report) {
-        return report.getStatus() == FINISHED || report.getStatus() == STOPPED;
     }
 
     private DeploymentRequest prepareDeployment(
             String service,
             String body
     ) throws IOException {
-        DeploymentRequest serviceRequest = mapServiceRequest(body, service);
-        serviceRequest.setFiles(requestFiles(serviceRequest));
-        createConfig(serviceRequest);
-        sendKafkaRequestMsg(serviceRequest);
-        return serviceRequest;
+        String workDir = createWorkDir();
+        DeploymentRequest request = mapServiceRequest(body, service, workDir);
+        request.setFiles(requestFiles(request));
+        createConfig(request);
+        sendKafkaRequestMsg(request);
+        return request;
     }
 
-    private void completeDeployment(
-            DeploymentRequest serviceRequest,
-            List<String> inputFiles,
-            DeploymentStatusReport report
-    ) throws IOException {
+    private String createWorkDir() {
+        String name = RandomStringUtils
+                .randomAlphabetic(WORK_DIR_LENGTH)
+                .toLowerCase();
+        Path path = Paths.get(DEPLOYMENT_VOLUME, name);
+        assert(path.toFile().mkdirs());
         logger.info(String.format(
-                "Complete deployment of service [%s] with workdir [%s]",
-                serviceRequest.getService(),
-                serviceRequest.getWorkDir()
+                "Created workDir [%s]",
+                path.toString()
         ));
-        List<Path> outputFiles = owncloudFileService.unstage(serviceRequest.getWorkDir(), inputFiles);
-        logger.info("outputFiles: " + Arrays.toString(outputFiles.toArray()));
-        Path path = outputFiles.get(0);
-        report.setOutputDir(isNull(path) ? "" : path.getParent().toString());
-        logger.info("outputDir: " + report.getWorkDir());
-        report.setWorkDir(serviceRequest.getWorkDir());
-        sendKafkaSwitchboardMsg(serviceRequest, report);
-        sendKafkaOwncloudMsgs(outputFiles);
+        return name;
     }
 
-    private String getPathRelativeTo(String dir, String base) {
-        String result = new File(base).toURI().relativize(new File(dir).toURI()).getPath();
-        logger.info(String.format("getPathRelativeTo with dir [%s] and base [%s] results in [%s]", dir, base, result));
-        return result;
+    private ExceptionalConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
+        logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
+        if (isFinishedOrStopped(report)) {
+            completeDeployment(report);
+        }
+    };
+
+    private boolean isFinishedOrStopped(DeploymentStatusReport report) {
+        return report.getStatus() == FINISHED || report.getStatus() == STOPPED;
+    }
+
+    private void completeDeployment(DeploymentStatusReport report) throws IOException {
+        List<Path> outputFiles = owncloudFileService.unstage(report.getWorkDir(), report.getFiles());
+        report.setOutputDir(outputFiles.isEmpty() ? "" : outputFiles.get(0).getParent().toString());
+        report.setWorkDir(report.getWorkDir());
+        sendKafkaSwitchboardMsg(report);
+        sendKafkaOwncloudMsgs(outputFiles);
+        logger.info(String.format(
+                "Completed deployment of service [%s] with workdir [%s]",
+                report.getService(),
+                report.getWorkDir()
+        ));
     }
 
     private void createConfig(
@@ -160,7 +162,7 @@ public class ExecService {
             String json = mapper.writeValueAsString(config);
             FileUtils.write(configPath.toFile(), json, UTF_8);
         } catch (IOException e) {
-            ExceptionHandler.handleException(e, "Could create config file [%s]", configPath.toString());
+            handleException(e, "Could create config file [%s]", configPath.toString());
         }
     }
 
@@ -178,15 +180,14 @@ public class ExecService {
     }
 
     public DeploymentStatusReport getStatus(String workDir) {
-        return deploymentService.pollStatus(workDir);
+        return deploymentService.getStatus(workDir);
     }
 
     private void sendKafkaSwitchboardMsg(
-            DeploymentRequest serviceRequest,
             DeploymentStatusReport report
     ) throws IOException {
         KafkaDeploymentResultDto kafkaMsg = new KafkaDeploymentResultDto();
-        kafkaMsg.service = serviceRequest.getService();
+        kafkaMsg.service = report.getService();
         kafkaMsg.dateTime = LocalDateTime.now();
         kafkaMsg.status = report.getStatus();
         kafkaSwitchboardService.send(kafkaMsg);
@@ -201,17 +202,14 @@ public class ExecService {
             msg.user = file.getName(0).toString();
             kafkaOwncloudService.send(msg);
         }
-
     }
 
     private DeploymentRequest mapServiceRequest(
             String body,
-            String service
+            String service,
+            String workDir
     ) throws IOException {
         DeploymentRequestDto deploymentRequestDto = mapper.readValue(body, DeploymentRequestDto.class);
-        String workDir = RandomStringUtils
-                .randomAlphabetic(WORK_DIR_LENGTH)
-                .toLowerCase();
         return new DeploymentRequest(
                 service,
                 workDir,
