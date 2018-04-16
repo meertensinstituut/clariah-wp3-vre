@@ -70,7 +70,7 @@ public class SwitchboardDIBinder extends AbstractBinder {
     static PollService getPollService() {
         if (isNull(pollingService)) {
             pollingService = new PollServiceImpl(
-                    getRequestRepositoryService(),
+                    getRequestRepository(),
                     getMapper(),
                     DEPLOYMENT_HOST_NAME
             );
@@ -81,7 +81,7 @@ public class SwitchboardDIBinder extends AbstractBinder {
     /**
      * Get default RequestRepository
      */
-    static RequestRepository getRequestRepositoryService() {
+    static RequestRepository getRequestRepository() {
         if (isNull(requestRepositoryService)) {
             requestRepositoryService = new RequestRepository(
                     DEPLOYMENT_VOLUME,

@@ -3,6 +3,10 @@ package nl.knaw.meertens.clariah.vre.integration;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +34,13 @@ public abstract class AbstractIntegrationTest {
     final static String DB_OBJECTS_PASSWORD = System.getenv("DB_OBJECTS_PASSWORD");
     final static String DB_OBJECTS_DATABASE = System.getenv("DB_OBJECTS_DATABASE");
     final static String SWITCHBOARD_ENDPOINT = "http://switchboard:8080/switchboard/rest/";
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        protected void starting(Description description) {
+            logger.info(String.format("Starting test [%s]", description.getMethodName()));
+        }
+    };
 
     static String getRandomGroupName() {
         return "vre_integration_group" + UUID.randomUUID();

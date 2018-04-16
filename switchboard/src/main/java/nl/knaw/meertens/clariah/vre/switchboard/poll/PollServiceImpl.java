@@ -101,13 +101,17 @@ public class PollServiceImpl implements PollService {
     }
 
     private void runConsumer(DeploymentStatusReport report) {
-        requestRepositoryService
-                .getConsumer(report.getWorkDir())
-                .accept(report);
+        try {
+            requestRepositoryService
+                    .getConsumer(report.getWorkDir())
+                    .accept(report);
+        } catch (Exception e) {
+            logger.error(String.format("consumer of deployment [%s] threw exception", report.getWorkDir()), e);
+        }
     }
 
     private DeploymentStatusReport getDeploymentStatus(DeploymentStatusReport report) {
-        URI uri = createDeploymentStatusUri(report.getWorkDir());
+        URI uri = createDeploymentStatusUri(report);
         DeploymentStatusResponseDto response = requestDeploymentStatusReport(uri);
         report.setStatus(DeploymentStatus.getPollStatus(response.httpStatus));
         report.setMsg(response.message);
@@ -136,12 +140,13 @@ public class PollServiceImpl implements PollService {
         return response;
     }
 
-    private URI createDeploymentStatusUri(String workDir) {
+    private URI createDeploymentStatusUri(DeploymentStatusReport report) {
         return URI.create(String.format(
-                "%s/%s/%s/",
+                "%s/%s/%s/%s",
                 hostName,
-                "deployment-service/a/exec/task",
-                workDir
+                "deployment-service/a/exec",
+                report.getService(),
+                report.getWorkDir()
         ));
     }
 }

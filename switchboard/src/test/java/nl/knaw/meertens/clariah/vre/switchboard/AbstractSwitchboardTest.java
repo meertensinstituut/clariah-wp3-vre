@@ -5,6 +5,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamDto;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import nl.knaw.meertens.clariah.vre.switchboard.file.DeploymentFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
@@ -16,6 +17,10 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.mockserver.client.server.MockServerClient;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
@@ -37,21 +42,25 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getRequestRepositoryService;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getRequestRepository;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType.FILE;
+import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static org.assertj.core.util.Lists.newArrayList;
-import static org.mockserver.matchers.Times.exactly;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 public abstract class AbstractSwitchboardTest extends JerseyTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = new ObjectMapper();
 
-    static DeploymentFileService deploymentFileService = new DeploymentFileService(
+    static String testFile = "admin/files/testfile-switchboard.txt";
+    private static String someText = "De vermeende terugkeer van tante Rosie naar Reetveerdegem werd als " +
+            "een aangename schok ervaren in de levens van onze volstrekt nutteloze mannen, waarvan ik er op dat " +
+            "ogenblik een in wording was.";
+
+    protected static DeploymentFileService deploymentFileService = new DeploymentFileService(
             OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR);
 
     String longName = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff, Sr.";
@@ -59,18 +68,15 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
     static final String RESULT_FILENAME = "result.txt";
     String resultSentence = "Insanity: doing the same thing over and over again and expecting different results.";
 
-    static ClientAndServer mockServer;
+    private static ClientAndServer mockServer;
+
+    private static RequestRepository requestRepository = getRequestRepository();
 
     private static PollServiceImpl pollService = new PollServiceImpl(
-            getRequestRepositoryService(),
+            requestRepository,
             getMapper(),
             "http://localhost:1080"
     );
-
-    static String testFile = "admin/files/testfile-switchboard.txt";
-    static String someText = "De vermeende terugkeer van tante Rosie naar Reetveerdegem werd als " +
-            "een aangename schok ervaren in de levens van onze volstrekt nutteloze mannen, waarvan ik er op dat " +
-            "ogenblik een in wording was.";
 
     @Override
     protected Application configure() {
@@ -80,7 +86,7 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
                 createObjectsRegistryServiceStub(),
                 new DeploymentServiceImpl(
                         "http://localhost:1080",
-                        getRequestRepositoryService(),
+                        requestRepository,
                         pollService
                 )
         );
@@ -88,8 +94,19 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
         return resourceConfig;
     }
 
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        protected void starting(Description description) {
+            logger.info(String.format("Starting test [%s]", description.getMethodName()));
+        }
+    };
+
     @BeforeClass
-    public static void beforeAbstractTests() {
+    public static void beforeAbstractTests() throws IOException {
+        Path path = Paths.get(OWNCLOUD_VOLUME + "/" + testFile);
+        File file = path.toFile();
+        file.getParentFile().mkdirs();
+        Files.write(path, newArrayList(someText), Charset.forName("UTF-8"));
         mockServer = ClientAndServer.startClientAndServer(1080);
     }
 
@@ -103,14 +120,16 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
     public void afterAbstractTest() {
         pollService.stopPolling();
         deploymentFileService.unlock(testFile);
+        requestRepository.clearAll();
     }
 
     @AfterClass
-    public static void afterDeploymentTests() {
+    public static void afterAbstractTests() {
         mockServer.stop();
+        deploymentFileService.unlock(testFile);
     }
 
-    ObjectsRegistryServiceStub createObjectsRegistryServiceStub() {
+    private ObjectsRegistryServiceStub createObjectsRegistryServiceStub() {
         ObjectsRegistryServiceStub result = new ObjectsRegistryServiceStub();
         ObjectsRecordDTO testFileRecord = new ObjectsRecordDTO();
         testFileRecord.id = 1L;
@@ -141,10 +160,8 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
         new MockServerClient("localhost", 1080)
                 .when(
                         request()
-                                // TODO: GET request atm, should be PUT in the future:
-                                .withMethod("GET")
-                                .withPath("/deployment-service/a/exec/UCTO/.*/"),
-                        exactly(1))
+                                .withMethod("PUT")
+                                .withPath("/deployment-service/a/exec/UCTO/.*"))
                 .respond(
                         response()
                                 .withStatusCode(status)
@@ -158,8 +175,8 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
                 .when(
                         request()
                                 .withMethod("GET")
-                                .withPath("/deployment-service/a/exec/task/.*/"))
-                .respond(
+                                .withPath("/deployment-service/a/exec/UCTO/.*")
+                ).respond(
                         response()
                                 .withStatusCode(status)
                                 .withHeaders(new Header("Content-Type", "application/json; charset=utf-8"))
@@ -169,6 +186,7 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
 
     void createResultFile(String workDir) {
         Path path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, RESULT_FILENAME);
+        assert(path.toFile().getParentFile().mkdirs());
         logger.info("result file path: " + path.toString());
         path.toFile().getParentFile().mkdirs();
         try {

@@ -7,10 +7,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,16 +37,59 @@ public class DeployServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testFilesAreLocked_whenServiceIsDeployed() throws Exception {
+    public void testDeployment_locksFiles_movesOutput_unlocksFiles() throws Exception {
 
         String inputFile = uploadTestFile(someContent);
 
-        HttpResponse<String> downloadResult = downloadFile(inputFile);
-        assertThat(downloadResult.getBody()).isEqualTo(someContent);
-        assertThat(downloadResult.getStatus()).isEqualTo(200);
+        checkFileCanBeUploaded(inputFile);
 
         TimeUnit.SECONDS.sleep(6);
 
+        String workDir = checkFilesAreLocked(inputFile);
+
+        TimeUnit.SECONDS.sleep(2);
+
+        checkStatusIsRunning(workDir);
+
+        TimeUnit.SECONDS.sleep(15);
+
+        String resultFile = checkDeploymentIsFinished(workDir, "result.txt");
+
+        checkResultCanBeDownloaded(resultFile);
+
+        checkFilesAreUnlocked(inputFile);
+
+        checkKafkaMsgsAreCreatedForOutputFiles(resultFile);
+
+        checkNewFileCanBeAdded();
+
+    }
+
+    private void checkFileCanBeUploaded(String inputFile) throws UnirestException {
+        HttpResponse<String> downloadResult = downloadFile(inputFile);
+        assertThat(downloadResult.getBody()).isEqualTo(someContent);
+        assertThat(downloadResult.getStatus()).isEqualTo(200);
+    }
+
+    private void checkFilesAreUnlocked(String inputFile) throws UnirestException {
+        HttpResponse<String> downloadResult2 = downloadFile(inputFile);
+        assertThat(downloadResult2.getBody()).isEqualTo(someContent);
+        assertThat(downloadResult2.getStatus()).isIn(200, 202);
+
+        HttpResponse<String> putAfterDeployment2 = putInputFile(inputFile);
+        assertThat(putAfterDeployment2.getStatus()).isEqualTo(204);
+
+        HttpResponse<String> deleteInputFile2 = deleteInputFile(inputFile);
+        assertThat(deleteInputFile2.getStatus()).isEqualTo(204);
+    }
+
+    private void checkStatusIsRunning(String workDir) throws UnirestException {
+        HttpResponse<String> getDeploymentStatus = getDeploymentStatus(workDir);
+        assertThat(getDeploymentStatus.getStatus()).isIn(200, 202);
+        assertThatJson(getDeploymentStatus.getBody()).node("status").matches(containsString("RUNNING"));
+    }
+
+    private String checkFilesAreLocked(String inputFile) throws SQLException, UnirestException {
         long inputFileId = getObjectIdFromRegistry(inputFile);
 
         HttpResponse<String> startDeployment = startDeploymentWithInputFileId(inputFileId);
@@ -61,88 +101,25 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
         assertThat(deleteInputFile.getStatus()).isEqualTo(403);
 
-        String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
-
-        TimeUnit.SECONDS.sleep(2);
-
-        HttpResponse<String> getDeploymentStatus = getDeploymentStatus(workDir);
-        assertThat(getDeploymentStatus.getStatus()).isIn(200, 202);
-        assertThatJson(getDeploymentStatus.getBody()).node("status").matches(containsString("RUNNING"));
-
-        TimeUnit.SECONDS.sleep(15);
-
-        HttpResponse<String> shouldBeFinished = getDeploymentStatus(workDir);
-        assertThat(getDeploymentStatus.getStatus()).isIn(200, 202);
-        assertThatJson(shouldBeFinished.getBody()).node("status").matches(containsString("FINISHED"));
-
-        HttpResponse<String> downloadResult2 = downloadFile(inputFile);
-        assertThat(downloadResult2.getBody()).isEqualTo(someContent);
-        assertThat(downloadResult2.getStatus()).isIn(200, 202);
-
-        HttpResponse<String> putAfterDeployment2 = putInputFile(inputFile);
-        assertThat(putAfterDeployment2.getStatus()).isEqualTo(204);
-
-        HttpResponse<String> deleteInputFile2 = deleteInputFile(inputFile);
-        assertThat(deleteInputFile2.getStatus()).isEqualTo(204);
-
+        return JsonPath.parse(startDeployment.getBody()).read("$.workDir");
     }
 
-    @Test
-    public void testResultOfDeploymentIsMovedToOwncloud() throws UnirestException, InterruptedException, SQLException {
-        // Upload file:
-        String inputFile = uploadTestFile(someContent);
-        assertThat(downloadFile(inputFile).getStatus()).isEqualTo(200);
-        TimeUnit.SECONDS.sleep(6);
-        long inputFileId = getObjectIdFromRegistry(inputFile);
-
-        // Start deployment:
-        HttpResponse<String> startDeployment = startDeploymentWithInputFileId(inputFileId);
-        assertThat(startDeployment.getStatus()).isEqualTo(200);
-        String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
-
-        // Wait until finish:
-        TimeUnit.SECONDS.sleep(15);
-
-        // Find output dir:
-        HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
-        assertThat(finishedDeployment.getStatus()).isIn(200, 202);
-        assertThatJson(finishedDeployment.getBody()).node("status").matches(containsString("FINISHED"));
-        logger.info("finishedDeployment: " + finishedDeployment.getBody());
-        String resultFile = getOutputPath(finishedDeployment);
-
-        // Download result:
+    private void checkResultCanBeDownloaded(String resultFile) throws UnirestException {
         HttpResponse<String> downloadResultTxt = downloadFile(resultFile);
         assertThat(downloadResultTxt.getBody()).contains("Insanity");
-
     }
 
-    @Test
-    public void testSwitchboardProducesOwncloudMsgOfDeploymentOutputfile() throws Exception {
-        String outputFilename = "result.txt";
-
-        // Upload file:
-        String inputFile = uploadTestFile(someContent);
-        assertThat(downloadFile(inputFile).getStatus()).isEqualTo(200);
-        TimeUnit.SECONDS.sleep(6);
-        long inputFileId = getObjectIdFromRegistry(inputFile);
-
-        // Start deployment:
-        HttpResponse<String> startDeployment = startDeploymentWithInputFileId(inputFileId);
-        assertThat(startDeployment.getStatus()).isEqualTo(200);
-        String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
-
-        // Wait until finish:
-        TimeUnit.SECONDS.sleep(15);
-
-        // Check that deployment is finished:
+    private String checkDeploymentIsFinished(String workDir, String resultFileName) throws UnirestException {
         HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
         assertThat(finishedDeployment.getStatus()).isIn(200, 202);
+        logger.info("finished deployment result: " + finishedDeployment.getBody());
         assertThatJson(finishedDeployment.getBody()).node("status").matches(containsString("FINISHED"));
+        return getOutputFilePath(finishedDeployment, resultFileName);
+    }
 
-        // Check that kaka msg is created for output file with action 'create':
+    private void checkKafkaMsgsAreCreatedForOutputFiles(String outputFilename) throws InterruptedException {
         KafkaConsumerService owncloudKafkaConsumer = getOwncloudTopic();
         owncloudKafkaConsumer.consumeAll(consumerRecords -> {
-            logger.info("Check owncloud results");
             assertThat(consumerRecords.size()).isGreaterThan(0);
             List<String> resultActions = new ArrayList<>();
             consumerRecords.forEach(record -> {
@@ -154,30 +131,9 @@ public class DeployServiceTest extends AbstractIntegrationTest {
             assertThat(resultActions).hasSize(1);
             assertThat(resultActions.get(0)).isEqualTo("create");
         });
-
     }
 
-    @Test
-    public void testFilesCanBeAddedAfterDeployment() throws Exception {
-        // Upload file:
-        String inputFile = uploadTestFile(someContent);
-        assertThat(downloadFile(inputFile).getStatus()).isEqualTo(200);
-        TimeUnit.SECONDS.sleep(7);
-        long inputFileId = getObjectIdFromRegistry(inputFile);
-
-        // Start deployment:
-        HttpResponse<String> startDeployment = startDeploymentWithInputFileId(inputFileId);
-        assertThat(startDeployment.getStatus()).isEqualTo(200);
-        String workDir = JsonPath.parse(startDeployment.getBody()).read("$.workDir");
-
-        // Wait until finish:
-        TimeUnit.SECONDS.sleep(15);
-
-        // Check status is finished:
-        HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
-        assertThat(finishedDeployment.getStatus()).isIn(200);
-        assertThatJson(finishedDeployment.getBody()).node("status").matches(containsString("FINISHED"));
-
+    private void checkNewFileCanBeAdded() throws UnirestException, InterruptedException, SQLException {
         // Check a new file can be added:
         String newInputFile = uploadTestFile(someContent);
         assertThat(downloadFile(newInputFile).getStatus()).isEqualTo(200);
@@ -186,14 +142,13 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         assertThat(newInputFileId).isNotEqualTo(0L);
     }
 
-    private String getOutputPath(HttpResponse<String> finishedDeployment) {
+    private String getOutputFilePath(HttpResponse<String> finishedDeployment, String resultFileName) {
         String outputDir = JsonPath.parse(finishedDeployment.getBody()).read("$.outputDir");
         Path pathAbsolute = Paths.get(outputDir);
         Path pathBase = Paths.get("admin/files/");
         Path pathRelative = pathBase.relativize(pathAbsolute);
-        return Paths.get(pathRelative.toString(), "result.txt").toString();
+        return Paths.get(pathRelative.toString(), resultFileName).toString();
     }
-
 
     private long getObjectIdFromRegistry(String inputFile) throws SQLException {
         ObjectsRepositoryService objectsRepositoryService = new ObjectsRepositoryService(
@@ -203,6 +158,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
             while (rs.next()) {
                 id = (long) rs.getInt("id");
             }
+            // When zero, no object has been found:
             assertThat(id).isNotZero();
         });
         logger.info(String.format("uploaded file [%s] has object id [%d]", inputFile, id));

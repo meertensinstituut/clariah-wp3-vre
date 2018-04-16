@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import net.sf.saxon.s9api.SaxonApiException;
 
 /**
  *
@@ -64,7 +65,18 @@ public class Test implements RecipePlugin {
         JSONObject json = new JSONObject();
         json.put("key", key);
         json.put("finished", isFinished);
+        json.put("success", isFinished);
+        if(isFinished) {
+            json.put("completion", 100L);
+        } else {
+            json.put("completion", 80L);
+        }
         return json;
+    }
+
+    @Override
+    public void init(String wd, Service serviceObj) throws JDOMException, IOException, SaxonApiException {
+        System.out.println("init plugin");
     }
 
 }
