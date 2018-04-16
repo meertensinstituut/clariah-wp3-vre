@@ -41,11 +41,15 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
         String inputFile = uploadTestFile(someContent);
 
-        checkFileCanBeUploaded(inputFile);
-
         TimeUnit.SECONDS.sleep(6);
 
-        String workDir = checkFilesAreLocked(inputFile);
+        long inputFileId = getObjectIdFromRegistry(inputFile);
+
+        String workDir = startDeploymentWithInputFileId(inputFileId);
+
+        checkFileCanBeDownloaded(inputFile);
+
+        checkFileIsLocked(inputFile);
 
         TimeUnit.SECONDS.sleep(2);
 
@@ -65,7 +69,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     }
 
-    private void checkFileCanBeUploaded(String inputFile) throws UnirestException {
+    private void checkFileCanBeDownloaded(String inputFile) throws UnirestException {
         HttpResponse<String> downloadResult = downloadFile(inputFile);
         assertThat(downloadResult.getBody()).isEqualTo(someContent);
         assertThat(downloadResult.getStatus()).isEqualTo(200);
@@ -89,19 +93,12 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         assertThatJson(getDeploymentStatus.getBody()).node("status").matches(containsString("RUNNING"));
     }
 
-    private String checkFilesAreLocked(String inputFile) throws SQLException, UnirestException {
-        long inputFileId = getObjectIdFromRegistry(inputFile);
-
-        HttpResponse<String> startDeployment = startDeploymentWithInputFileId(inputFileId);
-        assertThat(startDeployment.getStatus()).isEqualTo(200);
-
+    private void checkFileIsLocked(String inputFile) throws SQLException, UnirestException {
         HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
         assertThat(putAfterDeployment.getStatus()).isIn(403, 500);
 
         HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
         assertThat(deleteInputFile.getStatus()).isEqualTo(403);
-
-        return JsonPath.parse(startDeployment.getBody()).read("$.workDir");
     }
 
     private void checkResultCanBeDownloaded(String resultFile) throws UnirestException {
@@ -179,12 +176,15 @@ public class DeployServiceTest extends AbstractIntegrationTest {
                     .asString();
     }
 
-    private HttpResponse<String> startDeploymentWithInputFileId(Long expectedFilename) throws UnirestException {
-        return Unirest
-                    .post(SWITCHBOARD_ENDPOINT + "exec/TEST")
-                    .header("Content-Type", "application/json; charset=UTF-8")
-                    .body("{\"params\":[{\"name\":\"untokinput\",\"type\":\"file\",\"value\":\"" + expectedFilename + "\",\"params\":[{\"language\":\"eng\",\"author\":\"J. Jansen\"}]}]}")
-                    .asString();
+    private String startDeploymentWithInputFileId(Long expectedFilename) throws UnirestException {
+        HttpResponse<String> result = Unirest
+                .post(SWITCHBOARD_ENDPOINT + "exec/TEST")
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body("{\"params\":[{\"name\":\"untokinput\",\"type\":\"file\",\"value\":\"" + expectedFilename + "\",\"params\":[{\"language\":\"eng\",\"author\":\"J. Jansen\"}]}]}")
+                .asString();
+
+        assertThat(result.getStatus()).isEqualTo(200);
+        return JsonPath.parse(result.getBody()).read("$.workDir");
     }
 
     private HttpResponse<String> putInputFile(String expectedFilename) throws UnirestException {

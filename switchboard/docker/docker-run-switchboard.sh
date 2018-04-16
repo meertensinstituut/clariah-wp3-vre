@@ -4,7 +4,7 @@ echo "clean work dirs in temp deployment volume..."
 rm -rf "${DEPLOYMENT_VOLUME}"/*
 
 echo "build switchboard..." && \
-mvn clean install && \
+ mvn clean install && \
 
 echo "deploy switchboard.war..." && \
 cp /usr/local/switchboard/target/switchboard-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/switchboard.war && \

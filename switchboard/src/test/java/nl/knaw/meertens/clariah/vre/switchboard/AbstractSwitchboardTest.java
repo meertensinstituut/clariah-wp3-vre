@@ -53,7 +53,7 @@ import static org.mockserver.model.HttpResponse.response;
 public abstract class AbstractSwitchboardTest extends JerseyTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = getMapper();
 
     static String testFile = "admin/files/testfile-switchboard.txt";
     private static String someText = "De vermeende terugkeer van tante Rosie naar Reetveerdegem werd als " +
@@ -133,7 +133,7 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
         ObjectsRegistryServiceStub result = new ObjectsRegistryServiceStub();
         ObjectsRecordDTO testFileRecord = new ObjectsRecordDTO();
         testFileRecord.id = 1L;
-        testFileRecord.filepath = "admin/files/testfile-switchboard.txt";
+        testFileRecord.filepath = testFile;
         result.setTestFileRecord(testFileRecord);
         return result;
     }
