@@ -16,15 +16,13 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
     private final String objectTable = "/_table/object";
     private final String objectsDbUrl;
     private final String objectsDbKey;
-    private final String objectsDbToken;
 
-    public ObjectsRegistryServiceImpl(String objectsDbUrl, String objectsDbKey, String objectsDbToken) {
-        if(!hasAllObjectsDbDetails(objectsDbKey, objectsDbToken, objectsDbUrl)) {
+    public ObjectsRegistryServiceImpl(String objectsDbUrl, String objectsDbKey) {
+        if(!hasAllObjectsDbDetails(objectsDbKey, objectsDbUrl)) {
             throw new IllegalArgumentException("Not all arguments are provided.");
         }
         this.objectsDbUrl = objectsDbUrl;
         this.objectsDbKey = objectsDbKey;
-        this.objectsDbToken = objectsDbToken;
     }
 
     @Override
@@ -36,7 +34,6 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
                     .get(url)
                     .header("Content-Type", "application/json")
                     .header("X-DreamFactory-Api-Key", objectsDbKey)
-                    .header("X-DreamFactory-Session-Token", objectsDbToken)
                     .asString();
         } catch (UnirestException e) {
             return handleException(e, "Could not retrieve object record [%d] from objects repository", id.toString());
@@ -48,13 +45,9 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
         return result;
     }
 
-    private boolean hasAllObjectsDbDetails(String objectsDbKey, String objectsDbToken, String objectsDbUrl) {
+    private boolean hasAllObjectsDbDetails(String objectsDbKey, String objectsDbUrl) {
         if(isBlank(objectsDbKey)) {
             logger.warn("Key of object registry is not set");
-            return false;
-        }
-        if(isBlank(objectsDbToken)) {
-            logger.warn("Token of object registry is not set");
             return false;
         }
         if(isBlank(objectsDbUrl)) {
