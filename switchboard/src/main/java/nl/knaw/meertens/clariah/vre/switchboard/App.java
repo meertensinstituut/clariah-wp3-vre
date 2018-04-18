@@ -40,8 +40,7 @@ public class App extends ResourceConfig {
         try {
             objectsRegistryService = new ObjectsRegistryServiceImpl(
                     OBJECTS_DB_URL,
-                    OBJECTS_DB_KEY,
-                    OBJECTS_DB_TOKEN
+                    OBJECTS_DB_KEY
             );
         } catch (IllegalArgumentException e) {
             logger.error(String.format("Could not create object registry", e));
