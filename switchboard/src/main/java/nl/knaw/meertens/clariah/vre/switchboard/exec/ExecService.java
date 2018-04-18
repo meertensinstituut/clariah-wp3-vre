@@ -41,6 +41,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
@@ -81,7 +82,7 @@ public class ExecService {
         this.objectsRegistryService = objectsRegistryService;
         this.kafkaSwitchboardService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.kafkaOwncloudService = new KafkaProducerService(OWNCLOUD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
-        this.owncloudFileService = new OwncloudFileService(OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR);
+        this.owncloudFileService = new OwncloudFileService(OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR, USER_TO_LOCK_WITH);
         this.deploymentService = deploymentService;
     }
 

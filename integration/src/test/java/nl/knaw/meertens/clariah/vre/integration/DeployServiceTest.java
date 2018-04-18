@@ -183,7 +183,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
                 .body("{\"params\":[{\"name\":\"untokinput\",\"type\":\"file\",\"value\":\"" + expectedFilename + "\",\"params\":[{\"language\":\"eng\",\"author\":\"J. Jansen\"}]}]}")
                 .asString();
 
-        assertThat(result.getStatus()).isEqualTo(200);
+        assertThat(result.getStatus()).isIn(200, 202);
         return JsonPath.parse(result.getBody()).read("$.workDir");
     }
 

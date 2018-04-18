@@ -42,6 +42,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getRequestRepository;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType.FILE;
@@ -61,7 +62,7 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
             "ogenblik een in wording was.";
 
     protected static OwncloudFileService owncloudFileService = new OwncloudFileService(
-            OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR);
+            OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR, USER_TO_LOCK_WITH);
 
     String longName = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff, Sr.";
 

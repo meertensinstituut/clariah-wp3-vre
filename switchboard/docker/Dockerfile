@@ -1,6 +1,6 @@
 FROM tomcat:jre9-slim
 
-# MAVEN, based on: https://github.com/carlossg/docker-maven/tree/master/jdk-9-slim
+# Add MAVEN, based on: https://github.com/carlossg/docker-maven/tree/master/jdk-9-slim
 ARG MAVEN_VERSION=3.5.2
 ARG USER_HOME_DIR="/root"
 ARG SHA=707b1f6e390a65bde4af4cdaf2a24d45fc19a6ded00fff02e91626e3e42ceaff
@@ -31,7 +31,7 @@ COPY settings-docker.xml /usr/share/maven/ref/
 
 VOLUME "$USER_HOME_DIR/.m2"
 
-# JDK, based on: https://github.com/docker-library/openjdk/tree/master/9-jdk/slim
+# Add JDK, based on: https://github.com/docker-library/openjdk/tree/master/9-jdk/slim
 RUN set -ex; \
 	\
 # deal with slim variants not having man page directories (which causes "update-alternatives" to fail)
@@ -55,5 +55,8 @@ RUN set -ex; \
 
 RUN apt-get update \
  && apt-get -y install jq
+
+# Add user for locking of owncloud files:
+RUN useradd --create-home --shell /bin/bash locker
 
 CMD ["catalina.sh", "run"]

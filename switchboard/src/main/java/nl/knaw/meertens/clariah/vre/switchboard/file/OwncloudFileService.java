@@ -45,12 +45,20 @@ public class OwncloudFileService implements FileService {
     private final Path tmpPath;
     private final String outputDir;
     private final String inputDir;
+    private final String locker;
 
-    public OwncloudFileService(String srcPath, String tmpPath, String outputDir, String inputDir) {
+    public OwncloudFileService(
+            String srcPath,
+            String tmpPath,
+            String outputDir,
+            String inputDir,
+            String locker
+    ) {
         this.srcPath = Paths.get(srcPath);
         this.tmpPath = Paths.get(tmpPath);
         this.outputDir = outputDir;
         this.inputDir = inputDir;
+        this.locker = locker;
     }
 
     @Override
@@ -64,6 +72,9 @@ public class OwncloudFileService implements FileService {
 
     /**
      * Unlock files and move output files to owncloud
+     *
+     * At least one input file is needed, next to which
+     * an output folder is created.
      *
      * @return output files
      */
@@ -85,26 +96,19 @@ public class OwncloudFileService implements FileService {
         return srcPath;
     }
 
-    /**
-     * TODO: atm locking with root, use another user to lock file!
-     */
     @Override
     public void lock(String fileString) {
         assert (!isBlank(fileString));
         Path file = toSrcPath(fileString);
-        Path parent = file.getParent();
         try {
-            chown(file, "root");
+            chown(file, locker);
             setPosixFilePermissions(file, get444());
         } catch (IOException e) {
-            logger.error(String.format("Could not unlock file [%s]", fileString), e);
+            logger.error(String.format("Could not lock file [%s]", fileString), e);
         }
         logger.info(String.format("Locked file [%s]", file));
     }
 
-    /**
-     * TODO: atm locking with root, use another user to lock file!
-     */
     @Override
     public void unlock(String fileString) {
         assert (!isBlank(fileString));
@@ -264,16 +268,13 @@ public class OwncloudFileService implements FileService {
     }
 
     private Set<PosixFilePermission> get755() {
-        Set<PosixFilePermission> permissions = get555();
-        permissions.add(OWNER_WRITE);
-        return permissions;
-    }
-
-    private Set<PosixFilePermission> get555() {
         Set<PosixFilePermission> permissions = get444();
         permissions.add(OWNER_EXECUTE);
         permissions.add(OTHERS_EXECUTE);
         permissions.add(GROUP_EXECUTE);
+
+        permissions.add(OWNER_WRITE);
+
         return permissions;
     }
 

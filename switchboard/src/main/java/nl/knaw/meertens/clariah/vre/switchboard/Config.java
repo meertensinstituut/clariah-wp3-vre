@@ -16,4 +16,6 @@ public class Config {
     public static final String OBJECTS_DB_TOKEN = System.getenv("OBJECTS_TOKEN");
     public static final long DEPLOYMENT_MEMORY = 5; // in seconds
     public static final int MIN_POLL_INTERVAL = 1; // in seconds
+    public static final String USER_TO_LOCK_WITH = "locker";
+
 }
