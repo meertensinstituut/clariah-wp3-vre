@@ -18,7 +18,7 @@ docker-compose \
 
 # Configure owncloud only when container isn't started yet:
 if [ "$CONFIGURE_OWNCLOUD" = true ]; then
-  docker exec -it vre_owncloud_1 /var/www/html/apps/vre/docker-configure-owncloud.sh
+  docker exec vre_owncloud_1 /var/www/html/apps/vre/docker-configure-owncloud.sh
   echo "wait 150 secs to make sure all services are running.."
   # TODO: create mechanism to check all services are running
   sleep 150
