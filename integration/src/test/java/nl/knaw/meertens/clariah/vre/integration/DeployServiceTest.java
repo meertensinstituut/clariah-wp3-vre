@@ -47,15 +47,15 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
         String workDir = startDeploymentWithInputFileId(inputFileId);
 
+        TimeUnit.SECONDS.sleep(1);
+
+        checkStatusIsRunning(workDir);
+
         checkFileCanBeDownloaded(inputFile);
 
         checkFileIsLocked(inputFile);
 
-        TimeUnit.SECONDS.sleep(2);
-
-        checkStatusIsRunning(workDir);
-
-        TimeUnit.SECONDS.sleep(15);
+        checkNewFileCanBeAddedIn7Seconds();
 
         String resultFile = checkDeploymentIsFinished(workDir, "result.txt");
 
@@ -65,7 +65,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
         checkKafkaMsgsAreCreatedForOutputFiles(resultFile);
 
-        checkNewFileCanBeAdded();
+        checkNewFileCanBeAddedIn7Seconds();
 
     }
 
@@ -76,15 +76,15 @@ public class DeployServiceTest extends AbstractIntegrationTest {
     }
 
     private void checkFilesAreUnlocked(String inputFile) throws UnirestException {
-        HttpResponse<String> downloadResult2 = downloadFile(inputFile);
-        assertThat(downloadResult2.getBody()).isEqualTo(someContent);
-        assertThat(downloadResult2.getStatus()).isIn(200, 202);
+        HttpResponse<String> downloadResult = downloadFile(inputFile);
+        assertThat(downloadResult.getBody()).isEqualTo(someContent);
+        assertThat(downloadResult.getStatus()).isIn(200, 202);
 
-        HttpResponse<String> putAfterDeployment2 = putInputFile(inputFile);
-        assertThat(putAfterDeployment2.getStatus()).isEqualTo(204);
+        HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
+        assertThat(putAfterDeployment.getStatus()).isEqualTo(204);
 
-        HttpResponse<String> deleteInputFile2 = deleteInputFile(inputFile);
-        assertThat(deleteInputFile2.getStatus()).isEqualTo(204);
+        HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
+        assertThat(deleteInputFile.getStatus()).isEqualTo(204);
     }
 
     private void checkStatusIsRunning(String workDir) throws UnirestException {
@@ -93,7 +93,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         assertThatJson(getDeploymentStatus.getBody()).node("status").matches(containsString("RUNNING"));
     }
 
-    private void checkFileIsLocked(String inputFile) throws SQLException, UnirestException {
+    private void checkFileIsLocked(String inputFile) throws UnirestException {
         HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
         assertThat(putAfterDeployment.getStatus()).isIn(403, 500);
 
@@ -130,7 +130,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         });
     }
 
-    private void checkNewFileCanBeAdded() throws UnirestException, InterruptedException, SQLException {
+    private void checkNewFileCanBeAddedIn7Seconds() throws UnirestException, InterruptedException, SQLException {
         // Check a new file can be added:
         String newInputFile = uploadTestFile(someContent);
         assertThat(downloadFile(newInputFile).getStatus()).isEqualTo(200);

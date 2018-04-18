@@ -9,7 +9,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.ExceptionalConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
-import nl.knaw.meertens.clariah.vre.switchboard.file.DeploymentFileService;
+import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentResultDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentStartDto;
@@ -22,20 +22,17 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
@@ -84,7 +81,7 @@ public class ExecService {
         this.objectsRegistryService = objectsRegistryService;
         this.kafkaSwitchboardService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.kafkaOwncloudService = new KafkaProducerService(OWNCLOUD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
-        this.owncloudFileService = new DeploymentFileService(OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR);
+        this.owncloudFileService = new OwncloudFileService(OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR);
         this.deploymentService = deploymentService;
     }
 

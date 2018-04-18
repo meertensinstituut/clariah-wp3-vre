@@ -7,7 +7,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
-import nl.knaw.meertens.clariah.vre.switchboard.file.DeploymentFileService;
+import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryServiceStub;
@@ -60,7 +60,7 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
             "een aangename schok ervaren in de levens van onze volstrekt nutteloze mannen, waarvan ik er op dat " +
             "ogenblik een in wording was.";
 
-    protected static DeploymentFileService deploymentFileService = new DeploymentFileService(
+    protected static OwncloudFileService owncloudFileService = new OwncloudFileService(
             OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR);
 
     String longName = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff, Sr.";
@@ -119,14 +119,14 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
     @After
     public void afterAbstractTest() {
         pollService.stopPolling();
-        deploymentFileService.unlock(testFile);
+        owncloudFileService.unlock(testFile);
         requestRepository.clearAll();
     }
 
     @AfterClass
     public static void afterAbstractTests() {
         mockServer.stop();
-        deploymentFileService.unlock(testFile);
+        owncloudFileService.unlock(testFile);
     }
 
     private ObjectsRegistryServiceStub createObjectsRegistryServiceStub() {

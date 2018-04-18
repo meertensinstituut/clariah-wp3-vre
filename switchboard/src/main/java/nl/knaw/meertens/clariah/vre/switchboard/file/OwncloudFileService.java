@@ -37,7 +37,7 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class DeploymentFileService implements FileService {
+public class OwncloudFileService implements FileService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -46,7 +46,7 @@ public class DeploymentFileService implements FileService {
     private final String outputDir;
     private final String inputDir;
 
-    public DeploymentFileService(String srcPath, String tmpPath, String outputDir, String inputDir) {
+    public OwncloudFileService(String srcPath, String tmpPath, String outputDir, String inputDir) {
         this.srcPath = Paths.get(srcPath);
         this.tmpPath = Paths.get(tmpPath);
         this.outputDir = outputDir;
@@ -96,8 +96,6 @@ public class DeploymentFileService implements FileService {
         try {
             chown(file, "root");
             setPosixFilePermissions(file, get444());
-            chown(parent, "root");
-            setPosixFilePermissions(parent, get555());
         } catch (IOException e) {
             logger.error(String.format("Could not unlock file [%s]", fileString), e);
         }
@@ -116,9 +114,6 @@ public class DeploymentFileService implements FileService {
             setPosixFilePermissions(file, get644());
             Path parent = file.getParent();
             chown(parent, "www-data");
-            setPosixFilePermissions(parent, get755());
-            chown(parent.getParent(), "www-data");
-            setPosixFilePermissions(parent.getParent(), get755());
         } catch (IOException e) {
             logger.error(String.format("Could not unlock file [%s]", fileString), e);
         }
