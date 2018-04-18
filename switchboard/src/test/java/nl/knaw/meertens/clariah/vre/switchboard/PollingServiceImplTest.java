@@ -49,7 +49,7 @@ public class PollingServiceImplTest extends AbstractSwitchboardTest {
         // Status assert status is finished:
         new MockServerClient("localhost", 1080).reset();
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(5);
+        TimeUnit.SECONDS.sleep(2);
 
         statusResponse = target(String.format("exec/task/%s", workDir)).request().get();
         assertThat(statusResponse.getStatus()).isEqualTo(FINISHED.getHttpStatus());

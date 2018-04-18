@@ -21,7 +21,7 @@ if [ "$CONFIGURE_OWNCLOUD" = true ]; then
   docker exec vre_owncloud_1 /var/www/html/apps/vre/docker-configure-owncloud.sh
   echo "wait 150 secs to make sure all services are running.."
   # TODO: create mechanism to check all services are running
-  sleep 180
+  sleep 150
 fi
 
 echo "Run integration tests (add 'debug' to start in debug mode)"

@@ -5,7 +5,6 @@ import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
-import org.apache.commons.io.FilenameUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -23,7 +22,6 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType.FILE;
@@ -66,7 +64,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
 
         createResultFile(workDir);
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(5);
+        TimeUnit.SECONDS.sleep(2);
 
         Response pollStatusResponse = target(String.format("exec/task/%s/", workDir))
                 .request()
@@ -83,14 +81,14 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
     @Test
     public void postDeploymentRequest_shouldOutputFolderWithTestResult() throws InterruptedException, IOException {
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         String expectedService = "UCTO";
         Response deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
-
         createResultFile(workDir);
-        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(5);
+
+        TimeUnit.SECONDS.sleep(2);
 
         // Check status is finished:
         Response finishedResponse = target(String.format("exec/task/%s/", workDir))
@@ -102,7 +100,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         assertThatJson(finishedJson).node("status").isEqualTo("FINISHED");
 
         // Check output file is moved:
-        File outputFolder = findOutputFolder();
+        File outputFolder = findOutputFolder(finishedJson);
         logger.info("outputFolder: " + outputFolder);
         assertThat(outputFolder).isNotNull();
         assertThat(outputFolder.toString()).startsWith("/usr/local/owncloud/admin/files/output-20");
@@ -158,16 +156,9 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         assertThatJson(finishedJson).node("status").isEqualTo("FINISHED");
     }
 
-    private File findOutputFolder() {
-        String pathWithoutFile = FilenameUtils.getPath(testFile);
-        File resultParentFolder = Paths.get(OWNCLOUD_VOLUME, pathWithoutFile).toFile();
-        File outputFolder = null;
-        for (File file : resultParentFolder.listFiles()) {
-            if (file.getName().contains(OUTPUT_DIR)) {
-                outputFolder = file;
-            }
-        }
-        return outputFolder;
+    private File findOutputFolder(String finishedJson) {
+        String read = JsonPath.parse(finishedJson).read("$.outputDir");
+        return Paths.get(OWNCLOUD_VOLUME, read).toFile();
     }
 
 }
