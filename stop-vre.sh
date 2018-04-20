@@ -1,10 +1,6 @@
 #!/bin/bash
 
-### kill all containers ###
-# docker kill $(docker ps -q)
-### end kill all ##########
-
-### kill VRE containers ###
+# kill and prune VRE containers:
 docker kill vre_integration_1
 docker kill vre_recognizer_1
 docker kill vre_deployment_1
@@ -22,7 +18,3 @@ docker kill vre_indexer_1
 docker container prune -f
 
 docker ps -a 
-
-### remove all docker images ###
-#docker rmi $(docker images -q)
-### end removal of images ######
