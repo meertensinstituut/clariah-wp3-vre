@@ -120,7 +120,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
             assertThat(consumerRecords.size()).isGreaterThan(0);
             List<String> resultActions = new ArrayList<>();
             consumerRecords.forEach(record -> {
-                String filePath = JsonPath.parse(record.value()).read("$.userPath");
+                String filePath = JsonPath.parse(record.value()).read("$.path");
                 if(filePath.contains(outputFilename)) {
                     resultActions.add(JsonPath.parse(record.value()).read("$.action"));
                 }

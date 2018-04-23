@@ -19,7 +19,7 @@ public class TestProducer {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         Producer<String, String> producer = new KafkaProducer<>(props);
-        String msg = "{\"action\":\"read\",\"user\":\"admin\",\"path\":\"\\/test.txt\",\"userPath\":\"\\/test.txt\",\"oldPath\":null,\"newPath\":null,\"timestamp\":1516287994}";
+        String msg = "{\"action\":\"read\",\"user\":\"admin\",\"path\":\"\\/test.txt\",\"path\":\"\\/test.txt\",\"oldPath\":null,\"newPath\":null,\"timestamp\":1516287994}";
         producer.send(new ProducerRecord<>(owncloudTopic, "key", msg));
         System.out.println("Message sent successfully");
         producer.close();

@@ -1,6 +1,7 @@
 <?php
 namespace OCA\Vre\Hooks;
 
+use OC\Files\Filesystem;
 use OCA\Vre\Kafka\OwnCloudKafkaMsg;
 use \OCA\Vre\Kafka\Producer as Producer;
 use OCA\Vre\Log\VreLog;
@@ -30,42 +31,38 @@ class VreHooks
     }
 
     public function register() {
-        \OCP\Util::connectHook('OC_Filesystem', 'rename', $this, 'filesystem_rename_hook');
-        \OCP\Util::connectHook('OC_Filesystem', 'post_rename', $this, 'filesystem_post_rename_hook');
         \OCP\Util::connectHook('OC_Filesystem', 'create', $this, 'filesystem_create_hook');
-        \OCP\Util::connectHook('OC_Filesystem', 'post_create', $this, 'filesystem_post_create_hook');
-        \OCP\Util::connectHook('OC_Filesystem', 'copy', $this, 'filesystem_copy_hook');
-        \OCP\Util::connectHook('OC_Filesystem', 'post_copy', $this, 'filesystem_post_copy_hook');
-        \OCP\Util::connectHook('OC_Filesystem', 'write', $this, 'filesystem_write_hook');
-        \OCP\Util::connectHook('OC_Filesystem', 'post_write', $this, 'filesystem_post_write_hook');
         \OCP\Util::connectHook('OC_Filesystem', 'update', $this, 'filesystem_update_hook');
-        \OCP\Util::connectHook('OC_Filesystem', 'post_update', $this, 'filesystem_post_update_hook');
-        \OCP\Util::connectHook('OC_Filesystem', 'read', $this, 'filesystem_read_hook');
+        \OCP\Util::connectHook('OC_Filesystem', 'rename', $this, 'filesystem_rename_hook');
         \OCP\Util::connectHook('OC_Filesystem', 'delete', $this, 'filesystem_delete_hook');
     }
 
-    public function filesystem_post_create_hook($params) {
+    public function filesystem_create_hook($params) {
         $this->registerAction("create", $params);
     }
 
-    public function filesystem_post_update_hook($params) {
+    public function filesystem_update_hook($params) {
         $this->registerAction("update", $params);
-    }
-
-    public function filesystem_post_rename_hook($params) {
-        $this->registerAction("rename", $params);
-    }
-
-    public function filesystem_post_copy_hook($params) {
-        $this->registerAction("copy", $params);
     }
 
     public function filesystem_delete_hook($params) {
         $this->registerAction("delete", $params);
     }
 
+    public function filesystem_rename_hook($params) {
+        $this->registerMoveAction("rename", $params);
+    }
+
+    private function registerMoveAction($action, $params) {
+        $oldpath = $params[Filesystem::signal_param_oldpath];
+        $newpath = $params[Filesystem::signal_param_newpath];
+        $this->produceMsgWithOldAndNewPath($action, $oldpath, $newpath);
+        $path = " from " . $oldpath . " to " . $newpath;
+        $this->logActionWithPath($action, $path);
+    }
+
     private function registerAction($action, $params) {
-        $path = $params[\OC\Files\Filesystem::signal_param_path];
+        $path = $params[Filesystem::signal_param_path];
         $this->produceMsgWithPath($action, $path);
         $this->logActionWithPath($action, $path);
     }
@@ -83,6 +80,11 @@ class VreHooks
 
     private function produceMsgWithPath($action, $path) {
         $msg = OwnCloudKafkaMsg::makeWithPath($action, $this->findUser(), $path);
+        $this->producer->produceJson($msg);
+    }
+
+    private function produceMsgWithOldAndNewPath($action, $oldpath, $newpath) {
+        $msg = OwnCloudKafkaMsg::makeWithOldAndNewPath($action, $this->findUser(), $oldpath, $newpath);
         $this->producer->produceJson($msg);
     }
 

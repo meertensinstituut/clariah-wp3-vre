@@ -1,12 +1,10 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.FITS_FILES_ROOT;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -16,7 +14,7 @@ public abstract class AbstractRecognizerTest {
 
     @Before
     public void setupAbstract() {
-        fitsService = new FitsService("http://someurl/");
+        fitsService = new FitsService("http://someurl/", FITS_FILES_ROOT);
     }
 
     String testFitsXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

@@ -75,8 +75,6 @@ public class ObjectsRepositoryService {
                 .header("X-DreamFactory-Api-Key", objectsDbKey)
                 .body(recordJson);
 
-//        httpCon.setRequestProperty("X-DreamFactory-Api-Key", dbApiKey);
-
         HttpResponse<String> response = request.asString();
         logger.info("Objects registry responded with: " + response.getStatus() + " - " + response.getStatusText());
 

@@ -77,7 +77,7 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
 
             List<String> resultActions = new ArrayList<>();
             consumerRecords.forEach(record -> {
-                String filePath = JsonPath.parse(record.value()).read("$.userPath");
+                String filePath = JsonPath.parse(record.value()).read("$.path");
                 if(filePath.contains(expectedFilename)) {
                     resultActions.add(JsonPath.parse(record.value()).read("$.action"));
                 }

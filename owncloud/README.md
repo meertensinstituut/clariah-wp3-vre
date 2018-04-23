@@ -12,13 +12,13 @@ Host files and track file activity.
 - Install and configure local client (settings see: `docker-compose.yml`)
 
 ### Test kafka
-Run `./owncloud-bash.sh` and:
+Run:
 ```
-$ php apps/vre/lib/Kafka/ExampleConsumer.php
+$ docker exec vre_owncloud_1 php apps/vre/lib/Kafka/ExampleConsumer.php
 ```
-Run in another console `./owncloud-bash.sh` and:
+Run in another console:
 ```
-$ php apps/vre/lib/Kafka/ExampleProducer.php
+$ docker exec vre_owncloud_1 php apps/vre/lib/Kafka/ExampleProducer.php
 ```
 
 ### Test owncloud hooks

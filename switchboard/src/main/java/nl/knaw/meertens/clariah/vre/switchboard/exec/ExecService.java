@@ -195,7 +195,7 @@ public class ExecService {
         for (Path file : outputFiles) {
             KafkaOwncloudCreateFileDto msg = new KafkaOwncloudCreateFileDto();
             msg.action = "create";
-            msg.userPath = file.toString();
+            msg.path = file.toString();
             msg.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
             msg.user = file.getName(0).toString();
             kafkaOwncloudService.send(msg);

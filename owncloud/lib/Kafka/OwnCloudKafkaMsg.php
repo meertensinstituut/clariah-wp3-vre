@@ -16,7 +16,12 @@ class OwnCloudKafkaMsg
     /**
      * @var string
      */
-    public $userPath;
+    public $path;
+
+    /**
+     * @var string
+     */
+    public $oldPath;
 
     /**
      * @var int
@@ -30,8 +35,7 @@ class OwnCloudKafkaMsg
 
     public static function makeWithOldAndNewPath($action, $user, $oldPath, $newPath) : OwnCloudKafkaMsg {
         $msg = self::setCommonFields($action, $user, $newPath);
-        $msg->newPath = $newPath;
-        $msg->oldPath = $oldPath;
+        $msg->oldPath = self::createUserPath($user, $oldPath);
         return $msg;
     }
 
@@ -45,7 +49,7 @@ class OwnCloudKafkaMsg
         $msg = new OwnCloudKafkaMsg();
         $msg->action = $action;
         $msg->user = $user;
-        $msg->userPath = self::createUserPath($user, $path);
+        $msg->path = self::createUserPath($user, $path);
         $msg->timestamp = time();
         return $msg;
     }

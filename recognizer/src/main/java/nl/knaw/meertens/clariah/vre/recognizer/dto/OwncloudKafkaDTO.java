@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class OwncloudKafkaDTO {
     public String action;
     public String user;
-    public String userPath;
+    public String path;
+    public String oldPath;
     public long timestamp;
 
     @Override
@@ -14,7 +15,8 @@ public class OwncloudKafkaDTO {
         return "OwncloudKafkaDTO{" +
                 "action='" + action + '\'' +
                 ", user='" + user + '\'' +
-                ", userPath='" + userPath + '\'' +
+                ", path='" + path + '\'' +
+                ", oldPath='" + oldPath + '\'' +
                 ", timestamp=" + timestamp +
                 '}';
     }
