@@ -35,7 +35,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
             DB_OBJECTS_DATABASE, DB_OBJECTS_USER, DB_OBJECTS_PASSWORD);
 
     @Test
-    public void testRecognizer_adds_updates_deletes_recordInObjectsRegistry() throws Exception {
+    public void testRecognizer_creates_updates_deletes_recordInObjectsRegistry() throws Exception {
         final String expectedFilename = uploadTestFile();
         TimeUnit.SECONDS.sleep(6);
 

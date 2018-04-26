@@ -36,13 +36,9 @@ import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.UPDATE;
 
 public class App {
 
-    public static final Logger logger = LoggerFactory.getLogger(KafkaConsumerService.class);
+    public static final Logger logger = LoggerFactory.getLogger(App.class);
 
-    private static final FitsService fitsService = new FitsService(FITS_URL, FITS_FILES_ROOT);
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final KafkaConsumerService owncloudConsumerService = new KafkaConsumerService(KAFKA_SERVER, OWNCLOUD_TOPIC_NAME, OWNCLOUD_GROUP_NAME);
-    private static final KafkaProducerService kafkaProducer = new KafkaProducerService(new RecognizerKafkaProducer(KAFKA_SERVER), RECOGNIZER_TOPIC_NAME);
-    private static final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(OBJECTS_DB_URL, OBJECTS_DB_KEY, OBJECT_TABLE);
+    private static final RecognizerService recognizerService = new RecognizerService();
 
     public static void main(String[] args) {
 
@@ -65,55 +61,14 @@ public class App {
         }
     }
 
-    private static void startProducing() {
-        logger.info("Produce test dto...");
-        TestProducer.produce(KAFKA_SERVER, OWNCLOUD_TOPIC_NAME);
-    }
-
     private static void startConsuming() {
-        logger.info("Start consuming owncloud...");
-        consumeOwncloud();
+        logger.info("Start consuming owncloud topic...");
+        recognizerService.consumeOwncloud();
     }
 
-    private static void consumeOwncloud() {
-        owncloudConsumerService.consumeWith((String json) -> {
-            try {
-                OwncloudKafkaDTO msg = objectMapper.readValue(json, OwncloudKafkaDTO.class);
-                FileAction action = FileAction.from(msg.action);
-                if (!ACTIONS_TO_PERSIST.contains(msg.action)) {
-                    logger.info(format("Ignored message about file [%s] with action [%s]", msg.path, msg.action));
-                    return;
-                }
-                if (StringUtils.isBlank(msg.path)) {
-                    throw new IllegalArgumentException(String.format("No field path in owncloud msg [%s]", json));
-                }
-                Report report = new Report();
-                report.setAction(msg.action);
-                report.setUser(msg.user);
-                report.setPath(Paths.get(msg.path).normalize().toString());
-                report.setOldPath(isNull(msg.oldPath) ? null : Paths.get(msg.oldPath).normalize().toString());
-                if (action.equals(CREATE)) {
-                    checkFileType(msg, report);
-                    report.setObjectId(objectsRepository.create(report));
-                } else if (action.equals(UPDATE)) { // update
-                    checkFileType(msg, report);
-                    report.setObjectId(objectsRepository.update(report));
-                } else if (action.equals(RENAME)) {
-                    report.setObjectId(objectsRepository.updatePath(report.getOldPath(), report.getPath()));
-                } else if (action.equals(DELETE)) {
-                    report.setObjectId(objectsRepository.delete(report.getPath()));
-                }
-                kafkaProducer.produceToRecognizerTopic(report);
-            } catch (Exception e) {
-                logger.error("What we've got here is failure to recognize:", e);
-            }
-        });
-    }
-
-    private static void checkFileType(OwncloudKafkaDTO msg, Report report) throws IOException, JAXBException {
-        FitsResult fitsResult = fitsService.checkFile(msg.path);
-        report.setXml(fitsResult.getXml());
-        report.setFits(fitsResult.getFits());
+    private static void startProducing() {
+        logger.info("Produce test msg...");
+        TestProducer.produce(KAFKA_SERVER, OWNCLOUD_TOPIC_NAME);
     }
 
     private static void startTestConsumingRecognizer() {

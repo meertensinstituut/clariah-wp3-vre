@@ -4,6 +4,8 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.CREATE;
+import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.DELETE;
+import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.RENAME;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.UPDATE;
 
 public class Config {
@@ -16,6 +18,11 @@ public class Config {
     public static final String OBJECTS_DB_URL = "http://dreamfactory/api/v2/objects";
     public static final String OBJECTS_DB_KEY = System.getenv("APP_KEY_OBJECTS");
     public static final String OBJECT_TABLE = "/_table/object";
-    public static final List<String> ACTIONS_TO_PERSIST = newArrayList("create", "update", "rename", "delete");
+    public static final List<String> ACTIONS_TO_PERSIST = newArrayList(
+            CREATE.msgValue(),
+            UPDATE.msgValue(),
+            RENAME.msgValue(),
+            DELETE.msgValue()
+    );
     public static final String ACTION_RENAME = "update";
 }
