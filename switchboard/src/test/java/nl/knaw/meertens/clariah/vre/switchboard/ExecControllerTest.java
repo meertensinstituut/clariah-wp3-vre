@@ -71,8 +71,8 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
                 .get();
 
         assertThat(pollStatusResponse.getStatus()).isEqualTo(200);
-        String jsonGetAfter6Secs = pollStatusResponse.readEntity(String.class);
-        assertThatJson(jsonGetAfter6Secs).node("status").isEqualTo("FINISHED");
+        String jsonGetAfterWait = pollStatusResponse.readEntity(String.class);
+        assertThatJson(jsonGetAfterWait).node("status").isEqualTo("FINISHED");
 
         // Atm links are kept:
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, testFile).toFile()).exists();
