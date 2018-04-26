@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.recognizer;
+package nl.knaw.meertens.clariah.vre.fits;
 
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.Fits;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.ObjectFactory;
@@ -23,7 +23,7 @@ public class FitsService {
     private URL fitsUrl;
     private Unmarshaller unmarshaller;
 
-    FitsService(String fitsUrl, String fitsFilesRoot) {
+    public FitsService(String fitsUrl, String fitsFilesRoot) {
         this.fitsFilesRoot = fitsFilesRoot;
         try {
             this.fitsUrl = new URL(fitsUrl);
@@ -34,18 +34,16 @@ public class FitsService {
         }
     }
 
-    public Report checkFile(String path) throws IOException, JAXBException {
+    public FitsResult checkFile(String path) throws IOException, JAXBException {
         String fitsPath = Paths
                 .get(fitsFilesRoot, path)
-                .normalize()
                 .toString();
-        logger.info("FitsService is checking file: " + fitsPath);
+        logger.info(String.format("FitsService is checking file [%s", fitsPath));
         String fitsXmlResult = requestFits(fitsPath);
-        Report report = new Report();
-        report.setPath(fitsPath);
-        report.setXml(fitsXmlResult);
-        report.setFits(unmarshalFits(fitsXmlResult));
-        return report;
+        FitsResult fitsResult = new FitsResult();
+        fitsResult.setXml(fitsXmlResult);
+        fitsResult.setFits(unmarshalFits(fitsXmlResult));
+        return fitsResult;
     }
 
     private String requestFits(String path) throws IOException {

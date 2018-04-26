@@ -7,6 +7,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
+@Ignore
 public class DeployServiceTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -44,8 +46,10 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         TimeUnit.SECONDS.sleep(6);
 
         long inputFileId = getObjectIdFromRegistry(inputFile);
+        logger.info(String.format("input file has object id [%d]", inputFileId));
 
         String workDir = startDeploymentWithInputFileId(inputFileId);
+        logger.info(String.format("deployment has workdir [%s]", workDir));
 
         TimeUnit.SECONDS.sleep(1);
 
@@ -58,6 +62,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         checkNewFileCanBeAddedIn7Seconds();
 
         String resultFile = checkDeploymentIsFinished(workDir, "result.txt");
+        logger.info(String.format("deployment has result file [%s]", resultFile));
 
         checkResultCanBeDownloaded(resultFile);
 

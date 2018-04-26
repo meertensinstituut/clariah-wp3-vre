@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.recognizer;
+package nl.knaw.meertens.clariah.vre.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -14,12 +14,12 @@ import static java.util.Collections.singletonList;
 public class KafkaConsumerService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final String topic;
     private final KafkaConsumer<String, String> consumer;
+    private final String topic;
 
-    KafkaConsumerService(String server, String topic, String group) {
+    public KafkaConsumerService(String server, String topic, String group) {
+        this.consumer = configureConsumer(server, group);
         this.topic = topic;
-        consumer = configureConsumer(server, group);
     }
 
     private KafkaConsumer<String, String> configureConsumer(String server, String groupName) {
@@ -36,9 +36,10 @@ public class KafkaConsumerService {
 
     public void consumeWith(Consumer<String> consumerFunction) {
         consumer.subscribe(singletonList(topic));
-        logger.info("Subscribed to topic " + topic);
+        logger.info(String.format("Subscribed to topic [%s]", topic));
         while (true) {
-            ConsumerRecords<String, String> records = consumer.poll(100);
+            logger.info(String.format("Polling topic [%s]", topic));
+            ConsumerRecords<String, String> records = consumer.poll(1000);
             for (ConsumerRecord<String, String> record : records) {
                 consumeRecordWith(record, consumerFunction);
             }
@@ -46,11 +47,10 @@ public class KafkaConsumerService {
     }
 
     private void consumeRecordWith(ConsumerRecord<String, String> record, Consumer<String> func) {
-        logger.info("consume dto ["
-            + "offset: " + record.offset() + "; "
-            + "key: " + record.key() + "; "
-            + "value; " + record.value() + "]"
-        );
+        logger.info(String.format(
+                "consume dto [offset: %d; key: %s; value; %s]",
+                record.offset(), record.key(), record.value()
+        ));
         try {
             func.accept(record.value());
         } catch (Exception e) {

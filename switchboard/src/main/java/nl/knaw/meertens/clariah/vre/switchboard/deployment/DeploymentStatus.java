@@ -1,5 +1,11 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
+import java.util.Arrays;
+
+/**
+ * Valid http responses during deployment of
+ * service and polling of deployed service.
+ */
 public enum DeploymentStatus {
 
     FINISHED(200, true),
@@ -60,14 +66,14 @@ public enum DeploymentStatus {
      * Get poll status corresponding to http status code
      */
     public static DeploymentStatus getPollStatus(int httpStatus) {
-        for(DeploymentStatus deploymentStatus : DeploymentStatus.values()) {
-            if(deploymentStatus.isPollStatus() && deploymentStatus.httpStatus == httpStatus) {
+        for (DeploymentStatus deploymentStatus : DeploymentStatus.values()) {
+            if (deploymentStatus.isPollStatus() && deploymentStatus.httpStatus == httpStatus) {
                 return deploymentStatus;
             }
         }
         throw new IllegalArgumentException(String.format(
-                "Poll response with http code [%d] does not exist",
-                httpStatus
+                "Response of status request is unexpected: was [%s] but should be in [%s]",
+                httpStatus, Arrays.toString(getAllPollStatuses())
         ));
     }
 
@@ -75,14 +81,27 @@ public enum DeploymentStatus {
      * Get deployment status corresponding to http status code
      */
     public static DeploymentStatus getDeployStatus(int httpStatus) {
-        for(DeploymentStatus deploymentStatus : DeploymentStatus.values()) {
-            if(!deploymentStatus.pollable && deploymentStatus.httpStatus == httpStatus) {
+        for (DeploymentStatus deploymentStatus : DeploymentStatus.values()) {
+            if (!deploymentStatus.pollable && deploymentStatus.httpStatus == httpStatus) {
                 return deploymentStatus;
             }
         }
         throw new IllegalArgumentException(String.format(
-                "Deployment response with http code [%d] does not exist",
-                httpStatus
+                "Response of requested deployment is unexpected: was [%s] but should be in [%s]",
+                httpStatus, Arrays.toString(getAllDeployStatuses())
         ));
     }
+
+    private static Object[] getAllDeployStatuses() {
+        return Arrays.stream(DeploymentStatus.values())
+                .filter(DeploymentStatus::isDeployStatus)
+                .toArray();
+    }
+
+    private static Object[] getAllPollStatuses() {
+        return Arrays.stream(DeploymentStatus.values())
+                .filter(DeploymentStatus::isPollStatus)
+                .toArray();
+    }
+
 }

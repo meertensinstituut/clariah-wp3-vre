@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.recognizer.dto;
+package nl.knaw.meertens.clariah.vre.recognizer;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

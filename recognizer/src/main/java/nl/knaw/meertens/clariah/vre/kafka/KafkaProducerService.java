@@ -1,13 +1,16 @@
-package nl.knaw.meertens.clariah.vre.recognizer;
+package nl.knaw.meertens.clariah.vre.kafka;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.recognizer.dto.RecognizerKafkaDTO;
+import nl.knaw.meertens.clariah.vre.recognizer.Report;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.IdentificationType.Identity;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+
+import static java.util.Objects.isNull;
 
 public class KafkaProducerService {
 
@@ -16,11 +19,14 @@ public class KafkaProducerService {
     private final String topic;
 
     private RecognizerKafkaProducer producer;
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper;
 
-    KafkaProducerService(RecognizerKafkaProducer recognizerKafkaProducer, String topic) {
+    public KafkaProducerService(RecognizerKafkaProducer recognizerKafkaProducer, String topic) {
         this.topic = topic;
         producer = recognizerKafkaProducer;
+
+        mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     public void produceToRecognizerTopic(Report report) throws IOException {
@@ -31,12 +37,16 @@ public class KafkaProducerService {
 
     private RecognizerKafkaDTO createKafkaMsg(Report report) {
         RecognizerKafkaDTO result = new RecognizerKafkaDTO();
-        Identity identity = report.getFits().getIdentification().getIdentity().get(0);
         result.objectId = report.getObjectId();
-        result.fitsFormat = identity.getFormat();
-        result.fitsMimetype = identity.getMimetype();
         result.path = report.getPath();
-        result.fitsFullResult = report.getXml();
+        result.action = report.getAction();
+        result.oldPath = report.getOldPath();
+        if(!isNull(report.getXml())) {
+            result.fitsFullResult = report.getXml();
+            Identity identity = report.getFits().getIdentification().getIdentity().get(0);
+            result.fitsFormat = identity.getFormat();
+            result.fitsMimetype = identity.getMimetype();
+        }
         return result;
     }
 

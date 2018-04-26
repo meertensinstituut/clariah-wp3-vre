@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
+import nl.knaw.meertens.clariah.vre.fits.FitsService;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;

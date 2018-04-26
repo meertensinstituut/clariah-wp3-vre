@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.recognizer;
+package nl.knaw.meertens.clariah.vre.kafka;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 

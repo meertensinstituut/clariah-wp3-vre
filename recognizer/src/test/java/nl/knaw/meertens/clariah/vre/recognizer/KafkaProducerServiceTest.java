@@ -1,5 +1,7 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
+import nl.knaw.meertens.clariah.vre.kafka.KafkaProducerService;
+import nl.knaw.meertens.clariah.vre.kafka.RecognizerKafkaProducer;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.Fits;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;

@@ -4,12 +4,16 @@ import nl.knaw.meertens.clariah.vre.recognizer.fits.output.Fits;
 
 import java.nio.file.Paths;
 
+import static java.util.Objects.isNull;
+
 public class Report {
     private Fits fits;
     private String xml;
     private String path;
     private String user;
     private Long objectId;
+    private String oldPath;
+    private String action;
 
     public Fits getFits() {
         return fits;
@@ -32,7 +36,7 @@ public class Report {
     }
 
     public void setPath(String path) {
-        this.path = Paths.get(path).normalize().toString();
+        this.path = path;
     }
 
     public String getUser() {
@@ -49,5 +53,21 @@ public class Report {
 
     public Long getObjectId() {
         return objectId;
+    }
+
+    public void setOldPath(String oldPath) {
+        this.oldPath = oldPath;
+    }
+
+    public String getOldPath() {
+        return oldPath;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public String getAction() {
+        return action;
     }
 }
