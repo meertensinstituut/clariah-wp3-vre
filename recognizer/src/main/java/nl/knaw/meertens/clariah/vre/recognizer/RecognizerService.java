@@ -31,6 +31,7 @@ import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.CREATE;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.DELETE;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.RENAME;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.UPDATE;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class RecognizerService {
 
@@ -47,28 +48,18 @@ public class RecognizerService {
                 OwncloudKafkaDTO msg = objectMapper.readValue(json, OwncloudKafkaDTO.class);
                 FileAction action = FileAction.from(msg.action);
                 if (!ACTIONS_TO_PERSIST.contains(msg.action)) {
-                    logger.info(format("Ignored message about file [%s] with action [%s]", msg.path, msg.action));
+                    logger.info(format(
+                            "Ignored message about file [%s] with action [%s]",
+                            msg.path, msg.action));
                     return;
                 }
-                if (StringUtils.isBlank(msg.path)) {
-                    throw new IllegalArgumentException(String.format("No field path in owncloud msg [%s]", json));
+                if (isBlank(msg.path)) {
+                    throw new IllegalArgumentException(String.format(
+                            "No field path in owncloud msg [%s]", json
+                    ));
                 }
-                Report report = new Report();
-                report.setAction(msg.action);
-                report.setUser(msg.user);
-                report.setPath(Paths.get(msg.path).normalize().toString());
-                report.setOldPath(isNull(msg.oldPath) ? null : Paths.get(msg.oldPath).normalize().toString());
-                if (action.equals(CREATE)) {
-                    checkFileType(msg, report);
-                    report.setObjectId(objectsRepository.create(report));
-                } else if (action.equals(UPDATE)) {
-                    checkFileType(msg, report);
-                    report.setObjectId(objectsRepository.update(report));
-                } else if (action.equals(RENAME)) {
-                    report.setObjectId(objectsRepository.updatePath(report.getOldPath(), report.getPath()));
-                } else if (action.equals(DELETE)) {
-                    report.setObjectId(objectsRepository.delete(report.getPath()));
-                }
+                Report report = mapToReport(msg);
+                handleFileActions(action, report);
                 kafkaProducer.produceToRecognizerTopic(report);
             } catch (Exception e) {
                 logger.error("What we've got here is failure to recognize:", e);
@@ -76,8 +67,36 @@ public class RecognizerService {
         });
     }
 
-    private void checkFileType(OwncloudKafkaDTO msg, Report report) throws IOException, JAXBException {
-        FitsResult fitsResult = fitsService.checkFile(msg.path);
+    private Report mapToReport(OwncloudKafkaDTO msg) {
+        Report report = new Report();
+        report.setAction(msg.action);
+        report.setUser(msg.user);
+        report.setPath(Paths.get(msg.path).normalize().toString());
+        report.setOldPath(isNull(msg.oldPath) ? null : Paths.get(msg.oldPath).normalize().toString());
+        return report;
+    }
+
+    private void handleFileActions(
+            FileAction action,
+            Report report
+    ) throws IOException, JAXBException {
+        if (action.equals(CREATE)) {
+            checkFileType(report);
+            report.setObjectId(objectsRepository.create(report));
+        } else if (action.equals(UPDATE)) {
+            checkFileType(report);
+            report.setObjectId(objectsRepository.update(report));
+        } else if (action.equals(RENAME)) {
+            report.setObjectId(objectsRepository.updatePath(report.getOldPath(), report.getPath()));
+        } else if (action.equals(DELETE)) {
+            report.setObjectId(objectsRepository.delete(report.getPath()));
+        }
+    }
+
+    private void checkFileType(
+            Report report
+    ) throws IOException, JAXBException {
+        FitsResult fitsResult = fitsService.checkFile(report.getPath());
         report.setXml(fitsResult.getXml());
         report.setFits(fitsResult.getFits());
     }

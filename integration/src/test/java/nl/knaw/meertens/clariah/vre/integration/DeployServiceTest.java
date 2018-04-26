@@ -61,7 +61,6 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         checkNewFileCanBeAddedIn7Seconds();
 
         String resultFile = checkDeploymentIsFinished(workDir, "result.txt");
-        logger.info(String.format("deployment has result file [%s]", resultFile));
 
         checkResultCanBeDownloaded(resultFile);
 
@@ -74,12 +73,14 @@ public class DeployServiceTest extends AbstractIntegrationTest {
     }
 
     private void checkFileCanBeDownloaded(String inputFile) throws UnirestException {
+        logger.info(String.format("check file [%s] can be downloaded", inputFile));
         HttpResponse<String> downloadResult = downloadFile(inputFile);
         assertThat(downloadResult.getBody()).isEqualTo(someContent);
         assertThat(downloadResult.getStatus()).isEqualTo(200);
     }
 
     private void checkFilesAreUnlocked(String inputFile) throws UnirestException {
+        logger.info(String.format("check file [%s] is unlocked", inputFile));
         HttpResponse<String> downloadResult = downloadFile(inputFile);
         assertThat(downloadResult.getBody()).isEqualTo(someContent);
         assertThat(downloadResult.getStatus()).isIn(200, 202);
@@ -92,12 +93,14 @@ public class DeployServiceTest extends AbstractIntegrationTest {
     }
 
     private void checkStatusIsRunning(String workDir) throws UnirestException {
+        logger.info(String.format("check status is running of [%s]", workDir));
         HttpResponse<String> getDeploymentStatus = getDeploymentStatus(workDir);
         assertThat(getDeploymentStatus.getStatus()).isIn(200, 202);
         assertThatJson(getDeploymentStatus.getBody()).node("status").matches(containsString("RUNNING"));
     }
 
     private void checkFileIsLocked(String inputFile) throws UnirestException {
+        logger.info(String.format("check file [%s] is locked", inputFile));
         HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
         assertThat(putAfterDeployment.getStatus()).isIn(403, 500);
 
@@ -106,19 +109,24 @@ public class DeployServiceTest extends AbstractIntegrationTest {
     }
 
     private void checkResultCanBeDownloaded(String resultFile) throws UnirestException {
+        logger.info(String.format("check file [%s] can be downloaded", resultFile));
         HttpResponse<String> downloadResultTxt = downloadFile(resultFile);
         assertThat(downloadResultTxt.getBody()).contains("Insanity");
     }
 
     private String checkDeploymentIsFinished(String workDir, String resultFileName) throws UnirestException {
+        logger.info(String.format("check deployment [%s] finished", workDir));
         HttpResponse<String> finishedDeployment = getDeploymentStatus(workDir);
         assertThat(finishedDeployment.getStatus()).isIn(200, 202);
         logger.info("finished deployment result: " + finishedDeployment.getBody());
         assertThatJson(finishedDeployment.getBody()).node("status").matches(containsString("FINISHED"));
-        return getOutputFilePath(finishedDeployment, resultFileName);
+        String outputFilePath = getOutputFilePath(finishedDeployment, resultFileName);
+        logger.info(String.format("deployment has result file [%s]", outputFilePath));
+        return outputFilePath;
     }
 
     private void checkKafkaMsgsAreCreatedForOutputFiles(String outputFilename) throws InterruptedException {
+        logger.info(String.format("check kafka message is created for output file [%s]", outputFilename));
         KafkaConsumerService owncloudKafkaConsumer = getOwncloudTopic();
         owncloudKafkaConsumer.consumeAll(consumerRecords -> {
             assertThat(consumerRecords.size()).isGreaterThan(0);
@@ -135,6 +143,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
     }
 
     private void checkNewFileCanBeAddedIn7Seconds() throws UnirestException, InterruptedException, SQLException {
+        logger.info("check a new file can be added");
         // Check a new file can be added:
         String newInputFile = uploadTestFile(someContent);
         assertThat(downloadFile(newInputFile).getStatus()).isEqualTo(200);
@@ -148,7 +157,9 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         Path pathAbsolute = Paths.get(outputDir);
         Path pathBase = Paths.get("admin/files/");
         Path pathRelative = pathBase.relativize(pathAbsolute);
-        return Paths.get(pathRelative.toString(), resultFileName).toString();
+        String outputPath = Paths.get(pathRelative.toString(), resultFileName).toString();
+        logger.info(String.format("output file path is [%s]", outputPath));
+        return outputPath;
     }
 
     private long getObjectIdFromRegistry(String inputFile) throws SQLException {
