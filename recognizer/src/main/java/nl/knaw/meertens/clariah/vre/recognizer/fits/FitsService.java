@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.fits;
+package nl.knaw.meertens.clariah.vre.recognizer.fits;
 
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.Fits;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.ObjectFactory;

@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.kafka;
+package nl.knaw.meertens.clariah.vre.recognizer.kafka;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;

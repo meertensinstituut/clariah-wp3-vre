@@ -102,10 +102,14 @@ public class CrudObjectTest extends AbstractIntegrationTest {
                 .body("<!DOCTYPE html>\n" +
                         "<html>\n" +
                         "<head>\n" +
+                        "<title>Hello world</title>\n" +
+                        "<link media=\"all\" rel=\"stylesheet\" href=\"styles.css\" />\n" +
                         "</head>\n" +
                         "<body>\n" +
-                        "<div>Lorem ipsum!</div></body></html>")
-                .asString();
+                        "<div>Lorem ipsum!</div>" +
+                        "</body>" +
+                        "</html>"
+                ).asString();
     }
 
     private void checkFileTypeIsStillText(String newHtmlFileName) throws SQLException {

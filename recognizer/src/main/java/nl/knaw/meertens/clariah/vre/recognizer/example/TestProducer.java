@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.example;
+package nl.knaw.meertens.clariah.vre.recognizer.example;
 
 import java.util.Properties;
 import org.apache.kafka.clients.producer.Producer;

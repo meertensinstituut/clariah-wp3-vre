@@ -1,13 +1,13 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.fits.FitsResult;
-import nl.knaw.meertens.clariah.vre.fits.FitsService;
-import nl.knaw.meertens.clariah.vre.kafka.KafkaConsumerService;
-import nl.knaw.meertens.clariah.vre.kafka.KafkaProducerService;
-import nl.knaw.meertens.clariah.vre.kafka.OwncloudKafkaDTO;
-import nl.knaw.meertens.clariah.vre.kafka.RecognizerKafkaProducer;
-import org.apache.commons.lang3.StringUtils;
+import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsResult;
+import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
+import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaConsumerService;
+import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaProducerService;
+import nl.knaw.meertens.clariah.vre.recognizer.kafka.OwncloudKafkaDTO;
+import nl.knaw.meertens.clariah.vre.recognizer.kafka.RecognizerKafkaProducer;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

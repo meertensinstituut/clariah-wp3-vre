@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.recognizer;
+package nl.knaw.meertens.clariah.vre.recognizer.object;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,8 +12,8 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
+import nl.knaw.meertens.clariah.vre.recognizer.Report;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.IdentificationType.Identity;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ public class ObjectsRepositoryService {
     private final String objectTable;
     private final ParseContext jsonPath;
 
-    ObjectsRepositoryService(String objectsDbUrl, String objectsDbKey, String objectTable) {
+    public ObjectsRepositoryService(String objectsDbUrl, String objectsDbKey, String objectTable) {
         this.objectsDbUrl = objectsDbUrl;
         this.objectsDbKey = objectsDbKey;
         this.objectTable = objectTable;

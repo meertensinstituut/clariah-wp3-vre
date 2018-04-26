@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.Fits;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

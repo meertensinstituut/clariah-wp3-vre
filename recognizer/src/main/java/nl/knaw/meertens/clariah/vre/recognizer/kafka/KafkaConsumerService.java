@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.kafka;
+package nl.knaw.meertens.clariah.vre.recognizer.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
