@@ -68,12 +68,18 @@ services:
     build: ./deployment-service
     volumes:
       - ./deployment-service/conf:/conf
+      - deployment-volume:/tmp/wd/
+      - data-volume:/usr/local/owncloud
+      # share maven repository of host:
+      - ${HOME}/.m2/repository:/root/.m2/repository
     depends_on:
       - dreamfactory
     environment:
       USER_SERVICES_EMAIL: ${USER_SERVICES_EMAIL}
       USER_SERVICES_PASSWORD: ${USER_SERVICES_PASSWORD}
       APP_KEY_SERVICES: ${APP_KEY_SERVICES}
+    ports:
+      - 9999:8080
 
   indexer:
     build: ./indexer/indexer

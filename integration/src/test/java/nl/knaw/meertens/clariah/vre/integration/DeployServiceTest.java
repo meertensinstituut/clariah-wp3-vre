@@ -50,7 +50,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         String workDir = startDeploymentWithInputFileId(inputFileId);
         logger.info(String.format("deployment has workdir [%s]", workDir));
 
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(3);
 
         checkStatusIsRunning(workDir);
 

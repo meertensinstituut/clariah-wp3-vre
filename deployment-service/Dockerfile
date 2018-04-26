@@ -11,6 +11,5 @@ RUN apt-get update && \
 CMD ["catalina.sh", "run"]
 ADD . /tmp/deployment
 RUN cd /tmp/deployment &&\
-    ls -all &&\
-    mvn package &&\
+    mvn clean install &&\
     cp deployment-api/target/deployment-api.war /usr/local/tomcat/webapps/deployment-service.war

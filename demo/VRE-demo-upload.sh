@@ -1,10 +1,12 @@
 #!/bin/bash
 
+#wget --method=PUT "--header=Content-Type: text/plain; charset=UTF-8" --body-file=nos.txt --user=admin --password=admin http://localhost:8082/remote.php/webdav/nos.txt
+
 curl -v 'http://localhost:8082/remote.php/webdav/nos.txt' \
      -X PUT \
      -H 'Content-Type: text/plain; charset=UTF-8' \
      -u admin:admin \
-     -d '@nos.txt'
+     --data-binary '@nos.txt'
 
 sleep 5
 
