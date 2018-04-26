@@ -40,7 +40,6 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private static Integer id;
 
-    @Ignore
     @Test
     public void testOwncloudFileUpload() throws Exception {
         logger.info("Test upload and download of file");
@@ -67,7 +66,6 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
 
     }
 
-    @Ignore
     @Test
     public void testOwncloudProducesKafkaMessagesAfterFileUpload() throws Exception {
         String expectedFilename = getRandomFilenameWithTime();
@@ -105,7 +103,6 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
 
     }
 
-    @Ignore
     @Test
     public void testRecognizerProducesKafkaMessagesAfterFileUpload() throws Exception {
         KafkaConsumerService recognizerKafkaConsumer = getRecognizerTopic();

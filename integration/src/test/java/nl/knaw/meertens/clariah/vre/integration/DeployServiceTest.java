@@ -24,7 +24,6 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
-@Ignore
 public class DeployServiceTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());

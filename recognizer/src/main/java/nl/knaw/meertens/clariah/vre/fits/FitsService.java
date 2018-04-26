@@ -38,7 +38,7 @@ public class FitsService {
         String fitsPath = Paths
                 .get(fitsFilesRoot, path)
                 .toString();
-        logger.info(String.format("FitsService is checking file [%s", fitsPath));
+        logger.info(String.format("FitsService is checking file [%s]", fitsPath));
         String fitsXmlResult = requestFits(fitsPath);
         FitsResult fitsResult = new FitsResult();
         fitsResult.setXml(fitsXmlResult);
