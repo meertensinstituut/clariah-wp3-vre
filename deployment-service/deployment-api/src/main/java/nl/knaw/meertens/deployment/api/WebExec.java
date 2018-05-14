@@ -123,18 +123,20 @@ public class WebExec {
         if (plugin!=null) {
             status = plugin.getStatus(pid);
             
-            Long completionCode = (Long)status.get("completion");
-            Boolean successCode = (Boolean)status.get("success");
+            Boolean finished = (Boolean)status.get("finished");
 
-            if (completionCode == 100L && successCode) {
+            if (finished) {
                 res = Response.ok(status.toString(), MediaType.APPLICATION_JSON).build();
             } else {
-                res = Response.status(202, "Task running").build();
+                res = Response.status(202).entity(status.toString()).type(MediaType.APPLICATION_JSON).build();
             }
             return res;
 
         } else {
-            res = Response.status(404, "Task not found").build();
+            status.put("status", 404);
+            status.put("message", "Task not found");
+            status.put("finished", false);
+            res = Response.status(404).entity(status.toString()).type(MediaType.APPLICATION_JSON).build();
         }
         status.put("id", pid);
         

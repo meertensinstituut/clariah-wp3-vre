@@ -17,7 +17,7 @@
         <cmdp:Name>Ucto Tokeniser</cmdp:Name>
         <cmdp:Description>Ucto is a unicode-compliant tokeniser. It takes input in the form of one or more untokenised texts, and subsequently tokenises them. Several languages are supported, but the software is extensible to other languages.</cmdp:Description>
         <cmdp:ServiceDescriptionLocation>
-          <cmdp:Location>http://127.0.0.1:8080/ucto</cmdp:Location>
+          <cmdp:Location>http://lamachine/ucto</cmdp:Location>
         </cmdp:ServiceDescriptionLocation>
         <cmdp:Operations>
           <cmdp:Operation>
