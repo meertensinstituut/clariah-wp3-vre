@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "clean work dirs in temp deployment volume..."
+echo "remove work dirs in tmp deployment volume..."
 rm -rf "${DEPLOYMENT_VOLUME}"/*
 
 echo "build switchboard..." && \

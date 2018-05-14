@@ -5,8 +5,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -15,9 +17,11 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +29,7 @@ import java.util.Set;
 
 import static java.nio.file.Files.getFileAttributeView;
 import static java.nio.file.Files.setPosixFilePermissions;
+import static java.nio.file.LinkOption.*;
 import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
@@ -85,6 +90,7 @@ public class OwncloudFileService implements FileService {
         }
         for (String file : inputFiles) {
             unlock(file);
+            ls();
         }
         Path outputFilesDir = moveOutputFiles(workDir, inputFiles.get(0));
         unlockOutputFiles(outputFilesDir);
@@ -107,6 +113,23 @@ public class OwncloudFileService implements FileService {
             logger.error(String.format("Could not lock file [%s]", fileString), e);
         }
         logger.info(String.format("Locked file [%s]", file));
+        ls();
+    }
+
+    private void ls() {
+        try {
+            StringBuilder output = new StringBuilder();
+            Process p = Runtime.getRuntime().exec("ls -al ../owncloud/admin/files");
+            p.waitFor();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = "";
+            while ((line = reader.readLine())!= null) {
+                output.append(line + "\n");
+            }
+            logger.info(output.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -257,8 +280,11 @@ public class OwncloudFileService implements FileService {
 
     private void chown(Path file, String user) throws IOException {
         UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
-        GroupPrincipal group = lookupService.lookupPrincipalByGroupName(user);
-        getFileAttributeView(file, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(group);
+        PosixFileAttributeView fileAttributeView = getFileAttributeView(
+                file, PosixFileAttributeView.class, NOFOLLOW_LINKS
+        );
+        fileAttributeView.setGroup(lookupService.lookupPrincipalByGroupName(user));
+        fileAttributeView.setOwner(lookupService.lookupPrincipalByName(user));
     }
 
     private Set<PosixFilePermission> get644() {

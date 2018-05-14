@@ -36,12 +36,12 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
                     .header("X-DreamFactory-Api-Key", objectsDbKey)
                     .asString();
         } catch (UnirestException e) {
-            return handleException(e, "Could not retrieve object record [%d] from objects repository", id.toString());
+            return handleException(e, "Could not retrieve object record [%d] from registry", id.toString());
         }
-        logger.info(String.format("Requested object with id [%d] from registry: [%s]", id, response.getBody()));
         ObjectsRecordDTO result = new ObjectsRecordDTO();
         result.id = id;
         result.filepath = JsonPath.parse(response.getBody()).read("filepath");
+        logger.info(String.format("Requested [%d] from registry, received object of [%s]", id, result.filepath));
         return result;
     }
 

@@ -35,7 +35,7 @@ public class Test implements RecipePlugin {
         System.out.println(String.format("Create TEST deployment with workDir [%s]", key));
         try {
             System.out.println("Start 5 second run...");
-            Thread.sleep(7);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             System.out.println("Test service was interrupted.");
         }

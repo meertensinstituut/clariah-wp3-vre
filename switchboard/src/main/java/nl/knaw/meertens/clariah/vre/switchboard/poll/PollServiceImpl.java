@@ -63,7 +63,6 @@ public class PollServiceImpl implements PollService {
             try {
                 while (true) {
                     TimeUnit.SECONDS.sleep(1);
-                    logger.info("Start polling...");
                     poll();
                 }
             } catch (InterruptedException e) {
@@ -92,12 +91,7 @@ public class PollServiceImpl implements PollService {
     }
 
     private boolean inNeedOfPolling(DeploymentStatusReport report) {
-        if(report.getStatus() == DeploymentStatus.FINISHED) {
-            return false;
-        }
-        return true;
-//        LocalDateTime nextPollMoment = report.getPolled().plusSeconds(report.getInterval());
-//        return now().isAfter(nextPollMoment);
+        return report.getStatus() != DeploymentStatus.FINISHED;
     }
 
     private void runConsumer(DeploymentStatusReport report) {
