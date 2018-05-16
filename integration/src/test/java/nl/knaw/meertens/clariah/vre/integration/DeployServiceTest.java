@@ -45,9 +45,15 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         );
     }
 
+    /**
+     * Test switchboard and deployment-service before, during and after deployment of TEST-service.
+     * For details of TEST-service, see Test-class in deployment-service
+     */
     @Test
     public void testDeployment_locksFiles_movesOutput_unlocksFiles() throws Exception {
         String inputFile = uploadTestFile(someContent);
+
+        // wait for services to process new file:
         TimeUnit.SECONDS.sleep(6);
 
         long inputFileId = getObjectIdFromRegistry(inputFile);
@@ -56,17 +62,25 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         String workDir = startDeploymentWithInputFileId(inputFileId);
         logger.info(String.format("deployment has workdir [%s]", workDir));
 
-        checkDeploymentStatus(workDir, 7, "RUNNING");
+        checkDeploymentStatus(workDir, 6, "RUNNING");
+
+        // wait for occ cronjob to scan all files:
+        // (see owncloud/docker-scan-files.sh)
+        TimeUnit.SECONDS.sleep(6);
 
         checkFileCanBeDownloaded(inputFile);
 
         checkFileIsLocked(inputFile);
 
         String newInputFile = uploadTestFile(someContent);
+
+        // wait for services to process new file:
         TimeUnit.SECONDS.sleep(6);
 
         checkNewFileCanBeAdded(newInputFile);
 
+        // wait for TEST deployment to finish:
+        TimeUnit.SECONDS.sleep(6);
         String resultFile = checkDeploymentIsFinished(workDir);
 
         checkResultCanBeDownloaded(resultFile);
@@ -76,6 +90,8 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         checkKafkaMsgsAreCreatedForOutputFiles(resultFile);
 
         String secondNewInputFile = uploadTestFile(someContent);
+
+        // wait for services to process new file:
         TimeUnit.SECONDS.sleep(6);
 
         checkNewFileCanBeAdded(secondNewInputFile);

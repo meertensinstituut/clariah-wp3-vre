@@ -35,6 +35,7 @@ import static org.apache.http.auth.AuthScope.ANY_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 
+@Ignore
 public class UploadingNewFileTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
