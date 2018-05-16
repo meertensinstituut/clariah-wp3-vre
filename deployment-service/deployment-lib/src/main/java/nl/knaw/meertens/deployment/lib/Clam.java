@@ -101,23 +101,26 @@ public class Clam implements RecipePlugin {
             
             // keep polling project
             System.out.println("## Polling the service ##");
+            boolean ready = false;
             int i = 0;
-            while (!this.finished()) {
+            while (!ready) {
                 System.out.println("polling " + Integer.toString(i));
                 i++;
                 Thread.sleep(3000);
-                this.getStatus(projectName);
+                JSONObject projectStatus = this.getProjectStatus(projectName);        
+                Long completionCode = (Long)projectStatus.get("completion");
+                Long statusCode = (Long)projectStatus.get("statuscode");
+                Boolean successCode = (Boolean)projectStatus.get("success");
+                ready = (completionCode == 100L && statusCode == 2L && successCode);
             }
             
             System.out.println("## Download result ##");
             this.downloadProject(projectName);
             
-            System.out.println("## Removing project ##");
-            if (this.finished()) {
-                this.deleteProject(projectName);
-                Queue queue = new Queue();
-                queue.removeTask(projectName);
-            }
+//          System.out.println("## Removing project ##");
+//          this.deleteProject(projectName);
+
+            this.isFinished = true;
             
         } catch (IOException ex ) {
             Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
@@ -250,12 +253,32 @@ public class Clam implements RecipePlugin {
      *
      * @param key
      * @return
+     */
+    @Override
+    public JSONObject getStatus(String key) {
+        // JSONObject status to return
+        JSONObject status = new JSONObject();
+        if (this.isFinished) {
+            status.put("status", 200);
+            status.put("message", "Task finished");
+            status.put("finished", true);
+        } else {
+            status.put("status", 202);
+            status.put("message", "Task running");
+            status.put("finished", false);
+        }
+        return status;
+    }   
+    
+    /**
+     *
+     * @param key
+     * @return
      * @throws IOException
      * @throws MalformedURLException
      * @throws JDOMException
      */
-    @Override
-    public JSONObject getStatus(String key) throws IOException, MalformedURLException, JDOMException {
+    public JSONObject getProjectStatus(String key) throws IOException, MalformedURLException, JDOMException {
         try {
             return this.pollProject(key);
         } catch (ParseException ex) {
@@ -263,6 +286,7 @@ public class Clam implements RecipePlugin {
         }
         return null;
     }   
+
     
 //    public JSONObject loadConfigureFile(String wd) throws ConfigurationException {
 //        JSONObject json = new JSONObject();
@@ -300,9 +324,9 @@ public class Clam implements RecipePlugin {
         Long statusCode = (Long)json.get("statuscode");
         Boolean successCode = (Boolean)json.get("success");
         
-        if (completionCode == 100L && statusCode == 2L && successCode) {
-            this.isFinished = true;
-        }
+//        if (completionCode == 100L && statusCode == 2L && successCode) {
+//            this.isFinished = true;
+//        }
              
         json.put("status", httpCon.getResponseCode());
         json.put("message", httpCon.getResponseMessage());

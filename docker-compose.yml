@@ -71,7 +71,7 @@ services:
       - deployment-volume:/tmp/wd/
       - data-volume:/usr/local/owncloud
       # share maven repository of host:
-      - ${HOME}/.m2/repository:/root/.m2/repository
+      - maven-m2:/root/.m2/repository
     depends_on:
       - dreamfactory
     environment:
@@ -96,6 +96,14 @@ services:
     build: ./indexer/solr
     volumes:
       - data-volume:/storage      
+  
+  lamachine:
+    build: ./lamachine
+    tty: true
+    command: /start-web.sh
+    ports:
+      - 8080:80
 
 volumes:
   data-volume:
+  maven-m2:

@@ -6,8 +6,8 @@ services:
     tty: true
     working_dir: /usr/local/recognizer
     command: ./docker-run-recognizer.sh
-    ports:
-      - 8081:80
+    expose:
+      - 80
     volumes:
       - ./:/usr/local/recognizer
       # share maven repository of host:

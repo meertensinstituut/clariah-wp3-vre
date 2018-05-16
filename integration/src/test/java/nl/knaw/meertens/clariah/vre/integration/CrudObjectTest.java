@@ -42,7 +42,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
         checkFileExistsInRegistry(expectedFilename);
 
         String newHtmlFileName = updateTestFilePath(expectedFilename);
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(10);
 
         checkFileTypeIsStillText(newHtmlFileName);
 

@@ -45,6 +45,10 @@
       <artifactId>jersey-container-servlet-core</artifactId>
     </dependency>
     <dependency>
+        <groupId>org.glassfish.jersey.containers</groupId>
+        <artifactId>jersey-container-grizzly2-http</artifactId>
+    </dependency>
+    <dependency>
         <groupId>org.json</groupId>
         <artifactId>json</artifactId>
         <version>20170516</version>
