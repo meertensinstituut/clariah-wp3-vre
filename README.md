@@ -15,13 +15,6 @@ Using:
 - Java 9
 - Php 7
 
-Development
----
-
-- Add new components: expand docker-compose command in `./start-vre.sh`.
-    - Environment variables can be added to `./.env`.
-    - References to component files and volumes in `./<component>/docker-compose.yml` should be overwritten in `./docker-compose.yml`
-
 Deployment
 ---
 
@@ -29,6 +22,14 @@ Deployment
 - To start all containers, run: `./start-vre.sh`. 
   - To run integration tests in remote debug-mode, add: `debug`.
   - NB. Atm saxon-utils of deployment-service is added by hand: see readme of component.
+- UI runs at `localhost:3000`
+
+Development
+---
+
+- Add new components: expand docker-compose command in `./start-vre.sh`.
+    - Environment variables can be added to `./.env`.
+    - References to component files and volumes in `./<component>/docker-compose.yml` should be overwritten in `./docker-compose.yml`
   
 Manual demo
 ---
@@ -61,6 +62,7 @@ curl -v 'http://localhost:8082/remote.php/webdav/testfile.txt' \
 
 Containers expose the following ports:
 ```
+3000->3000/tcp   vre_ui
 5432->5432/tcp   vre_postgres_1
 80->8080/tcp     vre_deployment_1
 8080->8080/tcp   vre_fits_1
@@ -71,5 +73,4 @@ Containers expose the following ports:
 9000->9000/tcp   vre_trifecta_1
 9010->8080/tcp   vre_switchboard_1
 33104->9092/tcp  vre_kafka_1
-2181/tcp, 2888/tcp, 3888/tcp   vre_zookeeper_1
 ```

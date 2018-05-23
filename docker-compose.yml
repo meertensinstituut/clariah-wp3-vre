@@ -6,6 +6,13 @@ services:
     volumes:
       - ./integration:/usr/local/integration
 
+  ui:
+    build: ./ui
+    volumes:
+      - ./ui:/usr/src/app/
+    links:
+      - dreamfactory
+
   switchboard:
     build: ./switchboard/docker
     command: ./docker/docker-run-switchboard.sh
@@ -101,8 +108,8 @@ services:
     build: ./lamachine
     tty: true
     command: /start-web.sh
-    ports:
-      - 8080:80
+    expose:
+      - 80
 
 volumes:
   data-volume:

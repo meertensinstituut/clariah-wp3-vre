@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  ui:
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/usr/src/app/
+    environment:
+      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
+      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
+      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+

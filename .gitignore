@@ -27,3 +27,5 @@ fits-1.2.0.zip
 !/registry/.env
 
 **/*.class
+
+node_modules/
