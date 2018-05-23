@@ -18,7 +18,9 @@ import org.json.simple.JSONObject;
 public interface RecipePlugin {
     Boolean finished();
     String execute(String key);
-    JSONObject getStatus(String key) throws IOException, JDOMException, MalformedURLException;
-
+    //get internal status of deployment
+    JSONObject getStatus() throws IOException, JDOMException, MalformedURLException;
+    // get status of remote service
+    JSONObject getProjectStatus(String pid) throws IOException, MalformedURLException, JDOMException;
     public void init(String wd, Service serviceObj) throws JDOMException, IOException, SaxonApiException;
 }

@@ -96,7 +96,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
 
     private void updateContentToHtml(String newFileName) throws UnirestException {
         logger.info("Add html to html file");
-        Unirest.put(OWNCLOUD_ENDPOINT + newFileName)
+        HttpResponse<String> result = Unirest.put(OWNCLOUD_ENDPOINT + newFileName)
                 .header("Content-Type", "text/html; charset=utf-8") // set type to html
                 .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
                 .body("<!DOCTYPE html>\n" +
@@ -110,6 +110,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
                         "</body>" +
                         "</html>"
                 ).asString();
+        logger.info(result.getBody() + "; " + result.getStatusText() + "; status code: " + result.getStatus());
     }
 
     private void checkFileTypeIsStillText(String newHtmlFileName) throws SQLException {

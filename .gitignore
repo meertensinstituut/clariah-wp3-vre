@@ -27,3 +27,5 @@ fits-1.2.0.zip
 !/registry/.env
 
 **/*.class
+
+deployment-service/deployment-lib/bin/
