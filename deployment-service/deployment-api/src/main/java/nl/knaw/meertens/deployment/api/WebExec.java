@@ -121,7 +121,7 @@ public class WebExec {
         
         Response res;
         if (plugin!=null) {
-            status = plugin.getStatus();
+            status = plugin.getStatus(pid);
             
             Boolean finished = (Boolean)status.get("finished");
 

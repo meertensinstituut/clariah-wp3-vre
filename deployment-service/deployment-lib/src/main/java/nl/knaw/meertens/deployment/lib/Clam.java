@@ -255,7 +255,7 @@ public class Clam implements RecipePlugin {
      * @return
      */
     @Override
-    public JSONObject getStatus() {
+    public JSONObject getStatus(String pid) {
         // JSONObject status to return
         JSONObject status = new JSONObject();
         if (this.isFinished) {
