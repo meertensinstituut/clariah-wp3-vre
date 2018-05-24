@@ -12,7 +12,7 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.charset.Charset;
+//import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import net.sf.saxon.s9api.SaxonApiException;
@@ -35,7 +35,7 @@ public class Test implements RecipePlugin {
         System.out.println(String.format("Create TEST deployment with workDir [%s]", key));
         try {
             System.out.println("Start 5 second run...");
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             System.out.println("Test service was interrupted.");
         }

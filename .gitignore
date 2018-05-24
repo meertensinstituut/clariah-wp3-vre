@@ -28,4 +28,9 @@ fits-1.2.0.zip
 
 **/*.class
 
-deployment-service/deployment-lib/bin/
+deployment-service/deployment-lib/bin
+deployment-service/deployment-lib/bin/*
+deployment-service/deployment-api/bin
+deployment-service/deployment-api/bin/*
+recognizer/bin
+recognizer/bin/*

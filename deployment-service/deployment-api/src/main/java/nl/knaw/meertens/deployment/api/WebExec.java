@@ -1,14 +1,14 @@
 package nl.knaw.meertens.deployment.api;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+//import java.io.FileNotFoundException;
+//import java.io.FileReader;
 import java.io.IOException;
-import java.net.HttpURLConnection;
+//import java.net.HttpURLConnection;
 
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Paths;
+//import java.net.URL;
+//import java.nio.file.Paths;
 
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -36,7 +36,7 @@ import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import org.jdom2.JDOMException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+//import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**

@@ -54,7 +54,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         String inputFile = uploadTestFile(someContent);
 
         // wait for services to process new file:
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(10);
 
         long inputFileId = getObjectIdFromRegistry(inputFile);
         logger.info(String.format("input file has object id [%d]", inputFileId));

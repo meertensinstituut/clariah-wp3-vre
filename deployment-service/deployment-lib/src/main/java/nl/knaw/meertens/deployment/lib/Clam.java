@@ -21,7 +21,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Iterator;
+//import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -122,17 +122,7 @@ public class Clam implements RecipePlugin {
 
             this.isFinished = true;
             
-        } catch (IOException ex ) {
-            Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
-            Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (JDOMException ex) {
-            Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SaxonApiException ex) {
-            Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ConfigurationException ex) {
-            Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
+        } catch (IOException | ParseException | JDOMException | SaxonApiException | ConfigurationException | InterruptedException ex ) {
             Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
         }
         
