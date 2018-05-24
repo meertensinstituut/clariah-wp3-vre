@@ -40,5 +40,26 @@
     "created_by_id": "1",
     "last_modified_by_id": null,
     "launch_url": ""
+  },
+  {
+    "id": 6,
+    "name": "getobjects",
+    "api_key": "APP_KEY_GET_OBJECTS",
+    "description": "Get VRE objects",
+    "is_active": true,
+    "type": 0,
+    "path": null,
+    "url": null,
+    "storage_service_id": null,
+    "storage_container": null,
+    "requires_fullscreen": false,
+    "allow_fullscreen_toggle": true,
+    "toggle_location": "top",
+    "role_id": 3,
+    "created_date": "PACKAGE_TIME",
+    "last_modified_date": "PACKAGE_TIME",
+    "created_by_id": "1",
+    "last_modified_by_id": null,
+    "launch_url": ""
   }
 ]

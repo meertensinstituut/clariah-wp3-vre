@@ -33,6 +33,7 @@ find . -type f -name "*.json" | xargs sed -i  "s#DB_SERVICES_DATABASE#${DB_SERVI
 find . -type f -name "*.json" | xargs sed -i  "s#DB_SERVICES_USER#${DB_SERVICES_USER}#g"
 find . -type f -name "*.json" | xargs sed -i  "s#DB_SERVICES_PASSWORD#${DB_SERVICES_PASSWORD}#g"
 
+find . -type f -name "*.json" | xargs sed -i  "s#APP_KEY_GET_OBJECTS#${APP_KEY_GET_OBJECTS}#g"
 find . -type f -name "*.json" | xargs sed -i  "s#APP_KEY_OBJECTS#${APP_KEY_OBJECTS}#g"
 find . -type f -name "*.json" | xargs sed -i  "s#USER_OBJECTS_EMAIL#${USER_OBJECTS_EMAIL}#g"
 find . -type f -name "*.json" | xargs sed -i  "s#USER_OBJECTS_PASSWORD#${USER_OBJECTS_PASSWORD}#g"

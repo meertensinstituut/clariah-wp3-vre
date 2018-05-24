@@ -18,11 +18,13 @@ Using:
 Deployment
 ---
 
-- See README of components.
-- To start all containers, run: `./start-vre.sh`. 
+- To start all containers: `./start-vre.sh`. 
   - To run integration tests in remote debug-mode, add: `debug`.
   - NB. Atm saxon-utils of deployment-service is added by hand: see readme of component.
-- UI runs at `localhost:3000`
+- Start UI: 
+  - For local use: install browser addon that enables CORS
+  - `cd ./ui && ./start-ui.sh`
+- For details, see README of components.
 
 Development
 ---

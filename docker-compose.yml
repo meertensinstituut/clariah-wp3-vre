@@ -6,13 +6,6 @@ services:
     volumes:
       - ./integration:/usr/local/integration
 
-  ui:
-    build: ./ui
-    volumes:
-      - ./ui:/usr/src/app/
-    links:
-      - dreamfactory
-
   switchboard:
     build: ./switchboard/docker
     command: ./docker/docker-run-switchboard.sh

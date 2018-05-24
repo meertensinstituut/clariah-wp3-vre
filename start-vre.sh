@@ -13,7 +13,6 @@ docker-compose \
   -f ./switchboard/docker-compose.yml \
   -f ./indexer/docker-compose.yml \
   -f ./deployment-service/docker-compose.yml \
-  -f ./ui/docker-compose.yml \
   -f ./docker-compose.yml \
   -p vre up -d --build # replace this line with 'config' to see generated docker-compose-file
 
@@ -21,7 +20,6 @@ docker-compose \
 if [ "$CONFIGURE_OWNCLOUD" = true ]; then
   docker exec vre_owncloud_1 /var/www/html/apps/vre/docker-configure-owncloud.sh
   echo "wait 180 secs to make sure all services are running.."
-  # TODO: create mechanism to check all services are running
   sleep 180
 fi
 

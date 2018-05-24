@@ -21,6 +21,9 @@
 			"app": [
 			  "objects",
 			  "services"
+			],
+			"cors": [
+				1
 			]
 		}
 	}

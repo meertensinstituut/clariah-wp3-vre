@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "path": "api/v2/*",
+    "origin": "*",
+    "header": "*",
+    "method": [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE"
+    ],
+    "max_age": 0,
+    "enabled": true,
+    "created_date": "2018-05-24 14:28:01",
+    "last_modified_date": "2018-05-24 14:28:01",
+    "created_by_id": "1",
+    "last_modified_by_id": null,
+    "description": null,
+    "exposed_header": null,
+    "supports_credentials": false
+  }
+]
