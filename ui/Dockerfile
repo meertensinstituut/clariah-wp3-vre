@@ -7,4 +7,4 @@ ENV PATH /usr/src/app/node_modules/.bin:$PATH
 RUN npm install
 RUN npm install react-scripts@1.1.1 -g
 
-CMD ["npm", "start"]
+CMD ["tail", "-f", "/dev/null"]
