@@ -34,3 +34,5 @@ deployment-service/deployment-api/bin
 deployment-service/deployment-api/bin/*
 recognizer/bin
 recognizer/bin/*
+integration/bin
+integration/bin/*
