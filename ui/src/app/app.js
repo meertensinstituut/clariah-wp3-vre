@@ -1,5 +1,5 @@
 import React from "react";
-import Objects from "../objects/objects";
+import Objects from "./objects";
 
 export default class App extends React.Component {
 

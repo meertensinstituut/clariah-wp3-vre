@@ -4,7 +4,7 @@ cd /postgres
 
 echo "===INITIALISING DATABASE ${DB_OBJECTS_DATABASE} ON ${DB_OBJECTS_HOST}:${DB_OBJECTS_PORT}==="
 
-until psql -U ${DB_OBJECTS_USER} -h ${DB_OBJECTS_HOST} -p ${DB_OBJECTS_PORT} ${DB_OBJECTS_DATABASE} < /postgres/object.sql; do 
+until psql -U ${DB_OBJECTS_USER} -h ${DB_OBJECTS_HOST} -p ${DB_OBJECTS_PORT} ${DB_OBJECTS_DATABASE} < /postgres/object.sql; do
   >&2 echo "${DB_OBJECTS_HOST}:${DB_OBJECTS_PORT} is unavailable - sleeping"
   sleep 1
 done
