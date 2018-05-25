@@ -20,7 +20,10 @@ export default class Objects extends React.Component {
         this.goToPage = this.goToPage.bind(this);
 
         getObjectCount().done((data) => {
-            this.setState({pageTotal: Math.ceil(data.resource[0].count / this.state.pageSize)});
+            let pageTotal = data.resource.length !== 0
+                ? Math.ceil(data.resource[0].count / this.state.pageSize)
+                : 0;
+            this.setState({pageTotal: pageTotal});
             this.updateObjects();
         });
     }
@@ -97,6 +100,5 @@ function getObjectPage(page, size) {
 }
 
 function getObjectCount() {
-    let params = 'fields=count';
-    return Dreamfactory.getObjects(params);
+    return Dreamfactory.getObjectCount();
 }
