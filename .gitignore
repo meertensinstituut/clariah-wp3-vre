@@ -2,6 +2,7 @@
 .DS_Store
 *.log
 .settings
+**/*.class
 
 # IDE
 .project
@@ -11,6 +12,10 @@ nb-configuration.xml
 /lib
 **/.idea/*
 **/*.iml
+recognizer/bin
+recognizer/bin/*
+integration/bin
+integration/bin/*
 
 # Java
 **/target/*
@@ -26,21 +31,11 @@ fits-1.2.0.zip
 !/.env
 !/registry/.env
 
-**/*.class
-
 # Deployment
 deployment-service/deployment-lib/bin
 deployment-service/deployment-lib/bin/*
 deployment-service/deployment-api/bin
 deployment-service/deployment-api/bin/*
-
-# Recognizer
-recognizer/bin
-recognizer/bin/*
-
-# Integration
-integration/bin
-integration/bin/*
 
 # UI
 node_modules/

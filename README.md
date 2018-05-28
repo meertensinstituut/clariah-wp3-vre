@@ -3,11 +3,12 @@ Clariah VRE
 
 Clariah VRE consists of the following components:
 
-- **Integration**: to verify that all components play nicely together
 - **Owncloud**: to host files
 - **Recognizer**: to determine file types
 - **Registry**: to persist objects and list services
 - **Switchboard**: to prepare service requests
+- **UI**: to allow users to interact with the VRE through a user interface
+- **Integration**: to verify that all components play nicely together
 
 See vre-model.svg for an overview of the VRE.
 
@@ -18,13 +19,11 @@ Using:
 Deployment
 ---
 
-- To start all containers: `./start-vre.sh`. 
+- See README of components.
+- To start all containers, run: `./start-vre.sh`. 
   - To run integration tests in remote debug-mode, add: `debug`.
   - NB. Atm saxon-utils of deployment-service is added by hand: see readme of component.
-- Start **UI**: 
-  - For local use: install browser addon that enables CORS
-  - `cd ./ui && ./start-ui.sh`
-- For details, see README of components.
+- UI runs at `localhost:3000`
 
 Development
 ---
