@@ -55,6 +55,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
     public void postDeploymentRequest_shouldCreateSymbolicLinksToInputFiles() throws Exception {
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
         String expectedService = "UCTO";
+        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
 
         Response deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
@@ -63,7 +64,6 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, testFile).toFile()).exists();
 
         createResultFile(workDir);
-        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         TimeUnit.SECONDS.sleep(2);
 
         Response pollStatusResponse = target(String.format("exec/task/%s/", workDir))

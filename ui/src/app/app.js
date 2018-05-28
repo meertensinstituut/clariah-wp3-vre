@@ -24,7 +24,7 @@ export default class App extends React.Component {
                         </Col>
                     </Row>
                     <Row>
-                        <Col xs={12} md={12} className="header">
+                        <Col xs={12} md={12} className="content">
                             <Tabs defaultActiveKey={1} id="primary-tabs">
                                 <Tab eventKey={1} title="Home">
                                     <Alert bsStyle="info">{this.state.msg}</Alert>
