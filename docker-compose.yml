@@ -107,3 +107,4 @@ services:
 volumes:
   data-volume:
   maven-m2:
+  deployment-volume:

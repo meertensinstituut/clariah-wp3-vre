@@ -28,4 +28,19 @@ fits-1.2.0.zip
 
 **/*.class
 
+# Deployment
+deployment-service/deployment-lib/bin
+deployment-service/deployment-lib/bin/*
+deployment-service/deployment-api/bin
+deployment-service/deployment-api/bin/*
+
+# Recognizer
+recognizer/bin
+recognizer/bin/*
+
+# Integration
+integration/bin
+integration/bin/*
+
+# UI
 node_modules/

@@ -69,7 +69,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         TimeUnit.SECONDS.sleep(6);
 
         checkFileCanBeDownloaded(inputFile);
-
+        
         checkFileIsLocked(inputFile);
 
         String newInputFile = uploadTestFile(someContent);
@@ -154,13 +154,15 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         return deploymentStatusResponse;
     }
 
-    private void checkFileIsLocked(String inputFile) throws UnirestException {
+    private void checkFileIsLocked(String inputFile) throws UnirestException, InterruptedException {
         logger.info(String.format("check file [%s] is locked", inputFile));
         HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-        assertThat(putAfterDeployment.getStatus()).isIn(403, 500);
-
+        // http 423 is 'locked'
+        assertThat(putAfterDeployment.getStatus()).isIn(403, 423, 500);
+        
+        // http 423 is 'locked'
         HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-        assertThat(deleteInputFile.getStatus()).isEqualTo(403);
+        assertThat(deleteInputFile.getStatus()).isIn(403, 423);
     }
 
     private void checkResultCanBeDownloaded(String resultFile) throws UnirestException {

@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+//import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,6 +33,7 @@ public class DeploymentLib {
     String userConfFile;
     String inputDirectory;
     String outputDirectory;
+    String queueLength;
     
     public DeploymentLib() throws ConfigurationException {
         
@@ -111,6 +112,7 @@ public class DeploymentLib {
         this.userConfFile = xml.getString("userConfFile");
         this.inputDirectory = xml.getString("inputDirectory");
         this.outputDirectory = xml.getString("outputDirectory");
+        this.queueLength = xml.getString("configLength");
     }
     
     public void parseConfig(String config) throws ConfigurationException {
@@ -156,6 +158,10 @@ public class DeploymentLib {
     
     String getInputDir() {
         return this.inputDirectory;
+    }
+    
+    String getQueueLength() {
+        return this.queueLength;
     }
     
 }
