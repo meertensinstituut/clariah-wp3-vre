@@ -1,10 +1,11 @@
-package nl.knaw.meertens.clariah.vre.switchboard;
+package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractSwitchboardTest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -27,7 +28,6 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType.FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
-
 public class ExecControllerTest extends AbstractSwitchboardTest {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -104,7 +104,7 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         logger.info("outputFolder: " + outputFolder);
         assertThat(outputFolder).isNotNull();
         assertThat(outputFolder.toString()).startsWith("/usr/local/owncloud/admin/files/output-20");
-        Path outputFile = Paths.get(outputFolder.getPath(), RESULT_FILENAME);
+        Path outputFile = Paths.get(outputFolder.getPath(), resultFilename);
         assertThat(outputFile.toFile()).exists();
         assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo(resultSentence);
     }

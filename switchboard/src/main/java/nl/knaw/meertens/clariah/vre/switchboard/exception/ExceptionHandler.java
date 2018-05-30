@@ -22,7 +22,7 @@ public class ExceptionHandler {
         throw new RuntimeException(msg, e);
     }
 
-    public static Response handleControllerException(Exception e) throws JsonProcessingException {
+    public static Response handleControllerException(Exception e) {
         logger.error(e.getMessage(), e);
         if(e instanceof NoReportFileException) {
             return createResponse(e, 404);
@@ -30,12 +30,16 @@ public class ExceptionHandler {
         return createResponse(e, 500);
     }
 
-    private static Response createResponse(Exception e, int httpStatus) throws JsonProcessingException {
-        return Response
-                .status(httpStatus)
-                .entity(mapper.writeValueAsString(new SwitchboardMsg(
-                        e.getMessage()
-                ))).build();
+    private static Response createResponse(Exception e, int httpStatus) {
+        try {
+            return Response
+                    .status(httpStatus)
+                    .entity(mapper.writeValueAsString(new SwitchboardMsg(
+                            e.getMessage()
+                    ))).build();
+        } catch (JsonProcessingException e1) {
+            return handleControllerException(e);
+        }
     }
 
     public static void setMapper(ObjectMapper mapper) {

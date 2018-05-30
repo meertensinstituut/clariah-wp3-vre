@@ -1,6 +1,8 @@
-package nl.knaw.meertens.clariah.vre.switchboard;
+package nl.knaw.meertens.clariah.vre.switchboard.poll;
 
 import com.jayway.jsonpath.JsonPath;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractSwitchboardTest;
+import nl.knaw.meertens.clariah.vre.switchboard.Config;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -69,7 +72,7 @@ public class PollingServiceImplTest extends AbstractSwitchboardTest {
         assertThat(reportPath.toFile()).exists();
 
         String reportJson = FileUtils.readFileToString(reportPath.toFile(), UTF_8);
-        DeploymentStatusReport report = mapper.readValue(reportJson, DeploymentStatusReport.class);
+        DeploymentStatusReport report = getMapper().readValue(reportJson, DeploymentStatusReport.class);
         assertThat(report.getStatus()).isEqualTo(status);
         assertThat(report.getWorkDir()).isEqualTo(workDir);
         assertThat(report.getPolled()).isAfter(startTest);

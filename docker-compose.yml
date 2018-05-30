@@ -15,12 +15,8 @@ services:
       - dreamfactory
       - deployment
     environment:
-      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
-      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
       APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
-      DB_SERVICES_DATABASE: ${DB_SERVICES_DATABASE}
-      DB_SERVICES_USER: ${DB_SERVICES_USER}
-      DB_SERVICES_PASSWORD: ${DB_SERVICES_PASSWORD}
+      APP_KEY_SERVICES: ${APP_KEY_OBJECTS}
 
   owncloud:
     build: ./owncloud

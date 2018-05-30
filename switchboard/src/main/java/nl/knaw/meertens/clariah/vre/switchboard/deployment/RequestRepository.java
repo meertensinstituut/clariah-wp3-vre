@@ -19,7 +19,7 @@ import java.util.Map;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_MEMORY;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_MEMORY_SPAN;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 
@@ -78,7 +78,7 @@ public class RequestRepository {
      * in a json file in workDir.
      *
      * A report is removed from the hashmap when it has
-     * finished longer than DEPLOYMENT_MEMORY-seconds ago.
+     * finished longer than DEPLOYMENT_MEMORY_SPAN-seconds ago.
      *
      * When the status of a deployment is requested,
      * it is added to the hashmap again
@@ -113,7 +113,7 @@ public class RequestRepository {
     private void handleFinishedRequest(String workDir) {
         if (!finished.containsKey(workDir)) {
             finished.put(workDir, now());
-        } else if (now().isAfter(finished.get(workDir).plusSeconds(DEPLOYMENT_MEMORY))) {
+        } else if (now().isAfter(finished.get(workDir).plusSeconds(DEPLOYMENT_MEMORY_SPAN))) {
             reports.remove(workDir);
             consumers.remove(workDir);
             finished.remove(workDir);

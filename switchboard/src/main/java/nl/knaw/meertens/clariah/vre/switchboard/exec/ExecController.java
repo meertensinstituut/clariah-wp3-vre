@@ -46,7 +46,7 @@ public class ExecController {
     public Response postDeploymentRequest(
             @PathParam("service") String service,
             String body
-    ) throws JsonProcessingException {
+    ) {
         try {
             logger.info(String.format("Received request of service [%s] with body [%s]", service, body));
             DeploymentRequest request = execService.deploy(service, body);
@@ -68,11 +68,11 @@ public class ExecController {
     @Path("/task/{workDir}")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
-    public Response getDeploymentStatus(@PathParam("workDir") String workDir) throws JsonProcessingException {
+    public Response getDeploymentStatus(@PathParam("workDir") String workDir) {
         try {
             DeploymentStatusReport report = execService.getStatus(workDir);
             logger.info(String.format(
-                    "Status request of [%s]; responded with [%s]",
+                    "Status request of [%s]; respond with [%s]",
                     workDir, mapper.writeValueAsString(report))
             );
             return Response

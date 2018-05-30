@@ -1,5 +1,6 @@
-package nl.knaw.meertens.clariah.vre.switchboard.registry;
+package nl.knaw.meertens.clariah.vre.switchboard.registry.objects;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -12,7 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ObjectsRegistryServiceStub.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String objectTable = "/_table/object";
     private final String objectsDbUrl;
     private final String objectsDbKey;

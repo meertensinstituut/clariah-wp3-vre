@@ -15,8 +15,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentResultDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentStartDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaOwncloudCreateFileDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryService;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -48,13 +48,15 @@ import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandle
 
 /**
  * ExecService:
- * - when receives request:
+ *
+ * When receives request:
  * - create config file
  * - send kafka msg of received request
  * - lock input files
  * - create soft links to input files
  * - deploy service
- * - when deployed service finishes or is stopped:
+ *
+ * When deployed service finishes or is stopped:
  * - unlock files
  * - move dir with results to data dir
  * - send kafka msg

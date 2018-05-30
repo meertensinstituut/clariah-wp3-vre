@@ -1,8 +1,7 @@
-package nl.knaw.meertens.clariah.vre.switchboard;
+package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import com.jayway.jsonpath.JsonPath;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
-import org.junit.AfterClass;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractSwitchboardTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;

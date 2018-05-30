@@ -13,7 +13,9 @@ public class Config {
     public static final String STATUS_FILE_NAME = "switchboard.status.json";
     public static final String OBJECTS_DB_URL = "http://dreamfactory/api/v2/objects";
     public static final String OBJECTS_DB_KEY = System.getenv("APP_KEY_OBJECTS");
-    public static final long DEPLOYMENT_MEMORY = 5; // in seconds
+    public static final String SERVICES_DB_URL = "http://dreamfactory/api/v2/services";
+    public static final String SERVICES_DB_KEY = System.getenv("APP_KEY_SERVICES");
+    public static final long DEPLOYMENT_MEMORY_SPAN = 5; // in seconds
     public static final int MIN_POLL_INTERVAL = 1; // in seconds
     public static final String USER_TO_LOCK_WITH = "locker";
 

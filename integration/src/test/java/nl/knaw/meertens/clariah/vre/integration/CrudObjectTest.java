@@ -90,6 +90,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
 
         CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
         int status = httpResponse.getStatusLine().getStatusCode();
+        logger.info(String.format("Response of rename: [%s]", httpResponse.toString()));
         assertThat(status).isEqualTo(201);
         return newFileName;
     }

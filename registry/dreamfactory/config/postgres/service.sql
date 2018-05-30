@@ -28,3 +28,13 @@ FOR EACH ROW EXECUTE PROCEDURE service_insert();
 
 CREATE TRIGGER service_update BEFORE UPDATE ON service
 FOR EACH ROW EXECUTE PROCEDURE service_update();
+
+CREATE VIEW service_with_mimetype AS
+  SELECT
+    *, (SELECT CAST((xpath(
+        '//cmdp:Input//cmdp:MIMEType/text()',
+        semantics,
+        ARRAY[ARRAY['cmdp', 'http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795']]
+    ))[1] AS text) FROM service
+  ) AS mimetype
+  FROM service;

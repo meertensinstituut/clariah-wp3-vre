@@ -6,11 +6,14 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
-import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRecordDTO;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.ObjectsRegistryServiceStub;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceStub;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDTO;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceStub;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
@@ -54,37 +57,42 @@ import static org.mockserver.model.HttpResponse.response;
 public abstract class AbstractSwitchboardTest extends JerseyTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    ObjectMapper mapper = getMapper();
 
-    static String testFile = "admin/files/testfile-switchboard.txt";
-    private static String someText = "De vermeende terugkeer van tante Rosie naar Reetveerdegem werd als " +
-            "een aangename schok ervaren in de levens van onze volstrekt nutteloze mannen, waarvan ik er op dat " +
-            "ogenblik een in wording was.";
-
-    protected static OwncloudFileService owncloudFileService = new OwncloudFileService(
-            OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR, USER_TO_LOCK_WITH);
-
-    String longName = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff, Sr.";
-
-    static final String RESULT_FILENAME = "result.txt";
-    String resultSentence = "Insanity: doing the same thing over and over again and expecting different results.";
+    protected static String testFile = "admin/files/testfile-switchboard.txt";
+    protected static String longName = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff, Sr.";
+    protected static String resultFilename = "result.txt";
+    protected static String resultSentence = "Insanity: doing the same thing over and over again and expecting different results.";
 
     private static ClientAndServer mockServer;
-
     private static RequestRepository requestRepository = getRequestRepository();
-
     private static PollServiceImpl pollService = new PollServiceImpl(
             requestRepository,
             getMapper(),
             "http://localhost:1080"
     );
+    private static OwncloudFileService owncloudFileService = new OwncloudFileService(
+            OWNCLOUD_VOLUME,
+            DEPLOYMENT_VOLUME,
+            OUTPUT_DIR,
+            INPUT_DIR,
+            USER_TO_LOCK_WITH
+    );
+    private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(
+            "http://localhost:1080",
+            "abc",
+            getMapper()
+    );
+
 
     @Override
     protected Application configure() {
-        ResourceConfig resourceConfig = new ResourceConfig(ExecController.class);
+        ResourceConfig resourceConfig = new ResourceConfig(
+                SwitchboardDIBinder.getControllerClasses()
+        );
 
         SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
                 createObjectsRegistryServiceStub(),
+                servicesRegistryService,
                 new DeploymentServiceImpl(
                         "http://localhost:1080",
                         requestRepository,
@@ -107,6 +115,9 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
         Path path = Paths.get(OWNCLOUD_VOLUME + "/" + testFile);
         File file = path.toFile();
         file.getParentFile().mkdirs();
+        String someText = "De vermeende terugkeer van tante Rosie naar Reetveerdegem werd als " +
+                "een aangename schok ervaren in de levens van onze volstrekt nutteloze mannen, waarvan ik er op dat " +
+                "ogenblik een in wording was.";
         Files.write(path, newArrayList(someText), Charset.forName("UTF-8"));
         mockServer = ClientAndServer.startClientAndServer(1080);
     }
@@ -135,28 +146,38 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
         ObjectsRecordDTO testFileRecord = new ObjectsRecordDTO();
         testFileRecord.id = 1L;
         testFileRecord.filepath = testFile;
+        testFileRecord.mimetype = "text/plain";
         result.setTestFileRecord(testFileRecord);
         return result;
     }
 
-    DeploymentRequestDto getDeploymentRequestDto() throws IOException {
+    private ServicesRegistryService createServicesRegistryServiceStub() {
+        ServicesRegistryServiceStub result = new ServicesRegistryServiceStub();
+        ServiceRecordDTO serviceRecordDTO = new ServiceRecordDTO();
+        serviceRecordDTO.id = 1L;
+        serviceRecordDTO.name = "TEST";
+        result.setStubService(serviceRecordDTO);
+        return result;
+    }
+
+    protected DeploymentRequestDto getDeploymentRequestDto() throws IOException {
         DeploymentRequestDto deploymentRequestDto = new DeploymentRequestDto();
         ParamDto paramDto = new ParamDto();
         paramDto.name = "untokinput";
         paramDto.type = FILE;
         paramDto.value = "1";
-        paramDto.params = mapper.readTree("[{\"language\": \"eng\", \"author\": \"" + longName + "\"}]");
+        paramDto.params = getMapper().readTree("[{\"language\": \"eng\", \"author\": \"" + longName + "\"}]");
         deploymentRequestDto.params.add(paramDto);
         return deploymentRequestDto;
     }
 
-    Response deploy(String expectedService, DeploymentRequestDto deploymentRequestDto) {
+    protected Response deploy(String expectedService, DeploymentRequestDto deploymentRequestDto) {
         return target(String.format("exec/%s", expectedService))
                 .request()
                 .post(Entity.json(deploymentRequestDto));
     }
 
-    void startDeployMockServer(Integer status) {
+    protected void startDeployMockServer(Integer status) {
         DeploymentStatus deploymentStatus = DeploymentStatus.getDeployStatus(status);
         new MockServerClient("localhost", 1080)
                 .when(
@@ -171,7 +192,7 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
                 );
     }
 
-    void startStatusMockServer(int status, String body) {
+    protected void startStatusMockServer(int status, String body) {
         new MockServerClient("localhost", 1080)
                 .when(
                         request()
@@ -185,8 +206,8 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
                 );
     }
 
-    void createResultFile(String workDir) {
-        Path path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, RESULT_FILENAME);
+    protected void createResultFile(String workDir) {
+        Path path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, resultFilename);
         assert(path.toFile().getParentFile().mkdirs());
         logger.info("result file path: " + path.toString());
         path.toFile().getParentFile().mkdirs();
