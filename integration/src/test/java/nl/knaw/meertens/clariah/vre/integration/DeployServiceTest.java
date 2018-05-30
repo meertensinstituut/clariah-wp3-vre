@@ -34,16 +34,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
             "dien reus zag aanslingeren met zijn slappen hals, zijn grooten bungelenden kop, en zijn mond " +
             "die zich boven een prooi kon openen, openen.";
 
-    private ParseContext jsonPath;
     private final String resultFileName = "result.txt";
-
-    @Before
-    public void setUp() {
-        id = 0;
-        jsonPath = JsonPath.using(
-                Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build()
-        );
-    }
 
     /**
      * Test switchboard and deployment-service before, during and after deployment of TEST-service.
@@ -118,42 +109,6 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         assertThat(deleteInputFile.getStatus()).isEqualTo(204);
     }
 
-    private HttpResponse<String> checkDeploymentStatus(
-            String workDir,
-            int pollPeriod,
-            String expectedStatus
-    ) throws UnirestException, InterruptedException {
-        logger.info(String.format("Check status is [%s] of [%s]", expectedStatus, workDir));
-        int waited = 0;
-        boolean httpStatusSuccess = false;
-        boolean deploymentStatusFound = false;
-        HttpResponse<String> deploymentStatusResponse = null;
-        while (waited <= pollPeriod) {
-            deploymentStatusResponse = getDeploymentStatus(workDir);
-            String body = deploymentStatusResponse.getBody();
-            String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
-            int responseStatus = deploymentStatusResponse.getStatus();
-            logger.info(String.format("Http status was [%s] and response body was [%s]",
-                    responseStatus, body
-            ));
-            TimeUnit.SECONDS.sleep(1);
-            waited++;
-
-            if (responseStatus == 200 || responseStatus == 202) {
-                httpStatusSuccess = true;
-            }
-            if (!isNull(deploymentStatus) && deploymentStatus.contains(expectedStatus)) {
-                deploymentStatusFound = true;
-            }
-            if (httpStatusSuccess && deploymentStatusFound) {
-                break;
-            }
-        }
-        assertThat(httpStatusSuccess).isTrue();
-        assertThat(deploymentStatusFound).isTrue();
-        return deploymentStatusResponse;
-    }
-
     private void checkFileIsLocked(String inputFile) throws UnirestException, InterruptedException {
         logger.info(String.format("check file [%s] is locked", inputFile));
         HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
@@ -212,44 +167,11 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         return outputPath;
     }
 
-    private long getObjectIdFromRegistry(String inputFile) throws SQLException {
-        ObjectsRepositoryService objectsRepositoryService = new ObjectsRepositoryService(
-                DB_OBJECTS_DATABASE, DB_OBJECTS_USER, DB_OBJECTS_PASSWORD);
-        String query = "select * from object WHERE filepath LIKE '%" + inputFile + "%' LIMIT 1;";
-        objectsRepositoryService.processQuery(query, (ResultSet rs) -> {
-            while (rs.next()) {
-                id = (long) rs.getInt("id");
-            }
-            // When zero, no object has been found:
-            assertThat(id).isNotZero();
-        });
-        logger.info(String.format("uploaded file [%s] has object id [%d]", inputFile, id));
-        return id;
-    }
-
-    private HttpResponse<String> getDeploymentStatus(String workDir) throws UnirestException {
-        return Unirest
-                .get(SWITCHBOARD_ENDPOINT + "exec/task/" + workDir + "/")
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .asString();
-    }
-
     private HttpResponse<String> downloadFile(String inputFile) throws UnirestException {
         return Unirest
                 .get(OWNCLOUD_ENDPOINT + inputFile)
                 .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
                 .asString();
-    }
-
-    private String startDeploymentWithInputFileId(Long expectedFilename) throws UnirestException {
-        HttpResponse<String> result = Unirest
-                .post(SWITCHBOARD_ENDPOINT + "exec/TEST")
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .body("{\"params\":[{\"name\":\"untokinput\",\"type\":\"file\",\"value\":\"" + expectedFilename + "\",\"params\":[{\"language\":\"eng\",\"author\":\"J. Jansen\"}]}]}")
-                .asString();
-
-        assertThat(result.getStatus()).isIn(200, 202);
-        return JsonPath.parse(result.getBody()).read("$.workDir");
     }
 
     private HttpResponse<String> putInputFile(String expectedFilename) throws UnirestException {

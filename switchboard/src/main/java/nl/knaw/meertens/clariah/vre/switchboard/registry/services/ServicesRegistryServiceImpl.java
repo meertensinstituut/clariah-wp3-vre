@@ -18,19 +18,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ServicesRegistryServiceImpl implements ServicesRegistryService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final String servicesWithMimetypeView = "_table/service_with_mimetype";
     private final String serviceDbUrl;
     private final String serviceDbKey;
     private final ObjectMapper mapper;
 
     public ServicesRegistryServiceImpl(String serviceDbUrl, String serviceDbKey, ObjectMapper mapper) {
-        if(serviceDbUrl == null) throw new IllegalArgumentException("Url of service db cannot be null");
+        if(isBlank(serviceDbUrl)) throw new IllegalArgumentException("Url of service db must be set");
         this.serviceDbUrl = serviceDbUrl;
-        if(serviceDbKey == null) throw new IllegalArgumentException("Key of service db cannot be null");
+        if(isBlank(serviceDbKey)) throw new IllegalArgumentException("Key of service db must be set");
         this.serviceDbKey = serviceDbKey;
         this.mapper = mapper;
     }
@@ -53,7 +55,16 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
             }
             JsonNode resource = mapper.readTree(response.getBody()).at("/resource");
             ObjectReader reader = mapper.readerFor(new TypeReference<List<ServiceRecordDTO>>() {});
-            return reader.readValue(resource);
+            List<ServiceRecordDTO> serviceRecordDTOS = reader.readValue(resource);
+            logger.info(String.format(
+                    "Mimetype [%s] yielded services [%s]",
+                    mimetype,
+                    serviceRecordDTOS
+                            .stream()
+                            .map(o -> o.id.toString())
+                            .collect(Collectors.joining(", "))
+            ));
+            return serviceRecordDTOS;
         } catch (UnirestException | IOException | IllegalStateException e) {
             return handleException(e, "Could not determine services for mimetype [%s]", mimetype);
         }

@@ -16,7 +16,7 @@ services:
       - deployment
     environment:
       APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
-      APP_KEY_SERVICES: ${APP_KEY_OBJECTS}
+      APP_KEY_SERVICES: ${APP_KEY_SERVICES}
 
   owncloud:
     build: ./owncloud

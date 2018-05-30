@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
@@ -10,10 +9,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceStub;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDTO;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceStub;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
@@ -148,15 +144,6 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
         testFileRecord.filepath = testFile;
         testFileRecord.mimetype = "text/plain";
         result.setTestFileRecord(testFileRecord);
-        return result;
-    }
-
-    private ServicesRegistryService createServicesRegistryServiceStub() {
-        ServicesRegistryServiceStub result = new ServicesRegistryServiceStub();
-        ServiceRecordDTO serviceRecordDTO = new ServiceRecordDTO();
-        serviceRecordDTO.id = 1L;
-        serviceRecordDTO.name = "TEST";
-        result.setStubService(serviceRecordDTO);
         return result;
     }
 

@@ -28,7 +28,8 @@ public class App extends ResourceConfig {
         SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
                 new ObjectsRegistryServiceImpl(
                         OBJECTS_DB_URL,
-                        OBJECTS_DB_KEY
+                        OBJECTS_DB_KEY,
+                        getMapper()
                 ),
                 new ServicesRegistryServiceImpl(
                         SERVICES_DB_URL,
