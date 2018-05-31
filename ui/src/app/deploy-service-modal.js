@@ -82,7 +82,7 @@ export default class DeployServiceModal extends React.Component {
                                             onClick={() => this.handleDeploy(service)}
                                             disabled={this.state.deployed}
                                         >
-                                            Deploy &gt;
+                                            Deploy <i className="fa fa-play-circle"/>
                                         </Button>
                                     </td>
                                 </tr>
