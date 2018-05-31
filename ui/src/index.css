@@ -1,3 +1,7 @@
 .clickable {
   cursor:pointer;
 }
+
+table, .panel {
+  margin-top: 1em;
+}

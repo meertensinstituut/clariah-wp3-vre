@@ -1,8 +1,10 @@
 import React from "react";
-import Table from "react-bootstrap/es/Table";
+
 import Pages from "./pages";
 import Dreamfactory from "./dreamfactory";
-import $ from "jquery";
+import DeployServiceModal from "./deploy-service-modal";
+
+import {Table} from "react-bootstrap";
 
 const PAGE_SIZE = 6;
 
@@ -16,6 +18,7 @@ export default class Objects extends React.Component {
             pageCurrent: 0,
             pageTotal: null,
             data: null,
+            selectedObject: null,
         };
 
         this.goToPage = this.goToPage.bind(this);
@@ -46,14 +49,12 @@ export default class Objects extends React.Component {
         );
     }
 
-    handleRowClick(objectId) {
-        let url = `http://localhost:9010/switchboard/rest/object/${objectId}/services`;
-        $.get({
-            url: url
-        }).done((data) => {
-            console.log("Services found: " + JSON.stringify(data));
-        });
+    handleRowClick(object) {
+        this.setState({selectedObject: object});
+    }
 
+    deselectObject() {
+        this.setState({selectedObject: null});
     }
 
     render() {
@@ -83,7 +84,7 @@ export default class Objects extends React.Component {
                         return (
                             <tr className="clickable"
                                 key={object.id}
-                                onClick={() => this.handleRowClick(object.id)}
+                                onClick={() => this.handleRowClick(object)}
                             >
                                 <td>{object.id}</td>
                                 <td>{object.filepath}</td>
@@ -96,13 +97,15 @@ export default class Objects extends React.Component {
                     }, this)}
                     </tbody>
                 </Table>
-
                 <Pages
                     pageTotal={this.state.pageTotal}
                     pageCurrent={this.state.pageCurrent}
                     onClick={this.goToPage}
                 />
-
+                <DeployServiceModal
+                    object={this.state.selectedObject}
+                    deselectObject={() => this.deselectObject()}
+                />
             </div>
         )
     }

@@ -1,5 +1,5 @@
 import React from "react";
-import Pagination from "react-bootstrap/es/Pagination";
+import {Pagination} from "react-bootstrap";
 
 export default class Pages extends React.Component {
 
