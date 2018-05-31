@@ -1,6 +1,7 @@
 import React from "react";
-import {Alert, Button, Modal, Panel, Table} from "react-bootstrap";
-import $ from "jquery";
+import {Button, Modal, Panel, Table} from "react-bootstrap";
+import Switchboard from "./switchboard";
+import DeployMsg from "./deploy-msg";
 
 export default class DeployServiceModal extends React.Component {
 
@@ -29,39 +30,14 @@ export default class DeployServiceModal extends React.Component {
         this.props.deselectObject();
     }
 
-    requestServices() {
-        let url = `http://localhost:9010/switchboard/rest/object/${this.state.object.id}/services`;
-        $.get({
-            url: url
-        }).done((data) => {
-            this.setState({services: data});
-            this.forceUpdate();
-        });
-    }
-
     handleDeploy(service) {
         this.setState({deployed: true});
-        let url = `http://localhost:9010/switchboard/rest/exec/${service.name}`;
-        let object = this.state.object;
-        $.post({
-            url: url,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify({
-                params: [{
-                    value: object.id,
-                    type: "file",
-                    name: "untokinput",
-                    params: [{"language": "nld"}]
-                }]
-            })
-        }).done((data) => {
-            this.setState({deployment: data});
-            this.forceUpdate();
-        });
+        requestDeployment.call(this, service);
     }
 
     getFileName(filepath) {
-        return filepath.split(/[//]+/).pop();
+        let file = this.state.object.filepath.split(/[//]+/).pop();
+        return <code>{file}</code>;
     }
 
     render() {
@@ -69,19 +45,8 @@ export default class DeployServiceModal extends React.Component {
             return "";
         }
         if (this.state.services === null || this.state.services === undefined) {
-            this.requestServices();
+            getServices.call(this);
             return "";
-        }
-
-        let deploymentMsg = "";
-        let deployment = this.state.deployment;
-        if (deployment !== null && deployment !== undefined) {
-            let msgType = deployment.status === "DEPLOYED" ? "info" : "warning";
-            deploymentMsg = <Alert bsStyle={msgType}>
-                {deployment.msg}
-                <br />
-                {deployment.workDir === undefined ? "" : "Working directory: " + deployment.workDir}
-            </Alert>;
         }
 
         return (
@@ -90,9 +55,9 @@ export default class DeployServiceModal extends React.Component {
                     <Modal.Title>Deploy</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {deploymentMsg}
+                    <DeployMsg deployment={this.state.deployment}/>
                     <Panel>
-                        <Panel.Body>Process <code>{this.getFileName(this.state.object.filepath)}</code> with one of the services below.</Panel.Body>
+                        <Panel.Body>Process {this.getFileName()} with one of the services below.</Panel.Body>
                     </Panel>
                     <Table striped bordered condensed hover>
                         <thead>
@@ -102,7 +67,7 @@ export default class DeployServiceModal extends React.Component {
                         </tr>
                         </thead>
                         <tbody>
-                        {this.state.services.map(function (service, i) {
+                        {this.state.services.map(function (service) {
                             return (
                                 <tr className="clickable"
                                     key={service.id}
@@ -125,7 +90,6 @@ export default class DeployServiceModal extends React.Component {
                         }, this)}
                         </tbody>
                     </Table>
-
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={() => this.handleClose()}>Close</Button>
@@ -133,5 +97,22 @@ export default class DeployServiceModal extends React.Component {
             </Modal.Dialog>
         );
     }
+}
 
+function getServices() {
+    Switchboard
+        .requestServices(this.state.object.id)
+        .done((data) => {
+            this.setState({services: data});
+            this.forceUpdate();
+        });
+}
+
+function requestDeployment(service) {
+    Switchboard
+        .requestDeployment(service.name, this.state.object.id)
+        .done((data) => {
+            this.setState({deployment: data});
+            this.forceUpdate();
+        });
 }
