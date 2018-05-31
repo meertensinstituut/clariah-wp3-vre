@@ -2,6 +2,7 @@ import React from "react";
 import Table from "react-bootstrap/es/Table";
 import Pages from "./pages";
 import Dreamfactory from "./dreamfactory";
+import $ from "jquery";
 
 const PAGE_SIZE = 6;
 
@@ -45,6 +46,16 @@ export default class Objects extends React.Component {
         );
     }
 
+    handleRowClick(objectId) {
+        let url = `http://localhost:9010/switchboard/rest/object/${objectId}/services`;
+        $.get({
+            url: url
+        }).done((data) => {
+            console.log("Services found: " + JSON.stringify(data));
+        });
+
+    }
+
     render() {
         if (this.state.data === null) {
             return (
@@ -53,6 +64,7 @@ export default class Objects extends React.Component {
         }
 
         let objects = this.state.data.resource;
+
         return (
             <div>
                 <Table striped bordered condensed hover>
@@ -69,7 +81,10 @@ export default class Objects extends React.Component {
                     <tbody>
                     {objects.map(function (object, i) {
                         return (
-                            <tr key={object.id}>
+                            <tr className="clickable"
+                                key={object.id}
+                                onClick={() => this.handleRowClick(object.id)}
+                            >
                                 <td>{object.id}</td>
                                 <td>{object.filepath}</td>
                                 <td>{object.format}</td>
@@ -78,7 +93,7 @@ export default class Objects extends React.Component {
                                 <td>{object.user_id}</td>
                             </tr>
                         );
-                    })}
+                    }, this)}
                     </tbody>
                 </Table>
 

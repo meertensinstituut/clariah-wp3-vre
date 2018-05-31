@@ -90,7 +90,6 @@ public class OwncloudFileService implements FileService {
         }
         for (String file : inputFiles) {
             unlock(file);
-            ls();
         }
         Path outputFilesDir = moveOutputFiles(workDir, inputFiles.get(0));
         unlockOutputFiles(outputFilesDir);
@@ -113,23 +112,6 @@ public class OwncloudFileService implements FileService {
             logger.error(String.format("Could not lock file [%s]", fileString), e);
         }
         logger.info(String.format("Locked file [%s]", file));
-        ls();
-    }
-
-    private void ls() {
-        try {
-            StringBuilder output = new StringBuilder();
-            Process p = Runtime.getRuntime().exec("ls -al ../owncloud/admin/files");
-            p.waitFor();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line = "";
-            while ((line = reader.readLine())!= null) {
-                output.append(line + "\n");
-            }
-            logger.info(output.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

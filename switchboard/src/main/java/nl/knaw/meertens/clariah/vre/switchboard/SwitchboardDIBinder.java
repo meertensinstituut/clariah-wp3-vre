@@ -32,7 +32,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.STATUS_FILE_NAME;
 public class SwitchboardDIBinder extends AbstractBinder {
 
     /**
-     * Set containing all controller classes of switchboard app
+     * All controllers of switchboard app
      */
     private static Set<Class<?>> controllerClasses = newHashSet(
             ExecController.class,
