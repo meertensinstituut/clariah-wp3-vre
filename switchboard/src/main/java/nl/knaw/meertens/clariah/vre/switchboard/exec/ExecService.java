@@ -106,8 +106,9 @@ public class ExecService {
     ) throws IOException {
         String workDir = createWorkDir();
         DeploymentRequest request = mapServiceRequest(body, service, workDir);
-        HashMap<Long, String> registryFiles = requestFiles(request);
-        request.setFiles(registryFiles);
+        HashMap<Long, String> paths = requestFilesFromRegistry(request);
+        replaceObjectIdsWithPaths(request.getParams(), paths);
+        request.setFiles(paths);
         createConfig(request);
         sendKafkaRequestMsg(request);
         return request;
@@ -219,15 +220,23 @@ public class ExecService {
         );
     }
 
-    private HashMap<Long, String> requestFiles(DeploymentRequest serviceRequest) {
+    private HashMap<Long, String> requestFilesFromRegistry(DeploymentRequest serviceRequest) {
         HashMap<Long, String> files = new HashMap<>();
         for (ParamDto param : serviceRequest.getParams()) {
             Long objectId = Long.valueOf(param.value);
             ObjectsRecordDTO record = objectsRegistryService.getObjectById(objectId);
             files.put(objectId, record.filepath);
-            param.value = record.filepath;
         }
         return files;
+    }
+
+    private void replaceObjectIdsWithPaths(
+            List<ParamDto> params,
+            HashMap<Long, String> registryPaths
+    ) {
+        for (ParamDto param : params) {
+            param.value = registryPaths.get(Long.valueOf(param.value));
+        }
     }
 
     private void sendKafkaRequestMsg(DeploymentRequest serviceRequest) throws IOException {
