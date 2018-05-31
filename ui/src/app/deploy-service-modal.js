@@ -1,26 +1,28 @@
 import React from "react";
-import {Button, Modal, Panel, Table} from "react-bootstrap";
+import {Alert, Button, Modal, Panel, Table} from "react-bootstrap";
 import $ from "jquery";
 
 export default class DeployServiceModal extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            object: null,
-            services: null,
-        };
+        this.state = DeployServiceModal.startState();
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
         if (nextProps.object === null) {
-            return {
-                object: null
-            };
+            return DeployServiceModal.startState();
         }
+        return {object: nextProps.object};
+    }
+
+    static startState() {
         return {
-            object: nextProps.object
-        }
+            object: null,
+            services: null,
+            deployment: null,
+            deployed: false
+        };
     }
 
     handleClose() {
@@ -37,6 +39,27 @@ export default class DeployServiceModal extends React.Component {
         });
     }
 
+    handleDeploy(service) {
+        this.setState({deployed: true});
+        let url = `http://localhost:9010/switchboard/rest/exec/${service.name}`;
+        let object = this.state.object;
+        $.post({
+            url: url,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                params: [{
+                    value: object.id,
+                    type: "file",
+                    name: "untokinput",
+                    params: [{"language": "nld"}]
+                }]
+            })
+        }).done((data) => {
+            this.setState({deployment: data});
+            this.forceUpdate();
+        });
+    }
+
     getFileName(filepath) {
         return filepath.split(/[//]+/).pop();
     }
@@ -45,10 +68,20 @@ export default class DeployServiceModal extends React.Component {
         if (this.state.object === null) {
             return "";
         }
-
-        if(this.state.services === null || this.state.services === undefined) {
+        if (this.state.services === null || this.state.services === undefined) {
             this.requestServices();
             return "";
+        }
+
+        let deploymentMsg = "";
+        let deployment = this.state.deployment;
+        if (deployment !== null && deployment !== undefined) {
+            let msgType = deployment.status === "DEPLOYED" ? "info" : "warning";
+            deploymentMsg = <Alert bsStyle={msgType}>
+                {deployment.msg}
+                <br />
+                {deployment.workDir === undefined ? "" : "Working directory: " + deployment.workDir}
+            </Alert>;
         }
 
         return (
@@ -57,6 +90,7 @@ export default class DeployServiceModal extends React.Component {
                     <Modal.Title>Deploy</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {deploymentMsg}
                     <Panel>
                         <Panel.Body>Process <code>{this.getFileName(this.state.object.filepath)}</code> with one of the services below.</Panel.Body>
                     </Panel>
@@ -80,6 +114,8 @@ export default class DeployServiceModal extends React.Component {
                                             bsSize="xsmall"
                                             bsStyle="success"
                                             className="pull-right"
+                                            onClick={() => this.handleDeploy(service)}
+                                            disabled={this.state.deployed}
                                         >
                                             Deploy &gt;
                                         </Button>
@@ -92,11 +128,7 @@ export default class DeployServiceModal extends React.Component {
 
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button
-                        onClick={() => this.handleClose()}
-                    >
-                        Close
-                    </Button>
+                    <Button onClick={() => this.handleClose()}>Close</Button>
                 </Modal.Footer>
             </Modal.Dialog>
         );

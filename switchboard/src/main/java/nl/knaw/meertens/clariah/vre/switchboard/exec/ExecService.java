@@ -106,7 +106,8 @@ public class ExecService {
     ) throws IOException {
         String workDir = createWorkDir();
         DeploymentRequest request = mapServiceRequest(body, service, workDir);
-        request.setFiles(requestFiles(request));
+        HashMap<Long, String> registryFiles = requestFiles(request);
+        request.setFiles(registryFiles);
         createConfig(request);
         sendKafkaRequestMsg(request);
         return request;
