@@ -5,6 +5,7 @@
  */
 package nl.knaw.meertens.deployment.lib;
 
+import java.io.FileNotFoundException;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.JDOMException;
@@ -16,6 +17,8 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import net.sf.saxon.s9api.SaxonApiException;
+import org.apache.commons.configuration.ConfigurationException;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -34,7 +37,7 @@ public class Test implements RecipePlugin {
     public String execute(String key) {
         System.out.println(String.format("Create TEST deployment with workDir [%s]", key));
         try {
-            System.out.println("Start 5 second run...");
+            System.out.println("Start 15 second run...");
             Thread.sleep(15000);
         } catch (InterruptedException e) {
             System.out.println("Test service was interrupted.");
@@ -77,6 +80,18 @@ public class Test implements RecipePlugin {
     @Override
     public void init(String wd, Service serviceObj) throws JDOMException, IOException, SaxonApiException {
         System.out.println("init plugin");
+    }
+
+    @Override
+    public JSONObject parseUserConfig(String key) throws FileNotFoundException, IOException, ParseException, ConfigurationException {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new JSONObject();
+    }
+
+    @Override
+    public JSONObject parseSymantics(String symantics) throws JDOMException, IOException, SaxonApiException {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new JSONObject();
     }
 
 }

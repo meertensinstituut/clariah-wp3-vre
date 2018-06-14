@@ -53,6 +53,7 @@ import org.json.simple.parser.JSONParser;
 public class Clam implements RecipePlugin {
     protected int counter = 0;
     protected Boolean isFinished = false;
+    protected Boolean userConfigRemoteError = false;
     
     protected String projectName;
     public URL serviceUrl;
@@ -90,6 +91,16 @@ public class Clam implements RecipePlugin {
         JSONObject userConfig = new JSONObject(); 
         try {
             userConfig = this.parseUserConfig(projectName);
+            
+            // Check user config against remote service record
+            System.out.println("## Checking user config against remote server ##");
+            if (!this.checkUserConfigOnRemoteServer(this.getSymanticsFromRemote(), userConfig)) {
+                System.out.println("bad user config according to remote server!");
+                this.userConfigRemoteError = true;
+                json.put("status", 500);
+                return json.toString();
+            }
+            
             System.out.println("## Creating project ##");
             this.createProject(projectName);
             
@@ -129,6 +140,7 @@ public class Clam implements RecipePlugin {
         return json.toString();
     }
     
+    @Override
     public JSONObject parseUserConfig(String key) throws FileNotFoundException, IOException, ParseException, ConfigurationException {
         DeploymentLib dplib = new DeploymentLib();
         
@@ -579,6 +591,7 @@ public class Clam implements RecipePlugin {
         return response.toString();
     }
     
+    @Override
     public JSONObject parseSymantics(String symantics) throws JDOMException, IOException, SaxonApiException {
         JSONObject json = new JSONObject();
         JSONObject parametersJson = new JSONObject();
@@ -635,17 +648,16 @@ public class Clam implements RecipePlugin {
         return json;
         
     }
-    
-    public JSONObject getSymanticsFromDb() {
+
+    public JSONObject getSymanticsFromRemote() {
         JSONObject json = new JSONObject();
 
         return json;
         
     }
-    
-    public Boolean compareSymantics(JSONObject dbSymantics, JSONObject userSymantics) {
         
-        return false;
+    private Boolean checkUserConfigOnRemoteServer(JSONObject remoteSymantics, JSONObject userSymantics) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }
