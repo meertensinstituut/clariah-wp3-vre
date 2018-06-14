@@ -83,7 +83,7 @@ public class Clam implements RecipePlugin {
     
     @Override
     public String execute(String projectName, Logger logger) {
-        System.out.println("## Start execution ##");
+        logger.info("## Start plugin execution ##");
                 
         JSONObject json = new JSONObject();
         json.put("key", projectName);
@@ -93,29 +93,29 @@ public class Clam implements RecipePlugin {
             userConfig = this.parseUserConfig(projectName);
             
             // Check user config against remote service record
-            System.out.println("## Checking user config against remote server ##");
+            logger.info("## Checking user config against remote server ##");
             if (!this.checkUserConfigOnRemoteServer(this.getSymanticsFromRemote(), userConfig)) {
-                System.out.println("bad user config according to remote server!");
+                logger.info("bad user config according to remote server!");
                 this.userConfigRemoteError = true;
                 json.put("status", 500);
                 return json.toString();
             }
             
-            System.out.println("## Creating project ##");
+            logger.info("## Creating project ##");
             this.createProject(projectName);
             
-            System.out.println("## upload files ##");
+            logger.info("## upload files ##");
             this.prepareProject(projectName);
             
-            System.out.println("## Running project ##");
+            logger.info("## Running project ##");
             this.runProject(projectName);
             
             // keep polling project
-            System.out.println("## Polling the service ##");
+            logger.info("## Polling the service ##");
             boolean ready = false;
             int i = 0;
             while (!ready) {
-                System.out.println("polling " + Integer.toString(i));
+                logger.info(String.format("polling {%s}", i));
                 i++;
                 Thread.sleep(3000);
                 JSONObject projectStatus = this.getProjectStatus(projectName);        
@@ -125,15 +125,16 @@ public class Clam implements RecipePlugin {
                 ready = (completionCode == 100L && statusCode == 2L && successCode);
             }
             
-            System.out.println("## Download result ##");
+            logger.info("## Download result ##");
             this.downloadProject(projectName);
             
-//          System.out.println("## Removing project ##");
-//          this.deleteProject(projectName);
+//            logger.info("## Removing project ##");
+//            this.deleteProject(projectName);
 
             this.isFinished = true;
             
         } catch (IOException | ParseException | JDOMException | SaxonApiException | ConfigurationException | InterruptedException ex ) {
+            logger.info(String.format("## Execution ERROR: {%s}", ex.getLocalizedMessage()));
             Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
         }
         
