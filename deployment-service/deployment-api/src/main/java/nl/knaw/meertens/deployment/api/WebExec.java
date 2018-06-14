@@ -190,7 +190,7 @@ public class WebExec {
         FileHandler fh;  
         try {  
             // This block configure the logger with handler and formatter  
-            fh = new FileHandler(Paths.get(dplib.getWd(), wd, "deployment.log").toString());  
+            fh = new FileHandler(Paths.get(dplib.getWd(), wd, "deployment.log").toString(), true);  
             logger.addHandler(fh);
             SimpleFormatter formatter = new SimpleFormatter();  
             fh.setFormatter(formatter);
@@ -224,7 +224,7 @@ public class WebExec {
             System.out.println(serviceObj.getServiceSymantics());
             if (!this.checkUserConfig(plugin.parseSymantics(service), plugin.parseUserConfig(service))) {
                 // config is not fine, throw exception
-                JSONObject status = new JSONObject();
+                JSONObject status = new JSONObject(); 
                 status.put("status", 500);
                 status.put("message", "user config error according to registry!");
                 status.put("finished", false);
@@ -235,9 +235,10 @@ public class WebExec {
                 // config is fine, push to queue
                 logger.info("Valid user config found, invoking plugin!");
                 Queue queue = new Queue();
-            
-                json = queue.push(wd, plugin);
+                
                 logger.info("Plugin invoked!");
+                json = queue.push(wd, plugin, logger);
+                
                 res = Response.ok(json.toString(), MediaType.APPLICATION_JSON).build();
                 
                 return res;

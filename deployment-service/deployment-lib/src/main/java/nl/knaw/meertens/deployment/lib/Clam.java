@@ -82,7 +82,7 @@ public class Clam implements RecipePlugin {
     }
     
     @Override
-    public String execute(String projectName) {
+    public String execute(String projectName, Logger logger) {
         System.out.println("## Start execution ##");
                 
         JSONObject json = new JSONObject();

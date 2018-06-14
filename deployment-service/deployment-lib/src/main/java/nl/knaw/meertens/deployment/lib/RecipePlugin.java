@@ -8,6 +8,7 @@ package nl.knaw.meertens.deployment.lib;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.logging.Logger;
 import net.sf.saxon.s9api.SaxonApiException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.jdom2.JDOMException;
@@ -20,7 +21,7 @@ import org.json.simple.parser.ParseException;
  */
 public interface RecipePlugin {
     Boolean finished();
-    String execute(String key);
+    String execute(String key, Logger logger);
     //get internal status of deployment
     JSONObject getStatus(String pid) throws IOException, JDOMException, MalformedURLException;
     // get status of remote service
