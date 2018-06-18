@@ -14,7 +14,6 @@ export default class Objects extends React.Component {
         super(props);
         this.state = {
             pageSize: PAGE_SIZE,
-            // Page index is zero based:
             pageCurrent: 0,
             pageTotal: null,
             data: null,
@@ -23,7 +22,7 @@ export default class Objects extends React.Component {
 
         this.goToPage = this.goToPage.bind(this);
 
-        getObjectCount().done((data) => {
+        Dreamfactory.getObjectCount().done((data) => {
             let pageTotal = data.resource.length !== 0
                 ? Math.ceil(data.resource[0].count / this.state.pageSize)
                 : 0;
@@ -33,13 +32,18 @@ export default class Objects extends React.Component {
     }
 
     updateObjects() {
-        getObjectPage(
+        this.getObjectPage(
             this.state.pageCurrent,
             this.state.pageSize
         ).done((data) => {
             this.setState({data: data});
             this.forceUpdate();
         });
+    }
+
+    getObjectPage(page, size) {
+        let params = `limit=${size}&offset=${page * size}`;
+        return Dreamfactory.getObjects(params);
     }
 
     goToPage(i) {
@@ -110,13 +114,4 @@ export default class Objects extends React.Component {
         )
     }
 
-}
-
-function getObjectPage(page, size) {
-    let params = `limit=${size}&offset=${page * size}`;
-    return Dreamfactory.getObjects(params);
-}
-
-function getObjectCount() {
-    return Dreamfactory.getObjectCount();
 }

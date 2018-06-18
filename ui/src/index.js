@@ -4,8 +4,11 @@ import App from './app/app';
 
 import './index.css';
 import 'font-awesome/css/font-awesome.min.css';
+import {BrowserRouter} from "react-router-dom";
 
 ReactDOM.render(
-  <App />,
-  document.getElementById('root')
+    <BrowserRouter>
+        <App/>
+    </BrowserRouter>,
+    document.getElementById('root')
 );

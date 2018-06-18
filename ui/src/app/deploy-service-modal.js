@@ -35,7 +35,7 @@ export default class DeployServiceModal extends React.Component {
         requestDeployment.call(this, service);
     }
 
-    getFileName(filepath) {
+    getFileName() {
         let file = this.state.object.filepath.split(/[//]+/).pop();
         return <code>{file}</code>;
     }

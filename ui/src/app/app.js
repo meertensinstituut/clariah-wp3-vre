@@ -1,15 +1,15 @@
-import React from "react";
-import Objects from "./objects";
-import {Col, Grid, Panel, Row, Tab, Tabs} from "react-bootstrap";
+import React from 'react';
+import {Col, Grid, Row} from 'react-bootstrap';
+import Main from './main';
+import Navigation from './navigation';
 
 export default class App extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            title: "VRE",
-            subtitle: "A CLARIAH WP3 Virtual Research Environment",
-            msg: "Welcome to Clariah's VRE",
+            title: 'VRE',
+            subtitle: 'A CLARIAH WP3 Virtual Research Environment',
         };
     }
 
@@ -18,21 +18,19 @@ export default class App extends React.Component {
             <div>
                 <Grid>
                     <Row>
-                        <Col xs={12} md={12} className="header">
+                        <Col xs={12} md={12} className='header'>
                             <h1>{this.state.title}</h1>
                             <p>{this.state.subtitle}</p>
                         </Col>
                     </Row>
                     <Row>
-                        <Col xs={12} md={12} className="content">
-                            <Tabs defaultActiveKey={1} id="primary-tabs">
-                                <Tab eventKey={1} title="Home">
-                                    <Panel><Panel.Body>{this.state.msg}</Panel.Body></Panel>
-                                </Tab>
-                                <Tab eventKey={2} title="Objects">
-                                    <Objects/>
-                                </Tab>
-                            </Tabs>
+                        <Col xs={12} md={12} className='content'>
+                            <Navigation />
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col xs={12} md={12} className='content'>
+                            <Main/>
                         </Col>
                     </Row>
                 </Grid>
