@@ -40,7 +40,7 @@ public class Queue {
             }
         };
     
-    public JSONObject push(String key, RecipePlugin plugin) {
+    public JSONObject push(String key, RecipePlugin plugin, Logger logger) {
         JSONObject json = new JSONObject();
         json.put("id", key);
         
@@ -49,7 +49,7 @@ public class Queue {
             new Thread() {
                 @Override
                 public void run() {
-                    plugin.execute(key);
+                    plugin.execute(key, logger);
                 }
             }.start();        
             json.put("status", 202);

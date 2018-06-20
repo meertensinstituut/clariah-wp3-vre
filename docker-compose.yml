@@ -97,8 +97,8 @@ services:
     build: ./lamachine
     tty: true
     command: /start-web.sh
-    expose:
-      - 80
+    ports:
+      - 9998:80
 
 volumes:
   data-volume:

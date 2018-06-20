@@ -14,7 +14,16 @@
   <name>deployment-api</name>
   <properties>
     <jersey.version>2.26</jersey.version>
+    <org.jdom.version>2.0.2</org.jdom.version>
+    <json-simple.version>1.1.1</json-simple.version>
+    <commons-configuration.version>2.2</commons-configuration.version>
+    <httpclient.version>4.5.2</httpclient.version>
+    <Saxon-HE.version>9.8.0-12</Saxon-HE.version>
+    <deployment-lib.version>1.0-SNAPSHOT</deployment-lib.version>
+    <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>10</maven.compiler.source>
+    <maven.compiler.target>10</maven.compiler.target>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -31,13 +40,13 @@
     <dependency>
         <groupId>org.jdom</groupId>
         <artifactId>jdom</artifactId>
-        <version>2.0.2</version>
+        <version>${org.jdom.version}</version>
         <type>jar</type>
     </dependency>
     <dependency>
         <groupId>com.googlecode.json-simple</groupId>
         <artifactId>json-simple</artifactId>
-        <version>1.1.1</version>
+        <version>${json-simple.version}</version>
         <type>jar</type>
     </dependency>
     <dependency>
@@ -48,12 +57,12 @@
         <groupId>org.glassfish.jersey.containers</groupId>
         <artifactId>jersey-container-grizzly2-http</artifactId>
     </dependency>
-    <dependency>
+<!--    <dependency>
         <groupId>org.json</groupId>
         <artifactId>json</artifactId>
         <version>20170516</version>
         <type>jar</type>
-    </dependency>
+    </dependency>-->
     <dependency>
       <groupId>org.glassfish.jersey.inject</groupId>
       <artifactId>jersey-hk2</artifactId>
@@ -61,25 +70,25 @@
     <dependency>
       <groupId>nl.knaw.meertens.deployment</groupId>
       <artifactId>deployment-lib</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${deployment-lib.version}</version>
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>commons-configuration</groupId>
-      <artifactId>commons-configuration</artifactId>
-      <version>1.10</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-configuration2</artifactId>
+      <version>${commons-configuration.version}</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.3.6</version>
+      <version>${httpclient.version}</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>net.sf.saxon</groupId>
       <artifactId>Saxon-HE</artifactId>
-      <version>9.7.0-11</version>
+      <version>${Saxon-HE.version}</version>
       <type>jar</type>
     </dependency>
   </dependencies>
@@ -88,11 +97,11 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>${maven-compiler-plugin.version}</version>
         <inherited>true</inherited>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>1.9</source>
+          <target>1.9</target>
         </configuration>
       </plugin>
     </plugins>

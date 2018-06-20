@@ -53,6 +53,7 @@ import org.json.simple.parser.JSONParser;
 public class Clam implements RecipePlugin {
     protected int counter = 0;
     protected Boolean isFinished = false;
+    protected Boolean userConfigRemoteError = false;
     
     protected String projectName;
     public URL serviceUrl;
@@ -81,8 +82,8 @@ public class Clam implements RecipePlugin {
     }
     
     @Override
-    public String execute(String projectName) {
-        System.out.println("## Start execution ##");
+    public String execute(String projectName, Logger logger) {
+        logger.info("## Start plugin execution ##");
                 
         JSONObject json = new JSONObject();
         json.put("key", projectName);
@@ -90,21 +91,31 @@ public class Clam implements RecipePlugin {
         JSONObject userConfig = new JSONObject(); 
         try {
             userConfig = this.parseUserConfig(projectName);
-            System.out.println("## Creating project ##");
+            
+            // Check user config against remote service record
+            logger.info("## Checking user config against remote server ##");
+            if (!this.checkUserConfigOnRemoteServer(this.getSymanticsFromRemote(), userConfig)) {
+                logger.info("bad user config according to remote server!");
+                this.userConfigRemoteError = true;
+                json.put("status", 500);
+                return json.toString();
+            }
+            
+            logger.info("## Creating project ##");
             this.createProject(projectName);
             
-            System.out.println("## upload files ##");
+            logger.info("## upload files ##");
             this.prepareProject(projectName);
             
-            System.out.println("## Running project ##");
+            logger.info("## Running project ##");
             this.runProject(projectName);
             
             // keep polling project
-            System.out.println("## Polling the service ##");
+            logger.info("## Polling the service ##");
             boolean ready = false;
             int i = 0;
             while (!ready) {
-                System.out.println("polling " + Integer.toString(i));
+                logger.info(String.format("polling {%s}", i));
                 i++;
                 Thread.sleep(3000);
                 JSONObject projectStatus = this.getProjectStatus(projectName);        
@@ -114,21 +125,23 @@ public class Clam implements RecipePlugin {
                 ready = (completionCode == 100L && statusCode == 2L && successCode);
             }
             
-            System.out.println("## Download result ##");
+            logger.info("## Download result ##");
             this.downloadProject(projectName);
             
-//          System.out.println("## Removing project ##");
-//          this.deleteProject(projectName);
+//            logger.info("## Removing project ##");
+//            this.deleteProject(projectName);
 
             this.isFinished = true;
             
         } catch (IOException | ParseException | JDOMException | SaxonApiException | ConfigurationException | InterruptedException ex ) {
+            logger.info(String.format("## Execution ERROR: {%s}", ex.getLocalizedMessage()));
             Logger.getLogger(Clam.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return json.toString();
     }
     
+    @Override
     public JSONObject parseUserConfig(String key) throws FileNotFoundException, IOException, ParseException, ConfigurationException {
         DeploymentLib dplib = new DeploymentLib();
         
@@ -579,6 +592,7 @@ public class Clam implements RecipePlugin {
         return response.toString();
     }
     
+    @Override
     public JSONObject parseSymantics(String symantics) throws JDOMException, IOException, SaxonApiException {
         JSONObject json = new JSONObject();
         JSONObject parametersJson = new JSONObject();
@@ -635,17 +649,16 @@ public class Clam implements RecipePlugin {
         return json;
         
     }
-    
-    public JSONObject getSymanticsFromDb() {
+
+    public JSONObject getSymanticsFromRemote() {
         JSONObject json = new JSONObject();
 
         return json;
         
     }
-    
-    public Boolean compareSymantics(JSONObject dbSymantics, JSONObject userSymantics) {
         
-        return false;
+    private Boolean checkUserConfigOnRemoteServer(JSONObject remoteSymantics, JSONObject userSymantics) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

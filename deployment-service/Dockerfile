@@ -1,15 +1,18 @@
-FROM tomcat:latest
+FROM tomcat:9-jre10
 
 RUN apt-get update && \
     apt-get install -y \
       curl \
       vim \
       maven \
-      openjdk-8-jdk \
+    #   openjdk-10-jdk \
   && rm -rf /var/lib/apt/lists/*
 
-CMD ["catalina.sh", "run"]
+ENV CATALINA_OPTS="-Xmx700m --add-modules java.xml.bind,java.xml.ws --add-exports java.base/jdk.internal.ref=ALL-UNNAMED"
+
 ADD . /tmp/deployment
 RUN cd /tmp/deployment &&\
     mvn clean install &&\
     cp deployment-api/target/deployment-api.war /usr/local/tomcat/webapps/deployment-service.war
+
+CMD ["catalina.sh", "run"]
