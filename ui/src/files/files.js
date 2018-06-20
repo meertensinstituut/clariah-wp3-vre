@@ -1,6 +1,6 @@
 import React from "react";
 
-import Pages from "./pages";
+import PageNumbering from "./page-numbering";
 import Dreamfactory from "./dreamfactory";
 import DeployServiceModal from "./deploy-service-modal";
 
@@ -8,7 +8,7 @@ import {Table} from "react-bootstrap";
 
 const PAGE_SIZE = 6;
 
-export default class Objects extends React.Component {
+export default class Files extends React.Component {
 
     constructor(props) {
         super(props);
@@ -101,7 +101,7 @@ export default class Objects extends React.Component {
                     }, this)}
                     </tbody>
                 </Table>
-                <Pages
+                <PageNumbering
                     pageTotal={this.state.pageTotal}
                     pageCurrent={this.state.pageCurrent}
                     onClick={this.goToPage}

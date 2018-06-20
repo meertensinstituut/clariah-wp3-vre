@@ -1,7 +1,7 @@
 import React from "react";
 import {Pagination} from "react-bootstrap";
 
-export default class Pages extends React.Component {
+export default class PageNumbering extends React.Component {
 
     handleClick(page) {
         this.props.onClick(page);

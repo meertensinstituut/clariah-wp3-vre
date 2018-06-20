@@ -3,7 +3,7 @@ import {Col, Grid, Row} from 'react-bootstrap';
 import Main from './main';
 import Navigation from './navigation';
 
-export default class App extends React.Component {
+export default class Page extends React.Component {
 
     constructor(props) {
         super(props);

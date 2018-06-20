@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './app/app';
+import Page from './app/page';
 
 import './index.css';
 import 'font-awesome/css/font-awesome.min.css';
@@ -8,7 +8,7 @@ import {BrowserRouter} from "react-router-dom";
 
 ReactDOM.render(
     <BrowserRouter>
-        <App/>
+        <Page/>
     </BrowserRouter>,
     document.getElementById('root')
 );
