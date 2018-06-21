@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamDto;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

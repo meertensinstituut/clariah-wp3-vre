@@ -1,10 +1,15 @@
-package nl.knaw.meertens.clariah.vre.switchboard.deployment;
+package nl.knaw.meertens.clariah.vre.switchboard.param;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ParamType {
-    FILE("file");
+    FILE("file"),
+    DATE_TIME("date_time"),
+    INTEGER("integer"),
+    FLOAT("float"),
+    BOOLEAN("boolean"),
+    STRING("string");
 
     private final String key;
 
@@ -14,9 +19,7 @@ public enum ParamType {
 
     @JsonCreator
     public static ParamType fromString(String key) {
-        return key == null
-                ? null
-                : ParamType.valueOf(key.toUpperCase());
+        return ParamType.valueOf(key.toUpperCase());
     }
 
     @JsonValue

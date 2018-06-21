@@ -9,11 +9,12 @@
         </File>
     </Appenders>
     <Loggers>
+        <Logger name="org.apache.http.wire" level="warn" />
+        <Logger name="org.apache.http.client" level="warn" />
+        <Logger name="org.apache.kafka" level="warn" />
         <Root level="info">
             <AppenderRef ref="Console" />
             <AppenderRef ref="Switchboard"/>
         </Root>
-        <logger name="org.apache.http.wire" level="info" />
-        <logger name="org.apache.http.client" level="info" />
     </Loggers>
 </Configuration>

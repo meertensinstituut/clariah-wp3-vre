@@ -1,7 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.object;
 
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDTO;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 
 import java.util.List;
@@ -16,8 +16,8 @@ public class ObjectService {
         this.servicesRegistryService = servicesRegistryService;
     }
 
-    public List<ServiceRecordDTO> getServicesFor(Long objectId) {
+    public List<ServiceRecordDto> getServicesFor(Long objectId) {
         String mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
-        return servicesRegistryService.getServicesByMimetype(mimetype);
+        return servicesRegistryService.getServices(mimetype);
     }
 }

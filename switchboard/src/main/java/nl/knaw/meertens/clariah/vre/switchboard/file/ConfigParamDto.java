@@ -1,7 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamType;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamType;
 
 public class ConfigParamDto {
     public String name;

@@ -9,6 +9,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecService;
 import nl.knaw.meertens.clariah.vre.switchboard.object.ObjectController;
 import nl.knaw.meertens.clariah.vre.switchboard.object.ObjectService;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamController;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
@@ -36,7 +38,8 @@ public class SwitchboardDIBinder extends AbstractBinder {
      */
     private static Set<Class<?>> controllerClasses = newHashSet(
             ExecController.class,
-            ObjectController.class
+            ObjectController.class,
+            ParamController.class
     );
 
     private static ObjectMapper mapper = null;
@@ -60,19 +63,9 @@ public class SwitchboardDIBinder extends AbstractBinder {
 
     @Override
     protected void configure() {
-        bind(new ExecService(
-                getMapper(),
-                objectsRegistryService,
-                deploymentService
-        )).to(
-                ExecService.class
-        );
-        bind(new ObjectService(
-                objectsRegistryService,
-                serviceRegistryService)
-        ).to(
-                ObjectService.class
-        );
+        bind(new ExecService(getMapper(), objectsRegistryService, deploymentService)).to(ExecService.class);
+        bind(new ObjectService(objectsRegistryService,serviceRegistryService)).to(ObjectService.class);
+        bind(new ParamService(serviceRegistryService)).to(ParamService.class);
         bind(getMapper()).to(ObjectMapper.class);
         ExceptionHandler.setMapper(getMapper());
     }

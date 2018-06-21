@@ -1,0 +1,44 @@
+<cmd:CMD xmlns:cmd="http://www.clarin.eu/cmd/1"
+         xmlns:cmdp="http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" CMDVersion="1.2">
+    <cmd:Header>
+        <cmd:MdCreationDate>2018-05-28</cmd:MdCreationDate>
+        <cmd:MdProfile>clarin.eu:cr1:p_1505397653795</cmd:MdProfile><!-- profile is fixed -->
+    </cmd:Header>
+    <cmd:Resources>
+        <cmd:ResourceProxyList/>
+        <cmd:JournalFileProxyList/>
+        <cmd:ResourceRelationList/>
+    </cmd:Resources>
+    <cmd:Components>
+        <cmdp:CLARINWebService>
+            <cmdp:Service CoreVersion="1.0">
+                <cmdp:Name>Test</cmdp:Name>
+                <cmdp:Description>Service to test deployment mechanism of VRE</cmdp:Description>
+                <cmdp:ServiceDescriptionLocation/>
+                <cmdp:Operations>
+                    <cmdp:Operation>
+                        <cmdp:Name>main</cmdp:Name>
+                        <cmdp:Input>
+                            <cmdp:Parameter>
+                                <cmdp:Name>input</cmdp:Name>
+                                <cmdp:MIMEType>text/plain</cmdp:MIMEType>
+                                <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                                <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
+                                <cmdp:Label xml:lang="en">Input text</cmdp:Label>
+                                <cmdp:DataType>integer</cmdp:DataType>
+                            </cmdp:Parameter>
+                        </cmdp:Input>
+                        <cmdp:Output>
+                            <cmdp:Parameter>
+                                <cmdp:Name>output</cmdp:Name>
+                                <cmdp:Description>Surprise</cmdp:Description>
+                                <cmdp:MIMEType>text/plain</cmdp:MIMEType>
+                            </cmdp:Parameter>
+                        </cmdp:Output>
+                    </cmdp:Operation>
+                </cmdp:Operations>
+            </cmdp:Service>
+        </cmdp:CLARINWebService>
+    </cmd:Components>
+</cmd:CMD>
