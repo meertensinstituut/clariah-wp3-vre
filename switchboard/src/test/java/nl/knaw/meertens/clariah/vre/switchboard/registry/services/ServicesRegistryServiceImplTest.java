@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-import org.junit.Ignore; @Ignore public class ServicesRegistryServiceImplTest extends AbstractSwitchboardTest {
+public class ServicesRegistryServiceImplTest extends AbstractSwitchboardTest {
 
     private String testResource =
             "    {\n" +

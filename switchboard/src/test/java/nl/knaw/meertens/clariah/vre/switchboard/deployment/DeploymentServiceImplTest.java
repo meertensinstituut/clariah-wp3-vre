@@ -17,7 +17,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import org.junit.Ignore; @Ignore public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
+public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -70,7 +70,6 @@ import org.junit.Ignore; @Ignore public class DeploymentServiceImplTest extends 
                 .get();
 
         String json = statusResponse.readEntity(String.class);
-        logger.info("statusResponse: " + json);
         assertThat(statusResponse.getStatus()).isEqualTo(202);
         assertThatJson(json).node("status").isEqualTo("RUNNING");
     }
@@ -89,7 +88,6 @@ import org.junit.Ignore; @Ignore public class DeploymentServiceImplTest extends 
                 .get();
 
         String json = statusResponse.readEntity(String.class);
-        logger.info("statusResponse: " + json);
         assertThat(statusResponse.getStatus()).isEqualTo(404);
         assertThatJson(json).node("status").isEqualTo("NOT_FOUND");
     }

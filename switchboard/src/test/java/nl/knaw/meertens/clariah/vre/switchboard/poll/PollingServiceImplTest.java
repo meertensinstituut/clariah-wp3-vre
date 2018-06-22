@@ -26,7 +26,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import org.junit.Ignore; @Ignore public class PollingServiceImplTest extends AbstractSwitchboardTest {
+public class PollingServiceImplTest extends AbstractSwitchboardTest {
 
     @Before
     public void beforeDeploymentServiceImplTest() {

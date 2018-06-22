@@ -4,6 +4,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegist
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -88,24 +89,31 @@ public class ParamService {
     private List<ParamGroupDto> mapParameterGroups(NodeList groups) {
         List<ParamGroupDto> result = new ArrayList<>();
         for (int i = 0; i < groups.getLength(); i++) {
-
+            Node xmlGroup = groups.item(0);
+            ParamGroupDto paramGroup = new ParamGroupDto();
+            mapParameter(xmlGroup, paramGroup);
+            NodeList parameters = ((Element) xmlGroup).getElementsByTagName("cmdp:Parameters").item(0).getChildNodes();
+            paramGroup.params.addAll(mapParameters(parameters));
+            result.add(paramGroup);
         }
         return result;
-
     }
 
     private List<ParamDto> mapParameters(NodeList parameters) {
         List<ParamDto> result = new ArrayList<>();
         for (int i = 0; i < parameters.getLength(); i++) {
             Node xmlParam = parameters.item(i);
-            ParamDto param = mapParameter(xmlParam);
+            if(!xmlParam.getNodeName().equals("cmdp:Parameter")) {
+                continue;
+            }
+            ParamDto param = new ParamDto();
+            mapParameter(xmlParam, param);
             result.add(param);
         }
         return result;
     }
 
-    private ParamDto mapParameter(Node xmlParam) {
-        ParamDto param = new ParamDto();
+    private <T extends ParamDto> void mapParameter(Node xmlParam, T result) {
         NodeList xmlValues = xmlParam.getChildNodes();
         for (int k = 0; k < xmlValues.getLength(); k++) {
             Node node = xmlValues.item(k);
@@ -116,39 +124,38 @@ public class ParamService {
             String fieldValue = node.getTextContent();
             switch (fieldName) {
                 case "cmdp:Name":
-                    param.name = fieldValue;
+                    result.name = fieldValue;
                     break;
                 case "cmdp:Label":
                     String labelLanguage = node.getAttributes().getNamedItem("xml:lang").getNodeValue();
                     if (labelLanguage.equals(currentLanguage)) {
-                        param.label = fieldValue;
+                        result.label = fieldValue;
                     }
                     break;
                 case "cmdp:DataType":
-                    param.type = ParamType.fromString(fieldValue);
+                    result.type = ParamType.fromString(fieldValue);
                     break;
                 case "cmdp:Description":
-                    param.description = fieldValue;
+                    result.description = fieldValue;
                     break;
                 case "cmdp:MinimumCardinality":
-                    param.minimumCardinality = fieldValue;
+                    result.minimumCardinality = fieldValue;
                     break;
                 case "cmdp:MaximumCardinality":
-                    param.maximumCardinality = fieldValue;
+                    result.maximumCardinality = fieldValue;
                     break;
                 case "cmdp:Values":
-                    param.values.addAll(mapParamValues(node));
+                    result.values.addAll(mapParamValues(node));
                     break;
             }
 
-            // Enumeration type is determined by the presence of values
-            // and should overwrite DataType:
-            if (!param.values.isEmpty()) {
-                param.valuesType = param.type;
-                param.type = ParamType.ENUMERATION;
-            }
         }
-        return param;
+        // Enumeration type is determined by the presence of values
+        // and should overwrite DataType:
+        if (!result.values.isEmpty()) {
+            result.valuesType = result.type;
+            result.type = ParamType.ENUMERATION;
+        }
     }
 
     private List<ParamValueDto> mapParamValues(Node values) {

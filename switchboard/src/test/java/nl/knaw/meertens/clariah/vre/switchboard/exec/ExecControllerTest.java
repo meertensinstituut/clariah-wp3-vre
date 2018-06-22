@@ -29,7 +29,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
-import org.junit.Ignore; @Ignore public class ExecControllerTest extends AbstractSwitchboardTest {
+public class ExecControllerTest extends AbstractSwitchboardTest {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -145,7 +145,7 @@ import org.junit.Ignore; @Ignore public class ExecControllerTest extends Abstrac
 
         createResultFile(workDir);
         startStatusMockServer(FINISHED.getHttpStatus(), "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}");
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(2);
 
         // Check status is finished:
         Response finishedResponse = target(String.format("exec/task/%s/", workDir))

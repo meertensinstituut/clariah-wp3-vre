@@ -22,7 +22,7 @@ import static org.mockserver.model.HttpResponse.response;
 public class ParamControllerTest extends AbstractSwitchboardTest {
 
     @Before
-    public void beforeExecControllerTests() {
+    public void beforeParamControllerTests() {
         startDeployMockServer(200);
     }
 
@@ -35,7 +35,6 @@ public class ParamControllerTest extends AbstractSwitchboardTest {
                 .get();
 
         String json = response.readEntity(String.class);
-        System.out.println("response: " + json);
         assertThat(response.getStatus()).isEqualTo(200);
         assertThatJson(json).node("params[0].name").isEqualTo("input");
         assertThatJson(json).node("params[0].label").isEqualTo("Input text");
@@ -46,6 +45,7 @@ public class ParamControllerTest extends AbstractSwitchboardTest {
         assertThatJson(json).node("params[1].name").isEqualTo("red-pill-and-blue-pill");
         assertThatJson(json).node("params[1].label").isEqualTo("Red pill and blue pill");
         assertThatJson(json).node("params[1].type").isEqualTo("enumeration");
+        assertThatJson(json).node("params[1].valuesType").isEqualTo("string");
         assertThatJson(json).node("params[1].description").matches(containsString("This is your last chance."));
         assertThatJson(json).node("params[1].minimumCardinality").isEqualTo("\"1\"");
         assertThatJson(json).node("params[1].maximumCardinality").isEqualTo("\"1\"");
@@ -57,6 +57,12 @@ public class ParamControllerTest extends AbstractSwitchboardTest {
         assertThatJson(json).node("params[1].values[1].value").isEqualTo("blue");
         assertThatJson(json).node("params[1].values[1].label").isEqualTo("Blue");
         assertThatJson(json).node("params[1].values[1].description").matches(containsString("happiness"));
+
+        assertThatJson(json).node("paramGroups").isArray().ofLength(1);
+        assertThatJson(json).node("paramGroups[0].params").isArray().ofLength(2);
+        assertThatJson(json).node("paramGroups[0].params[0].name").isEqualTo("language");
+        assertThatJson(json).node("paramGroups[0].params[0].values[0].label").isEqualTo("Dutch");
+        assertThatJson(json).node("paramGroups[0].params[1].name").isEqualTo("author");
 
     }
 

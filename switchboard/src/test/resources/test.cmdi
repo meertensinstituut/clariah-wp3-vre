@@ -62,7 +62,7 @@
                                 <cmdp:Label xml:lang="nl">Untok Invoer tekst</cmdp:Label>
                                 <cmdp:MIMEType>text/plain</cmdp:MIMEType>
                                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
-                                <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
+                                <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
                                 <cmdp:Parameters>
                                     <cmdp:Parameter>
                                         <cmdp:Name>language</cmdp:Name>
