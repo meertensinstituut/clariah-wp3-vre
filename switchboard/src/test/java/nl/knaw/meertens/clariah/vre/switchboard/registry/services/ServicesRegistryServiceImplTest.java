@@ -15,7 +15,7 @@ import static org.mockserver.model.HttpResponse.response;
 
 import org.junit.Ignore; @Ignore public class ServicesRegistryServiceImplTest extends AbstractSwitchboardTest {
 
-    String testResource =
+    private String testResource =
             "    {\n" +
             "      \"id\": \"1\",\n" +
             "      \"name\": \"TEST\",\n" +

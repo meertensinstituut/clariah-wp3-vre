@@ -9,7 +9,6 @@ import org.mockserver.client.server.MockServerClient;
 import org.mockserver.model.Header;
 
 import javax.ws.rs.core.Response;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -43,7 +42,22 @@ public class ParamControllerTest extends AbstractSwitchboardTest {
         assertThatJson(json).node("params[0].type").isEqualTo("integer");
         assertThatJson(json).node("params[0].minimumCardinality").isEqualTo("\"1\"");
         assertThatJson(json).node("params[0].maximumCardinality").isEqualTo("*");
-        assertThatJson(json).node("params[0].name").isEqualTo("input");
+
+        assertThatJson(json).node("params[1].name").isEqualTo("red-pill-and-blue-pill");
+        assertThatJson(json).node("params[1].label").isEqualTo("Red pill and blue pill");
+        assertThatJson(json).node("params[1].type").isEqualTo("enumeration");
+        assertThatJson(json).node("params[1].description").matches(containsString("This is your last chance."));
+        assertThatJson(json).node("params[1].minimumCardinality").isEqualTo("\"1\"");
+        assertThatJson(json).node("params[1].maximumCardinality").isEqualTo("\"1\"");
+
+        assertThatJson(json).node("params[1].values").isArray().ofLength(2);
+        assertThatJson(json).node("params[1].values[0].value").isEqualTo("red");
+        assertThatJson(json).node("params[1].values[0].label").isEqualTo("Red");
+        assertThatJson(json).node("params[1].values[0].description").matches(containsString("truth"));
+        assertThatJson(json).node("params[1].values[1].value").isEqualTo("blue");
+        assertThatJson(json).node("params[1].values[1].label").isEqualTo("Blue");
+        assertThatJson(json).node("params[1].values[1].description").matches(containsString("happiness"));
+
     }
 
     private void startGetServiceByIdRegistryMock() throws IOException {
