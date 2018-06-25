@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.registry.services;
 
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
+import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
 import org.mockserver.model.Header;
@@ -48,7 +49,7 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
     }
 
     private void startGetServicesByMimetypeRegistryMock() {
-        new MockServerClient("localhost", 1080)
+        mockServer
                 .when(
                         request()
                                 .withMethod("GET")
@@ -78,7 +79,7 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
     }
 
     private void startGetServiceByIdRegistryMock() {
-        new MockServerClient("localhost", 1080)
+        mockServer
                 .when(
                         request()
                                 .withMethod("GET")

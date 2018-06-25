@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.object;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
+import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
 import org.mockserver.model.Header;
@@ -32,7 +33,7 @@ public class ObjectControllerTest extends AbstractControllerTest {
     }
 
     private void startServicesRegistryMock() {
-        new MockServerClient("localhost", 1080)
+        mockServer
                 .when(
                         request()
                                 .withMethod("GET")

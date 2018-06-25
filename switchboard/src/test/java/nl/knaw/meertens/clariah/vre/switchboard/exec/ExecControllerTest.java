@@ -8,8 +8,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -31,14 +29,11 @@ import static org.hamcrest.CoreMatchers.containsString;
 
 public class ExecControllerTest extends AbstractControllerTest {
 
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Before
     public void beforeExecControllerTests() {
         ObjectsRecordDTO record = new ObjectsRecordDTO();
         record.id = 1L;
         record.filepath = testFile;
-        startDeployMockServer(200);
     }
 
     @Test
@@ -54,9 +49,15 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void postDeploymentRequest_shouldCreateSymbolicLinksToInputFiles() throws Exception {
+        jerseyTest.getPollService().stopPolling();
+        restartMockServer();
+        startDeployMockServer(200);
+        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
+        jerseyTest.getPollService().startPolling();
+        TimeUnit.SECONDS.sleep(1);
+
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
         String expectedService = "UCTO";
-        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
 
         Response deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);

@@ -7,9 +7,10 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
@@ -27,21 +28,29 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class PollingServiceImplTest extends AbstractControllerTest {
+    private final Logger logger = LoggerFactory.getLogger(AbstractControllerTest.class);
 
-    @Before
-    public void beforeDeploymentServiceImplTest() {
-        startDeployMockServer(200);
-    }
+    // TODO: hier gebleven, zie console!
 
     @Test
     public void testDeploymentStatusReportFile() throws Exception {
+        jerseyTest.getPollService().stopPolling();
+        restartMockServer();
+        startDeployMockServer(200);
+        TimeUnit.SECONDS.sleep(1);
         startStatusMockServer(RUNNING.getHttpStatus(), "{}");
+        TimeUnit.SECONDS.sleep(1);
+        jerseyTest.getPollService().startPolling();
+        TimeUnit.SECONDS.sleep(1);
 
         LocalDateTime startTest = LocalDateTime.now();
         String expectedService = "UCTO";
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
-        String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
+        String json = deployResponse.readEntity(String.class);
+
+        logger.info("result: " + json);
+        String workDir = JsonPath.parse(json).read("$.workDir");
 
         Invocation.Builder getStatusRequistBuilder = target(String.format("exec/task/%s", workDir)).request();
 
@@ -55,9 +64,9 @@ public class PollingServiceImplTest extends AbstractControllerTest {
         testReportFields(startTest, expectedService, workDir, 1, RUNNING);
 
         TimeUnit.SECONDS.sleep(1);
-        testReportFields(startTest, expectedService, workDir, 2, RUNNING);
+        testReportFields(startTest, expectedService, workDir, 1, RUNNING);
 
-        new MockServerClient("localhost", 1080).reset();
+        mockServer.reset();
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         TimeUnit.SECONDS.sleep(2);
 

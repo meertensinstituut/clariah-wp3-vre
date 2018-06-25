@@ -24,7 +24,7 @@ public class ParamControllerTest extends AbstractControllerTest {
     public void getCmdiForTest() throws IOException {
         startGetServiceByIdRegistryMock();
 
-        Response response = target("param/1")
+        Response response = jerseyTest.target("param/1")
                 .request()
                 .get();
 
@@ -70,7 +70,7 @@ public class ParamControllerTest extends AbstractControllerTest {
         obj.put("semantics", cmdi);
         final String json = obj.toString();
 
-        new MockServerClient("localhost", 1080)
+        mockServer
                 .when(
                         request()
                                 .withMethod("GET")

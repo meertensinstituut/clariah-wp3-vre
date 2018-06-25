@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
+import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.NOT_FOUND;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -21,20 +23,17 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Before
-    public void beforeDeploymentServiceImplTest() {
-        startDeployMockServer(200);
-    }
-
     @Test
     public void testStart_requestsDeploymentUrl() throws IOException {
+        mockServer.reset();
+        startDeployMockServer(200);
+
         String expectedService = "UCTO";
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
 
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
 
         String json = deployResponse.readEntity(String.class);
-        logger.info(json);
         assertThat(deployResponse.getStatus()).isEqualTo(200);
         assertThatJson(json).node("status").isEqualTo("DEPLOYED");
     }
@@ -44,9 +43,9 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
         String expectedService = "UCTO";
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
 
-        Response firstTime = deploy(expectedService, deploymentRequestDto);
+        deploy(expectedService, deploymentRequestDto);
 
-        new MockServerClient("localhost", 1080).reset();
+        mockServer.reset();
         startDeployMockServer(403);
 
         Response secondTimeResponse = deploy(expectedService, deploymentRequestDto);
@@ -63,7 +62,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
         startStatusMockServer(RUNNING.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(2);
 
         Response statusResponse = target(String.format("exec/task/%s", workDir))
                 .request()
@@ -76,12 +75,20 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
 
     @Test
     public void testGetStatus_whenNotFound() throws Exception {
-        logger.info("start_testGetStatus_whenNotFound");
+        mockServer.reset();
+        startDeployMockServer(200);
+
+        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
+
         Response deployResponse = deploy("UCTO", getDeploymentRequestDto());
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
+        jerseyTest.getPollService().stopPolling();
+        mockServer.reset();
+        startDeployMockServer(200);
         startStatusMockServer(NOT_FOUND.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(1);
+        jerseyTest.getPollService().startPolling();
+        TimeUnit.SECONDS.sleep(3);
 
         Response statusResponse = target(String.format("exec/task/%s", workDir))
                 .request()
