@@ -1,7 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.object;
 
 import com.jayway.jsonpath.JsonPath;
-import nl.knaw.meertens.clariah.vre.switchboard.AbstractSwitchboardTest;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
 import org.mockserver.model.Header;
@@ -13,7 +13,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-public class ObjectControllerTest extends AbstractSwitchboardTest {
+public class ObjectControllerTest extends AbstractControllerTest {
 
     @Test
     public void getServicesFor_shouldGetService_whenCorrectMimetype() {

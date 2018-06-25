@@ -2,7 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import nl.knaw.meertens.clariah.vre.switchboard.AbstractSwitchboardTest;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
@@ -29,7 +29,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 
-public class ExecControllerTest extends AbstractSwitchboardTest {
+public class ExecControllerTest extends AbstractControllerTest {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -97,12 +97,10 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
                 .get();
         assertThat(finishedResponse.getStatus()).isEqualTo(200);
         String finishedJson = finishedResponse.readEntity(String.class);
-        logger.info("finishedJson: " + finishedJson);
         assertThatJson(finishedJson).node("status").isEqualTo("FINISHED");
 
         // Check output file is moved:
         File outputFolder = findOutputFolder(finishedJson);
-        logger.info("outputFolder: " + outputFolder);
         assertThat(outputFolder).isNotNull();
         assertThat(outputFolder.toString()).startsWith("/usr/local/owncloud/admin/files/output-20");
         Path outputFile = Paths.get(outputFolder.getPath(), resultFilename);
@@ -122,7 +120,6 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
         Path configFile = Paths.get(DEPLOYMENT_VOLUME, workDir, CONFIG_FILE_NAME);
         assertThat(configFile.toFile()).exists();
         String configContent = new String(Files.readAllBytes(configFile));
-        logger.info("config content: " + configContent);
         ConfigDto config = new ObjectMapper().readValue(configContent, ConfigDto.class);
 
         assertThat(config.params.get(0).value).contains(testFile);
@@ -153,7 +150,6 @@ public class ExecControllerTest extends AbstractSwitchboardTest {
                 .get();
         assertThat(finishedResponse.getStatus()).isEqualTo(200);
         String finishedJson = finishedResponse.readEntity(String.class);
-        logger.info("finishedJson: " + finishedJson);
         assertThatJson(finishedJson).node("status").isEqualTo("FINISHED");
     }
 

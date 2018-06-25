@@ -1,9 +1,8 @@
 package nl.knaw.meertens.clariah.vre.switchboard.param;
 
 import net.minidev.json.JSONObject;
-import nl.knaw.meertens.clariah.vre.switchboard.AbstractSwitchboardTest;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
 import org.mockserver.model.Header;
@@ -19,12 +18,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-public class ParamControllerTest extends AbstractSwitchboardTest {
-
-    @Before
-    public void beforeParamControllerTests() {
-        startDeployMockServer(200);
-    }
+public class ParamControllerTest extends AbstractControllerTest {
 
     @Test
     public void getCmdiForTest() throws IOException {

@@ -50,10 +50,11 @@ import static org.assertj.core.util.Lists.newArrayList;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-public abstract class AbstractSwitchboardTest extends JerseyTest {
+public abstract class AbstractControllerTest extends JerseyTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private static ResourceConfig resourceConfig = null;
     protected static String testFile = "admin/files/testfile-switchboard.txt";
     protected static String longName = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff, Sr.";
     protected static String resultFilename = "result.txt";
@@ -79,32 +80,6 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
             getMapper()
     );
 
-
-    @Override
-    protected Application configure() {
-        ResourceConfig resourceConfig = new ResourceConfig(
-                SwitchboardDIBinder.getControllerClasses()
-        );
-
-        SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
-                createObjectsRegistryServiceStub(),
-                servicesRegistryService,
-                new DeploymentServiceImpl(
-                        "http://localhost:1080",
-                        requestRepository,
-                        pollService
-                )
-        );
-        resourceConfig.register(diBinder);
-        return resourceConfig;
-    }
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            logger.info(String.format("Starting test [%s]", description.getMethodName()));
-        }
-    };
 
     @BeforeClass
     public static void beforeAbstractTests() throws IOException {
@@ -136,6 +111,36 @@ public abstract class AbstractSwitchboardTest extends JerseyTest {
         mockServer.stop();
         owncloudFileService.unlock(testFile);
     }
+
+    @Override
+    protected Application configure() {
+        if(resourceConfig != null) {
+            return resourceConfig;
+        }
+
+        resourceConfig = new ResourceConfig(
+                SwitchboardDIBinder.getControllerClasses()
+        );
+
+        SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
+                createObjectsRegistryServiceStub(),
+                servicesRegistryService,
+                new DeploymentServiceImpl(
+                        "http://localhost:1080",
+                        requestRepository,
+                        pollService
+                )
+        );
+        resourceConfig.register(diBinder);
+        return resourceConfig;
+    }
+
+    @Rule
+    public TestRule watcher = new TestWatcher() {
+        protected void starting(Description description) {
+            logger.info(String.format("Starting test [%s]", description.getMethodName()));
+        }
+    };
 
     private ObjectsRegistryServiceStub createObjectsRegistryServiceStub() {
         ObjectsRegistryServiceStub result = new ObjectsRegistryServiceStub();
