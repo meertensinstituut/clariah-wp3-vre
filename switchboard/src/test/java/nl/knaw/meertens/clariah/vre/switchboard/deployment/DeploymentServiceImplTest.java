@@ -6,15 +6,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.NOT_FOUND;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockserver.model.HttpRequest.request;
 
 public class DeploymentServiceImplTest extends AbstractControllerTest {
 
@@ -22,9 +22,6 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
 
     @Test
     public void testStart_requestsDeploymentUrl() throws IOException {
-        mockServer.reset();
-        startDeployMockServer(200);
-
         String expectedService = "UCTO";
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
 
@@ -42,7 +39,11 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
 
         deploy(expectedService, deploymentRequestDto);
 
-        mockServer.reset();
+        mockServer.clear(
+                request()
+                        .withMethod("PUT")
+                        .withPath("/deployment-service/a/exec/UCTO/.*")
+        );
         startDeployMockServer(403);
 
         Response secondTimeResponse = deploy(expectedService, deploymentRequestDto);
@@ -51,6 +52,18 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
         logger.info(json);
         assertThat(secondTimeResponse.getStatus()).isEqualTo(403);
         assertThatJson(json).node("status").isEqualTo("ALREADY_RUNNING");
+
+        // Reset:
+        setDeployBackTo200();
+    }
+
+    private void setDeployBackTo200() {
+        mockServer.clear(
+                request()
+                        .withMethod("PUT")
+                        .withPath("/deployment-service/a/exec/UCTO/.*")
+        );
+        startDeployMockServer(200);
     }
 
     @Test
@@ -58,41 +71,22 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
         Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        startStatusMockServer(RUNNING.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(2);
+        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}");
 
-        Response statusResponse = target(String.format("exec/task/%s", workDir))
-                .request()
-                .get();
-
-        String json = statusResponse.readEntity(String.class);
-        assertThat(statusResponse.getStatus()).isEqualTo(202);
+        Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
+        String json = waitUntil(request, RUNNING);
         assertThatJson(json).node("status").isEqualTo("RUNNING");
     }
 
     @Test
     public void testGetStatus_whenNotFound() throws Exception {
-        mockServer.reset();
-        startDeployMockServer(200);
-
-        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
-
         Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        jerseyTest.getPollService().stopPolling();
-        mockServer.reset();
-        startDeployMockServer(200);
-        startStatusMockServer(NOT_FOUND.getHttpStatus(), "{}");
-        jerseyTest.getPollService().startPolling();
-        TimeUnit.SECONDS.sleep(3);
+        startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}");
 
-        Response statusResponse = target(String.format("exec/task/%s", workDir))
-                .request()
-                .get();
-
-        String json = statusResponse.readEntity(String.class);
-        assertThat(statusResponse.getStatus()).isEqualTo(404);
+        Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
+        String json = waitUntil(request, NOT_FOUND);
         assertThatJson(json).node("status").isEqualTo("NOT_FOUND");
     }
 

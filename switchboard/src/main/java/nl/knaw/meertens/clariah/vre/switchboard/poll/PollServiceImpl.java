@@ -99,7 +99,7 @@ public class PollServiceImpl implements PollService {
                     .getConsumer(report.getWorkDir())
                     .accept(report);
         } catch (Exception e) {
-            logger.error(String.format("consumer of deployment [%s] threw exception", report.getWorkDir()), e);
+            logger.error(String.format("Consumer of deployment [%s] threw exception", report.getWorkDir()), e);
         }
     }
 

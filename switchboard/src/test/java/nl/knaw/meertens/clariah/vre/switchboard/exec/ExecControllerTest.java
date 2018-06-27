@@ -8,13 +8,13 @@ import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import org.junit.Test;
 
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
@@ -22,6 +22,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
+import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -44,13 +45,6 @@ public class ExecControllerTest extends AbstractControllerTest {
         ObjectsRecordDTO object = createTestFileWithRegistryObject();
         String uniqueTestFile = object.filepath;
 
-        jerseyTest.getPollService().stopPolling();
-        restartMockServer();
-        startDeployMockServer(200);
-        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
-        jerseyTest.getPollService().startPolling();
-        TimeUnit.SECONDS.sleep(1);
-
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
         String expectedService = "UCTO";
 
@@ -58,18 +52,14 @@ public class ExecControllerTest extends AbstractControllerTest {
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
+        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+
+        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}");
+        String response = waitUntil(request, FINISHED);
+
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
-
         createResultFile(workDir);
-        TimeUnit.SECONDS.sleep(2);
-
-        Response pollStatusResponse = target(String.format("exec/task/%s/", workDir))
-                .request()
-                .get();
-
-        assertThat(pollStatusResponse.getStatus()).isEqualTo(200);
-        String jsonGetAfterWait = pollStatusResponse.readEntity(String.class);
-        assertThatJson(jsonGetAfterWait).node("status").isEqualTo("FINISHED");
+        assertThatJson(response).node("status").isEqualTo("FINISHED");
 
         // Atm links are kept:
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
@@ -77,23 +67,19 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void postDeploymentRequest_shouldOutputFolderWithTestResult() throws InterruptedException, IOException {
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
-        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
+        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
         String expectedService = "UCTO";
         Response deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
+
+        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}");
         createResultFile(workDir);
 
-        TimeUnit.SECONDS.sleep(2);
-
         // Check status is finished:
-        Response finishedResponse = target(String.format("exec/task/%s/", workDir))
-                .request()
-                .get();
-        assertThat(finishedResponse.getStatus()).isEqualTo(200);
-        String finishedJson = finishedResponse.readEntity(String.class);
-        assertThatJson(finishedJson).node("status").isEqualTo("FINISHED");
+        String finishedJson = waitUntil(request, FINISHED);
 
         // Check output file is moved:
         File outputFolder = findOutputFolder(finishedJson);
@@ -139,17 +125,14 @@ public class ExecControllerTest extends AbstractControllerTest {
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
+        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+
         createResultFile(workDir);
-        startStatusMockServer(FINISHED.getHttpStatus(), "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}");
-        TimeUnit.SECONDS.sleep(2);
+        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}");
 
         // Check status is finished:
-        Response finishedResponse = target(String.format("exec/task/%s/", workDir))
-                .request()
-                .get();
-        assertThat(finishedResponse.getStatus()).isEqualTo(200);
-        String finishedJson = finishedResponse.readEntity(String.class);
-        assertThatJson(finishedJson).node("status").isEqualTo("FINISHED");
+        String finishedResponse = waitUntil(request, FINISHED);
+        assertThatJson(finishedResponse).node("status").isEqualTo("FINISHED");
     }
 
     private File findOutputFolder(String finishedJson) {

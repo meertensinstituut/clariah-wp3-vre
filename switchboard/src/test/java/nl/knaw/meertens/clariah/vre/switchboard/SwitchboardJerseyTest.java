@@ -22,9 +22,13 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
 
+/**
+ * Wrapper around JerseyTest which is used
+ * to start Jersey Test Container only once.
+ */
 public class SwitchboardJerseyTest extends JerseyTest {
 
-    private static ResourceConfig resourceConfig = null;
+    private static ResourceConfig resourceConfig;
 
     private static RequestRepository requestRepository = SwitchboardDIBinder.getRequestRepository();
 
@@ -77,10 +81,6 @@ public class SwitchboardJerseyTest extends JerseyTest {
         return target(String.format("exec/%s", expectedService))
                 .request()
                 .post(Entity.json(deploymentRequestDto));
-    }
-
-    public PollServiceImpl getPollService() {
-        return pollService;
     }
 
     public static OwncloudFileService getOwncloudFileService() {
