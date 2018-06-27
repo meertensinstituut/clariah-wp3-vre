@@ -6,7 +6,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -29,13 +28,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 
 public class ExecControllerTest extends AbstractControllerTest {
 
-    @Before
-    public void beforeExecControllerTests() {
-        ObjectsRecordDTO record = new ObjectsRecordDTO();
-        record.id = 1L;
-        record.filepath = testFile;
-    }
-
     @Test
     public void getHelp() {
         Response response = target("exec")
@@ -49,6 +41,9 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void postDeploymentRequest_shouldCreateSymbolicLinksToInputFiles() throws Exception {
+        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        String uniqueTestFile = object.filepath;
+
         jerseyTest.getPollService().stopPolling();
         restartMockServer();
         startDeployMockServer(200);
@@ -56,14 +51,14 @@ public class ExecControllerTest extends AbstractControllerTest {
         jerseyTest.getPollService().startPolling();
         TimeUnit.SECONDS.sleep(1);
 
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
         String expectedService = "UCTO";
 
         Response deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, testFile).toFile()).exists();
+        assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
 
         createResultFile(workDir);
         TimeUnit.SECONDS.sleep(2);
@@ -77,12 +72,12 @@ public class ExecControllerTest extends AbstractControllerTest {
         assertThatJson(jsonGetAfterWait).node("status").isEqualTo("FINISHED");
 
         // Atm links are kept:
-        assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, testFile).toFile()).exists();
+        assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
     }
 
     @Test
     public void postDeploymentRequest_shouldOutputFolderWithTestResult() throws InterruptedException, IOException {
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
         String expectedService = "UCTO";
         Response deployed = deploy(expectedService, deploymentRequestDto);
@@ -111,7 +106,10 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void postDeploymentRequest_shouldCreateConfigFile() throws IOException {
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        String uniqueTestFile = object.filepath;
+
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
         String expectedService = "UCTO";
 
         Response deployed = deploy(expectedService, deploymentRequestDto);
@@ -123,7 +121,7 @@ public class ExecControllerTest extends AbstractControllerTest {
         String configContent = new String(Files.readAllBytes(configFile));
         ConfigDto config = new ObjectMapper().readValue(configContent, ConfigDto.class);
 
-        assertThat(config.params.get(0).value).contains(testFile);
+        assertThat(config.params.get(0).value).contains(uniqueTestFile);
         assertThat(config.params.get(0).name).isEqualTo("untokinput");
 
         assertThat(config.params.get(0).type).isEqualTo(FILE);
@@ -135,7 +133,7 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void testFinishRequest_shouldIgnoreUnknownFields() throws InterruptedException, IOException {
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
         String expectedService = "UCTO";
         Response deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);

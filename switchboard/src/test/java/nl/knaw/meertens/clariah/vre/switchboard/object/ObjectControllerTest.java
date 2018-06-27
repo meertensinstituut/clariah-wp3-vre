@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest;
 import org.junit.Test;
-import org.mockserver.client.server.MockServerClient;
 import org.mockserver.model.Header;
 import org.mockserver.model.Parameter;
 
@@ -19,7 +18,8 @@ public class ObjectControllerTest extends AbstractControllerTest {
     @Test
     public void getServicesFor_shouldGetService_whenCorrectMimetype() {
         startServicesRegistryMock();
-        Response response = target("object/9/services")
+
+        Response response = target("object/1/services")
                 .request()
                 .get();
 

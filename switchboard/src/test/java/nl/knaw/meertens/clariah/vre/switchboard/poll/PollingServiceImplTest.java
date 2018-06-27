@@ -6,9 +6,9 @@ import nl.knaw.meertens.clariah.vre.switchboard.Config;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import org.mockserver.client.server.MockServerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,10 +30,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class PollingServiceImplTest extends AbstractControllerTest {
     private final Logger logger = LoggerFactory.getLogger(AbstractControllerTest.class);
 
-    // TODO: hier gebleven, zie console!
-
     @Test
     public void testDeploymentStatusReportFile() throws Exception {
+        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        String uniqueTestFile = object.filepath;
+
         jerseyTest.getPollService().stopPolling();
         restartMockServer();
         startDeployMockServer(200);
@@ -45,7 +46,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
 
         LocalDateTime startTest = LocalDateTime.now();
         String expectedService = "UCTO";
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
         String json = deployResponse.readEntity(String.class);
 
@@ -61,10 +62,10 @@ public class PollingServiceImplTest extends AbstractControllerTest {
         } while(statusResponse.getStatus() == DEPLOYED.getHttpStatus());
 
         assertThat(statusResponse.getStatus()).isEqualTo(RUNNING.getHttpStatus());
-        testReportFields(startTest, expectedService, workDir, 1, RUNNING);
+        testReportFields(startTest, expectedService, workDir, uniqueTestFile, 1, RUNNING);
 
         TimeUnit.SECONDS.sleep(1);
-        testReportFields(startTest, expectedService, workDir, 1, RUNNING);
+        testReportFields(startTest, expectedService, workDir, uniqueTestFile, 1, RUNNING);
 
         mockServer.reset();
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
@@ -73,7 +74,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
         statusResponse = getStatusRequistBuilder.get();
         assertThat(statusResponse.getStatus()).isEqualTo(FINISHED.getHttpStatus());
 
-        testReportFields(startTest, expectedService, workDir, 3, FINISHED);
+        testReportFields(startTest, expectedService, workDir, uniqueTestFile, 3, FINISHED);
 
     }
 
@@ -81,9 +82,11 @@ public class PollingServiceImplTest extends AbstractControllerTest {
             LocalDateTime startTest,
             String expectedService,
             String workDir,
+            String uniqueTestFile,
             int minInterval,
             DeploymentStatus status
     ) throws IOException {
+
         Path reportPath = Paths.get(Config.DEPLOYMENT_VOLUME, workDir, Config.STATUS_FILE_NAME);
         assertThat(reportPath.toFile()).exists();
 
@@ -94,7 +97,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
         assertThat(report.getPolled()).isAfter(startTest);
         assertThat(report.getPolled()).isBefore(LocalDateTime.now());
         assertThat(report.getService()).isEqualTo(expectedService);
-        assertThat(report.getFiles().get(0)).isEqualTo(testFile);
+        assertThat(report.getFiles().get(0)).isEqualTo(uniqueTestFile);
         assertThat(report.getInterval()).isGreaterThan(minInterval);
     }
 }

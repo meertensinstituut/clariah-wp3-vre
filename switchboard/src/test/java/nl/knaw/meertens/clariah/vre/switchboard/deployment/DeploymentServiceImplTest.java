@@ -2,10 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
-import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockserver.client.server.MockServerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +26,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
         startDeployMockServer(200);
 
         String expectedService = "UCTO";
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
 
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
 
@@ -41,7 +38,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
     @Test
     public void testStart_requestsDeploymentUrl_whenAlreadyRunning() throws IOException {
         String expectedService = "UCTO";
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
 
         deploy(expectedService, deploymentRequestDto);
 
@@ -58,7 +55,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
 
     @Test
     public void testGetStatus_whenRunning() throws IOException, InterruptedException {
-        Response deployResponse = deploy("UCTO", getDeploymentRequestDto());
+        Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
         startStatusMockServer(RUNNING.getHttpStatus(), "{}");
@@ -80,7 +77,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
 
         startStatusMockServer(FINISHED.getHttpStatus(), "{}");
 
-        Response deployResponse = deploy("UCTO", getDeploymentRequestDto());
+        Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
         jerseyTest.getPollService().stopPolling();
