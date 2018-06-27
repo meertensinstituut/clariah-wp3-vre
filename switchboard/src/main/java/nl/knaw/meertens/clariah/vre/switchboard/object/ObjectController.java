@@ -1,12 +1,11 @@
 package nl.knaw.meertens.clariah.vre.switchboard.object;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDTO;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -35,7 +34,7 @@ public class ObjectController {
     public Response getServicesFor(@PathParam("objectId") long objectId) {
         try {
             logger.info(String.format("Received request of available services for object [%s]", objectId));
-            List<ServiceRecordDTO> services = objectService.getServicesFor(objectId);
+            List<ServiceRecordDto> services = objectService.getServicesFor(objectId);
             return Response
                     .status(200)
                     .entity(mapper.writeValueAsString(services))

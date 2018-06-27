@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -13,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,7 +35,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
     }
 
     @Override
-    public List<ServiceRecordDTO> getServicesByMimetype(String mimetype) {
+    public List<ServiceRecordDto> getServicesByMimetype(String mimetype) {
         HttpResponse<String> response;
         String url = String.format("%s/%s?filter=mimetype%%20%%3D%%20%s", serviceDbUrl, servicesWithMimetypeView, mimetype);
         try {
@@ -54,17 +51,17 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
                 ));
             }
             JsonNode resource = mapper.readTree(response.getBody()).at("/resource");
-            ObjectReader reader = mapper.readerFor(new TypeReference<List<ServiceRecordDTO>>() {});
-            List<ServiceRecordDTO> serviceRecordDTOS = reader.readValue(resource);
+            ObjectReader reader = mapper.readerFor(new TypeReference<List<ServiceRecordDto>>() {});
+            List<ServiceRecordDto> serviceRecordDtos = reader.readValue(resource);
             logger.info(String.format(
                     "Mimetype [%s] yielded services [%s]",
                     mimetype,
-                    serviceRecordDTOS
+                    serviceRecordDtos
                             .stream()
                             .map(o -> o.id.toString())
                             .collect(Collectors.joining(", "))
             ));
-            return serviceRecordDTOS;
+            return serviceRecordDtos;
         } catch (UnirestException | IOException | IllegalStateException e) {
             return handleException(e, "Could not determine services for mimetype [%s]", mimetype);
         }
