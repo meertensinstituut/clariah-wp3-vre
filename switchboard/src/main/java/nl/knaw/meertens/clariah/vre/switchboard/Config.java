@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
 public class Config {
+
     public static final String DEPLOYMENT_VOLUME = System.getenv("DEPLOYMENT_VOLUME");
     public static final String DEPLOYMENT_HOST_NAME = "http://deployment:8080";
     public static final String KAFKA_HOST_NAME = "kafka:" + System.getenv("KAFKA_PORT");

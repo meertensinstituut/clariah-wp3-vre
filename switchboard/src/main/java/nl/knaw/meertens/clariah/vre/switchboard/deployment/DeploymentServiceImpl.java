@@ -21,13 +21,11 @@ public class DeploymentServiceImpl implements DeploymentService {
     public DeploymentServiceImpl(
             String hostName,
             RequestRepository requestRepositoryService,
-
-            PollService pollService) {
+            PollService pollService
+    ) {
         this.hostName = hostName;
         this.requestRepositoryService = requestRepositoryService;
-
         pollService.startPolling();
-
     }
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -79,12 +77,10 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     private HttpResponse<String> sendRequest(URI uri) {
         try {
-            HttpResponse<String> response = Unirest.put(uri.toString())
+            HttpResponse<String> response = Unirest
+                    .put(uri.toString())
                     .asString();
-            logger.info(String.format(
-                    "Started deployment of [%s]",
-                    uri.toString())
-            );
+            logger.info(String.format("Started deployment of [%s]", uri.toString()));
             return response;
         } catch (UnirestException e) {
             return handleException(e, "Could not start deployment of [%s]", uri.toString());

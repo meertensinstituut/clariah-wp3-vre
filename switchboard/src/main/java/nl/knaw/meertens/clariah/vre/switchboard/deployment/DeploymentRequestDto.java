@@ -1,8 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamDto;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

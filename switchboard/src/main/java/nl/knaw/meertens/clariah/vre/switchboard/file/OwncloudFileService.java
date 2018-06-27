@@ -185,9 +185,10 @@ public class OwncloudFileService implements FileService {
         for (String file : filePaths) {
             unlock(file);
             try {
+                logger.info(String.format("Unlocking [%s]", file));
                 unlockParents(toSrcPath(file), srcPath.getFileName().toString());
             } catch (IOException e) {
-                handleException(e, "Could not unlock parents of [%s]", file);
+                handleException(e, "Could not unlock [%s]", file);
             }
         }
     }
@@ -200,7 +201,6 @@ public class OwncloudFileService implements FileService {
     }
 
     private void unlockParents(Path path, String stopAt) throws IOException {
-        logger.info(String.format("unlocking [%s]", path.toString()));
         Path parent = path.getParent();
         chown(parent, "www-data");
         setPosixFilePermissions(parent, get755());

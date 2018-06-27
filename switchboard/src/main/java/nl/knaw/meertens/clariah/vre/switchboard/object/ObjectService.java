@@ -18,6 +18,6 @@ public class ObjectService {
 
     public List<ServiceRecordDto> getServicesFor(Long objectId) {
         String mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
-        return servicesRegistryService.getServicesByMimetype(mimetype);
+        return servicesRegistryService.getServices(mimetype);
     }
 }

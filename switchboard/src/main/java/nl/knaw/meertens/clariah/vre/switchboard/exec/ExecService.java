@@ -6,7 +6,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.ExceptionalConsumer;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.ParamDto;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;

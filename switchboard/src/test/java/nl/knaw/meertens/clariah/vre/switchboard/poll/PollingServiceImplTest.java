@@ -1,15 +1,14 @@
 package nl.knaw.meertens.clariah.vre.switchboard.poll;
 
 import com.jayway.jsonpath.JsonPath;
-import nl.knaw.meertens.clariah.vre.switchboard.AbstractSwitchboardTest;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.Config;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockserver.client.server.MockServerClient;
 
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
@@ -21,72 +20,78 @@ import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.DEPLOYED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class PollingServiceImplTest extends AbstractSwitchboardTest {
-
-    @Before
-    public void beforeDeploymentServiceImplTest() {
-        startDeployMockServer(200);
-    }
+public class PollingServiceImplTest extends AbstractControllerTest {
 
     @Test
     public void testDeploymentStatusReportFile() throws Exception {
-        startStatusMockServer(RUNNING.getHttpStatus(), "{}");
+        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        String uniqueTestFile = object.filepath;
 
         LocalDateTime startTest = LocalDateTime.now();
         String expectedService = "UCTO";
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
-        String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
+        String json = deployResponse.readEntity(String.class);
 
-        Invocation.Builder getStatusRequistBuilder = target(String.format("exec/task/%s", workDir)).request();
+        String workDir = JsonPath.parse(json).read("$.workDir");
+        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}");
 
-        Response statusResponse;
-        do {
-            TimeUnit.SECONDS.sleep(1);
-            statusResponse = getStatusRequistBuilder.get();
-        } while(statusResponse.getStatus() == DEPLOYED.getHttpStatus());
+        Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
+        waitUntil(request, RUNNING);
 
-        assertThat(statusResponse.getStatus()).isEqualTo(RUNNING.getHttpStatus());
-        testReportFields(startTest, expectedService, workDir, 1, RUNNING);
-
-        TimeUnit.SECONDS.sleep(1);
-        testReportFields(startTest, expectedService, workDir, 2, RUNNING);
-
-        // Status assert status is finished:
-        new MockServerClient("localhost", 1080).reset();
-        startStatusMockServer(FINISHED.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(2);
-
-        statusResponse = getStatusRequistBuilder.get();
-        assertThat(statusResponse.getStatus()).isEqualTo(FINISHED.getHttpStatus());
-
-        testReportFields(startTest, expectedService, workDir, 3, FINISHED);
-
+        testReportFileFields(startTest, expectedService, workDir, uniqueTestFile, RUNNING);
     }
 
-    private void testReportFields(
+    @Test
+    public void testPollingInterval() throws Exception {
+        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
+        Response deployResponse = deploy("UCTO", deploymentRequestDto);
+        String json = deployResponse.readEntity(String.class);
+        String workDir = JsonPath.parse(json).read("$.workDir");
+
+        int pollInterval = getPollIntervalFromReportFile(workDir);
+        assertThat(pollInterval).isGreaterThanOrEqualTo(1);
+        assertThat(pollInterval).isLessThanOrEqualTo(3);
+
+        Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
+        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}");
+        TimeUnit.SECONDS.sleep(pollInterval + 5);
+        waitUntil(request, FINISHED);
+
+        pollInterval = getPollIntervalFromReportFile(workDir);
+        assertThat(pollInterval).isLessThanOrEqualTo(4);
+    }
+
+    private void testReportFileFields(
             LocalDateTime startTest,
             String expectedService,
             String workDir,
-            int minInterval,
+            String uniqueTestFile,
             DeploymentStatus status
     ) throws IOException {
         Path reportPath = Paths.get(Config.DEPLOYMENT_VOLUME, workDir, Config.STATUS_FILE_NAME);
         assertThat(reportPath.toFile()).exists();
-
         String reportJson = FileUtils.readFileToString(reportPath.toFile(), UTF_8);
         DeploymentStatusReport report = getMapper().readValue(reportJson, DeploymentStatusReport.class);
+
         assertThat(report.getStatus()).isEqualTo(status);
         assertThat(report.getWorkDir()).isEqualTo(workDir);
         assertThat(report.getPolled()).isAfter(startTest);
         assertThat(report.getPolled()).isBefore(LocalDateTime.now());
         assertThat(report.getService()).isEqualTo(expectedService);
-        assertThat(report.getFiles().get(0)).isEqualTo(testFile);
-        assertThat(report.getInterval()).isGreaterThan(minInterval);
+        assertThat(report.getFiles().get(0)).isEqualTo(uniqueTestFile);
+    }
+
+    private int getPollIntervalFromReportFile(String workDir) throws IOException {
+        Path reportPath = Paths.get(Config.DEPLOYMENT_VOLUME, workDir, Config.STATUS_FILE_NAME);
+        assertThat(reportPath.toFile()).exists();
+        String reportJson = FileUtils.readFileToString(reportPath.toFile(), UTF_8);
+        DeploymentStatusReport report = getMapper().readValue(reportJson, DeploymentStatusReport.class);
+        return report.getInterval();
     }
 }

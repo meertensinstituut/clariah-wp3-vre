@@ -13,10 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.LocalDateTime.*;
+import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class PollServiceImpl implements PollService {
@@ -100,7 +99,7 @@ public class PollServiceImpl implements PollService {
                     .getConsumer(report.getWorkDir())
                     .accept(report);
         } catch (Exception e) {
-            logger.error(String.format("consumer of deployment [%s] threw exception", report.getWorkDir()), e);
+            logger.error(String.format("Consumer of deployment [%s] threw exception", report.getWorkDir()), e);
         }
     }
 

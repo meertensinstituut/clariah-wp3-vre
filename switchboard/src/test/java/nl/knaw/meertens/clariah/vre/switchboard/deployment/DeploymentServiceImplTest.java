@@ -1,40 +1,33 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import com.jayway.jsonpath.JsonPath;
-import nl.knaw.meertens.clariah.vre.switchboard.AbstractSwitchboardTest;
-import org.junit.Before;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import org.junit.Test;
-import org.mockserver.client.server.MockServerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.NOT_FOUND;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockserver.model.HttpRequest.request;
 
-public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
+public class DeploymentServiceImplTest extends AbstractControllerTest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @Before
-    public void beforeDeploymentServiceImplTest() {
-        startDeployMockServer(200);
-    }
 
     @Test
     public void testStart_requestsDeploymentUrl() throws IOException {
         String expectedService = "UCTO";
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
 
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
 
         String json = deployResponse.readEntity(String.class);
-        logger.info(json);
         assertThat(deployResponse.getStatus()).isEqualTo(200);
         assertThatJson(json).node("status").isEqualTo("DEPLOYED");
     }
@@ -42,11 +35,15 @@ public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
     @Test
     public void testStart_requestsDeploymentUrl_whenAlreadyRunning() throws IOException {
         String expectedService = "UCTO";
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto();
+        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
 
-        Response firstTime = deploy(expectedService, deploymentRequestDto);
+        deploy(expectedService, deploymentRequestDto);
 
-        new MockServerClient("localhost", 1080).reset();
+        mockServer.clear(
+                request()
+                        .withMethod("PUT")
+                        .withPath("/deployment-service/a/exec/UCTO/.*")
+        );
         startDeployMockServer(403);
 
         Response secondTimeResponse = deploy(expectedService, deploymentRequestDto);
@@ -55,42 +52,41 @@ public class DeploymentServiceImplTest extends AbstractSwitchboardTest {
         logger.info(json);
         assertThat(secondTimeResponse.getStatus()).isEqualTo(403);
         assertThatJson(json).node("status").isEqualTo("ALREADY_RUNNING");
+
+        // Reset:
+        setDeployBackTo200();
+    }
+
+    private void setDeployBackTo200() {
+        mockServer.clear(
+                request()
+                        .withMethod("PUT")
+                        .withPath("/deployment-service/a/exec/UCTO/.*")
+        );
+        startDeployMockServer(200);
     }
 
     @Test
     public void testGetStatus_whenRunning() throws IOException, InterruptedException {
-        Response deployResponse = deploy("UCTO", getDeploymentRequestDto());
+        Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        startStatusMockServer(RUNNING.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(1);
+        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}");
 
-        Response statusResponse = target(String.format("exec/task/%s", workDir))
-                .request()
-                .get();
-
-        String json = statusResponse.readEntity(String.class);
-        logger.info("statusResponse: " + json);
-        assertThat(statusResponse.getStatus()).isEqualTo(202);
+        Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
+        String json = waitUntil(request, RUNNING);
         assertThatJson(json).node("status").isEqualTo("RUNNING");
     }
 
     @Test
     public void testGetStatus_whenNotFound() throws Exception {
-        logger.info("start_testGetStatus_whenNotFound");
-        Response deployResponse = deploy("UCTO", getDeploymentRequestDto());
+        Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        startStatusMockServer(NOT_FOUND.getHttpStatus(), "{}");
-        TimeUnit.SECONDS.sleep(1);
+        startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}");
 
-        Response statusResponse = target(String.format("exec/task/%s", workDir))
-                .request()
-                .get();
-
-        String json = statusResponse.readEntity(String.class);
-        logger.info("statusResponse: " + json);
-        assertThat(statusResponse.getStatus()).isEqualTo(404);
+        Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
+        String json = waitUntil(request, NOT_FOUND);
         assertThatJson(json).node("status").isEqualTo("NOT_FOUND");
     }
 

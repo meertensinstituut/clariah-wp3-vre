@@ -17,8 +17,12 @@ public class ExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
 
-    public static <T> T handleException(Throwable e, String template, String... args) {
-        String msg = String.format(template, Arrays.stream(args).toArray());
+    /**
+     * Handle exceptions with a msg template for String.format
+     * Note: all format specifiers in template should be of type %s
+     */
+    public static <T> T handleException(Throwable e, String template, Object... args) {
+        String msg = String.format(template, Arrays.stream(args).map(Object::toString).toArray());
         throw new RuntimeException(msg, e);
     }
 
@@ -37,8 +41,8 @@ public class ExceptionHandler {
                     .entity(mapper.writeValueAsString(new SwitchboardMsg(
                             e.getMessage()
                     ))).build();
-        } catch (JsonProcessingException e1) {
-            return handleControllerException(e);
+        } catch (JsonProcessingException e2) {
+            return handleControllerException(e2);
         }
     }
 
