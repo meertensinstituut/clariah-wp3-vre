@@ -9,13 +9,15 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
 
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
+
 public class ExceptionHandler {
 
-    private static ObjectMapper mapper;
-
-    private ExceptionHandler() {}
+    private static ObjectMapper mapper = getMapper();
 
     private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
+
+    private ExceptionHandler() {}
 
     /**
      * Handle exceptions with a msg template for String.format

@@ -2,13 +2,18 @@ import React from "react";
 import $ from "jquery";
 
 const DOMAIN = 'http://localhost:8089/api/v2';
-const OBJECT = '/objects/_table/object';
+const OBJECT = 'objects/_table/object';
 const USER = 'admin';
 
 export default class Dreamfactory extends React.Component {
 
     static getObjects(params) {
-        const url = `${DOMAIN}${OBJECT}?${params}&filter=user_id%20%3D%20${USER}`;
+        const url = `${DOMAIN}/${OBJECT}?${params}&filter=user_id%20%3D%20${USER}`;
+        return get(url);
+    }
+
+    static getObject(id) {
+        const url = `${DOMAIN}/${OBJECT}/${id}`;
         return get(url);
     }
 

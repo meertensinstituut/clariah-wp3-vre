@@ -16,7 +16,7 @@ public class ParamDto {
     public String minimumCardinality;
     public String maximumCardinality;
     public ParamType valuesType;
-    public List<ParamValueDto> values = new ArrayList<>();
+    public List<ParamValueDto> values;
 
     // TODO: to form dto
     public JsonNode params; // TODO: replace with ParamGroupDto

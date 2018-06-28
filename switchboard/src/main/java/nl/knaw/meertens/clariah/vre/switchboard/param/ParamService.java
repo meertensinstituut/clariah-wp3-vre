@@ -52,7 +52,7 @@ public class ParamService {
         this.servicesRegistryService = servicesRegistryService;
     }
 
-    public CmdiDto getCmdi(long serviceId) {
+    public CmdiDto getParams(long serviceId) {
         String semanticsXml = servicesRegistryService.getServiceSemantics(serviceId);
         return convertCmdiXmlToDto(semanticsXml);
     }
@@ -145,14 +145,14 @@ public class ParamService {
                     result.maximumCardinality = fieldValue;
                     break;
                 case "cmdp:Values":
-                    result.values.addAll(mapParamValues(node));
+                    result.values = mapParamValues(node);
                     break;
             }
 
         }
         // Enumeration type is determined by the presence of values
         // and should overwrite DataType:
-        if (!result.values.isEmpty()) {
+        if (result.values != null) {
             result.valuesType = result.type;
             result.type = ParamType.ENUMERATION;
         }
@@ -191,19 +191,6 @@ public class ParamService {
             }
         }
         return result;
-    }
-
-    private static String nodeToString(Node node) {
-        StringWriter sw = new StringWriter();
-        try {
-            Transformer t = TransformerFactory.newInstance().newTransformer();
-            t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            t.setOutputProperty(OutputKeys.INDENT, "yes");
-            t.transform(new DOMSource(node), new StreamResult(sw));
-        } catch (TransformerException e) {
-            throw new RuntimeException("could not print node", e);
-        }
-        return sw.toString();
     }
 
 }

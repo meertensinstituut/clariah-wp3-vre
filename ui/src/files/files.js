@@ -1,8 +1,8 @@
 import React from "react";
-
+import {Redirect} from 'react-router-dom';
 import PageNumbering from "./page-numbering";
-import Dreamfactory from "./dreamfactory";
-import DeployServiceModal from "./deploy-service-modal";
+import Dreamfactory from "../common/dreamfactory";
+// import DeployServiceModal from "./deploy-service-modal";
 
 import {Table} from "react-bootstrap";
 
@@ -13,6 +13,7 @@ export default class Files extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            redirect: null,
             pageSize: PAGE_SIZE,
             pageCurrent: 0,
             pageTotal: null,
@@ -54,7 +55,10 @@ export default class Files extends React.Component {
     }
 
     handleRowClick(object) {
-        this.setState({selectedObject: object});
+        this.setState({
+            selectedObject: object,
+            redirect: `/deploy?file=${object.id}`
+        });
     }
 
     deselectObject() {
@@ -62,11 +66,11 @@ export default class Files extends React.Component {
     }
 
     render() {
-        if (this.state.data === null) {
-            return (
-                <div className="main">Loading...</div>
-            );
-        }
+        if (this.state.data === null)
+            return <div className="main">Loading...</div>;
+
+        if (this.state.redirect !== null)
+            return <Redirect to={this.state.redirect} />;
 
         let objects = this.state.data.resource;
 
@@ -106,10 +110,10 @@ export default class Files extends React.Component {
                     pageCurrent={this.state.pageCurrent}
                     onClick={this.goToPage}
                 />
-                <DeployServiceModal
-                    object={this.state.selectedObject}
-                    deselectObject={() => this.deselectObject()}
-                />
+                {/*<DeployServiceModal*/}
+                    {/*object={this.state.selectedObject}*/}
+                    {/*deselectObject={() => this.deselectObject()}*/}
+                {/*/>*/}
             </div>
         )
     }

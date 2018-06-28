@@ -26,10 +26,78 @@ SELECT
           <cmdp:Operation>
             <cmdp:Name>main</cmdp:Name><!-- main is our default endpoint -->
             <cmdp:Input>
-              <cmdp:Parameter><!-- use Parameter instead of ParameterGroup, if there are no nested parameters -->
-                <cmdp:Name>input</cmdp:Name>
-                <cmdp:MIMEType>text/plain</cmdp:MIMEType>
+              <cmdp:Parameter>
+                  <cmdp:Name>input</cmdp:Name>
+                  <cmdp:MIMEType>text/plain</cmdp:MIMEType>
+                  <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                  <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
+                  <cmdp:Label xml:lang="dk">Indtastningstekst</cmdp:Label>
+                  <cmdp:Label xml:lang="en">Input text</cmdp:Label>
+                  <cmdp:Label xml:lang="nl">Invoer tekst</cmdp:Label>
+                  <cmdp:DataType>integer</cmdp:DataType>
               </cmdp:Parameter>
+              <cmdp:Parameter>
+                  <cmdp:Name>red-pill-and-blue-pill</cmdp:Name>
+                  <cmdp:Label xml:lang="en">Red pill and blue pill</cmdp:Label>
+                  <cmdp:Description>This is your last chance. After this, there is no turning back. You take the blue pill—the story ends, you wake up in your bed and believe whatever you want to believe. You take the red pill—you stay in Wonderland, and I show you how deep the rabbit hole goes. Remember: all I''m offering is the truth. Nothing more.</cmdp:Description>
+                  <cmdp:DataType>string</cmdp:DataType>
+                  <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                  <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
+                  <cmdp:Values>
+                      <cmdp:ParameterValue>
+                          <cmdp:Value>red</cmdp:Value>
+                          <cmdp:Label xml:lang="dk">Rød</cmdp:Label>
+                          <cmdp:Label xml:lang="en">Red</cmdp:Label>
+                          <cmdp:Label xml:lang="nl">Rood</cmdp:Label>
+                          <cmdp:Description>Knowledge, freedom, and the brutal truths of reality</cmdp:Description>
+                      </cmdp:ParameterValue>
+                      <cmdp:ParameterValue>
+                          <cmdp:Value>blue</cmdp:Value>
+                          <cmdp:Label xml:lang="dk">Blå</cmdp:Label>
+                          <cmdp:Label xml:lang="en">Blue</cmdp:Label>
+                          <cmdp:Label xml:lang="nl">Blauw</cmdp:Label>
+                          <cmdp:Description>Security, happiness and the blissful ignorance of illusion</cmdp:Description>
+                      </cmdp:ParameterValue>
+                  </cmdp:Values>
+              </cmdp:Parameter>
+              <cmdp:ParameterGroup>
+                  <cmdp:Name>untokinput</cmdp:Name>
+                  <cmdp:Label xml:lang="dk">Untok Indtastningstekst</cmdp:Label>
+                  <cmdp:Label xml:lang="en">Untok Input text</cmdp:Label>
+                  <cmdp:Label xml:lang="nl">Untok Invoer tekst</cmdp:Label>
+                  <cmdp:MIMEType>text/plain</cmdp:MIMEType>
+                  <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                  <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
+                  <cmdp:Parameters>
+                      <cmdp:Parameter>
+                          <cmdp:Name>language</cmdp:Name>
+                          <cmdp:Description>The language this text is in</cmdp:Description>
+                          <cmdp:DataType>string</cmdp:DataType>
+                          <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                          <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
+                          <cmdp:Values>
+                              <cmdp:ParameterValue>
+                                  <cmdp:Value>nld</cmdp:Value>
+                                  <cmdp:Label xml:lang="en">Dutch</cmdp:Label>
+                              </cmdp:ParameterValue>
+                              <cmdp:ParameterValue>
+                                  <cmdp:Value>eng</cmdp:Value>
+                                  <cmdp:Label xml:lang="en">English</cmdp:Label>
+                              </cmdp:ParameterValue>
+                              <cmdp:ParameterValue>
+                                  <cmdp:Value>nld-twitter</cmdp:Value>
+                                  <cmdp:Label xml:lang="en">Dutch on Twitter</cmdp:Label>
+                              </cmdp:ParameterValue>
+                          </cmdp:Values>
+                      </cmdp:Parameter>
+                      <cmdp:Parameter>
+                          <cmdp:Name>author</cmdp:Name>
+                          <cmdp:DataType>string</cmdp:DataType>
+                          <cmdp:MinimumCardinality>0</cmdp:MinimumCardinality>
+                          <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
+                      </cmdp:Parameter>
+                  </cmdp:Parameters>
+              </cmdp:ParameterGroup>
             </cmdp:Input>
             <cmdp:Output>
               <cmdp:Parameter>

@@ -101,7 +101,7 @@ export default class DeployServiceModal extends React.Component {
 
 function getServices() {
     Switchboard
-        .requestServices(this.state.object.id)
+        .getServices(this.state.object.id)
         .done((data) => {
             this.setState({services: data});
             this.forceUpdate();
@@ -110,7 +110,7 @@ function getServices() {
 
 function requestDeployment(service) {
     Switchboard
-        .requestDeployment(service.name, this.state.object.id)
+        .getDeployment(service.name, this.state.object.id)
         .done((data) => {
             this.setState({deployment: data});
             this.forceUpdate();

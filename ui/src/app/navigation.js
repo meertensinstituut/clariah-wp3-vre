@@ -18,9 +18,12 @@ export default class Navigation extends React.Component {
     render() {
         return (
             <ul className='nav'>
-                {this.state.links.map((link) => {
+                {this.state.links.map((link, i) => {
                     return (
-                        <li className='nav-item'>
+                        <li
+                            className='nav-item'
+                            key={i}
+                        >
                             <NavLink
                                 exact
                                 to={link.path}

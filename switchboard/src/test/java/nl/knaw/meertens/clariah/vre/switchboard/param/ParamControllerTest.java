@@ -24,7 +24,7 @@ public class ParamControllerTest extends AbstractControllerTest {
     public void getCmdiForTest() throws IOException {
         startGetServiceByIdRegistryMock();
 
-        Response response = jerseyTest.target("param/1")
+        Response response = jerseyTest.target("services/1/params")
                 .request()
                 .get();
 
