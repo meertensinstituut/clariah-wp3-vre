@@ -1,12 +1,13 @@
 import React from "react";
-import {ControlLabel, FormControl, FormGroup, HelpBlock} from 'react-bootstrap';
 import Switchboard from "../common/switchboard";
+import Field from "./form/field";
 
 export default class Configurator extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
+            serviceParams: null,
             label: "Do you breathe?",
             description: "Breathing is very important",
             value: "",
@@ -34,24 +35,22 @@ export default class Configurator extends React.Component {
     }
 
     render() {
+        if (this.state.serviceParams === null) {
+            return <div>Loading...</div>
+        }
         return (
             <div>
                 <form>
-
-                    <FormGroup
-                        controlId="formBasicText"
-                        validationState={this.handleValidationFormBasicText()}
-                    >
-                        <ControlLabel>{this.state.label}</ControlLabel>
-                        <FormControl
-                            type="text"
-                            value={this.state.value}
-                            placeholder={this.state.placeholder}
-                            onChange={this.handleChange}
-                        />
-                        <FormControl.Feedback/>
-                        <HelpBlock>{this.state.description}</HelpBlock>
-                    </FormGroup>
+                    {this.state.serviceParams.params.map(function (param, i) {
+                        return <Field key={i} param={param}/>
+                    }, this)}
+                    {this.state.serviceParams.paramGroups.map(function (paramGroup, i) {
+                        return <div key={i}>
+                            {paramGroup.params.map(function (param, k) {
+                                return <Field key={k} param={param}/>
+                            }, this)}
+                        </div>
+                    }, this)}
                 </form>
                 <div>
                     <p>state:</p>

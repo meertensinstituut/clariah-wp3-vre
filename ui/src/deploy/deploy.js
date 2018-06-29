@@ -33,6 +33,7 @@ class Deploy extends React.Component {
         let params = this.state.params;
         params.service = service.id;
         this.props.history.push('/deploy?' + queryString.stringify(params));
+        this.setState({params});
     }
 
     isCurrentStep(page, nextPage) {
@@ -91,6 +92,7 @@ class Deploy extends React.Component {
                 {selectService}
                 <div className="clearfix"/>
                 {configureService}
+
             </div>
         );
     }
