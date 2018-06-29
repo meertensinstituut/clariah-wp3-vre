@@ -1,98 +1,99 @@
 import React from "react";
-import {Redirect} from 'react-router-dom';
+import {Redirect, withRouter} from 'react-router-dom';
 import queryString from 'query-string';
-import {ControlLabel, FormControl, FormGroup, HelpBlock, Pagination} from 'react-bootstrap';
+import {Pagination} from 'react-bootstrap';
 import ServiceSelector from "./service-selector";
-import Switchboard from "../common/switchboard";
+import Configurator from "./configurator";
 
-export default class Deploy extends React.Component {
+class Deploy extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
+            params: queryString.parse(this.props.location.search),
             redirect: null,
-            service: null,
-            label: "Do you breathe?",
-            description: "Breathing is very important",
-            value: "",
-            placeholder: "Hello? Is it me you're looking for?"
+            serviceParams: null,
         };
 
         this.handleSelect = this.handleSelect.bind(this);
-
-        this.state.urlParams = queryString.parse(this.props.location.search);
-
-    }
-
-    handleValidationFormBasicText() {
-        const length = this.state.value.length;
-        if (length > 10) return 'success';
-        else if (length > 5) return 'warning';
-        else if (length > 0) return 'error';
-        return null;
     }
 
     handleBackClick() {
         this.setState({redirect: "/files"});
     }
 
+    handleBackToServiceClick() {
+        const params = this.state.params;
+        delete params.service;
+        this.props.history.push('/deploy?' + queryString.stringify(params));
+        this.setState({params});
+    }
+
     handleSelect(service) {
-        this.setState({service: service});
-        Switchboard.getParams(service.id).done((data) => {
-            console.log(JSON.stringify(data, null, 2));
-        });
+        let params = this.state.params;
+        params.service = service.id;
+        this.props.history.push('/deploy?' + queryString.stringify(params));
     }
 
-    getParams() {
-
+    isCurrentStep(page, nextPage) {
+        return this.state.params[page] !== undefined && this.state.params[nextPage] === undefined;
     }
 
+    isDisabledStep(previousPage) {
+        return this.state.params[previousPage] === undefined;
+    }
 
     render() {
-        if (this.state.redirect !== null) return <Redirect to='/files'/>;
+        if (this.state.redirect !== null)
+            return <Redirect to='/files'/>;
+
+        if (this.state.params.file === undefined)
+            return <Redirect to="/files"/>;
+
+        const selectService = this.isCurrentStep('file', 'service')
+            ?
+            <div>
+                <h2>1. Select service</h2>
+                <ServiceSelector
+                    file={this.state.params.file}
+                    selected={this.state.params.service}
+                    onSelect={this.handleSelect}
+                />
+            </div>
+            :
+            null;
+
+        const configureService = this.isCurrentStep('service', 'params')
+            ?
+            <div>
+                <h2>2. Configure service</h2>
+                <Configurator
+                    service={this.state.params.service}
+                />
+            </div>
+            :
+            null;
 
         return (
             <div>
                 <div>
                     <Pagination>
-                        <Pagination.Item onClick={() => this.handleBackClick()}>&lt; Back</Pagination.Item>
-                        <Pagination.Item>Next step &gt;</Pagination.Item>
+                        <Pagination.Item onClick={() => this.handleBackClick()}>&lt; Select file</Pagination.Item>
+                        <Pagination.Item active={this.isCurrentStep('file', 'service')}
+                                         disabled={this.isDisabledStep('file')}
+                                         onClick={() => this.handleBackToServiceClick()}>Select service</Pagination.Item>
+                        <Pagination.Item active={this.isCurrentStep('service', 'params')}
+                                         disabled={this.isDisabledStep('service')}>Configure service</Pagination.Item>
+                        <Pagination.Item active={this.isCurrentStep('params', true)}
+                                         disabled={this.isDisabledStep('params')}>Deploy service &gt;</Pagination.Item>
                     </Pagination>
                 </div>
-                <div>
-                    <ServiceSelector
-                        file={Number(this.state.urlParams.file)}
-                        onSelect={this.handleSelect}
-                    />
-                </div>
+                {selectService}
                 <div className="clearfix"/>
-                <div>
-                    <form>
-                        <FormGroup
-                            controlId="formBasicText"
-                            validationState={this.handleValidationFormBasicText()}
-                        >
-                            <ControlLabel>{this.state.label}</ControlLabel>
-                            <FormControl
-                                type="text"
-                                value={this.state.value}
-                                placeholder={this.state.placeholder}
-                                onChange={this.handleChange}
-                            />
-                            <FormControl.Feedback/>
-                            <HelpBlock>{this.state.description}</HelpBlock>
-                        </FormGroup>
-                    </form>
-                </div>
-                <div>
-                    <p>state:</p>
-                    <pre>{JSON.stringify(this.state, null, 2)}</pre>
-                </div>
-                <div>
-                    <p>props:</p>
-                    <pre>{JSON.stringify(this.props, null, 2)}</pre>
-                </div>
+                {configureService}
             </div>
         );
     }
 }
+
+export default withRouter(Deploy);

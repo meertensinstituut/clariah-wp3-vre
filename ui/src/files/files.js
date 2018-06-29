@@ -2,7 +2,6 @@ import React from "react";
 import {Redirect} from 'react-router-dom';
 import PageNumbering from "./page-numbering";
 import Dreamfactory from "../common/dreamfactory";
-// import DeployServiceModal from "./deploy-service-modal";
 
 import {Table} from "react-bootstrap";
 

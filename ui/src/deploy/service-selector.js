@@ -24,9 +24,19 @@ export default class ServiceSelector extends React.Component {
     getResources() {
         DreamFactory.getObject(this.props.file).done((data) => {
             this.setState({object: data});
-            Switchboard.getServices(this.state.object.id).done((data) => {
-                this.setState({services: data});
-            });
+            this.getServices();
+        });
+    }
+
+    getServices() {
+        Switchboard.getServices(this.state.object.id).done((data) => {
+            let selected = null;
+            if(this.props.selected !== undefined) {
+                selected = data.find((service) => {
+                    return Number(service.id) === Number(this.props.selected);
+                });
+            }
+            this.setState({services: data, selected: selected});
         });
     }
 
@@ -108,6 +118,6 @@ export default class ServiceSelector extends React.Component {
 }
 
 ServiceSelector.propTypes = {
-    file: PropTypes.number.isRequired,
+    file: PropTypes.any.isRequired,
     onSelect: PropTypes.func.isRequired
 };
