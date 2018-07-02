@@ -12,18 +12,21 @@ export default class Configurator extends React.Component {
         if (this.props.service !== undefined) {
             this.getServiceParams(this.props.service);
         }
-        this.onChangeParam = this.onChangeParam.bind(this);
+        this.changeParam = this.changeParam.bind(this);
+        this.addParam = this.addParam.bind(this);
     }
 
-    onChangeParam(newFormParam) {
+    changeParam(newFormParam) {
         let form = this.state.form;
-        if (newFormParam.parentId === undefined) {
-            let index = form.params.findIndex(
-                (param) => Number(param.id) === Number(newFormParam.id)
-            );
-            form[index] = newFormParam;
-        }
+        let index = this.findParamIndex(form, newFormParam);
+        form.params[index] = newFormParam;
         this.setState({form});
+    }
+
+    findParamIndex(param, form) {
+        return form.params.findIndex(
+            (p) => Number(p.id) === Number(param.id)
+        );
     }
 
     getServiceParams(service) {
@@ -62,6 +65,20 @@ export default class Configurator extends React.Component {
         formParam.params = [];
     }
 
+    addParam(param) {
+        console.log("addParam", param);
+        let copy = Object.assign({}, param);
+        if(param.parent === undefined) {
+            let form = this.state.form;
+            let index = this.findParamIndex(param, form);
+            copy.id = form.params.length;
+            form.params.splice(index, 0, copy);
+            this.setState({form});
+        } else {
+            // TODO: hier gebleven!
+        }
+    }
+
     render() {
         const form = this.state.form;
 
@@ -74,7 +91,8 @@ export default class Configurator extends React.Component {
                         return <Param
                             key={i}
                             param={param}
-                            onChange={this.onChangeParam}
+                            onChange={this.changeParam}
+                            onAdd={this.addParam}
                         />;
                     }, this)}
                 </form>

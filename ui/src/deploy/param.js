@@ -1,26 +1,32 @@
 import React from "react";
 import Field from "./form/field";
+import PropTypes from 'prop-types';
 
 export default class Param extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {};
-        this.onChange = this.onChange.bind(this);
-        this.onChangeChild = this.onChangeChild.bind(this);
+        this.change = this.change.bind(this);
+        this.changeChild = this.changeChild.bind(this);
+        this.add = this.add.bind(this);
     }
 
-    onChange(param) {
+    change(param) {
         this.props.onChange(param);
     }
 
-    onChangeChild(child) {
+    changeChild(child) {
         let param = this.props.param;
         let childIndex = param.params.findIndex(
             (p) => Number(p.id) === Number(child.id)
         );
         param.params[childIndex] = child;
         this.props.onChange(param);
+    }
+
+    add(param) {
+        this.props.onAdd(param);
     }
 
     render() {
@@ -31,7 +37,9 @@ export default class Param extends React.Component {
                 return <Field
                     key={k}
                     param={childParam}
-                    onChange={this.onChange}
+                    onChange={this.change}
+                    canAdd={true}
+                    onAdd={this.add}
                 />
             }, this)
             :
@@ -41,10 +49,18 @@ export default class Param extends React.Component {
             <div>
                 <Field
                     param={param}
-                    onChange={this.onChangeChild}
+                    onChange={this.changeChild}
+                    canAdd={true}
+                    onAdd={this.add}
                 />
                 {children}
             </div>
         );
     }
 }
+
+Field.propTypes = {
+    param: PropTypes.object.isRequired,
+    onChange: PropTypes.func.isRequired,
+    onAdd: PropTypes.func.isRequired
+};
