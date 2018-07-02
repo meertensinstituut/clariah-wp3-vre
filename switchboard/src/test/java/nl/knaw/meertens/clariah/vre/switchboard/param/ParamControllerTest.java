@@ -4,7 +4,6 @@ import net.minidev.json.JSONObject;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import org.mockserver.client.server.MockServerClient;
 import org.mockserver.model.Header;
 
 import javax.ws.rs.core.Response;
@@ -52,11 +51,10 @@ public class ParamControllerTest extends AbstractControllerTest {
         assertThatJson(json).node("params[1].values[1].label").isEqualTo("Blue");
         assertThatJson(json).node("params[1].values[1].description").matches(containsString("happiness"));
 
-        assertThatJson(json).node("paramGroups").isArray().ofLength(1);
-        assertThatJson(json).node("paramGroups[0].params").isArray().ofLength(2);
-        assertThatJson(json).node("paramGroups[0].params[0].name").isEqualTo("language");
-        assertThatJson(json).node("paramGroups[0].params[0].values[0].label").isEqualTo("Dutch");
-        assertThatJson(json).node("paramGroups[0].params[1].name").isEqualTo("author");
+        assertThatJson(json).node("params[2].params").isArray().ofLength(2);
+        assertThatJson(json).node("params[2].params[0].name").isEqualTo("language");
+        assertThatJson(json).node("params[2].params[0].values[0].label").isEqualTo("Dutch");
+        assertThatJson(json).node("params[2].params[1].name").isEqualTo("author");
 
     }
 

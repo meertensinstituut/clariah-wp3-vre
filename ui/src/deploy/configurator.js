@@ -3,18 +3,24 @@ import Switchboard from "../common/switchboard";
 import Field from "./form/field";
 
 export default class Configurator extends React.Component {
-
     constructor(props) {
         super(props);
         this.state = {
-            serviceParams: null,
             form: {
-                params: []
-            }
+                params: [
+
+                ]
+            },
+            serviceParams: null
         };
         if (this.props.service !== undefined) {
             this.getServiceParams(this.props.service);
         }
+        this.onChangeParam = this.onChangeParam.bind(this);
+    }
+
+    onChangeParam(formParam, newFormParam) {
+
     }
 
     getServiceParams(service) {
@@ -34,7 +40,9 @@ export default class Configurator extends React.Component {
             <div>
                 <form>
                     {serviceParams.params.map((param, i) => {
-                        return <Field key={i} param={param}/>
+                        let formParam = {};
+                        this.state.form.params.push(formParam);
+                        return <Field key={i} param={param} value={formParam} onChange={this.onChangeParam(formParam, newFormParam)} />
                     }, this)}
                     {serviceParams.paramGroups.map((group, i) => {
                         return <div key={i}>

@@ -58,6 +58,7 @@ public class ParamService {
     }
 
     private CmdiDto convertCmdiXmlToDto(String cmdi) {
+
         try {
             CmdiDto result = new CmdiDto();
             InputSource inputSource = new InputSource(new StringReader(cmdi));
@@ -77,7 +78,7 @@ public class ParamService {
             if (groups == null || groups.getLength() == 0) {
                 logger.warn(String.format("No parameter groups found in cmdi [%s]", cmdi));
             } else {
-                result.paramGroups.addAll(mapParameterGroups(groups));
+                result.params.addAll(mapParameterGroups(groups));
             }
 
             return result;

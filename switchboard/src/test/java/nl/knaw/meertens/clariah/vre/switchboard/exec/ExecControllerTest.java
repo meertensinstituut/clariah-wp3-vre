@@ -80,7 +80,6 @@ public class ExecControllerTest extends AbstractControllerTest {
 
         // Check status is finished:
         String finishedJson = waitUntil(request, FINISHED);
-
         // Check output file is moved:
         File outputFolder = findOutputFolder(finishedJson);
         assertThat(outputFolder).isNotNull();

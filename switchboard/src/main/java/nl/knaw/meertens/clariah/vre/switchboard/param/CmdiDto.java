@@ -6,6 +6,5 @@ import java.util.List;
 public class CmdiDto {
 
     public List<ParamDto> params = new ArrayList<>();
-    public List<ParamGroupDto> paramGroups = new ArrayList<>();
 
 }
