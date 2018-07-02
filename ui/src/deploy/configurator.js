@@ -8,10 +8,9 @@ export default class Configurator extends React.Component {
         super(props);
         this.state = {
             serviceParams: null,
-            label: "Do you breathe?",
-            description: "Breathing is very important",
-            value: "",
-            placeholder: "Hello? Is it me you're looking for?"
+            form: {
+                params: []
+            }
         };
         if (this.props.service !== undefined) {
             this.getServiceParams(this.props.service);
@@ -26,28 +25,22 @@ export default class Configurator extends React.Component {
         });
     }
 
-    handleValidationFormBasicText() {
-        const length = this.state.value.length;
-        if (length > 10) return 'success';
-        if (length > 5) return 'warning';
-        if (length > 0) return 'error';
-        return null;
-    }
-
     render() {
-        if (this.state.serviceParams === null) {
-            return <div>Loading...</div>
-        }
+        const serviceParams = this.state.serviceParams;
+
+        if (serviceParams === null) return <div>Loading...</div>;
+
         return (
             <div>
                 <form>
-                    {this.state.serviceParams.params.map(function (param, i) {
+                    {serviceParams.params.map((param, i) => {
                         return <Field key={i} param={param}/>
                     }, this)}
-                    {this.state.serviceParams.paramGroups.map(function (paramGroup, i) {
+                    {serviceParams.paramGroups.map((group, i) => {
                         return <div key={i}>
-                            {paramGroup.params.map(function (param, k) {
-                                return <Field key={k} param={param}/>
+                            <Field key={i} param={group} />
+                            {group.params.map((param, k) => {
+                                return <Field key={k} param={param} />
                             }, this)}
                         </div>
                     }, this)}

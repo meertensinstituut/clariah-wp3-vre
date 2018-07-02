@@ -1,6 +1,7 @@
 import React from "react";
-import Input from "./input";
+import String from "./string";
 import Select from "./select";
+import Integer from "./integer";
 
 export default class Field extends React.Component {
 
@@ -11,8 +12,10 @@ export default class Field extends React.Component {
 
     render() {
         let field = null;
-        if (this.props.param.type === "integer") {
-            field = <Input param={this.props.param}/>;
+        if (this.props.param.type === "string") {
+            field = <String param={this.props.param}/>;
+        } else if (this.props.param.type === "integer") {
+            field = <Integer param={this.props.param} />;
         } else if (this.props.param.type === "enumeration") {
             field = <Select param={this.props.param} />
         }
