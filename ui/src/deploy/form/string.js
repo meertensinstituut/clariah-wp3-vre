@@ -18,7 +18,8 @@ export default class String extends React.Component {
     }
 
     handleChange(e) {
-        this.setState({ value: e.target.value });
+        this.props.onChange(e.target.value);
+        this.setState({value: e.target.value});
     }
 
     render() {
@@ -31,7 +32,7 @@ export default class String extends React.Component {
                 <HelpBlock>{this.props.param.description}</HelpBlock>
                 <FormControl
                     type="text"
-                    value={this.props.param.value}
+                    value={this.state.value}
                     placeholder=""
                     onChange={this.handleChange}
                 />

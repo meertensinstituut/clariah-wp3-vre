@@ -1,16 +1,12 @@
 import React from "react";
 import Switchboard from "../common/switchboard";
-import Field from "./form/field";
+import Param from "./param";
 
 export default class Configurator extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            form: {
-                params: [
-
-                ]
-            },
+            form: null,
             serviceParams: null
         };
         if (this.props.service !== undefined) {
@@ -19,38 +15,67 @@ export default class Configurator extends React.Component {
         this.onChangeParam = this.onChangeParam.bind(this);
     }
 
-    onChangeParam(formParam, newFormParam) {
-
+    onChangeParam(newFormParam) {
+        let form = this.state.form;
+        if (newFormParam.parentId === undefined) {
+            let index = form.params.findIndex(
+                (param) => Number(param.id) === Number(newFormParam.id)
+            );
+            form[index] = newFormParam;
+        }
+        this.setState({form});
     }
 
     getServiceParams(service) {
         Switchboard.getParams(service).then((data) => {
+            let form = this.createForm(data);
             this.setState({
-                serviceParams: data
+                serviceParams: data,
+                form: form
             });
         });
     }
 
-    render() {
-        const serviceParams = this.state.serviceParams;
+    createForm(serviceParams) {
+        let form = {params: []};
+        serviceParams.params.forEach((param) => {
+            let formParam = this.createFormParam(param, form);
+            if (param.params) {
+                param.params.forEach((childParam) => {
+                    this.createFormParam(childParam, formParam);
+                }, this);
+            }
+        }, this);
+        return form;
+    }
 
-        if (serviceParams === null) return <div>Loading...</div>;
+    createFormParam(cmdiParam, parent) {
+        let formParam = Object.assign({}, cmdiParam);
+        parent.params.push(formParam);
+        this.addFormFields(formParam, parent);
+        return formParam;
+    }
+
+    addFormFields(formParam, parent) {
+        formParam.id = parent.params.length;
+        formParam.parentId = parent.id;
+        formParam.params = [];
+    }
+
+    render() {
+        const form = this.state.form;
+
+        if (form === null) return <div>Loading...</div>;
 
         return (
             <div>
                 <form>
-                    {serviceParams.params.map((param, i) => {
-                        let formParam = {};
-                        this.state.form.params.push(formParam);
-                        return <Field key={i} param={param} value={formParam} onChange={this.onChangeParam(formParam, newFormParam)} />
-                    }, this)}
-                    {serviceParams.paramGroups.map((group, i) => {
-                        return <div key={i}>
-                            <Field key={i} param={group} />
-                            {group.params.map((param, k) => {
-                                return <Field key={k} param={param} />
-                            }, this)}
-                        </div>
+                    {form.params.map((param, i) => {
+                        return <Param
+                            key={i}
+                            param={param}
+                            onChange={this.onChangeParam}
+                        />;
                     }, this)}
                 </form>
                 <div>

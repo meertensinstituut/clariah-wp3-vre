@@ -20,7 +20,8 @@ export default class Integer extends React.Component {
     }
 
     handleChange(e) {
-        this.setState({ value: e.target.value });
+        this.props.onChange(e.target.value);
+        this.setState({value: e.target.value});
     }
 
     render() {
@@ -33,8 +34,7 @@ export default class Integer extends React.Component {
                 <HelpBlock>{this.props.param.description}</HelpBlock>
                 <FormControl
                     type="text"
-                    value={this.props.param.value}
-                    placeholder=""
+                    value={this.value}
                     onChange={this.handleChange}
                 />
                 <FormControl.Feedback/>
