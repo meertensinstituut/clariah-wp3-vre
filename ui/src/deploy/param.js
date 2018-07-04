@@ -31,7 +31,7 @@ export default class Param extends React.Component {
 
     render() {
         let param = this.props.param;
-        let children = param.params.length > 0
+        let children = Array.isArray(param.params)
             ?
             param.params.map((childParam, k) => {
                 return <Field
@@ -49,7 +49,7 @@ export default class Param extends React.Component {
             <div>
                 <Field
                     param={param}
-                    onChange={this.changeChild}
+                    onChange={this.change}
                     canAdd={true}
                     onAdd={this.add}
                 />

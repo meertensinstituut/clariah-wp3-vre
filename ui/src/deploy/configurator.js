@@ -2,6 +2,9 @@ import React from "react";
 import Switchboard from "../common/switchboard";
 import Param from "./param";
 
+// TODO: hier gebleven!
+// - check how many elements and how many are allowed
+// - remove elements
 export default class Configurator extends React.Component {
     constructor(props) {
         super(props);
@@ -18,15 +21,9 @@ export default class Configurator extends React.Component {
 
     changeParam(newFormParam) {
         let form = this.state.form;
-        let index = this.findParamIndex(form, newFormParam);
+        let index = this.findParamIndex(newFormParam.id, form.params);
         form.params[index] = newFormParam;
         this.setState({form});
-    }
-
-    findParamIndex(param, form) {
-        return form.params.findIndex(
-            (p) => Number(p.id) === Number(param.id)
-        );
     }
 
     getServiceParams(service) {
@@ -44,6 +41,7 @@ export default class Configurator extends React.Component {
         serviceParams.params.forEach((param) => {
             let formParam = this.createFormParam(param, form);
             if (param.params) {
+                formParam.params = [];
                 param.params.forEach((childParam) => {
                     this.createFormParam(childParam, formParam);
                 }, this);
@@ -62,21 +60,30 @@ export default class Configurator extends React.Component {
     addFormFields(formParam, parent) {
         formParam.id = parent.params.length;
         formParam.parentId = parent.id;
-        formParam.params = [];
     }
 
     addParam(param) {
-        console.log("addParam", param);
         let copy = Object.assign({}, param);
-        if(param.parent === undefined) {
-            let form = this.state.form;
-            let index = this.findParamIndex(param, form);
-            copy.id = form.params.length;
-            form.params.splice(index, 0, copy);
-            this.setState({form});
-        } else {
-            // TODO: hier gebleven!
+        let params = this.findContainingParams(param, this.state.form);
+        let index = this.findParamIndex(param.id, params);
+        params.splice(index, 0, copy);
+        copy.id = params.length;
+        delete copy.value;
+        this.setState({form: this.state.form});
+    }
+
+    findContainingParams(param, form) {
+        if (isNaN(param.parentId)) {
+            return form.params;
         }
+        let parentIndex = this.findParamIndex(param.parentId, form.params);
+        return form.params[parentIndex].params;
+    }
+
+    findParamIndex(id, params) {
+        return params.findIndex(
+            (p) => Number(p.id) === Number(id)
+        );
     }
 
     render() {

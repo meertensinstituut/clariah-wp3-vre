@@ -16,7 +16,6 @@ export default class Select extends React.Component {
     }
 
     handleChange(e) {
-        console.log('change!');
         this.props.onChange(e.target.value);
         this.setState({value: e.target.value});
     }
