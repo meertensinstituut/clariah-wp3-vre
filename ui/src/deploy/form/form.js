@@ -8,27 +8,14 @@ export default class Form extends React.Component {
         super(props);
         this.state = {};
         this.changeParam = this.changeParam.bind(this);
-        this.addParam = this.addParam.bind(this);
     }
 
     changeParam(newFormParam) {
         let form = this.props.form;
+        let params = this.findContainingParams(newFormParam, form);
         let index = this.findParamIndex(newFormParam.id, form.params);
-        form.params[index] = newFormParam;
+        params[index] = newFormParam;
         this.props.onChange(form);
-    }
-
-    addParam(param) {
-        let copy = Object.assign({}, param);
-        let params = this.findContainingParams(param, this.props.form);
-        let index = this.findParamIndex(param.id, params);
-        params.splice(index, 0, copy);
-        copy.id = params.length;
-        if(Array.isArray(copy.params)) {
-            copy.params.forEach((param) => {param.parentId = copy.id});
-        }
-        delete copy.value;
-        this.props.onChange(this.props.form);
     }
 
     findContainingParams(param, form) {
@@ -55,7 +42,6 @@ export default class Form extends React.Component {
                         key={i}
                         param={param}
                         onChange={this.changeParam}
-                        onAdd={this.addParam}
                     />;
                 }, this)}
             </form>

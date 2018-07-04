@@ -16,47 +16,70 @@ export default class Field extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};
-        this.handleChange = this.handleChange.bind(this);
-        this.handleAdd = this.handleAdd.bind(this);
     }
 
-    handleChange(value) {
-        this.props.param.value = value;
+    handleChange = () => (value) => {
+        this.props.param.value[this.props.index] = value;
         this.props.onChange(this.props.param);
-    }
+    };
 
-    handleAdd() {
-        console.log("add");
+    handleAdd = () => () => {
         this.props.onAdd(this.props.param);
+    };
+
+    hasAddButton(field) {
+        return this.props.bare === false
+            && this.props.canAdd === true
+            && field !== null;
     }
 
-    render() {
+    renderAddButton(field) {
+        let button = null;
+        if (this.hasAddButton(field)) {
+            button = <Button
+                bsSize="xsmall"
+                bsStyle="success"
+                type="button"
+                className="pull-right add-btn"
+                onClick={this.handleAdd()}
+            >
+                Add <i className="fa fa-plus-square-o fa-lg"/>
+            </Button>;
+        }
+        return button;
+    }
+
+    renderLabels() {
+        let labels = null;
+        if (this.props.bare === false) {
+            labels = <span>
+                <label>{this.props.param.label}</label>
+                <p>{this.props.param.description}</p>
+            </span>;
+        }
+        return labels;
+    }
+
+    renderField() {
         let field = null;
         for (let [paramType, classType] of PARAM_TO_ClASS) {
             if (this.props.param.type === paramType) {
                 field = React.createElement(classType, {
                     param: this.props.param,
-                    onChange: this.handleChange
+                    onChange: this.handleChange(),
+                    bare: this.props.bare
                 });
             }
         }
+        return field;
+    }
 
-        let addButton = null;
-        if(this.props.canAdd === true && field !== null) {
-            addButton = <Button
-                bsSize="xsmall"
-                bsStyle="success"
-                type="button"
-                className="pull-right add-btn"
-                onClick={() => this.handleAdd()}
-            >
-                Add <i className="fa fa-plus-square-o fa-lg" />
-            </Button>;
-        }
-
+    render() {
+        let field = this.renderField();
         return (
             <div className="param-field">
-                {addButton}
+                {this.renderAddButton(field)}
+                {this.renderLabels()}
                 {field}
             </div>
         );
@@ -66,6 +89,10 @@ export default class Field extends React.Component {
 Field.propTypes = {
     param: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
-    onAdd: PropTypes.func.isRequired,
-    canAdd: PropTypes.bool.isRequired
+    onAdd: PropTypes.func.isRequired
+};
+
+Field.defaultProps = {
+    canAdd: true,
+    bare: false
 };

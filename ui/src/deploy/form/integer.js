@@ -1,5 +1,5 @@
 import React from "react";
-import {ControlLabel, FormControl, FormGroup, HelpBlock} from 'react-bootstrap';
+import {FormControl, FormGroup} from 'react-bootstrap';
 
 export default class Integer extends React.Component {
 
@@ -13,7 +13,7 @@ export default class Integer extends React.Component {
 
     handleValidation() {
         const value = this.state.value;
-        if(value.length === 0) return null;
+        if (value.length === 0) return null;
         return RegExp(/^[0-9]*$/).test(value)
             ? "success"
             : "error";
@@ -26,19 +26,19 @@ export default class Integer extends React.Component {
 
     render() {
         return (
-            <FormGroup
-                controlId="formBasicText"
-                validationState={this.handleValidation()}
-            >
-                <ControlLabel>{this.props.param.label}</ControlLabel>
-                <HelpBlock>{this.props.param.description}</HelpBlock>
-                <FormControl
-                    type="text"
-                    value={this.value}
-                    onChange={this.handleChange}
-                />
-                <FormControl.Feedback/>
-            </FormGroup>
+            <div>
+                <FormGroup
+                    controlId="formBasicText"
+                    validationState={this.handleValidation()}
+                >
+                    <FormControl
+                        type="text"
+                        value={this.value}
+                        onChange={this.handleChange}
+                    />
+                    <FormControl.Feedback/>
+                </FormGroup>
+            </div>
         );
     }
 }

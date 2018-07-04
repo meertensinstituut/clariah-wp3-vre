@@ -7,52 +7,60 @@ export default class Param extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};
-        this.change = this.change.bind(this);
-        this.changeChild = this.changeChild.bind(this);
-        this.add = this.add.bind(this);
     }
 
-    change(param) {
+    change = (param) => {
         this.props.onChange(param);
-    }
+    };
 
-    changeChild(child) {
+    changeChild = (index) => (child) => {
         let param = this.props.param;
-        let childIndex = param.params.findIndex(
-            (p) => Number(p.id) === Number(child.id)
-        );
-        param.params[childIndex] = child;
-        this.props.onChange(param);
-    }
+        param.params[index] = child;
+        this.change(param);
+    };
 
-    add(param) {
-        this.props.onAdd(param);
-    }
+    add = (param) => {
+        this.props.param.value.push("");
+        this.change(param);
+    };
+
+    addChild = (index) => () => {
+        let param = this.props.param;
+        param.params[index].value.push("");
+        this.change(param);
+    };
 
     render() {
         let param = this.props.param;
         let children = Array.isArray(param.params)
             ?
-            param.params.map((childParam, k) => {
-                return <Field
-                    key={k}
-                    param={childParam}
-                    onChange={this.change}
-                    canAdd={true}
-                    onAdd={this.add}
-                />
+            param.params.map((param, i) => {
+                return param.value.map((childParam, k) => {
+                    return <Field
+                        key={k}
+                        index={k}
+                        param={param}
+                        onChange={this.changeChild(i)}
+                        onAdd={this.addChild(i)}
+                        bare={k > 0}
+                    />
+                }, this)
             }, this)
             :
             null;
 
         return (
             <div>
-                <Field
-                    param={param}
-                    onChange={this.change}
-                    canAdd={true}
-                    onAdd={this.add}
-                />
+                {param.value.map((value, i) => {
+                    return <Field
+                        key={i}
+                        index={i}
+                        param={param}
+                        onChange={this.change}
+                        onAdd={this.add}
+                        bare={i > 0}
+                    />
+                }, this)}
                 {children}
             </div>
         );

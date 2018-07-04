@@ -51,9 +51,10 @@ export default class Configurator extends React.Component {
         return formParam;
     }
 
-    addFormFields(formParam, parent) {
-        formParam.id = parent.params.length;
-        formParam.parentId = parent.id;
+    addFormFields(param, parent) {
+        param.id = parent.params.length;
+        param.parentId = parent.id;
+        param.value = [""];
     }
 
     change(form) {

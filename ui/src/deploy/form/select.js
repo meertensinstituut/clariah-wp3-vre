@@ -1,5 +1,5 @@
 import React from "react";
-import {ControlLabel, FormControl, FormGroup, HelpBlock} from 'react-bootstrap';
+import {FormControl, FormGroup} from 'react-bootstrap';
 
 export default class Select extends React.Component {
 
@@ -24,9 +24,7 @@ export default class Select extends React.Component {
         let multiple = this.props.param.maximumCardinality <= 1;
         return (
             <FormGroup controlId="formControlsSelect">
-                <ControlLabel>{this.props.param.label}</ControlLabel>
                 <FormControl.Feedback/>
-                <HelpBlock>{this.props.param.description}</HelpBlock>
                 <FormControl
                     componentClass="select"
                     placeholder="select"

@@ -1,5 +1,5 @@
 import React from "react";
-import {ControlLabel, FormControl, FormGroup, HelpBlock} from 'react-bootstrap';
+import {FormControl, FormGroup} from 'react-bootstrap';
 
 export default class String extends React.Component {
 
@@ -13,7 +13,7 @@ export default class String extends React.Component {
 
     handleValidation() {
         const length = this.state.value.length;
-        if(length === 0) return null;
+        if (length === 0) return null;
         return 'success';
     }
 
@@ -28,12 +28,9 @@ export default class String extends React.Component {
                 controlId="formBasicText"
                 validationState={this.handleValidation()}
             >
-                <ControlLabel>{this.props.param.label}</ControlLabel>
-                <HelpBlock>{this.props.param.description}</HelpBlock>
                 <FormControl
                     type="text"
                     value={this.state.value}
-                    placeholder=""
                     onChange={this.handleChange}
                 />
                 <FormControl.Feedback/>
