@@ -1,6 +1,7 @@
 import React from "react";
 import Switchboard from "../common/switchboard";
-import Param from "./param";
+import Form from "./form/form";
+import StatePropsViewer from "../common/state-props-viewer";
 
 // TODO: hier gebleven!
 // - check how many elements and how many are allowed
@@ -15,15 +16,8 @@ export default class Configurator extends React.Component {
         if (this.props.service !== undefined) {
             this.getServiceParams(this.props.service);
         }
-        this.changeParam = this.changeParam.bind(this);
-        this.addParam = this.addParam.bind(this);
-    }
+        this.change = this.change.bind(this);
 
-    changeParam(newFormParam) {
-        let form = this.state.form;
-        let index = this.findParamIndex(newFormParam.id, form.params);
-        form.params[index] = newFormParam;
-        this.setState({form});
     }
 
     getServiceParams(service) {
@@ -62,28 +56,8 @@ export default class Configurator extends React.Component {
         formParam.parentId = parent.id;
     }
 
-    addParam(param) {
-        let copy = Object.assign({}, param);
-        let params = this.findContainingParams(param, this.state.form);
-        let index = this.findParamIndex(param.id, params);
-        params.splice(index, 0, copy);
-        copy.id = params.length;
-        delete copy.value;
-        this.setState({form: this.state.form});
-    }
-
-    findContainingParams(param, form) {
-        if (isNaN(param.parentId)) {
-            return form.params;
-        }
-        let parentIndex = this.findParamIndex(param.parentId, form.params);
-        return form.params[parentIndex].params;
-    }
-
-    findParamIndex(id, params) {
-        return params.findIndex(
-            (p) => Number(p.id) === Number(id)
-        );
+    change(form) {
+        this.setState({form});
     }
 
     render() {
@@ -93,24 +67,11 @@ export default class Configurator extends React.Component {
 
         return (
             <div>
-                <form>
-                    {form.params.map((param, i) => {
-                        return <Param
-                            key={i}
-                            param={param}
-                            onChange={this.changeParam}
-                            onAdd={this.addParam}
-                        />;
-                    }, this)}
-                </form>
-                <div>
-                    <p>state:</p>
-                    <pre>{JSON.stringify(this.state, null, 2)}</pre>
-                </div>
-                <div>
-                    <p>props:</p>
-                    <pre>{JSON.stringify(this.props, null, 2)}</pre>
-                </div>
+                <Form
+                    form={form}
+                    onChange={this.change}
+                />
+                <StatePropsViewer state={this.state} props={this.props} />
             </div>
         );
     }
