@@ -3,8 +3,10 @@ import String from "./string";
 import Select from "./select";
 import Integer from "./integer";
 import PropTypes from 'prop-types';
-import {Button} from "react-bootstrap";
 import './field.css';
+import RemoveButton from "./remove-button";
+import AddButton from "./add-button";
+// import RemoveButton from "./remove-button";
 
 const PARAM_TO_ClASS = new Map();
 PARAM_TO_ClASS.set("string", String);
@@ -44,7 +46,7 @@ export default class Field extends React.Component {
                 field = React.createElement(classType, {
                     param: this.props.param,
                     value: value,
-                    onChange: this.handleChange(),
+                    onChange: this.handleChange()
                 });
             }
         }
@@ -53,41 +55,20 @@ export default class Field extends React.Component {
 
     renderAddButton(field) {
         if (!this.hasAddButton(field)) return null;
-
-        return (
-            <Button
-                bsSize="xsmall"
-                bsStyle="success"
-                type="button"
-                disabled={this.props.param.canAdd === false}
-                className="pull-right add-btn"
-                onClick={this.handleAdd()}
-            >
-                Add <i className="fa fa-plus-square-o fa-lg"/>
-            </Button>
-        );
-    }
-
-    renderRemoveButton(field) {
-        return (
-            <Button
-                bsSize="xsmall"
-                bsStyle="danger"
-                type="button"
-                disabled={this.props.param.canRemove === false}
-                className="pull-right add-btn"
-                onClick={this.handleRemove()}
-            >
-                Remove <i className="fa fa-minus-square-o fa-lg"/>
-            </Button>
-        );
+        return <AddButton
+            canAdd={this.props.param.canAdd}
+            onAdd={this.handleAdd}
+        />;
     }
 
     render() {
         let field = this.renderField();
         return (
             <div className="param-field">
-                {this.renderRemoveButton(field)}
+                <RemoveButton
+                    canRemove={this.props.param.canRemove}
+                    onRemove={this.handleRemove}
+                />
                 {this.renderAddButton(field)}
                 <span>
                     <label>{this.props.bare ? null : this.props.param.label}</label>

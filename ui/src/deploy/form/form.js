@@ -10,36 +10,48 @@ export default class Form extends React.Component {
         this.changeParam = this.changeParam.bind(this);
     }
 
+    addParam = (indexToCopy) => () => {
+        let form = this.props.form;
+        let copy = this.createCopy(form.params[indexToCopy]);
+        form.params.splice(indexToCopy + 1, 0, copy);
+        this.setAllAddAndRemove(form.params, copy.name);
+        this.props.onChange(form);
+    };
+
+    createCopy(param) {
+        let copy = JSON.parse(JSON.stringify(param));
+        copy.value = [""];
+        copy.params.forEach((p) => {
+            p.value = [""];
+            this.setAddAndRemove(p, copy.params);
+        });
+        return copy;
+    }
+
     changeParam = (index) => (newFormParam) => {
         let form = this.props.form;
         form.params[index] = newFormParam;
         this.props.onChange(form);
     };
 
-    addParam = (indexToCopy) => () => {
-        let form = this.props.form;
-        let copy = JSON.parse(JSON.stringify(form.params[indexToCopy]));
-        copy.value = [""];
-        copy.params.forEach((p) => {
-            p.value = [""];
-            this.setAddableAndRemoveable(p, copy.params);
-        });
-        form.params.splice(indexToCopy + 1, 0, copy);
-        form.params.forEach((p) => {
-            if(p.name === copy.name) {
-                this.setAddableAndRemoveable(p, form.params);
-            }
-        });
-        this.props.onChange(form);
-    };
-
     removeParam = (indexToRemove) => () => {
         let form = this.props.form;
-        form.params.splice(indexToRemove, 1);
+        let params = form.params;
+        let nameRemoved = params[indexToRemove].name;
+        params.splice(indexToRemove, 1);
+        this.setAllAddAndRemove(params, nameRemoved);
         this.props.onChange(form);
     };
 
-    setAddableAndRemoveable(param, siblings) {
+    setAllAddAndRemove(params, withFieldName) {
+        params.forEach((p) => {
+            if (p.name === withFieldName) {
+                this.setAddAndRemove(p, params);
+            }
+        });
+    }
+
+    setAddAndRemove(param, siblings) {
         param.canAdd = this.canAddParam(param, siblings);
         param.canRemove = this.canRemoveParam(param, siblings);
     }
@@ -83,8 +95,8 @@ export default class Form extends React.Component {
                     return <Param
                         key={i}
                         param={param}
-                        onChange={this.changeParam(i)}
                         onAdd={this.addParam(i)}
+                        onChange={this.changeParam(i)}
                         onRemove={this.removeParam(i)}
                     />;
                 }, this)}

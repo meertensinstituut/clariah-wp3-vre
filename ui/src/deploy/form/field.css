@@ -8,3 +8,7 @@
     z-index: 1;
     position: relative;
 }
+
+.param-panel {
+    margin-top: 3em;
+}
