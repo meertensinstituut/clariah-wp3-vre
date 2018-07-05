@@ -6,6 +6,7 @@ import StatePropsViewer from "../common/state-props-viewer";
 // TODO: hier gebleven!
 // - ParamGroup wel dupliceren!
 // - check how many elements and how many are allowed
+// - allow multiple elements
 // - remove elements
 export default class Configurator extends React.Component {
     constructor(props) {
@@ -53,8 +54,6 @@ export default class Configurator extends React.Component {
     }
 
     addFormFields(param, parent) {
-        param.id = parent.params.length;
-        param.parentId = parent.id;
         param.value = [""];
     }
 

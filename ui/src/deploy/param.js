@@ -23,7 +23,7 @@ export default class Param extends React.Component {
         if (Array.isArray(param.params)) {
             this.props.onAdd();
         } else {
-            this.props.param.value.push("");
+            this.addValueToParam(param);
             this.change(param);
         }
     };
@@ -46,34 +46,17 @@ export default class Param extends React.Component {
         return Number(param.maximumCardinality) > param.value.length;
     }
 
-    render() {
-        let param = this.props.param;
-        let children = Array.isArray(param.params)
-            ?
-            this.renderChildren(param)
-            :
-            this.renderParamValues(param);
-
-        let withParams = Array.isArray(param.params)
-            ?
-            <Field
-                param={param}
-                onChange={this.change}
-                onAdd={this.add}
-                bare={false}
-            />
-            :
-            null;
-
-        return (
-            <div>
-                {withParams}
-                {children}
-            </div>
-        );
+    renderSingleField(param) {
+        return <Field
+            index={0}
+            param={param}
+            onChange={this.change}
+            onAdd={this.add}
+            bare={false}
+        />;
     }
 
-    renderParamValues(param) {
+    renderMultipleFields(param) {
         return param.value.map((value, i) => {
             return <Field
                 key={i}
@@ -99,6 +82,26 @@ export default class Param extends React.Component {
                 />
             }, this)
         }, this);
+    }
+
+    render() {
+        let param = this.props.param;
+        let parent;
+        let children;
+
+        if (Array.isArray(param.params)) {
+            parent = this.renderSingleField(param);
+            children = this.renderChildren(param);
+        } else {
+            parent = this.renderMultipleFields(param)
+        }
+
+        return (
+            <div>
+                {parent}
+                {children}
+            </div>
+        );
     }
 }
 

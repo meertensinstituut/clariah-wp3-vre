@@ -3,33 +3,25 @@ import {FormControl, FormGroup} from 'react-bootstrap';
 
 export default class Select extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            value: ""
-        };
-        this.handleChange = this.handleChange.bind(this);
-    }
-
     handleValidationFormBasicText() {
         return null;
     }
 
-    handleChange(e) {
+    handleChange = (e) => {
         this.props.onChange(e.target.value);
-        this.setState({value: e.target.value});
-    }
+    };
 
     render() {
-        let multiple = this.props.param.maximumCardinality <= 1;
+        let multiple = false;
         return (
             <FormGroup controlId="formControlsSelect">
                 <FormControl.Feedback/>
                 <FormControl
                     componentClass="select"
-                    placeholder="select"
+                    placeholder={this.props.value}
                     multiple={multiple}
                     onChange={this.handleChange}
+                    value={this.props.value}
                 >
                     {this.props.param.values.map(function (value, i) {
                         return (

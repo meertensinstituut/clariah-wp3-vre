@@ -10,37 +10,21 @@ export default class Form extends React.Component {
         this.changeParam = this.changeParam.bind(this);
     }
 
-    changeParam(newFormParam) {
+    changeParam = (index) => (newFormParam) => {
         let form = this.props.form;
-        let params = this.findContainingParams(newFormParam, form);
-        let index = this.findParamIndex(newFormParam.id, form.params);
-        params[index] = newFormParam;
-        this.props.onChange(form);
-    }
-
-    addParam = (index) => () => {
-        let form = this.props.form;
-        let copy = Object.assign({}, form.params[index]);
-        console.log("old, new:", form.params[index], copy);
-        copy.id = form.params.length;
-        copy.params.forEach((p) => p.parentId = copy.id);
-        form.params.splice(index + 1, 0, copy);
+        form.params[index] = newFormParam;
         this.props.onChange(form);
     };
 
-    findContainingParams(param, form) {
-        if (isNaN(param.parentId)) {
-            return form.params;
-        }
-        let parentIndex = this.findParamIndex(param.parentId, form.params);
-        return form.params[parentIndex].params;
-    }
-
-    findParamIndex(id, params) {
-        return params.findIndex(
-            (p) => Number(p.id) === Number(id)
-        );
-    }
+    addParam = (index) => () => {
+        let form = this.props.form;
+        let copy = JSON.parse(JSON.stringify(form.params[index]));
+        copy.params.forEach((p) => {
+            p.value = [""];
+        });
+        form.params.splice(index + 1, 0, copy);
+        this.props.onChange(form);
+    };
 
     render() {
         const form = this.props.form;
@@ -51,7 +35,7 @@ export default class Form extends React.Component {
                     return <Param
                         key={i}
                         param={param}
-                        onChange={this.changeParam}
+                        onChange={this.changeParam(i)}
                         onAdd={this.addParam(i)}
                     />;
                 }, this)}

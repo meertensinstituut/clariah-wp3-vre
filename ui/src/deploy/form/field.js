@@ -64,10 +64,11 @@ export default class Field extends React.Component {
         let field = null;
         for (let [paramType, classType] of PARAM_TO_ClASS) {
             if (this.props.param.type === paramType) {
+                let value = this.props.param.value[this.props.index];
                 field = React.createElement(classType, {
                     param: this.props.param,
+                    value: value,
                     onChange: this.handleChange(),
-                    bare: this.props.bare
                 });
             }
         }
