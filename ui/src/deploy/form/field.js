@@ -27,37 +27,13 @@ export default class Field extends React.Component {
         this.props.onAdd(this.props.param);
     };
 
+    handleRemove = () => () => {
+        this.props.onRemove(this.props.param);
+    };
+
     hasAddButton(field) {
         return this.props.bare === false
-            && this.props.canAdd === true
             && field !== null;
-    }
-
-    renderAddButton(field) {
-        let button = null;
-        if (this.hasAddButton(field)) {
-            button = <Button
-                bsSize="xsmall"
-                bsStyle="success"
-                type="button"
-                className="pull-right add-btn"
-                onClick={this.handleAdd()}
-            >
-                Add <i className="fa fa-plus-square-o fa-lg"/>
-            </Button>;
-        }
-        return button;
-    }
-
-    renderLabels() {
-        let labels = null;
-        if (this.props.bare === false) {
-            labels = <span>
-                <label>{this.props.param.label}</label>
-                <p>{this.props.param.description}</p>
-            </span>;
-        }
-        return labels;
     }
 
     renderField() {
@@ -75,12 +51,48 @@ export default class Field extends React.Component {
         return field;
     }
 
+    renderAddButton(field) {
+        if (!this.hasAddButton(field)) return null;
+
+        return (
+            <Button
+                bsSize="xsmall"
+                bsStyle="success"
+                type="button"
+                disabled={this.props.param.canAdd === false}
+                className="pull-right add-btn"
+                onClick={this.handleAdd()}
+            >
+                Add <i className="fa fa-plus-square-o fa-lg"/>
+            </Button>
+        );
+    }
+
+    renderRemoveButton(field) {
+        return (
+            <Button
+                bsSize="xsmall"
+                bsStyle="danger"
+                type="button"
+                disabled={this.props.param.canRemove === false}
+                className="pull-right add-btn"
+                onClick={this.handleRemove()}
+            >
+                Remove <i className="fa fa-minus-square-o fa-lg"/>
+            </Button>
+        );
+    }
+
     render() {
         let field = this.renderField();
         return (
             <div className="param-field">
+                {this.renderRemoveButton(field)}
                 {this.renderAddButton(field)}
-                {this.renderLabels()}
+                <span>
+                    <label>{this.props.param.label}</label>
+                    <p>{this.props.param.description}</p>
+                </span>
                 {field}
             </div>
         );
@@ -90,7 +102,8 @@ export default class Field extends React.Component {
 Field.propTypes = {
     param: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
-    onAdd: PropTypes.func.isRequired
+    onAdd: PropTypes.func.isRequired,
+    onRemove: PropTypes.func.isRequired
 };
 
 Field.defaultProps = {

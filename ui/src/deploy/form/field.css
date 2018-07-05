@@ -1,3 +1,10 @@
 .param-field {
     margin-top: 2em;
 }
+
+.add-btn {
+    margin-left: 0.5em;
+    margin-bottom: 0.5em;
+    z-index: 1;
+    position: relative;
+}

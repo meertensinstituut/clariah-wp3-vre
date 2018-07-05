@@ -34,29 +34,62 @@ export default class Param extends React.Component {
         this.change(param);
     };
 
+    remove = (index) => (param) => {
+        if (Array.isArray(param.params)) {
+            this.props.onRemove();
+        } else {
+            this.removeValueFromParam(param, index);
+            this.change(param);
+        }
+    };
+
+    removeChild = (index) => (valueIndex) => {
+        let param = this.props.param;
+        this.removeValueFromParam(param.params[index], valueIndex);
+        this.change(param);
+    };
+
     addValueToParam(param) {
-        if (!this.addable(param)) {
+        if (!param.canAdd) {
             return;
         }
         param.value.push("");
+        this.setAddableAndRemovable(param);
     }
 
-    addable(param) {
-        if (param.maximumCardinality === '*') return true;
-        return Number(param.maximumCardinality) > param.value.length;
+    removeValueFromParam(param, valueIndex) {
+        if (!param.canRemove) {
+            return;
+        }
+        param.value.splice(valueIndex, 1);
+        this.setAddableAndRemovable(param);
     }
 
-    renderSingleField(param) {
+    /**
+     * Setting of canAdd and canRemove is based on
+     * cardinality and number of elements in value[].
+     * NB. Does not handle a param with child params
+     * (is delegated to this.props.onAdd).
+     */
+    setAddableAndRemovable(param) {
+        let min = Number(param.minimumCardinality);
+        param.canRemove = min === 0 || min < param.value.length;
+        let max = param.maximumCardinality;
+        param.canAdd = max === '*' || Number(max) > param.value.length;
+    }
+
+    renderSingleValue(param) {
         return <Field
             index={0}
             param={param}
             onChange={this.change}
             onAdd={this.add}
+            onRemove={this.remove()}
             bare={false}
         />;
     }
 
-    renderMultipleFields(param) {
+    renderMultipleValues(param) {
         return param.value.map((value, i) => {
             return <Field
                 key={i}
@@ -64,12 +97,13 @@ export default class Param extends React.Component {
                 param={param}
                 onChange={this.change}
                 onAdd={this.add}
+                onRemove={this.remove(i)}
                 bare={i > 0}
             />
         }, this);
     }
 
-    renderChildren(param) {
+    renderChildParams(param) {
         return param.params.map((childParam, i) => {
             return childParam.value.map((value, k) => {
                 return <Field
@@ -78,6 +112,7 @@ export default class Param extends React.Component {
                     param={childParam}
                     onChange={this.changeChild(i)}
                     onAdd={this.addChild(i)}
+                    onRemove={this.removeChild(i, k)}
                     bare={k > 0}
                 />
             }, this)
@@ -86,14 +121,15 @@ export default class Param extends React.Component {
 
     render() {
         let param = this.props.param;
+        let hasChildren = Array.isArray(param.params);
         let parent;
         let children;
 
-        if (Array.isArray(param.params)) {
-            parent = this.renderSingleField(param);
-            children = this.renderChildren(param);
+        if (hasChildren) {
+            parent = this.renderSingleValue(param);
+            children = this.renderChildParams(param);
         } else {
-            parent = this.renderMultipleFields(param)
+            parent = this.renderMultipleValues(param)
         }
 
         return (

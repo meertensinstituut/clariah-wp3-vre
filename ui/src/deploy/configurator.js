@@ -3,12 +3,14 @@ import Switchboard from "../common/switchboard";
 import Form from "./form/form";
 import StatePropsViewer from "../common/state-props-viewer";
 
-// TODO: hier gebleven!
-// - ParamGroup wel dupliceren!
-// - check how many elements and how many are allowed
-// - allow multiple elements
-// - remove elements
+/**
+ * ServiceParams contains a json template from which a form is created.
+ * Fields can be added according to min. and max. cardinality:
+ * - Params with child params are duplicated
+ * - Params without chi params get an extra element in param.value[]
+ */
 export default class Configurator extends React.Component {
+
     constructor(props) {
         super(props);
         this.state = {
@@ -55,6 +57,8 @@ export default class Configurator extends React.Component {
 
     addFormFields(param, parent) {
         param.value = [""];
+        param.canAdd = param.maximumCardinality === "*" || Number(param.maximumCardinality) > 1;
+        param.canRemove = Number(param.minumumCardinality) === 0;
     }
 
     change(form) {
