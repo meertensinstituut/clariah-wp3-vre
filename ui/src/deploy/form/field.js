@@ -90,7 +90,7 @@ export default class Field extends React.Component {
                 {this.renderRemoveButton(field)}
                 {this.renderAddButton(field)}
                 <span>
-                    <label>{this.props.param.label}</label>
+                    <label>{this.props.bare ? null : this.props.param.label}</label>
                     <p>{this.props.param.description}</p>
                 </span>
                 {field}

@@ -20,17 +20,16 @@ export default class Form extends React.Component {
         let form = this.props.form;
         let copy = JSON.parse(JSON.stringify(form.params[indexToCopy]));
         copy.value = [""];
-        this.setAddableAndRemoveable(copy, form.params);
+        copy.params.forEach((p) => {
+            p.value = [""];
+            this.setAddableAndRemoveable(p, copy.params);
+        });
+        form.params.splice(indexToCopy + 1, 0, copy);
         form.params.forEach((p) => {
             if(p.name === copy.name) {
                 this.setAddableAndRemoveable(p, form.params);
             }
         });
-        copy.params.forEach((p) => {
-            p.value = [""];
-            this.setAddableAndRemoveable(p, form.params);
-        });
-        form.params.splice(indexToCopy + 1, 0, copy);
         this.props.onChange(form);
     };
 
@@ -51,30 +50,28 @@ export default class Form extends React.Component {
             return true;
         }
         let hasChildParams = Array.isArray(param.params);
-        if(!hasChildParams && param.value.length > min) {
-            return true;
+        if(!hasChildParams) {
+            return param.value.length > min;
         }
         let copies = siblings.filter((p) => p.name === param.name).length;
-        if(hasChildParams && min < copies) {
-            return true;
+        if(hasChildParams) {
+            return min < copies;
         }
-        throw new Error('Could not determine if param can be removed');
     }
 
     canAddParam(param, siblings) {
-        let max = Number(param.maximumCardinality);
         if(param.maximumCardinality === '*') {
             return true;
         }
         let hasChildParams = Array.isArray(param.params);
-        if(!hasChildParams && param.value.length < max) {
-            return true;
+        let max = Number(param.maximumCardinality);
+        if(!hasChildParams) {
+            return param.value.length < max;
         }
         let copies = siblings.filter((p) => p.name === param.name).length;
-        if(hasChildParams && max > copies) {
-            return true;
+        if(hasChildParams) {
+            return max > copies;
         }
-        throw new Error('Could not determine if param can be added');
     }
 
     render() {
