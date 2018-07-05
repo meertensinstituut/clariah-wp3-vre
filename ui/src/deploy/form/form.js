@@ -18,6 +18,16 @@ export default class Form extends React.Component {
         this.props.onChange(form);
     }
 
+    addParam = (index) => () => {
+        let form = this.props.form;
+        let copy = Object.assign({}, form.params[index]);
+        console.log("old, new:", form.params[index], copy);
+        copy.id = form.params.length;
+        copy.params.forEach((p) => p.parentId = copy.id);
+        form.params.splice(index + 1, 0, copy);
+        this.props.onChange(form);
+    };
+
     findContainingParams(param, form) {
         if (isNaN(param.parentId)) {
             return form.params;
@@ -42,6 +52,7 @@ export default class Form extends React.Component {
                         key={i}
                         param={param}
                         onChange={this.changeParam}
+                        onAdd={this.addParam(i)}
                     />;
                 }, this)}
             </form>

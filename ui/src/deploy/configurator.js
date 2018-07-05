@@ -4,6 +4,7 @@ import Form from "./form/form";
 import StatePropsViewer from "../common/state-props-viewer";
 
 // TODO: hier gebleven!
+// - ParamGroup wel dupliceren!
 // - check how many elements and how many are allowed
 // - remove elements
 export default class Configurator extends React.Component {

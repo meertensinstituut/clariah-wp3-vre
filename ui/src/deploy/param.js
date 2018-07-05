@@ -20,50 +20,85 @@ export default class Param extends React.Component {
     };
 
     add = (param) => {
-        this.props.param.value.push("");
-        this.change(param);
+        if (Array.isArray(param.params)) {
+            this.props.onAdd();
+        } else {
+            this.props.param.value.push("");
+            this.change(param);
+        }
     };
 
     addChild = (index) => () => {
         let param = this.props.param;
-        param.params[index].value.push("");
+        this.addValueToParam(param.params[index]);
         this.change(param);
     };
+
+    addValueToParam(param) {
+        if (!this.addable(param)) {
+            return;
+        }
+        param.value.push("");
+    }
+
+    addable(param) {
+        if (param.maximumCardinality === '*') return true;
+        return Number(param.maximumCardinality) > param.value.length;
+    }
 
     render() {
         let param = this.props.param;
         let children = Array.isArray(param.params)
             ?
-            param.params.map((param, i) => {
-                return param.value.map((childParam, k) => {
-                    return <Field
-                        key={k}
-                        index={k}
-                        param={param}
-                        onChange={this.changeChild(i)}
-                        onAdd={this.addChild(i)}
-                        bare={k > 0}
-                    />
-                }, this)
-            }, this)
+            this.renderChildren(param)
+            :
+            this.renderParamValues(param);
+
+        let withParams = Array.isArray(param.params)
+            ?
+            <Field
+                param={param}
+                onChange={this.change}
+                onAdd={this.add}
+                bare={false}
+            />
             :
             null;
 
         return (
             <div>
-                {param.value.map((value, i) => {
-                    return <Field
-                        key={i}
-                        index={i}
-                        param={param}
-                        onChange={this.change}
-                        onAdd={this.add}
-                        bare={i > 0}
-                    />
-                }, this)}
+                {withParams}
                 {children}
             </div>
         );
+    }
+
+    renderParamValues(param) {
+        return param.value.map((value, i) => {
+            return <Field
+                key={i}
+                index={i}
+                param={param}
+                onChange={this.change}
+                onAdd={this.add}
+                bare={i > 0}
+            />
+        }, this);
+    }
+
+    renderChildren(param) {
+        return param.params.map((childParam, i) => {
+            return childParam.value.map((value, k) => {
+                return <Field
+                    key={k}
+                    index={k}
+                    param={childParam}
+                    onChange={this.changeChild(i)}
+                    onAdd={this.addChild(i)}
+                    bare={k > 0}
+                />
+            }, this)
+        }, this);
     }
 }
 
