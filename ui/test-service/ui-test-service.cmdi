@@ -68,7 +68,7 @@
                                         <cmdp:Description>The language this text is in</cmdp:Description>
                                         <cmdp:DataType>string</cmdp:DataType>
                                         <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
-                                        <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
+                                        <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
                                         <cmdp:Values>
                                             <cmdp:ParameterValue>
                                                 <cmdp:Value>nld</cmdp:Value>

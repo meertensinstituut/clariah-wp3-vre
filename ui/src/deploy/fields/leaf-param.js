@@ -50,19 +50,25 @@ export default class LeafParam extends React.Component {
 
     render() {
         let param = this.props.param;
+        if(param.value.length === 0) return null;
+
         return (
-            <div>
-                {param.value.map((value, i) => {
-                    return <Field
-                        key={i}
-                        index={i}
-                        param={param}
-                        onChange={this.change}
-                        onAdd={this.add}
-                        onRemove={this.remove(i)}
-                        bare={i > 0}
-                    />
-                }, this)}
+            <div className="panel panel-default leaf-param-panel">
+                <div className="panel-body">
+                    {param.value.map((value, i) => {
+                        return (
+                            <Field
+                                key={i}
+                                index={i}
+                                param={param}
+                                onChange={this.change}
+                                onAdd={this.add}
+                                onRemove={this.remove(i)}
+                                bare={i > 0}
+                            />
+                        )
+                    }, this)}
+                </div>
             </div>
         );
     }

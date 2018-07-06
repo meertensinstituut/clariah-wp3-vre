@@ -1,6 +1,6 @@
 import React from "react";
 import Switchboard from "../common/switchboard";
-import Form from "./form/form";
+import Form from "./form";
 import StatePropsViewer from "../common/state-props-viewer";
 
 /**
@@ -51,14 +51,8 @@ export default class Configurator extends React.Component {
     createFormParam(cmdiParam, parent) {
         let formParam = Object.assign({}, cmdiParam);
         parent.params.push(formParam);
-        this.addFormFields(formParam, parent);
+        formParam.value = [""];
         return formParam;
-    }
-
-    addFormFields(param, parent) {
-        param.value = [""];
-        param.canAdd = param.maximumCardinality === "*" || Number(param.maximumCardinality) > 1;
-        param.canRemove = Number(param.minumumCardinality) === 0;
     }
 
     change(form) {
@@ -76,7 +70,7 @@ export default class Configurator extends React.Component {
                     form={form}
                     onChange={this.change}
                 />
-                <StatePropsViewer state={this.state} props={this.props} />
+                <StatePropsViewer state={this.state} props={this.props}/>
             </div>
         );
     }

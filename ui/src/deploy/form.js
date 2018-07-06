@@ -1,13 +1,22 @@
 import React from "react";
-import Param from "../param";
+import Param from "./param";
 import PropTypes from 'prop-types';
 
+/**
+ * Form generated from Params
+ */
 export default class Form extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {};
-        this.changeParam = this.changeParam.bind(this);
+        let params = this.props.form.params;
+        params.forEach((p) => {
+            this.setAddAndRemove(p, params);
+            if (Array.isArray(p.params)) {
+                p.params.forEach((cp) => this.setAddAndRemove(cp, p.params))
+            }
+        });
     }
 
     addParam = (indexToCopy) => () => {
@@ -58,30 +67,30 @@ export default class Form extends React.Component {
 
     canRemoveParam(param, siblings) {
         let min = Number(param.minimumCardinality);
-        if(min === 0) {
+        if (min === 0) {
             return true;
         }
         let hasChildParams = Array.isArray(param.params);
-        if(!hasChildParams) {
+        if (!hasChildParams) {
             return param.value.length > min;
         }
         let copies = siblings.filter((p) => p.name === param.name).length;
-        if(hasChildParams) {
+        if (hasChildParams) {
             return min < copies;
         }
     }
 
     canAddParam(param, siblings) {
-        if(param.maximumCardinality === '*') {
+        if (param.maximumCardinality === '*') {
             return true;
         }
         let hasChildParams = Array.isArray(param.params);
         let max = Number(param.maximumCardinality);
-        if(!hasChildParams) {
+        if (!hasChildParams) {
             return param.value.length < max;
         }
         let copies = siblings.filter((p) => p.name === param.name).length;
-        if(hasChildParams) {
+        if (hasChildParams) {
             return max > copies;
         }
     }

@@ -5,13 +5,12 @@ import PropTypes from 'prop-types';
 export default class RemoveButton extends React.Component {
 
     render() {
+        if(this.props.canRemove === false) return null;
+
         return (
             <Button
-                bsSize="xsmall"
-                bsStyle="danger"
-                type="button"
-                disabled={this.props.canRemove === false}
-                className="pull-right add-btn"
+                bsStyle="warning"
+                className={this.props.nextToInput ? "" : "xsmall pull-right add-btn"}
                 onClick={this.props.onRemove()}
             >
                 Remove <i className="fa fa-minus-square-o fa-lg"/>
@@ -23,4 +22,8 @@ export default class RemoveButton extends React.Component {
 RemoveButton.propTypes = {
     canRemove: PropTypes.bool.isRequired,
     onRemove: PropTypes.func.isRequired
+};
+
+RemoveButton.defaultProps = {
+    nextToInput: false
 };

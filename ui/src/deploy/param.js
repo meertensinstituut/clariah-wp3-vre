@@ -1,10 +1,10 @@
 import React from "react";
-import Field from "./form/field";
+import Field from "./fields/field";
 import PropTypes from 'prop-types';
-import LeafParam from "./form/leaf-param";
+import LeafParam from "./fields/leaf-param";
 import {Panel} from "react-bootstrap";
-import RemoveButton from "./form/remove-button";
-import AddButton from "./form/add-button";
+import RemoveButton from "./fields/remove-button";
+import AddButton from "./fields/add-button";
 
 /**
  * Param with child params
@@ -41,14 +41,16 @@ export default class Param extends React.Component {
     };
 
     renderParentField(param) {
-        return <Field
-            index={0}
-            param={param}
-            onChange={this.change}
-            onAdd={this.add}
-            onRemove={this.remove}
-            bare={false}
-        />;
+        return <div className="parent-param-field">
+            <Field
+                index={0}
+                param={param}
+                onChange={this.change}
+                onAdd={this.add}
+                onRemove={this.remove}
+                bare={true}
+            />
+        </div>;
     }
 
     renderChildParams(param) {
@@ -56,6 +58,8 @@ export default class Param extends React.Component {
             return <LeafParam
                 key={i}
                 param={childParam}
+                onAdd={this.add}
+                onRemove={this.remove}
                 onChange={this.changeChild()}
             />;
         }, this);
@@ -66,7 +70,7 @@ export default class Param extends React.Component {
         let hasChildren = Array.isArray(param.params);
         if (hasChildren) {
             return (
-                <div className="param-panel">
+                <div>
                     <Panel>
                         <Panel.Heading>
                             <Panel.Title>
@@ -96,6 +100,8 @@ export default class Param extends React.Component {
             return (
                 <LeafParam
                     param={param}
+                    onAdd={this.add}
+                    onRemove={this.remove}
                     onChange={this.change}
                 />
             );

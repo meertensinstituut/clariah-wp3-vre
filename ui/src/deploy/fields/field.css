@@ -1,0 +1,23 @@
+.add-btn {
+    margin-left: 0.5em;
+    z-index: 1;
+    position: relative;
+}
+
+.param-panel {
+    margin-top: 3em;
+}
+
+.parent-param-field {
+    margin-bottom: 2em;
+    margin-top: -2em;
+}
+
+.leaf-param-panel {
+    margin-top: 2em;
+}
+
+label {
+    font-size: 1.5em;
+    font-weight: normal;
+}
