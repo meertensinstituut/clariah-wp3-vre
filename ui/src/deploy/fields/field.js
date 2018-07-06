@@ -36,22 +36,31 @@ export default class Field extends React.Component {
             && field !== null;
     }
 
-    renderFieldByParamType() {
-        let field = null;
+    static getFieldTypeByParam(type) {
         for (let [paramType, classType] of PARAM_TO_CLASS) {
-            if (this.props.param.type === paramType) {
-                let value = this.props.param.value[this.props.index];
-                field = React.createElement(classType, {
-                    param: this.props.param,
-                    value: value,
-                    onChange: this.handleChange(),
-                    onAdd: this.handleAdd,
-                    canRemove: this.canRemoveField(),
-                    onRemove: this.handleRemove,
-                });
+            if (type === paramType) {
+                return classType;
             }
         }
-        return field;
+        return null;
+    }
+
+    renderFieldByParamType() {
+        let param = this.props.param;
+        let classType = Field.getFieldTypeByParam(param.type);
+        if (classType === null) {
+            return null;
+        }
+        let value = param.value[this.props.index];
+        return React.createElement(
+            classType, {
+                param: param,
+                value: value,
+                onChange: this.handleChange(),
+                canRemove: this.canRemoveField(),
+                onRemove: this.handleRemove,
+            }
+        );
     }
 
     canRemoveField() {

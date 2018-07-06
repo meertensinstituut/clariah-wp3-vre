@@ -44,12 +44,14 @@ class Deploy extends React.Component {
         return this.state.params[previousPage] === undefined;
     }
 
-    render() {
-        if (this.state.redirect !== null)
-            return <Redirect to='/files'/>;
+    handleValidConfig = (config) => {
+        console.log("handleValidConfig", config);
+    };
 
-        if (this.state.params.file === undefined)
-            return <Redirect to="/files"/>;
+    render() {
+        if (this.state.redirect !== null) return <Redirect to='/files'/>;
+
+        if (this.state.params.file === undefined) return <Redirect to="/files"/>;
 
         const selectService = this.isCurrentStep('file', 'service')
             ?
@@ -70,6 +72,7 @@ class Deploy extends React.Component {
                 <h2>2. Configure service</h2>
                 <Configurator
                     service={this.state.params.service}
+                    onValidConfig={this.handleValidConfig}
                 />
             </div>
             :
@@ -79,14 +82,30 @@ class Deploy extends React.Component {
             <div>
                 <div>
                     <Pagination>
-                        <Pagination.Item onClick={() => this.handleBackClick()}>&lt; Select file</Pagination.Item>
-                        <Pagination.Item active={this.isCurrentStep('file', 'service')}
-                                         disabled={this.isDisabledStep('file')}
-                                         onClick={() => this.handleBackToServiceClick()}>Select service</Pagination.Item>
-                        <Pagination.Item active={this.isCurrentStep('service', 'params')}
-                                         disabled={this.isDisabledStep('service')}>Configure service</Pagination.Item>
-                        <Pagination.Item active={this.isCurrentStep('params', true)}
-                                         disabled={this.isDisabledStep('params')}>Deploy service &gt;</Pagination.Item>
+                        <Pagination.Item
+                            onClick={() => this.handleBackClick()}
+                        >
+                            &lt; Select file
+                        </Pagination.Item>
+                        <Pagination.Item
+                            active={this.isCurrentStep('file', 'service')}
+                            disabled={this.isDisabledStep('file')}
+                            onClick={() => this.handleBackToServiceClick()}
+                        >
+                            Select service
+                        </Pagination.Item>
+                        <Pagination.Item
+                            active={this.isCurrentStep('service', 'params')}
+                            disabled={this.isDisabledStep('service')}
+                        >
+                            Configure service
+                        </Pagination.Item>
+                        <Pagination.Item
+                            active={this.isCurrentStep('params', true)}
+                            disabled={this.isDisabledStep('params')}
+                        >
+                            Deploy service &gt;
+                        </Pagination.Item>
                     </Pagination>
                 </div>
                 {selectService}

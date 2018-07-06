@@ -65,6 +65,7 @@
                                 <cmdp:Parameters>
                                     <cmdp:Parameter>
                                         <cmdp:Name>language</cmdp:Name>
+                                        <cmdp:Label>Language</cmdp:Label>
                                         <cmdp:Description>The language this text is in</cmdp:Description>
                                         <cmdp:DataType>string</cmdp:DataType>
                                         <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>

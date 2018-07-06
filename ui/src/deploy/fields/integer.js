@@ -4,30 +4,25 @@ import RemoveButton from "./remove-button";
 
 export default class Integer extends React.Component {
 
-    handleValidation() {
-        const value = this.props.value;
+    static handleValidation(value) {
         if (value.length === 0) return null;
         return RegExp(/^[0-9]*$/).test(value)
             ? "success"
             : "error";
     }
 
-    handleChange = (e) => {
-        this.props.onChange(e.target.value);
-    };
-
     render() {
         return (
             <div>
                 <FormGroup
                     controlId="formBasicText"
-                    validationState={this.handleValidation()}
+                    validationState={Integer.handleValidation(this.props.value)}
                 >
                     <div className="input-group mb-3">
                         <FormControl
                             type="text"
                             value={this.props.value}
-                            onChange={this.handleChange}
+                            onChange={(e) => this.props.onChange(e.target.value)}
                         />
                         <FormControl.Feedback/>
                         <div className="input-group-append">

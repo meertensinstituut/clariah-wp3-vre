@@ -4,32 +4,23 @@ import RemoveButton from "./remove-button";
 
 export default class String extends React.Component {
 
-    handleValidation() {
-        const length = this.props.value.length;
+    static handleValidation(value) {
+        const length = value.length;
         if (length === 0) return null;
         return 'success';
     }
-
-    handleChange = (e) => {
-        this.props.onChange(e.target.value);
-        this.setState({value: e.target.value});
-    };
-
-    handleRemove = () => () => {
-        this.props.onRemove();
-    };
 
     render() {
         return (
             <FormGroup
                 controlId="formBasicText"
-                validationState={this.handleValidation()}
+                validationState={String.handleValidation(this.props.value)}
             >
                 <div className="input-group mb-3">
                     <FormControl
                         type="text"
                         value={this.props.value}
-                        onChange={this.handleChange}
+                        onChange={(e) => this.props.onChange(e.target.value)}
                     />
                     <FormControl.Feedback/>
                     <div className="input-group-append">

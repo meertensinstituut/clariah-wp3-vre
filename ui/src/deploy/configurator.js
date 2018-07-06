@@ -10,7 +10,6 @@ import StatePropsViewer from "../common/state-props-viewer";
  * - Params without chi params get an extra element in param.value[]
  */
 export default class Configurator extends React.Component {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -35,7 +34,7 @@ export default class Configurator extends React.Component {
     }
 
     createForm(serviceParams) {
-        let form = {params: []};
+        let form = {valid: false, params: []};
         serviceParams.params.forEach((param) => {
             let formParam = this.createFormParam(param, form);
             if (param.params) {
@@ -56,7 +55,44 @@ export default class Configurator extends React.Component {
     }
 
     change(form) {
-        this.setState({form});
+        this.setState({form}, () => {
+            if (form.valid) this.onValidForm()
+        });
+    }
+
+    onValidForm = () => {
+        let config = this.convertToConfig(this.state.form);
+        this.props.onValidConfig(config);
+    };
+
+    convertToConfig(form) {
+        let config = {};
+        config.params = this.convertParams(form.params);
+        return config;
+    }
+
+    convertParams(params) {
+        let result = [];
+        params.forEach((p) => {
+            if (Array.isArray(p.params)) {
+                let configParam = this.createConfigParam(p, 0);
+                result.push(configParam);
+                configParam.params = this.convertParams(p.params);
+            } else {
+                p.value.forEach((v, i) => {
+                    result.push(this.createConfigParam(p, i));
+                });
+            }
+        });
+        return result;
+    }
+
+    createConfigParam(p, valueIndex) {
+        return {
+            name: p.name,
+            type: p.type,
+            value: p.value[valueIndex]
+        };
     }
 
     render() {

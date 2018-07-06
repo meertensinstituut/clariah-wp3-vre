@@ -2,7 +2,7 @@ import React from "react";
 import Field from "./field";
 
 /**
- * Param without child params.
+ * A Param without child params.
  * Added fields are stored as elements in value[]
  */
 export default class LeafParam extends React.Component {
