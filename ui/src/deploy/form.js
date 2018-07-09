@@ -35,7 +35,7 @@ export default class Form extends React.Component {
             let validation = Array.isArray(p.values)
                 ? fieldClass.handleValidation(v, p.values.map(v => v.value))
                 : fieldClass.handleValidation(v);
-            if (validation === 'error') {
+            if (validation !== 'success') {
                 valid = false;
             }
         });

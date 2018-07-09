@@ -49,19 +49,14 @@ export default class ServiceSelector extends React.Component {
         let newService = this.state.selected !== null && this.state.selected.id === service.id
             ? null
             : service;
-        this.setState({selected: newService});
+        this.setState(
+            {selected: newService},
+            () => this.props.onSelect(this.state.selected)
+        );
     }
 
     isSelected(id) {
         return this.state.selected !== null && this.state.selected.id === id;
-    }
-
-    canGoToNextStep() {
-        return this.state.selected !== null;
-    }
-
-    handleNextStep() {
-        this.props.onSelect(this.state.selected);
     }
 
     render() {
@@ -105,13 +100,6 @@ export default class ServiceSelector extends React.Component {
                     }, this)}
                     </tbody>
                 </Table>
-                <Button
-                    bsSize="xsmall"
-                    bsStyle="success"
-                    className="pull-right"
-                    onClick={() => this.handleNextStep()}
-                    disabled={!this.canGoToNextStep()}
-                >Next step &gt;</Button>
             </div>
         );
     }

@@ -1,7 +1,7 @@
 import React from "react";
 import Field from "./fields/field";
 import PropTypes from 'prop-types';
-import LeafParam from "./fields/leaf-param";
+import LeafParam from "./leaf-param";
 import {Panel} from "react-bootstrap";
 import RemoveButton from "./fields/remove-button";
 import AddButton from "./fields/add-button";
@@ -112,5 +112,6 @@ export default class Param extends React.Component {
 Field.propTypes = {
     param: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
-    onAdd: PropTypes.func.isRequired
+    onAdd: PropTypes.func.isRequired,
+    onRemove: PropTypes.func.isRequired
 };

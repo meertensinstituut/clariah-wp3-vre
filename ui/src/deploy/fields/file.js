@@ -20,10 +20,10 @@ export default class File extends React.Component {
                     <FormControl
                         type="text"
                         disabled
-                        value={this.props.value.id}
+                        value={this.props.value}
                         className="d-none"
                     />
-                    <Well className="w-100">You selected file: {this.props.param.fileData.filepath}</Well>
+                    <Well className="w-100">Selected file: {this.props.param.fileData.filepath}</Well>
                     <FormControl.Feedback/>
                     <div className="input-group-append">
                         <RemoveButton

@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.param;
 
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,19 +14,12 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,14 +47,19 @@ public class ParamService {
     }
 
     public CmdiDto getParams(long serviceId) {
-        String semanticsXml = servicesRegistryService.getServiceSemantics(serviceId);
-        return convertCmdiXmlToDto(semanticsXml);
+        ServiceRecordDto service = servicesRegistryService.getService(serviceId);
+        CmdiDto cmdiDto = new CmdiDto();
+        cmdiDto.id = serviceId;
+        cmdiDto.name = service.name;
+        cmdiDto.params = convertCmdiXmlToParams(service.semantics);
+        return cmdiDto;
     }
 
-    private CmdiDto convertCmdiXmlToDto(String cmdi) {
+    private List<ParamDto> convertCmdiXmlToParams(String cmdi) {
+
+        List<ParamDto> result = new ArrayList<>();
 
         try {
-            CmdiDto result = new CmdiDto();
             InputSource inputSource = new InputSource(new StringReader(cmdi));
             Document xml = builder.parse(inputSource);
 
@@ -70,7 +69,7 @@ public class ParamService {
             if (parameters == null || parameters.getLength() == 0) {
                 logger.warn(String.format("No parameters found in cmdi [%s]", cmdi));
             } else {
-                result.params.addAll(mapParameters(parameters));
+                result.addAll(mapParameters(parameters));
             }
 
             String groupExpression = "//*[local-name() = 'Input'] / *[local-name() = 'ParameterGroup']";
@@ -78,7 +77,7 @@ public class ParamService {
             if (groups == null || groups.getLength() == 0) {
                 logger.warn(String.format("No parameter groups found in cmdi [%s]", cmdi));
             } else {
-                result.params.addAll(mapParameterGroups(groups));
+                result.addAll(mapParameterGroups(groups));
             }
 
             return result;

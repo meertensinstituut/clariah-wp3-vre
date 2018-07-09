@@ -1,9 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.registry.services;
 
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
-import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest;
 import org.junit.Test;
-import org.mockserver.client.server.MockServerClient;
 import org.mockserver.model.Header;
 import org.mockserver.model.Parameter;
 
@@ -44,8 +42,10 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
     public void getService() {
         startGetServiceByIdRegistryMock();
         ServicesRegistryServiceImpl servicesRegistry = new ServicesRegistryServiceImpl("http://localhost:1080/api/v2/services", "abc", getMapper());
-        String result = servicesRegistry.getServiceSemantics(1L);
-        assertThat(result).startsWith("<cmd:CMD xmlns:cmd=\"http://www.clarin.eu/cmd/1\"");
+        ServiceRecordDto result = servicesRegistry.getService(1L);
+        assertThat(result.id).isEqualTo(1L);
+        assertThat(result.name).isEqualTo("TEST");
+        assertThat(result.semantics).startsWith("<cmd:CMD xmlns:cmd=\"http://www.clarin.eu/cmd/1\"");
     }
 
     private void startGetServicesByMimetypeRegistryMock() {

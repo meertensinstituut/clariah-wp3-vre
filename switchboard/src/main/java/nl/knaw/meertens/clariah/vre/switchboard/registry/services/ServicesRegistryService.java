@@ -7,7 +7,7 @@ public interface ServicesRegistryService {
     /**
      * String containing CMDI-xml of service
      */
-    String getServiceSemantics(Long id);
+    ServiceRecordDto getService(Long id);
 
     List<ServiceRecordDto> getServices(String mimetype);
 }

@@ -15,6 +15,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentResultDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentStartDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaOwncloudCreateFileDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamType;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
 import org.apache.commons.io.FileUtils;
@@ -223,9 +224,11 @@ public class ExecService {
     private HashMap<Long, String> requestFilesFromRegistry(DeploymentRequest serviceRequest) {
         HashMap<Long, String> files = new HashMap<>();
         for (ParamDto param : serviceRequest.getParams()) {
-            Long objectId = Long.valueOf(param.value);
-            ObjectsRecordDTO record = objectsRegistryService.getObjectById(objectId);
-            files.put(objectId, record.filepath);
+            if(param.type.equals(ParamType.FILE)) {
+                Long objectId = Long.valueOf(param.value);
+                ObjectsRecordDTO record = objectsRegistryService.getObjectById(objectId);
+                files.put(objectId, record.filepath);
+            }
         }
         return files;
     }
@@ -235,7 +238,9 @@ public class ExecService {
             HashMap<Long, String> registryPaths
     ) {
         for (ParamDto param : params) {
-            param.value = registryPaths.get(Long.valueOf(param.value));
+            if(param.type.equals(ParamType.FILE)) {
+                param.value = registryPaths.get(Long.valueOf(param.value));
+            }
         }
     }
 

@@ -21,3 +21,7 @@ label {
     font-size: 1.5em;
     font-weight: normal;
 }
+
+.deploy-service {
+    margin-top: 1em;
+}

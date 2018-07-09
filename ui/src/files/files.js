@@ -109,10 +109,6 @@ export default class Files extends React.Component {
                     pageCurrent={this.state.pageCurrent}
                     onClick={this.goToPage}
                 />
-                {/*<DeployServiceModal*/}
-                    {/*object={this.state.selectedObject}*/}
-                    {/*deselectObject={() => this.deselectObject()}*/}
-                {/*/>*/}
             </div>
         )
     }

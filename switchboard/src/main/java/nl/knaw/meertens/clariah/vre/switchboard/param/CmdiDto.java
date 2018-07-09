@@ -5,6 +5,8 @@ import java.util.List;
 
 public class CmdiDto {
 
+    public Long id;
+    public String name;
     public List<ParamDto> params = new ArrayList<>();
 
 }

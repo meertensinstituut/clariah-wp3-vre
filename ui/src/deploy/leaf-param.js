@@ -1,5 +1,6 @@
 import React from "react";
-import Field from "./field";
+import Field from "./fields/field";
+import PropTypes from 'prop-types';
 
 /**
  * A Param without child params.
@@ -73,3 +74,10 @@ export default class LeafParam extends React.Component {
         );
     }
 }
+
+Field.propTypes = {
+    param: PropTypes.object.isRequired,
+    onChange: PropTypes.func.isRequired,
+    onAdd: PropTypes.func.isRequired,
+    onRemove: PropTypes.func.isRequired
+};

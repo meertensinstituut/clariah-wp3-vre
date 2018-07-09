@@ -1,7 +1,6 @@
 import React from "react";
 import Switchboard from "../common/switchboard";
 import Form from "./form";
-import StatePropsViewer from "../common/state-props-viewer";
 import PropTypes from 'prop-types';
 import Dreamfactory from "../common/dreamfactory";
 
@@ -16,6 +15,7 @@ export default class Configurator extends React.Component {
         super(props);
         this.state = {
             form: null,
+            serviceName: null,
             serviceParams: null
         };
         if (this.props.service !== undefined) {
@@ -23,7 +23,7 @@ export default class Configurator extends React.Component {
                 let form = this.createForm(data);
                 Dreamfactory.getObject(this.props.file).then((objectData) => {
                     this.setFile(form, objectData);
-                    this.setState({serviceParams: data, form: form});
+                    this.setState({serviceName: data.name, serviceParams: data, form: form});
                 });
             });
         }
@@ -67,13 +67,17 @@ export default class Configurator extends React.Component {
 
     change(form) {
         this.setState({form}, () => {
-            if (form.valid) this.onValidForm()
+            if (form.valid) {
+                this.onValidForm();
+            } else {
+                this.props.onInvalid();
+            }
         });
     }
 
     onValidForm = () => {
         let config = this.convertToConfig(this.state.form);
-        this.props.onValidConfig(config);
+        this.props.onValid(this.state.serviceName, config);
     };
 
     convertToConfig(form) {
@@ -113,17 +117,15 @@ export default class Configurator extends React.Component {
 
         return (
             <div>
-                <Form
-                    form={form}
-                    onChange={this.change}
-                />
-                <StatePropsViewer state={this.state} props={this.props}/>
+                <Form form={form} onChange={this.change} />
             </div>
         );
     }
 }
 
 Configurator.propTypes = {
-    service: PropTypes.string.isRequired,
-    file: PropTypes.string.isRequired
+    service: PropTypes.number.isRequired,
+    file: PropTypes.number.isRequired,
+    onValid: PropTypes.func.isRequired,
+    onInvalid: PropTypes.func.isRequired,
 };

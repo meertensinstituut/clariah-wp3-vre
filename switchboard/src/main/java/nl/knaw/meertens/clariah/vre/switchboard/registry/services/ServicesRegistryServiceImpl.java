@@ -34,7 +34,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
     }
 
     @Override
-    public String getServiceSemantics(Long id) {
+    public ServiceRecordDto getService(Long id) {
         String body = "";
         try {
             String service = "_table/service";
@@ -47,7 +47,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
             HttpResponse<String> response = requestServiceDb(url);
             body = response.getBody();
             ServiceRecordDto serviceRecord = mapper.readValue(body, ServiceRecordDto.class);
-            return serviceRecord.semantics;
+            return serviceRecord;
         } catch (UnirestException | IOException | IllegalStateException e) {
             return handleException(e, "Could not get service for id [%s] and response [%s]", id, body);
         }
