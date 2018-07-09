@@ -2,6 +2,7 @@ import React from "react";
 import String from "./string";
 import Select from "./select";
 import Integer from "./integer";
+import File from "./file";
 import PropTypes from 'prop-types';
 import './field.css';
 import AddButton from "./add-button";
@@ -10,6 +11,7 @@ const PARAM_TO_CLASS = new Map();
 PARAM_TO_CLASS.set("string", String);
 PARAM_TO_CLASS.set("integer", Integer);
 PARAM_TO_CLASS.set("enumeration", Select);
+PARAM_TO_CLASS.set("file", File);
 
 export default class Field extends React.Component {
 

@@ -45,7 +45,7 @@ class Deploy extends React.Component {
     }
 
     handleValidConfig = (config) => {
-        console.log("handleValidConfig", config);
+        console.log("", config);
     };
 
     render() {
@@ -72,7 +72,8 @@ class Deploy extends React.Component {
                 <h2>2. Configure service</h2>
                 <Configurator
                     service={this.state.params.service}
-                    onValidConfig={this.handleValidConfig}
+                    file={this.state.params.file}
+                    onValid={this.handleValidConfig}
                 />
             </div>
             :

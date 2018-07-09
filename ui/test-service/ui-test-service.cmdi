@@ -22,12 +22,11 @@
                         <cmdp:Input>
                             <cmdp:Parameter>
                                 <cmdp:Name>input</cmdp:Name>
-                                <cmdp:MIMEType>text/plain</cmdp:MIMEType>
                                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
                                 <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
-                                <cmdp:Label xml:lang="dk">Indtastningstekst</cmdp:Label>
-                                <cmdp:Label xml:lang="en">Input text</cmdp:Label>
-                                <cmdp:Label xml:lang="nl">Invoer tekst</cmdp:Label>
+                                <cmdp:Label xml:lang="dk">Heltal</cmdp:Label>
+                                <cmdp:Label xml:lang="en">Integer</cmdp:Label>
+                                <cmdp:Label xml:lang="nl">Geheel getal</cmdp:Label>
                                 <cmdp:DataType>integer</cmdp:DataType>
                             </cmdp:Parameter>
                             <cmdp:Parameter>
@@ -59,13 +58,13 @@
                                 <cmdp:Label xml:lang="dk">Untok Indtastningstekst</cmdp:Label>
                                 <cmdp:Label xml:lang="en">Untok Input text</cmdp:Label>
                                 <cmdp:Label xml:lang="nl">Untok Invoer tekst</cmdp:Label>
-                                <cmdp:DataType>string</cmdp:DataType>
+                                <cmdp:MIMEType>text/plain</cmdp:MIMEType>
                                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
                                 <cmdp:MaximumCardinality>3</cmdp:MaximumCardinality>
                                 <cmdp:Parameters>
                                     <cmdp:Parameter>
                                         <cmdp:Name>language</cmdp:Name>
-                                        <cmdp:Label>Language</cmdp:Label>
+                                        <cmdp:Label xml:lang="en">Language</cmdp:Label>
                                         <cmdp:Description>The language this text is in</cmdp:Description>
                                         <cmdp:DataType>string</cmdp:DataType>
                                         <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
@@ -93,6 +92,50 @@
                                         <cmdp:DataType>string</cmdp:DataType>
                                         <cmdp:MinimumCardinality>0</cmdp:MinimumCardinality>
                                         <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
+                                    </cmdp:Parameter>
+                                </cmdp:Parameters>
+                            </cmdp:ParameterGroup>
+                            <cmdp:ParameterGroup>
+                                <cmdp:Name>paramgroupie</cmdp:Name>
+                                <cmdp:Label xml:lang="en">Groupie</cmdp:Label>
+                                <cmdp:DataType>string</cmdp:DataType>
+                                <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                                <cmdp:MaximumCardinality>3</cmdp:MaximumCardinality>
+                                <cmdp:Parameters>
+                                    <cmdp:Parameter>
+                                        <cmdp:Name>language</cmdp:Name>
+                                        <cmdp:Label xml:lang="en">Language</cmdp:Label>
+                                        <cmdp:Description>This groupie speaks</cmdp:Description>
+                                        <cmdp:DataType>string</cmdp:DataType>
+                                        <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                                        <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
+                                        <cmdp:Values>
+                                            <cmdp:ParameterValue>
+                                                <cmdp:Value>nld</cmdp:Value>
+                                                <cmdp:Label xml:lang="en">Dutch</cmdp:Label>
+                                            </cmdp:ParameterValue>
+                                            <cmdp:ParameterValue>
+                                                <cmdp:Value>eng</cmdp:Value>
+                                                <cmdp:Label xml:lang="en">English</cmdp:Label>
+                                            </cmdp:ParameterValue>
+                                            <cmdp:ParameterValue>
+                                                <cmdp:Value>dan</cmdp:Value>
+                                                <cmdp:Label xml:lang="en">Danish</cmdp:Label>
+                                            </cmdp:ParameterValue>
+                                            <cmdp:ParameterValue>
+                                                <cmdp:Value>frr</cmdp:Value>
+                                                <cmdp:Label xml:lang="en">Frisian</cmdp:Label>
+                                            </cmdp:ParameterValue>
+                                        </cmdp:Values>
+                                    </cmdp:Parameter>
+                                    <cmdp:Parameter>
+                                        <cmdp:Name>band</cmdp:Name>
+                                        <cmdp:Label xml:lang="dk">Bånd</cmdp:Label>
+                                        <cmdp:Label xml:lang="en">Band</cmdp:Label>
+                                        <cmdp:Label xml:lang="nl">Band</cmdp:Label>
+                                        <cmdp:DataType>string</cmdp:DataType>
+                                        <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                                        <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
                                     </cmdp:Parameter>
                                 </cmdp:Parameters>
                             </cmdp:ParameterGroup>

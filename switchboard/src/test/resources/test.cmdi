@@ -23,7 +23,6 @@
                         <cmdp:Input>
                             <cmdp:Parameter>
                                 <cmdp:Name>input</cmdp:Name>
-                                <cmdp:MIMEType>text/plain</cmdp:MIMEType>
                                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
                                 <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
                                 <cmdp:Label xml:lang="dk">Indtastningstekst</cmdp:Label>
@@ -87,6 +86,30 @@
                                     </cmdp:Parameter>
                                     <cmdp:Parameter>
                                         <cmdp:Name>author</cmdp:Name>
+                                        <cmdp:DataType>string</cmdp:DataType>
+                                        <cmdp:MinimumCardinality>0</cmdp:MinimumCardinality>
+                                        <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
+                                    </cmdp:Parameter>
+                                </cmdp:Parameters>
+                            </cmdp:ParameterGroup>
+                            <cmdp:Parameter>
+                                <cmdp:Name>inputfile</cmdp:Name>
+                                <cmdp:MIMEType>text/plain</cmdp:MIMEType>
+                                <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                                <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
+                                <cmdp:Label xml:lang="dk">Inputfil</cmdp:Label>
+                                <cmdp:Label xml:lang="en">Input file</cmdp:Label>
+                                <cmdp:Label xml:lang="nl">Invoerbestand</cmdp:Label>
+                            </cmdp:Parameter>
+                            <cmdp:ParameterGroup>
+                                <cmdp:Name>second-param-group</cmdp:Name>
+                                <cmdp:DataType>string</cmdp:DataType>
+                                <cmdp:Label xml:lang="en">Blarp group</cmdp:Label>
+                                <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                                <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
+                                <cmdp:Parameters>
+                                    <cmdp:Parameter>
+                                        <cmdp:Name>second-param-group-param</cmdp:Name>
                                         <cmdp:DataType>string</cmdp:DataType>
                                         <cmdp:MinimumCardinality>0</cmdp:MinimumCardinality>
                                         <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>

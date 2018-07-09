@@ -90,7 +90,7 @@ public class ParamService {
     private List<ParamGroupDto> mapParameterGroups(NodeList groups) {
         List<ParamGroupDto> result = new ArrayList<>();
         for (int i = 0; i < groups.getLength(); i++) {
-            Node xmlGroup = groups.item(0);
+            Node xmlGroup = groups.item(i);
             ParamGroupDto paramGroup = new ParamGroupDto();
             mapParameter(xmlGroup, paramGroup);
             NodeList parameters = ((Element) xmlGroup).getElementsByTagName("cmdp:Parameters").item(0).getChildNodes();
@@ -135,6 +135,9 @@ public class ParamService {
                     break;
                 case "cmdp:DataType":
                     result.type = ParamType.fromString(fieldValue);
+                    break;
+                case "cmdp:MIMEType":
+                    result.type = ParamType.FILE;
                     break;
                 case "cmdp:Description":
                     result.description = fieldValue;

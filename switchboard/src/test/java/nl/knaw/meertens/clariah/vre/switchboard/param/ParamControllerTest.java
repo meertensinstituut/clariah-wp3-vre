@@ -28,6 +28,7 @@ public class ParamControllerTest extends AbstractControllerTest {
                 .get();
 
         String json = response.readEntity(String.class);
+        System.out.println("json" + json);
         assertThat(response.getStatus()).isEqualTo(200);
         assertThatJson(json).node("params[0].name").isEqualTo("input");
         assertThatJson(json).node("params[0].label").isEqualTo("Input text");
@@ -42,7 +43,6 @@ public class ParamControllerTest extends AbstractControllerTest {
         assertThatJson(json).node("params[1].description").matches(containsString("This is your last chance."));
         assertThatJson(json).node("params[1].minimumCardinality").isEqualTo("\"1\"");
         assertThatJson(json).node("params[1].maximumCardinality").isEqualTo("\"1\"");
-
         assertThatJson(json).node("params[1].values").isArray().ofLength(2);
         assertThatJson(json).node("params[1].values[0].value").isEqualTo("red");
         assertThatJson(json).node("params[1].values[0].label").isEqualTo("Red");
@@ -51,11 +51,18 @@ public class ParamControllerTest extends AbstractControllerTest {
         assertThatJson(json).node("params[1].values[1].label").isEqualTo("Blue");
         assertThatJson(json).node("params[1].values[1].description").matches(containsString("happiness"));
 
-        assertThatJson(json).node("params[2].params").isArray().ofLength(2);
-        assertThatJson(json).node("params[2].params[0].name").isEqualTo("language");
-        assertThatJson(json).node("params[2].params[0].values[0].label").isEqualTo("Dutch");
-        assertThatJson(json).node("params[2].params[1].name").isEqualTo("author");
+        assertThatJson(json).node("params[2].name").isEqualTo("inputfile");
+        assertThatJson(json).node("params[2].label").isEqualTo("Input file");
+        assertThatJson(json).node("params[2].type").isEqualTo("file");
 
+        assertThatJson(json).node("params[3].params").isArray().ofLength(2);
+        assertThatJson(json).node("params[3].params[0].name").isEqualTo("language");
+        assertThatJson(json).node("params[3].params[0].values[0].label").isEqualTo("Dutch");
+        assertThatJson(json).node("params[3].params[1].name").isEqualTo("author");
+
+        assertThatJson(json).node("params[4].name").isEqualTo("second-param-group");
+        assertThatJson(json).node("params[4].params").isArray().ofLength(1);
+        assertThatJson(json).node("params[4].params[0].name").isEqualTo("second-param-group-param");
     }
 
     private void startGetServiceByIdRegistryMock() throws IOException {
