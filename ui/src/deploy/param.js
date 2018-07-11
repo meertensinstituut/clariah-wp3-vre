@@ -77,6 +77,7 @@ export default class Param extends React.Component {
                                 <RemoveButton
                                     canRemove={this.props.param.canRemove}
                                     onRemove={this.remove}
+                                    bare={false}
                                 />
                                 <AddButton
                                     canAdd={this.props.param.canAdd}
@@ -111,7 +112,7 @@ export default class Param extends React.Component {
 
 Field.propTypes = {
     param: PropTypes.object.isRequired,
-    onChange: PropTypes.func.isRequired,
     onAdd: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired
 };

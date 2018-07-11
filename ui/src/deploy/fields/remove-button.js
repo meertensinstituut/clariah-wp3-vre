@@ -13,7 +13,7 @@ export default class RemoveButton extends React.Component {
                 className={this.props.nextToInput ? "" : "xsmall pull-right add-btn"}
                 onClick={this.props.onRemove()}
             >
-                Remove <i className="fa fa-minus-square-o fa-lg"/>
+                {this.props.bare ? '' : 'Remove'} <i className="fa fa-trash-o fa-lg"/>
             </Button>
         );
     }
@@ -25,5 +25,6 @@ RemoveButton.propTypes = {
 };
 
 RemoveButton.defaultProps = {
-    nextToInput: false
+    nextToInput: false,
+    bare: true
 };

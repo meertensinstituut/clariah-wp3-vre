@@ -98,7 +98,6 @@ Field.propTypes = {
     onAdd: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired,
     index: PropTypes.number.isRequired,
-    bare: PropTypes.bool.isRequired
 };
 
 Field.defaultProps = {
