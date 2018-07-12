@@ -34,7 +34,10 @@ public class Initializer extends AbstractIntegrationTest {
         initConsumer.subscribe();
         initConsumer.pollOnce();
 
-        logger.info("Check " + WAITING_PERIOD + "s for services to start...");
+        logger.info("Wait 15 seconds for registry to process...");
+        TimeUnit.SECONDS.sleep(15);
+
+        logger.info("Poll " + WAITING_PERIOD + "s for services to start...");
         waitUntilSwitchboardIsUp();
 
         logger.info("Finished initialisation of VRE Integration");
@@ -48,7 +51,7 @@ public class Initializer extends AbstractIntegrationTest {
             TimeUnit.SECONDS.sleep(1);
             waited++;
             response = getHealthRequest.asString();
-            logger.info("Check if switchboard is up...");
+            logger.info("Poll if switchboard is up...");
         } while(response.getStatus() != 200 && waited < WAITING_PERIOD);
     }
 
