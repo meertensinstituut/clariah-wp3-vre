@@ -28,7 +28,17 @@ SELECT
             <cmdp:Input>
               <cmdp:Parameter><!-- use Parameter instead of ParameterGroup, if there are no nested parameters -->
                 <cmdp:Name>input</cmdp:Name>
+                <cmdp:Label xml:lang="en">Test input file</cmdp:Label>
                 <cmdp:MIMEType>text/plain</cmdp:MIMEType>
+                <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
+              </cmdp:Parameter>
+              <cmdp:Parameter>
+                <cmdp:Name>author</cmdp:Name>
+                <cmdp:Label xml:lang="en">Author</cmdp:Label>
+                <cmdp:DataType>string</cmdp:DataType>
+                <cmdp:MinimumCardinality>0</cmdp:MinimumCardinality>
+                <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
               </cmdp:Parameter>
             </cmdp:Input>
             <cmdp:Output>

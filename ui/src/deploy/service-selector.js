@@ -4,6 +4,7 @@ import DeployMsg from "./deploy-msg";
 import DreamFactory from '../common/dreamfactory';
 import PropTypes from 'prop-types';
 import Switchboard from "../common/switchboard";
+import StatePropsViewer from "../common/state-props-viewer";
 
 export default class ServiceSelector extends React.Component {
 
@@ -15,7 +16,7 @@ export default class ServiceSelector extends React.Component {
         this.state = {
             object: null,
             services: null,
-            selected: null
+            selected: this.props.selected
         };
         this.getResources();
         this.isSelected = this.isSelected.bind(this);
@@ -30,13 +31,7 @@ export default class ServiceSelector extends React.Component {
 
     getServices() {
         Switchboard.getServices(this.state.object.id).done((data) => {
-            let selected = null;
-            if(this.props.selected !== undefined) {
-                selected = data.find((service) => {
-                    return Number(service.id) === Number(this.props.selected);
-                });
-            }
-            this.setState({services: data, selected: selected});
+            this.setState({services: data});
         });
     }
 
@@ -46,9 +41,12 @@ export default class ServiceSelector extends React.Component {
     }
 
     handleSelect(service) {
-        let newService = this.state.selected !== null && this.state.selected.id === service.id
-            ? null
-            : service;
+        let newService;
+        if(this.state.selected === service) {
+            newService = null;
+        } else {
+            newService = service;
+        }
         this.setState(
             {selected: newService},
             () => this.props.onSelect(this.state.selected)
@@ -56,7 +54,7 @@ export default class ServiceSelector extends React.Component {
     }
 
     isSelected(id) {
-        return this.state.selected !== null && this.state.selected.id === id;
+        return this.state.selected !== null && this.state.selected === id;
     }
 
     render() {
@@ -89,7 +87,7 @@ export default class ServiceSelector extends React.Component {
                                         bsSize="xsmall"
                                         bsStyle={this.isSelected(service.id) ? "success" : "info"}
                                         className="pull-right"
-                                        onClick={() => this.handleSelect(service)}
+                                        onClick={() => this.handleSelect(service.id)}
                                     >
                                         {this.isSelected(service.id) ? "Selected " : "Select "}
                                         <i className={this.isSelected(service.id) ? "fa fa-check-square-o" : "fa fa fa-square-o"} />
@@ -100,6 +98,7 @@ export default class ServiceSelector extends React.Component {
                     }, this)}
                     </tbody>
                 </Table>
+                <StatePropsViewer state={this.state} props={this.props} hide={false}/>
             </div>
         );
     }

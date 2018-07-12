@@ -1,8 +1,11 @@
 import React from "react";
+import PropTypes from 'prop-types';
 
 export default class StatePropsViewer extends React.Component {
 
     render() {
+        if(this.props.hide) return null;
+
         return (
             <div>
                 <div>
@@ -17,3 +20,12 @@ export default class StatePropsViewer extends React.Component {
         );
     }
 }
+
+StatePropsViewer.propTypes = {
+    state: PropTypes.object.isRequired,
+    props: PropTypes.object.isRequired
+};
+
+StatePropsViewer.defaultTypes = {
+  hide: false
+};

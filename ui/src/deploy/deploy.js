@@ -1,79 +1,65 @@
 import React from "react";
 import {Redirect, withRouter} from 'react-router-dom';
-import queryString from 'query-string';
 import ServiceSelector from "./service-selector";
 import Configurator from "./configurator";
 import Switchboard from "../common/switchboard";
 import DeployMsg from "./deploy-msg";
 import Steps from "./steps";
+import StatePropsViewer from "../common/state-props-viewer";
 
 class Deploy extends React.Component {
 
     constructor(props) {
         super(props);
 
-        let params = queryString.parse(this.props.location.search);
         this.state = {
-            params: params,
             redirect: null,
             service: null,
             serviceName: null,
             config: null,
             steps: [
-                {key: 'file', value: params.file, label: '<< Select file', callback: this.handleGoToFiles},
-                {key: 'service', value: params.service, label: 'Select service', callback: this.handleGoToService},
-                {key: 'config', value: false, label: 'Configure service', callback: this.handleGoToConfig},
-                {key: 'deploy', value: false, label: 'Deploy >>', callback: this.handleDeploy}
+                {key: 'file', value: null, label: '<< Select file'},
+                {key: 'service', value: null, label: 'Select service'},
+                {key: 'config', value: null, label: 'Configure service'},
+                {key: 'deploy', value: null, label: 'Deploy >>'}
             ],
-            active: 'service',
+            active: 'file',
             completed: false
         };
-        if(params.file) this.state.active = 'service';
-        if(params.service) {
-            this.state.service = params.service;
-            this.state.active = 'config';
-        }
     }
 
-    handleGoToService = () => {
-        this.setState({active: 'service', completed: true});
-    };
-
-    handleSelectService = (selected) => {
-        const service = (selected ? selected.id : null);
-        const completed = service !== false;
-        this.setState({completed, service});
-    };
-
-    handleGoToConfig = () => {
-        if(isNaN(this.state.service)) {
-            return;
-        }
-        this.state.steps
-            .find(s => s.key === 'service')
-            .value = this.state.service;
-        this.setState({
-            active: 'config',
-            completed: false,
-            steps: this.state.steps
+    handleChangedSteps = () => (steps, active, completed) => {
+        let redirect = active === "file";
+        this.setState({steps, active, completed, redirect}, () => {
+            if (active === 'deploy') {
+                this.handleDeploy();
+            }
         });
     };
 
-    handleGoToFiles = () =>  {
-        this.setState({redirect: "/files"});
+    handleSelectService = (selected) => {
+        this.setStepValue('service', (selected ? selected : null));
+        const completed = selected !== null;
+        this.setState({completed, steps: this.state.steps});
     };
 
     handleValidConfig = (serviceName, config) => {
+        const completed = true;
+        this.setStepValue('config', true);
         this.setState({
             serviceName,
             config,
-            completed: true,
+            completed,
             steps: this.state.steps
         });
     };
 
     handleInvalidConfig = () => {
-        this.setState({config: null});
+        this.setStepValue('config', false);
+        this.setState({
+            config: null,
+            steps: this.state.steps
+        });
     };
 
     handleDeploy = () => {
@@ -81,11 +67,12 @@ class Deploy extends React.Component {
             this.state.serviceName,
             this.state.config
         ).done((data) => {
-            this.state.steps
-                .find(s => s.key === 'deploy')
-                .value = true;
             this.setState(
-                {active: 'deploy', steps: this.state.steps},
+                {
+                    active: 'deploy',
+                    steps: this.state.steps,
+                    deployment: data
+                },
                 () => window.scrollTo(0, 0)
             );
         });
@@ -98,43 +85,48 @@ class Deploy extends React.Component {
         });
     }
 
-    getParamValue(step, steps = this.state.steps) {
-        let find = steps.find(s => s.key === step);
+    setStepValue(key, value) {
+        this.state.steps
+            .find(s => s.key === key)
+            .value = value;
+    }
+
+    getStepValue(step, steps = this.state.steps) {
+        const find = steps.find(s => s.key === step);
         return find.value;
     }
 
     render() {
-        if (this.state.redirect !== null) return <Redirect to='/files'/>;
+        if (this.state.redirect) return <Redirect to='/files'/>;
 
-        if (this.state.params.file === undefined) return <Redirect to="/files"/>;
-
-        let steps =
+        const steps =
             <Steps
                 steps={this.state.steps}
                 active={this.state.active}
                 completed={this.state.completed}
+                onChangedSteps={this.handleChangedSteps()}
             />;
 
-        let selectService = this.state.active === 'service'
+        const selectService = this.state.active === 'service'
             ?
             <div>
                 <h2>1. Select service</h2>
                 <ServiceSelector
-                    file={this.state.params.file}
-                    selected={this.getParamValue('service')}
+                    file={this.getStepValue('file')}
+                    selected={this.getStepValue('service')}
                     onSelect={this.handleSelectService}
                 />
             </div>
             :
             null;
 
-        let configureService = this.state.active === 'config'
+        const configureService = this.state.active === 'config'
             ?
             <div>
                 <h2>2. Configure service</h2>
                 <Configurator
-                    service={Number(this.getParamValue('service'))}
-                    file={Number(this.getParamValue('file'))}
+                    service={Number(this.getStepValue('service'))}
+                    file={Number(this.getStepValue('file'))}
                     onValid={this.handleValidConfig}
                     onInvalid={this.handleInvalidConfig}
                 />
@@ -142,11 +134,11 @@ class Deploy extends React.Component {
             :
             null;
 
-        let deploymentMsg = this.state.deployment === null
+        const deploymentMsg = this.state.deployment !== null
             ?
-            null
+            <DeployMsg deployment={this.state.deployment}/>
             :
-            <DeployMsg deployment={this.state.deployment}/>;
+            null;
 
         return (
             <div>
@@ -156,6 +148,7 @@ class Deploy extends React.Component {
                 <div className="clearfix"/>
                 {configureService}
                 {steps}
+                <StatePropsViewer state={this.state} props={this.props} hide={false}/>
             </div>
         );
     }
