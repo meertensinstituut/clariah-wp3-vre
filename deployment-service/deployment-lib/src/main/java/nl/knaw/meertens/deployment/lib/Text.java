@@ -6,8 +6,10 @@
 package nl.knaw.meertens.deployment.lib;
 
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import java.io.StringReader;
@@ -16,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 //import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -32,6 +35,7 @@ import nl.mpi.tla.util.Saxon;
 import org.apache.commons.configuration.ConfigurationException;
 
 import org.jdom2.JDOMException;
+import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -61,7 +65,7 @@ public class Text implements RecipePlugin {
         System.out.print("init Text plugin");
         JSONObject json = this.parseSymantics(service.getServiceSymantics());
         this.projectName = projectName;
-        this.serviceUrl = new URL((String)json.get("serviceLocation"));
+        this.serviceUrl = null;
         System.out.print("finish init Text plugin");
 
     }
@@ -142,55 +146,38 @@ public class Text implements RecipePlugin {
         return userConfig;
     }
     
-    public JSONObject runProject(String key) throws IOException, MalformedURLException, MalformedURLException, JDOMException, ParseException {
+    public JSONObject runProject(String key) throws IOException, MalformedURLException, MalformedURLException, JDOMException, ParseException, ConfigurationException {
         
         JSONObject json = new JSONObject();
-        JSONParser parser = new JSONParser();
-        String user, accessToken;
+        DeploymentLib dplib = new DeploymentLib();
         
-//        json = this.getAccessToken(key);
-        user = (String)json.get("user");
-        accessToken = (String)json.get("accessToken");
+        String workDir = dplib.getWd();
+        String userConfFile = dplib.getConfFile();
+        JSONObject userConfig = this.parseUserConfig(key);
+        JSONArray params = (JSONArray) userConfig.get("params");
         
-        /*
-        set output template
-        */
-        Map<String,Object> params = new LinkedHashMap<>();
-        params.put("xml", "1");
+        JSONObject inputOjbect = (JSONObject) params.get(0);
+        String inputFile = (String) inputOjbect.get("value");
+        String inputPath = Paths.get(workDir, projectName, inputFile).normalize().toString();
+        System.out.println(String.format("### inputPath: %s ###", inputPath));
+        
+        String content = new String(Files.readAllBytes(Paths.get(inputPath)));
 
-        StringBuilder postData = new StringBuilder();
-        for (Map.Entry<String,Object> param : params.entrySet()) {
-            if (postData.length() != 0) postData.append('&');
-            postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-            postData.append('=');
-            postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+        
+        JSONObject outputOjbect = (JSONObject) params.get(1);
+        String outputFile = (String) outputOjbect.get("value");
+        String outputPath = Paths.get(workDir, projectName, outputFile).normalize().toString();
+        System.out.println(String.format("### outputPath: %s ###", outputPath));
+        File file = new File(outputPath);
+        
+        try (FileWriter fileWriter = new FileWriter(file)) {
+            fileWriter.write("<html><head></head><body><pre>");
+            fileWriter.write(content);
+            fileWriter.write("</pre></body></html>");
+            fileWriter.flush();
         }
-        byte[] postDataBytes = postData.toString().getBytes("UTF-8");
-        /*
-        end of set output template
-        */
+                        
         
-        URL url = new URL(
-                this.serviceUrl.getProtocol(), 
-                this.serviceUrl.getHost(), 
-                this.serviceUrl.getPort(), 
-                this.serviceUrl.getFile() + "/" + key + "/?user="+user+"&accesstoken="+accessToken, 
-                null
-        );
-        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-        
-        httpCon.setDoOutput(true);
-        httpCon.setRequestMethod("POST");
-        httpCon.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        httpCon.setRequestProperty("Accept", "application/json");
-        httpCon.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-        httpCon.getOutputStream().write(postDataBytes);
-        
-//        json = (JSONObject) parser.parse(this.getUrlBody(httpCon));
-        json.put("status", httpCon.getResponseCode());
-        json.put("message", httpCon.getResponseMessage());
-                
-        httpCon.disconnect();
         return json;
         
     }
@@ -252,58 +239,49 @@ public class Text implements RecipePlugin {
     
     @Override
     public JSONObject parseSymantics(String symantics) throws JDOMException, SaxonApiException {
+        System.out.println(String.format("### symantics in parseSymantics before parsing: %s ###", symantics));
         JSONObject json = new JSONObject();
         JSONObject parametersJson = new JSONObject();
 
         Map<String,String> NS = new LinkedHashMap<>();
         NS.put("cmd", "http://www.clarin.eu/cmd/1");
-        NS.put("cmdp", "http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795");
+        NS.put("cmdp", "http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1527668176011");
         
         StringReader reader = new StringReader(symantics);
         XdmNode service = Saxon.buildDocument(new StreamSource(reader));
 
-        String serviceName = Saxon.xpath2string(service, "cmdp:Name",null,NS);
+        String serviceName = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Name",null,NS);
         String serviceDescription = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Description",null,NS);
         String serviceLocation = Saxon.xpath2string(service, "//cmdp:ServiceDescriptionLocation/cmdp:Location",null,NS);
                 
-        int counter = 0;
-        for (XdmItem param:Saxon.xpath(service,"//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter",null,NS)) {
-            
-            JSONObject parameterJson = new JSONObject();
-            String parameterName = Saxon.xpath2string(param, "cmdp:Name",null,NS);
-            String parameterDescription = Saxon.xpath2string(param, "cmdp:Description",null,NS);
-            String parameterType = Saxon.xpath2string(param, "cmdp:MIMEType",null,NS);
-            
-            parameterJson.put("parameterName", parameterName);
-            parameterJson.put("parameterDescription", parameterDescription);
-            parameterJson.put("parameterType", parameterType);
-            
-            int valueCounter = 0;
-            for (XdmItem paramValue:Saxon.xpath(service,"//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter/cmdp:ParameterValue",null,NS)) {
-                
-                JSONObject parameterValueJson = new JSONObject();
-                
-                String parameterValueValue = Saxon.xpath2string(paramValue, "cmdp:Value",null,NS);
-                String parameterValueDescription = Saxon.xpath2string(paramValue, "cmdp:Description",null,NS);
-                
-                parameterValueJson.put("parameterValueValue", parameterValueValue);
-                parameterValueJson.put("parameterValueDescription", parameterValueDescription);
-                
-                parameterJson.put("value"+Integer.toString(valueCounter), parameterValueJson);
-                
-                valueCounter++;
-            }
-            
-            parametersJson.put("parameter"+Integer.toString(counter), parameterJson);
-            
-            counter++;
-        }
+        String inputName = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:Name",null,NS);
+        String inputLabel = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:Label",null,NS);
+        String inputType = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MIMEType",null,NS);
+        String inputCardinalityMin = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MinimumCardinality",null,NS);
+        String inputCardinalityMax = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MaximumCardinality",null,NS);        
+
+        String outputName = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:Name",null,NS);
+//        String outputLabel = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:Label",null,NS);
+        String outputType = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MIMEType",null,NS);
+        String outputCardinalityMin = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MinimumCardinality",null,NS);
+        String outputCardinalityMax = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MaximumCardinality",null,NS);        
 
         json.put("serviceName", serviceName);
         json.put("serviceDescription", serviceDescription);
         json.put("serviceLocation", serviceLocation);
-        json.put("counter", counter);
-        json.put("parameters", parametersJson);
+        
+        json.put("inputName", inputName);
+        json.put("inputLabel", inputLabel);
+        json.put("inputType", inputType);
+        json.put("inputCardinalityMin", inputCardinalityMin);
+        json.put("inputCardinalityMax", inputCardinalityMax);
+
+        json.put("outputName", outputName);
+//        json.put("outputLabel", outputLabel);
+        json.put("outputType", outputType);
+        json.put("outputCardinalityMin", outputCardinalityMin);
+        json.put("outputCardinalityMax", outputCardinalityMax);
+        
         return json;
         
     }
