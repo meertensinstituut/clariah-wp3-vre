@@ -135,6 +135,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     }
 
     private File findOutputFolder(String finishedJson) {
+        System.out.println("Find output folder in: " + finishedJson);
         String read = JsonPath.parse(finishedJson).read("$.outputDir");
         return Paths.get(OWNCLOUD_VOLUME, read).toFile();
     }

@@ -7,6 +7,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecService;
+import nl.knaw.meertens.clariah.vre.switchboard.health.HealthController;
 import nl.knaw.meertens.clariah.vre.switchboard.object.ObjectController;
 import nl.knaw.meertens.clariah.vre.switchboard.object.ObjectService;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamController;
@@ -37,6 +38,7 @@ public class SwitchboardDIBinder extends AbstractBinder {
      * All controllers of switchboard app
      */
     private static Set<Class<?>> controllerClasses = newHashSet(
+            HealthController.class,
             ExecController.class,
             ObjectController.class,
             ParamController.class
@@ -45,8 +47,6 @@ public class SwitchboardDIBinder extends AbstractBinder {
     private static ObjectMapper mapper = null;
     private static PollServiceImpl pollingService = null;
     private static RequestRepository requestRepositoryService = null;
-
-
     private ObjectsRegistryService objectsRegistryService;
     private DeploymentService deploymentService;
     private ServicesRegistryService serviceRegistryService;

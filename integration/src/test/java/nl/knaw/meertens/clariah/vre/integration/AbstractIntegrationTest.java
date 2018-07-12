@@ -47,7 +47,7 @@ public abstract class AbstractIntegrationTest {
     final static String DB_OBJECTS_USER = System.getenv("DB_OBJECTS_USER");
     final static String DB_OBJECTS_PASSWORD = System.getenv("DB_OBJECTS_PASSWORD");
     final static String DB_OBJECTS_DATABASE = System.getenv("DB_OBJECTS_DATABASE");
-    final static String SWITCHBOARD_ENDPOINT = "http://switchboard:8080/switchboard/rest/";
+    final static String SWITCHBOARD_ENDPOINT = "http://switchboard:8080/switchboard/rest";
 
 
 
@@ -123,7 +123,7 @@ public abstract class AbstractIntegrationTest {
 
     String startDeploymentWithInputFileId(Long expectedFilename) throws UnirestException {
         HttpResponse<String> result = Unirest
-                .post(SWITCHBOARD_ENDPOINT + "exec/TEST")
+                .post(SWITCHBOARD_ENDPOINT + "/exec/TEST")
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .body("{\"params\":[{\"name\":\"untokinput\",\"type\":\"file\",\"value\":\"" + expectedFilename + "\",\"params\":[{\"language\":\"eng\",\"author\":\"J. Jansen\"}]}]}")
                 .asString();
@@ -171,7 +171,7 @@ public abstract class AbstractIntegrationTest {
 
     private HttpResponse<String> getDeploymentStatus(String workDir) throws UnirestException {
         return Unirest
-                .get(SWITCHBOARD_ENDPOINT + "exec/task/" + workDir + "/")
+                .get(SWITCHBOARD_ENDPOINT + "/exec/task/" + workDir + "/")
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .asString();
     }

@@ -24,7 +24,7 @@ public class DeployServiceByFileTest extends AbstractIntegrationTest {
         long inputFileId = getObjectIdFromRegistry(inputFile);
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
-        String url = String.format("%sobject/%d/services", SWITCHBOARD_ENDPOINT, inputFileId);
+        String url = String.format("%s/object/%d/services", SWITCHBOARD_ENDPOINT, inputFileId);
         String json = Unirest.get(url).asString().getBody();
         assertThatJson(json).node("[0]").isPresent();
         assertThatJson(json).node("[0].name").isEqualTo("TEST");

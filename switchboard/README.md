@@ -18,10 +18,15 @@ Tools, languages and techniques:
 - After a stopped or finished deployment links are removed, files are unlocked and files in `<workDir>/output/` are moved to owncloud in an output folder which is returned in json result when polling.
 
 ## Endpoints
-- `POST /switchboard/rest/exec/{service}`: 
+Endpoints are prefixed with `/switchboard/rest`
+
+- `GET /health`
+Check if switchboard is up.
+
+- `POST /exec/{service}`: 
 Deploy new service  
 
-- `GET /switchboard/rest/exec/task/{workDir}`: 
+- `GET /exec/task/{workDir}`: 
 Get status of deployment
 
 - `GET /objects/{objectId}/services`:

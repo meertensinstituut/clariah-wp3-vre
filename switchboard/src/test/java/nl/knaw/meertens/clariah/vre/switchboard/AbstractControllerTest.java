@@ -8,10 +8,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDT
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
@@ -41,7 +37,7 @@ import static org.assertj.core.util.Lists.newArrayList;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-public abstract class AbstractControllerTest {
+public abstract class AbstractControllerTest extends AbstractTest {
 
     private static Logger logger = LoggerFactory.getLogger(AbstractControllerTest.class);
 
@@ -53,13 +49,6 @@ public abstract class AbstractControllerTest {
     protected static String longName = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff, Sr.";
     protected static String resultFilename = "result.txt";
     protected static String resultSentence = "Insanity: doing the same thing over and over again and expecting different results.";
-
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            logger.info(String.format("Starting test [%s]", description.getMethodName()));
-        }
-    };
 
     @BeforeClass
     public static void beforeAbstractTests() throws Exception {
