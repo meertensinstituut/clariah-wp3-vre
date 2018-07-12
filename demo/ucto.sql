@@ -1,4 +1,8 @@
 \set ucto `cat /tmp/ucto.xml`
-INSERT INTO service("name","recipe","semantics") VALUES ('UCTO', 'nl.knaw.meertens.deployment.lib.Clam',  :'ucto');
+INSERT INTO service("name","recipe","semantics","kind") VALUES ('UCTO', 'nl.knaw.meertens.deployment.lib.Clam',  :'ucto', 'service');
 \set frog `cat /tmp/frog.xml`
-INSERT INTO service("name","recipe","semantics") VALUES ('FROG', 'nl.knaw.meertens.deployment.lib.Clam',  :'frog');
+INSERT INTO service("name","recipe","semantics","kind") VALUES ('FROG', 'nl.knaw.meertens.deployment.lib.Clam',  :'frog', 'service');
+\set viewer `cat /tmp/viewer.xml`
+INSERT INTO service("name","recipe","semantics","kind") VALUES ('VIEWER', 'nl.knaw.meertens.deployment.lib.Text', :'viewer', 'viewer');
+-- \set frog `cat /tmp/frog.xml`
+-- INSERT INTO service("name","recipe","semantics","kind") VALUES ('EDITOR', 'nl.knaw.meertens.deployment.lib.Text', , 'editor');

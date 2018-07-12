@@ -1,5 +1,5 @@
 INSERT INTO service
-  ("name","recipe","semantics")
+  ("name","recipe","semantics","kind")
 SELECT
   'TEST',
   'nl.knaw.meertens.deployment.lib.Test',
@@ -43,7 +43,8 @@ SELECT
       </cmdp:Service>
     </cmdp:CLARINWebService>
   </cmd:Components>
-</cmd:CMD>'
+</cmd:CMD>', 
+  'service'
 WHERE NOT EXISTS (
   SELECT "name" FROM service WHERE "name" = 'TEST'
 );
