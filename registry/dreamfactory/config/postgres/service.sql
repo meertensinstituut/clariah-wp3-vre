@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS service (
     recipe character varying(255) NOT NULL,
     semantics xml,
     tech xml,
+    kind CHARACTER varying(255) NOT NULL, 
     time_created timestamp with time zone,
     time_changed timestamp with time zone
 );

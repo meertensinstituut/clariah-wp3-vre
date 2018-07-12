@@ -1,0 +1,15 @@
+{
+  "params": [
+    {
+      "name": "untokinput",
+      "type": "file",
+      "value": "/test.txt",
+      "params": [ 
+        {
+          "language": "nld",
+          "author": "blarp"
+        }
+      ]
+    }
+  ]
+}
