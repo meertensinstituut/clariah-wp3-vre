@@ -4,7 +4,6 @@ import Select from "./select";
 import Integer from "./integer";
 import File from "./file";
 import PropTypes from 'prop-types';
-import './field.css';
 import AddButton from "./add-button";
 
 const PARAM_TO_CLASS = new Map();

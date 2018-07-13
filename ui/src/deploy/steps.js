@@ -3,7 +3,6 @@ import {Pagination} from 'react-bootstrap';
 import {withRouter} from 'react-router-dom';
 import queryString from 'query-string';
 import PropTypes from 'prop-types';
-import StatePropsViewer from "../common/state-props-viewer";
 
 /**
  * Keeps track of url params and different steps/states of deployment
@@ -55,50 +54,55 @@ class Steps extends React.Component {
         );
     }
 
-    isDisabled(active, completed, i) {
+    isDisabled(activeIndex, completed, index) {
         let disabled = true;
-        if (i <= active) {
+        if (index <= activeIndex) {
+            // Previous and current steps:
             disabled = false;
-        } else if (i === active + 1) {
+        } else if (index === activeIndex + 1) {
+            // Next step:
             disabled = !completed;
         }
         return disabled;
     }
 
     determineActiveStep(steps) {
-        let indices = [];
+        let stepsWithValues = [];
         for (let i = 0; i < steps.length; i++) {
-            if (steps[i].value !== null) indices.push(i);
+            if (steps[i].value !== null) stepsWithValues.push(i);
         }
-        let highestIndex = indices.indexOf(Math.max(...indices));
-        return steps[highestIndex + 1].key;
+        let highestIndex = stepsWithValues.indexOf(Math.max(...stepsWithValues));
+        // Active is the first step with no value
+        let activeIndex = highestIndex + 1;
+        return steps[activeIndex].key;
     }
 
     goTo = (step) => {
-        this.clearParamsAfterStep(step);
-        updateUrlParams(convertStepsToParams(this.state.steps), this.props.history);
+        this.clearParamsAfter(step.key);
+        let newParams = convertStepsToParams(this.state.steps);
+        updateUrlParams(newParams, this.props.history);
         this.props.onChangedSteps(this.state.steps, step.key, false);
     };
 
-    clearParamsAfterStep(step) {
-        let selected = this.state.steps.findIndex(s => s.key === step.key);
+    clearParamsAfter(key) {
+        let selected = this.state.steps.findIndex(s => s.key === key);
         this.state.steps.forEach((s, i) => {
             if (i >= selected) s.value = null;
         });
     }
 
     render() {
-        let active = this.props.steps.findIndex((s) => s.key === this.props.active);
+        let activeIndex = this.props.steps.findIndex((s) => s.key === this.props.active);
         return (
             <div>
                 <Pagination>
                     {this.props.steps.map((step, i) => {
-                        let disabled = this.isDisabled(active, this.props.completed, i);
+                        let disabled = this.isDisabled(activeIndex, this.props.completed, i);
                         return (
                             <Pagination.Item
                                 key={i}
                                 onClick={() => this.goTo(step)}
-                                active={i === active}
+                                active={i === activeIndex}
                                 disabled={disabled}
                             >
                                 {step.label}
@@ -106,7 +110,6 @@ class Steps extends React.Component {
                         );
                     }, this)}
                 </Pagination>
-                <StatePropsViewer state={this.state} props={this.props} hide={true}/>
             </div>
         );
     }

@@ -4,7 +4,6 @@ import DeployMsg from "./deploy-msg";
 import DreamFactory from '../common/dreamfactory';
 import PropTypes from 'prop-types';
 import Switchboard from "../common/switchboard";
-import StatePropsViewer from "../common/state-props-viewer";
 
 export default class ServiceSelector extends React.Component {
 
@@ -98,7 +97,6 @@ export default class ServiceSelector extends React.Component {
                     }, this)}
                     </tbody>
                 </Table>
-                <StatePropsViewer state={this.state} props={this.props} hide={false}/>
             </div>
         );
     }

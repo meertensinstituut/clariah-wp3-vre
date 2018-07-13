@@ -5,7 +5,8 @@ import Configurator from "./configurator";
 import Switchboard from "../common/switchboard";
 import DeployMsg from "./deploy-msg";
 import Steps from "./steps";
-import StatePropsViewer from "../common/state-props-viewer";
+
+import './deploy.css';
 
 class Deploy extends React.Component {
 
@@ -91,9 +92,10 @@ class Deploy extends React.Component {
             .value = value;
     }
 
-    getStepValue(step, steps = this.state.steps) {
-        const find = steps.find(s => s.key === step);
-        return find.value;
+    getStepValue(key) {
+        return this.state.steps
+            .find(s => s.key === key)
+            .value;
     }
 
     render() {
@@ -108,8 +110,7 @@ class Deploy extends React.Component {
             />;
 
         const selectService = this.state.active === 'service'
-            ?
-            <div>
+            ? <div>
                 <h2>1. Select service</h2>
                 <ServiceSelector
                     file={this.getStepValue('file')}
@@ -117,12 +118,10 @@ class Deploy extends React.Component {
                     onSelect={this.handleSelectService}
                 />
             </div>
-            :
-            null;
+            : null;
 
         const configureService = this.state.active === 'config'
-            ?
-            <div>
+            ? <div>
                 <h2>2. Configure service</h2>
                 <Configurator
                     service={Number(this.getStepValue('service'))}
@@ -131,14 +130,11 @@ class Deploy extends React.Component {
                     onInvalid={this.handleInvalidConfig}
                 />
             </div>
-            :
-            null;
+            : null;
 
         const deploymentMsg = this.state.deployment !== null
-            ?
-            <DeployMsg deployment={this.state.deployment}/>
-            :
-            null;
+            ? <DeployMsg deployment={this.state.deployment}/>
+            : null;
 
         return (
             <div>
@@ -148,7 +144,6 @@ class Deploy extends React.Component {
                 <div className="clearfix"/>
                 {configureService}
                 {steps}
-                <StatePropsViewer state={this.state} props={this.props} hide={false}/>
             </div>
         );
     }

@@ -9,7 +9,7 @@ import AddButton from "./fields/add-button";
 /**
  * Param with child params
  */
-export default class Param extends React.Component {
+export default class BranchParam extends React.Component {
 
     constructor(props) {
         super(props);

@@ -1,5 +1,5 @@
 import React from "react";
-import Param from "./param";
+import BranchParam from "./branch-param";
 import PropTypes from 'prop-types';
 import Field from "./fields/field";
 
@@ -132,7 +132,7 @@ export default class Form extends React.Component {
         return (
             <form>
                 {form.params.map((param, i) => {
-                    return <Param
+                    return <BranchParam
                         key={i}
                         param={param}
                         onAdd={this.addParam(i)}
