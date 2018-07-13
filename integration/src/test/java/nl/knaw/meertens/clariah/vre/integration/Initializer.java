@@ -11,17 +11,20 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 /**
  * Initialize vre:
- *  - wait for components to start
  *  - add one file to owncloud
- *  - initialize kafka ques
+ *  - initialize kafka queues
+ *  - wait for registry to have processed first file
+ *  - wait for switchboard to have started
  */
 public class Initializer extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(UploadingNewFileTest.class);
 
-    private static final int WAITING_PERIOD = 120;
+    private static final int WAITING_PERIOD = 120; // seconds
 
     @Test
     public void init() throws Exception {
@@ -51,8 +54,10 @@ public class Initializer extends AbstractIntegrationTest {
             TimeUnit.SECONDS.sleep(1);
             waited++;
             response = getHealthRequest.asString();
-            logger.info("Poll if switchboard is up...");
+            logger.info("Poll switchboard...");
         } while(response.getStatus() != 200 && waited < WAITING_PERIOD);
+        assertThat(waited).isLessThan(WAITING_PERIOD);
+        logger.info("Switchboard is up");
     }
 
 }

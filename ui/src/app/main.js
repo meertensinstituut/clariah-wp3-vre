@@ -1,10 +1,11 @@
 import React from "react";
 import Files from "../files/files";
-import {Route, Switch} from "react-router-dom";
+import {Route, Switch, withRouter} from "react-router-dom";
 import Home from "./home";
 import Deploy from "../deploy/deploy";
+import Poll from "../poll/poll";
 
-export default class Main extends React.Component {
+class Main extends React.Component {
 
     render() {
         return (
@@ -13,8 +14,11 @@ export default class Main extends React.Component {
                     <Route exact path='/' component={Home}/>
                     <Route exact path='/files' component={Files}/>
                     <Route exact path='/deploy' component={Deploy}/>
+                    <Route exact path='/poll/:workDir' component={Poll} />
                 </Switch>
             </main>
         );
     }
 }
+
+export default withRouter(Main);

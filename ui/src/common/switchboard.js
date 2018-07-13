@@ -18,13 +18,20 @@ export default class Switchboard extends React.Component {
         });
     }
 
-    static getDeployment(serviceName, config) {
+    static postDeployment(serviceName, config) {
         let url = `${DOMAIN}/exec/${serviceName}`;
         return $.post({
             url: url,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(config)
-        })
+        });
+    }
+
+    static getDeploymentStatus(workDir) {
+        let url = `${DOMAIN}/exec/task/${workDir}`;
+        return $.get({
+            url: url,
+        });
     }
 
 }

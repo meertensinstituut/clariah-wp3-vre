@@ -1,5 +1,6 @@
 import React from "react";
 import {Alert} from "react-bootstrap";
+import {NavLink} from "react-router-dom";
 
 export default class DeployMsg extends React.Component {
 
@@ -13,11 +14,22 @@ export default class DeployMsg extends React.Component {
             ? "info"
             : "warning";
 
+        let link = deployment.workDir
+            ? <NavLink
+                exact
+                to={'/poll/' + deployment.workDir}
+                className='nav-link'
+                activeClassName='active'
+            >
+                Bekijk status
+            </NavLink>
+            : null;
+
         return (
             <Alert bsStyle={msgType}>
                 {deployment.msg}
                 <br/>
-                {deployment.workDir === undefined ? "" : "Working directory: " + deployment.workDir}
+                {link}
             </Alert>
         );
     }

@@ -80,7 +80,7 @@ class Deploy extends React.Component {
     };
 
     requestDeployment(service, config) {
-        return Switchboard.getDeployment(service, config).done((data) => {
+        return Switchboard.postDeployment(service, config).done((data) => {
             this.setState({deployment: data});
             this.forceUpdate();
         });
