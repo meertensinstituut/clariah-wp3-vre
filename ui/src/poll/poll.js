@@ -11,7 +11,7 @@ export default class Poll extends React.Component {
         super(props);
         this.state = {
             workDir: this.props.match.params.workDir,
-            status: null,
+            deployStatus: null,
             httpStatus: null,
             opened: false,
             polling: false
@@ -26,18 +26,18 @@ export default class Poll extends React.Component {
         this.setState({polling: true});
         Switchboard.getDeploymentStatus(this.state.workDir).done((data) => {
             const httpStatus = 200;
-            const status = data;
-            this.setState({httpStatus, status, polling: false}, () => {
+            const deployStatus = data;
+            this.setState({httpStatus, deployStatus, polling: false}, () => {
                 const toPoll = ['DEPLOYED', 'RUNNING'];
-                if (toPoll.includes(status.status)) {
+                if (toPoll.includes(deployStatus.status)) {
                     const timeout = this.props.interval;
                     setTimeout(() => this.pollDeployment(), timeout);
                 }
             });
         }).fail((xhr) => {
             const httpStatus = xhr.status;
-            const status = {status: xhr.responseJSON.msg};
-            this.setState({httpStatus, status, polling: false});
+            const deployStatus = {status: xhr.responseJSON.msg};
+            this.setState({httpStatus, deployStatus, polling: false});
         });
     }
 
@@ -46,19 +46,19 @@ export default class Poll extends React.Component {
     };
 
     render() {
-        const status = this.state.status;
+        const deployStatus = this.state.deployStatus;
 
         let jsonStatus = this.state.httpStatus
             ? <div>
                 <h3>HTTP Status code:</h3>
                 <pre>{this.state.httpStatus}</pre>
                 <h3>Response:</h3>
-                <pre>{JSON.stringify(status, null, 2)}</pre>
+                <pre>{JSON.stringify(deployStatus, null, 2)}</pre>
             </div>
             : null;
 
         let alert = ![200, null].includes(this.state.httpStatus)
-            ? <Alert bsStyle="danger">{this.state.status.status}</Alert>
+            ? <Alert bsStyle="danger">{this.state.deployStatus.status}</Alert>
             : null;
 
 
@@ -67,26 +67,26 @@ export default class Poll extends React.Component {
                 <tbody>
                 <tr>
                     <td>status</td>
-                    <td>{status.status}</td>
+                    <td>{deployStatus.status}</td>
                 </tr>
                 <tr>
                     <td>service</td>
-                    <td>{status.service}</td>
+                    <td>{deployStatus.service}</td>
                 </tr>
                 <tr>
                     <td>work directory</td>
-                    <td>{status.workDir}</td>
+                    <td>{deployStatus.workDir}</td>
                 </tr>
                 <tr>
                     <td>input files</td>
-                    <td>{status.files.map(
+                    <td>{deployStatus.files.map(
                         (f, i) => <div key={i}>{f}</div>
                     )}</td>
                 </tr>
-                {status.status === 'FINISHED'
+                {deployStatus.status === 'FINISHED'
                     ? <tr>
                         <td>output folder</td>
-                        <td>{status.outputDir}</td>
+                        <td>{deployStatus.outputDir}</td>
                     </tr>
                     : null
                 }
