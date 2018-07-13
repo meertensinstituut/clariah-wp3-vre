@@ -221,8 +221,9 @@ public class WebExec {
             // Check user config against service record
             // This happens before plugin is pushed to the queue
             logger.info("Checking user config against service record!");
-            System.out.println(serviceObj.getServiceSymantics());
-            if (!this.checkUserConfig(plugin.parseSymantics(service), plugin.parseUserConfig(service))) {
+            System.out.println(String.format("### dbConfig in xml as string: %s ###", serviceObj.getServiceSymantics()));
+            String dbConfig = serviceObj.getServiceSymantics();
+            if (!this.checkUserConfig(plugin.parseSymantics(dbConfig), plugin.parseUserConfig(wd))) {
                 // config is not fine, throw exception
                 JSONObject status = new JSONObject(); 
                 status.put("status", 500);
@@ -299,6 +300,8 @@ public class WebExec {
 
     private boolean checkUserConfig(JSONObject dbSymantics, JSONObject userSymantics) {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println(String.format("### userConfig: %s ###", userSymantics.toJSONString()));
+        System.out.println(String.format("### dbConfig: %s ###", dbSymantics.toJSONString()));
         return true;
     }
 }
