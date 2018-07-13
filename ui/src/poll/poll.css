@@ -1,4 +1,5 @@
 .deployment-status tr td:first-child {
     text-align: right;
     padding-right: 1em;
+    text-transform: capitalize;
 }

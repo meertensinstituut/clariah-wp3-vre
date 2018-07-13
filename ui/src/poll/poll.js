@@ -1,6 +1,6 @@
 import React from "react";
 import Switchboard from "../common/switchboard";
-import {Panel} from "react-bootstrap";
+import {Alert, Panel} from "react-bootstrap";
 import PropTypes from 'prop-types';
 
 import './poll.css';
@@ -13,7 +13,8 @@ export default class Poll extends React.Component {
             workDir: this.props.match.params.workDir,
             status: null,
             httpStatus: null,
-            opened: false
+            opened: false,
+            polling: false
         };
     }
 
@@ -22,20 +23,22 @@ export default class Poll extends React.Component {
     }
 
     pollDeployment() {
+        this.setState({polling: true});
         Switchboard.getDeploymentStatus(this.state.workDir).done((data) => {
-            this.setState({polling: false});
             const httpStatus = 200;
             const status = data;
             this.setState({httpStatus, status, polling: false}, () => {
                 const toPoll = ['DEPLOYED', 'RUNNING'];
-                if (httpStatus === 200 && toPoll.includes(status.status)) {
-                    setTimeout(() => this.pollDeployment(), this.props.interval);
+                if (toPoll.includes(status.status)) {
+                    const timeout = this.props.interval;
+                    setTimeout(() => this.pollDeployment(), timeout);
                 }
             });
-        }).fail((xhr, msg) => {
-            this.setState({httpStatus: xhr.status, status: msg});
+        }).fail((xhr) => {
+            const httpStatus = xhr.status;
+            const status = {status: xhr.responseJSON.msg};
+            this.setState({httpStatus, status, polling: false});
         });
-        this.setState({polling: true});
     }
 
     handlePanelClick = () => {
@@ -46,10 +49,18 @@ export default class Poll extends React.Component {
         const status = this.state.status;
 
         let jsonStatus = this.state.httpStatus
-            ? <pre>
-                {JSON.stringify(status, null, 2)}
-            </pre>
+            ? <div>
+                <h3>HTTP Status code:</h3>
+                <pre>{this.state.httpStatus}</pre>
+                <h3>Response:</h3>
+                <pre>{JSON.stringify(status, null, 2)}</pre>
+            </div>
             : null;
+
+        let alert = ![200, null].includes(this.state.httpStatus)
+            ? <Alert bsStyle="danger">{this.state.status.status}</Alert>
+            : null;
+
 
         let statusTable = this.state.httpStatus === 200
             ? <table className="deployment-status">
@@ -93,6 +104,7 @@ export default class Poll extends React.Component {
                         </Panel.Title>
                     </Panel.Heading>
                     <Panel.Body>
+                        {alert}
                         {statusTable}
                     </Panel.Body>
                 </Panel>
@@ -124,6 +136,6 @@ Poll.propTypes = {
     })
 };
 
-Poll.defaultTypes = {
+Poll.defaultProps = {
     interval: 1000
 };
