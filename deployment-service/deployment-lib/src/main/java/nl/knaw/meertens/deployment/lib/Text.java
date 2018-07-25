@@ -142,7 +142,7 @@ public class Text implements RecipePlugin {
             System.out.println(ex.getLocalizedMessage());
         }
         JSONObject userConfig = new JSONObject();
-        userConfig.put("parseuserconfig", "failed");
+        userConfig.put("parse user config", "failed");
         return userConfig;
     }
     
@@ -171,9 +171,9 @@ public class Text implements RecipePlugin {
         File file = new File(outputPath);
         
         try (FileWriter fileWriter = new FileWriter(file)) {
-            fileWriter.write("<html><head></head><body><pre>");
+            fileWriter.write("<pre>");
             fileWriter.write(content);
-            fileWriter.write("</pre></body></html>");
+            fileWriter.write("</pre>");
             fileWriter.flush();
         }
                         
