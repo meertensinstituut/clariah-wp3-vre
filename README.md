@@ -26,17 +26,17 @@ We also see a strong need for tracking of data workflow for reproducibility and 
 ### Key usability aspects:
 
 From a user perspective the VRE should be offering the use of both local and web-based services. All services should be offered to the user as part of this single environment. 
-•	Authentication for sharing of data using institutional identities in accord with CLARIN
-•	a user/project has dedicated workspace storage that can be shared with others
-•	easy import & export of data in and out of the VRE workspace
-•	automatic provenance logging of processed data
-•	overview/statistics of data in VRE workspace
-•	searching for data in the VRE workspace, both in metadata and content
-•	easy access to relevant tools. Relevance on the basis of data-type of selected resources
-•	comparisons of user data with standard corpora that are outside the VRE domain.
-•	frequently used resource processing offered via  workflow ‘recipes’
-•	managing user profiles that include for instance user specific lexica for semantic search
-•	archiving of results via CLARIN/EUDAT services
+-	Authentication for sharing of data using institutional identities in accord with CLARIN
+-	a user/project has dedicated workspace storage that can be shared with others
+-	easy import & export of data in and out of the VRE workspace
+-	automatic provenance logging of processed data
+-	overview/statistics of data in VRE workspace
+-	searching for data in the VRE workspace, both in metadata and content
+-	easy access to relevant tools. Relevance on the basis of data-type of selected resources
+-	comparisons of user data with standard corpora that are outside the VRE domain.
+-	frequently used resource processing offered via  workflow ‘recipes’
+-	managing user profiles that include for instance user specific lexica for semantic search
+-	archiving of results via CLARIN/EUDAT services
 
 ## Where to go next?
 
