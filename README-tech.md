@@ -1,7 +1,7 @@
-Clariah VRE
+Clariah VRE under the hood
 ===
 
-Clariah VRE consists of the following components:
+The Clariah VRE consists of the following components:
 
 - **Owncloud**: to host files
 - **Recognizer**: to determine file types
@@ -10,10 +10,10 @@ Clariah VRE consists of the following components:
 - **UI**: to allow users to interact with the VRE through a user interface
 - **Integration**: to verify that all components play nicely together
 
-See vre-model.svg for an overview of the VRE.
+See [vre-model.svg](vre-model.svg) for an overview of the VRE.
 
 Using:
-- Java 9
+- Java 9 or higher
 - Php 7
 
 Deployment
@@ -35,6 +35,8 @@ Development
 Manual demo
 ---
 
+See also [demo](./demo/README.md).
+
 ### Integration
 - Run `./start-vre.sh`.
 - During integration tests files will be uploaded and kafka topics will be created.
@@ -46,7 +48,7 @@ Manual demo
 
 - Upload file using console:
 
-```
+```sh
 curl -v 'http://localhost:8082/remote.php/webdav/testfile.txt' \
      -X PUT \
      -H 'Content-Type: text/plain; charset=UTF-8' \
