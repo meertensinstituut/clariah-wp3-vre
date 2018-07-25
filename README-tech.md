@@ -1,7 +1,7 @@
-Clariah VRE under the hood
+Clariah WP3 VRE under the hood
 ===
 
-The Clariah VRE consists of the following components:
+The Clariah WP3 VRE consists of the following components:
 
 - **Owncloud**: to host files
 - **Recognizer**: to determine file types

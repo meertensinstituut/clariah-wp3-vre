@@ -1,4 +1,4 @@
-# CLARIAH - VRE - demo
+# CLARIAH - WP3 - VRE - demo
 
 0. [X] Start [LaMachine](https://proycon.github.io/LaMachine/)
    - This automatically downloads and starts a LaMachine VM
