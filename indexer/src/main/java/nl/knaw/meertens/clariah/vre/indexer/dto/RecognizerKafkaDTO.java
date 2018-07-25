@@ -4,6 +4,7 @@ public class RecognizerKafkaDTO {
   
   public String objectId;
   public String path;
+  public String action;
   public String fitsFormat;
   public String fitsMimetype;
   public String fitsFullResult;

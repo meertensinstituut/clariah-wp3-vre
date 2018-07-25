@@ -599,7 +599,7 @@ public class Clam implements RecipePlugin {
 
         Map<String,String> NS = new LinkedHashMap<>();
         NS.put("cmd", "http://www.clarin.eu/cmd/1");
-        NS.put("cmdp", "http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795");
+        NS.put("cmdp", "http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1527668176011");
         
         StringReader reader = new StringReader(symantics);
         XdmNode service = Saxon.buildDocument(new StreamSource(reader));
@@ -658,7 +658,8 @@ public class Clam implements RecipePlugin {
     }
         
     private Boolean checkUserConfigOnRemoteServer(JSONObject remoteSymantics, JSONObject userSymantics) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return true;
     }
     
 }

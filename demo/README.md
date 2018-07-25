@@ -1,18 +1,5 @@
 # CLARIAH - WP3 - VRE - demo
 
-0. [X] Start [LaMachine](https://proycon.github.io/LaMachine/)
-   - This automatically downloads and starts a LaMachine VM
-```
-vagrant init proycon/lamachine
-vagrant up
-```
-
-0. [X] Make sure the VRE doesn't have clashing ports
-  - change the port mapping in `recognizer/docker-compose.yml` into
-```yml
-expose:
-  - 80
-```
 0. [X] Start the VRE
 ```sh
 ./start-vre.sh
@@ -25,6 +12,7 @@ docker cp frog.cmdi vre_postgres_1:/tmp/frog.xml
 docker cp viewer.cmdi vre_postgres_1:/tmp/viewer.xml
 docker exec -it vre_postgres_1 psql -U services services -f /tmp/ucto.sql
 ```
+
 Or
 ```sh
 ./VRE-demo-init.sh
@@ -86,13 +74,11 @@ Or for the execution steps above
   - goto http://localhost:8082/
   - (login `admin:admin`)
 
-__NOTE__: the demo currently (april 2018) breaks here due to a failing trigger!
-
-20. [ ] Show the entries in the Solr
+20. [X] Show the entries in the Solr
   - http://localhost:8087/solr/#/vrecore/query
     - set sort to `created desc`
   - http://localhost:8087/solr/vrecore/select?q=mtas_text:SEARCHTERM
-21. [ ] Run a CQL query
+21. [X] Run a CQL query
   - `http://localhost:8087/solr/vrecore/select?q=mtas_text:de`
   - `http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="<s/>+containing+[t_lc=\"de\"]"}`
   - `http://localhost:8087/solr/vrecore/select?q={!mtas_cql+field="mtas_text"+query="<s/>+containing+[t_lc=\"de\"]"}&rows=0&mtas=true&mtas.termvector=true&mtas.termvector.0.key=frequentielijst&mtas.termvector.0.field=mtas_text&mtas.termvector.0.type=n,sum&mtas.termvector.0.prefix=t_lc&mtas.termvector.0.number=10&mtas.termvector.0.sort.type=n&&mtas.termvector.0.sort.direction=desc`
@@ -105,8 +91,4 @@ __NOTE__: the demo currently (april 2018) breaks here due to a failing trigger!
 99. [X] Stop the VRE
 ```sh
 ./stop-vre.sh
-```
-99. [X] Stop LaMachine
-```
-vagrant halt
 ```
