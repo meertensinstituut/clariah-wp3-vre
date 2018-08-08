@@ -69,7 +69,7 @@ Or for the execution steps above
 ```
 
 13. [X] Show the project in LaMachine
-  - http://127.0.0.1:8080/ucto/
+  - http://127.0.0.1:9998/ucto/
 14. [X] Show the output in OwnCloud
   - goto http://localhost:8082/
   - (login `admin:admin`)
