@@ -5,8 +5,9 @@ FROM tomcat:jre10-slim
 ##
 
 # When changing version, also change sha:
-ARG MAVEN_VERSION=3.5.3
-ARG SHA=b52956373fab1dd4277926507ab189fb797b3bc51a2a267a193c931fffad8408
+ARG MAVEN_VERSION=3.5.4
+ARG SHA353=b52956373fab1dd4277926507ab189fb797b3bc51a2a267a193c931fffad8408
+ARG SHA354=ce50b1c91364cb77efe3776f756a6d92b76d9038b0a0782f7d53acf1e997a14d
 ARG USER_HOME_DIR="/root"
 ARG BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
 
@@ -21,8 +22,9 @@ RUN apt-get update && \
 RUN ln -s /etc/java-10-openjdk /usr/lib/jvm/java-10-openjdk-$(dpkg --print-architecture)/conf
 
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
+  && echo ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
   && curl -fsSL -o /tmp/apache-maven.tar.gz ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
-  && echo "${SHA}  /tmp/apache-maven.tar.gz" | sha256sum -c - \
+  && echo "${SHA354}  /tmp/apache-maven.tar.gz" | sha256sum -c - \
   && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
   && rm -f /tmp/apache-maven.tar.gz \
   && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn

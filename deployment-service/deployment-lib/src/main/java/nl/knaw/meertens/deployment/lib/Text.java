@@ -42,7 +42,7 @@ import org.json.simple.parser.JSONParser;
 
 /**
  *
- * @author vic
+ * @author Vic
  */
 public class Text implements RecipePlugin {
     protected int counter = 0;
@@ -109,7 +109,11 @@ public class Text implements RecipePlugin {
         } catch (IOException | InterruptedException ex ) {
             logger.info(String.format("## Execution ERROR: {%s}", ex.getLocalizedMessage()));
             Logger.getLogger(Text.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException | ConfigurationException | JDOMException ex) {
+        } catch (ParseException ex) {
+            Logger.getLogger(Text.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ConfigurationException ex) {
+            Logger.getLogger(Text.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (JDOMException ex) {
             Logger.getLogger(Text.class.getName()).log(Level.SEVERE, null, ex);
         }
         
