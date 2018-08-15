@@ -4,5 +4,7 @@ INSERT INTO service("name","recipe","semantics","kind") VALUES ('UCTO', 'nl.knaw
 INSERT INTO service("name","recipe","semantics","kind") VALUES ('FROG', 'nl.knaw.meertens.deployment.lib.Clam',  :'frog', 'service');
 \set viewer `cat /tmp/viewer.xml`
 INSERT INTO service("name","recipe","semantics","kind") VALUES ('VIEWER', 'nl.knaw.meertens.deployment.lib.Text', :'viewer', 'viewer');
+\set folia `cat /tmp/folia.xml`
+INSERT INTO service("name","recipe","semantics","kind") VALUES ('FOLIA', 'nl.knaw.meertens.deployment.lib.Folia', :'folia', 'viewer');
 -- \set frog `cat /tmp/frog.xml`
 -- INSERT INTO service("name","recipe","semantics","kind") VALUES ('EDITOR', 'nl.knaw.meertens.deployment.lib.Text', , 'editor');
