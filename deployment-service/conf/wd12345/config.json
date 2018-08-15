@@ -8,7 +8,7 @@
     {
       "name": "output",
       "type": "file",
-      "value": "test.html"
+      "value": "output/test.html"
     }
   ]
 }
