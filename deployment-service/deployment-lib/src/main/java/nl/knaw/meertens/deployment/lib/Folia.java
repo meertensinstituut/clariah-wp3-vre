@@ -40,6 +40,20 @@ import org.json.simple.parser.ParseException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
+ 
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 /**
  *
  * @author Vic
@@ -150,6 +164,29 @@ public class Folia implements RecipePlugin {
         return userConfig;
     }
     
+    public static void convertXToH(Source xml, Source xslt, File file) {
+        StringWriter sw = new StringWriter();
+
+        try {
+
+            FileWriter fw = new FileWriter(file.getPath());
+            TransformerFactory tFactory = TransformerFactory.newInstance();
+            Transformer trasform = tFactory.newTransformer(xslt);
+            trasform.transform(xml, new StreamResult(sw));
+            fw.write(sw.toString());
+            fw.close();
+
+            System.out.println("product.html generated successfully at D:\\template ");
+
+        } catch (IOException | TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerFactoryConfigurationError e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }	
+    }
+    
     public JSONObject runProject(String key) throws IOException, MalformedURLException, MalformedURLException, JDOMException, ParseException, ConfigurationException {
         
         JSONObject json = new JSONObject();
@@ -162,11 +199,13 @@ public class Folia implements RecipePlugin {
         
         JSONObject inputOjbect = (JSONObject) params.get(0);
         String inputFile = (String) inputOjbect.get("value");
-        String inputPath = Paths.get(workDir, projectName, inputFile).normalize().toString();
+        String fullInputPath = Paths.get(workDir, projectName, inputFile).normalize().toString();
+        String inputPath = Paths.get(workDir, projectName).normalize().toString();
         System.out.println(String.format("### inputPath: %s ###", inputPath));
+        System.out.println(String.format("### Full Input Path: %s ###", fullInputPath));
         
-        String content = new String(Files.readAllBytes(Paths.get(inputPath)));
-
+        Source xml = new StreamSource(new File(fullInputPath));
+        Source xslt = new StreamSource(new File(Paths.get(inputPath, "folia2html.xsl").normalize().toString()));
         
         JSONObject outputOjbect = (JSONObject) params.get(1);
         String outputFile = (String) outputOjbect.get("value");
@@ -174,14 +213,8 @@ public class Folia implements RecipePlugin {
         System.out.println(String.format("### outputPath: %s ###", outputPath));
         File file = new File(outputPath);
         
-        try (FileWriter fileWriter = new FileWriter(file)) {
-            fileWriter.write("<pre>");
-            fileWriter.write(content);
-            fileWriter.write("</pre>");
-            fileWriter.flush();
-        }
+        convertXToH(xml, xslt, file);
                         
-        
         return json;
         
     }
