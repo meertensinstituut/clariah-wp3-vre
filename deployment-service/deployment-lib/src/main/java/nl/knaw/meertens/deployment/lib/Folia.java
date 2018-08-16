@@ -164,7 +164,7 @@ public class Folia implements RecipePlugin {
         return userConfig;
     }
     
-    public static void convertXToH(Source xml, Source xslt, File file) {
+    public static void convertXmlToHtml(Source xml, Source xslt, File file) {
         StringWriter sw = new StringWriter();
 
         try {
@@ -176,7 +176,7 @@ public class Folia implements RecipePlugin {
             fw.write(sw.toString());
             fw.close();
 
-            System.out.println("product.html generated successfully at D:\\template ");
+            System.out.println("### Generated successfully! ###");
 
         } catch (IOException | TransformerConfigurationException e) {
             e.printStackTrace();
@@ -188,12 +188,12 @@ public class Folia implements RecipePlugin {
     }
     
     public JSONObject runProject(String key) throws IOException, MalformedURLException, MalformedURLException, JDOMException, ParseException, ConfigurationException {
-        
+        final String outputPathConst = "output";
         JSONObject json = new JSONObject();
         DeploymentLib dplib = new DeploymentLib();
         
         String workDir = dplib.getWd();
-        String userConfFile = dplib.getConfFile();
+//        String userConfFile = dplib.getConfFile();
         JSONObject userConfig = this.parseUserConfig(key);
         JSONArray params = (JSONArray) userConfig.get("params");
         
@@ -205,7 +205,15 @@ public class Folia implements RecipePlugin {
         System.out.println(String.format("### Full Input Path: %s ###", fullInputPath));
         
         Source xml = new StreamSource(new File(fullInputPath));
-        Source xslt = new StreamSource(new File(Paths.get(inputPath, "folia2html.xsl").normalize().toString()));
+        
+        URL url = new URL("https://raw.githubusercontent.com/proycon/folia/master/foliatools/folia2html.xsl");
+//        Source xslt = new StreamSource(new File(Paths.get(inputPath, "folia2html.xsl").normalize().toString()));
+        Source xslt = new StreamSource(url.openStream());
+        
+        File outputPathAsFile = new File(Paths.get(inputPath, outputPathConst).normalize().toString());
+        if (! outputPathAsFile.exists()) {
+            outputPathAsFile.mkdir();
+        }
         
         JSONObject outputOjbect = (JSONObject) params.get(1);
         String outputFile = (String) outputOjbect.get("value");
@@ -213,7 +221,7 @@ public class Folia implements RecipePlugin {
         System.out.println(String.format("### outputPath: %s ###", outputPath));
         File file = new File(outputPath);
         
-        convertXToH(xml, xslt, file);
+        convertXmlToHtml(xml, xslt, file);
                         
         return json;
         

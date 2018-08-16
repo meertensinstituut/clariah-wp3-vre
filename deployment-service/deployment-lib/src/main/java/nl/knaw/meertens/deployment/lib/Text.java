@@ -157,7 +157,7 @@ public class Text implements RecipePlugin {
         DeploymentLib dplib = new DeploymentLib();
         
         String workDir = dplib.getWd();
-        String userConfFile = dplib.getConfFile();
+//        String userConfFile = dplib.getConfFile();
         JSONObject userConfig = this.parseUserConfig(key);
         JSONArray params = (JSONArray) userConfig.get("params");
         

@@ -3,12 +3,12 @@
     {
       "name": "input",
       "type": "file",
-      "value": "/example.xml"
+      "value": "/test.txt"
     }, 
     {
       "name": "output",
       "type": "file",
-      "value": "output/example.html"
+      "value": "output/test.html"
     }
   ]
 }
