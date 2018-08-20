@@ -11,7 +11,6 @@ import java.net.URI;
 import java.util.ArrayList;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.getDeployStatus;
 
 public class DeploymentServiceImpl implements DeploymentService {
 
@@ -33,7 +32,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     @Override
     public DeploymentStatusReport deploy(
             DeploymentRequest request,
-            ExceptionalConsumer<DeploymentStatusReport> deploymentConsumer
+            FinishDeploymentConsumer<DeploymentStatusReport> deploymentConsumer
     ) {
         DeploymentStatusReport report = requestDeployment(request);
         requestRepositoryService.saveDeploymentRequest(report, deploymentConsumer);
@@ -49,7 +48,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
         HttpResponse<String> response = sendRequest(report.getUri());
         report.setMsg(response.getBody());
-        report.setStatus(getDeployStatus(response.getStatus()));
+        report.setStatus(DeploymentStatus.getDeployStatus(response.getStatus()));
 
         return report;
     }
@@ -66,7 +65,6 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public DeploymentStatusReport getStatus(String workDir) {
-        logger.info(String.format("Polling deployment [%s]", workDir));
         return requestRepositoryService.getStatusReport(workDir);
     }
 

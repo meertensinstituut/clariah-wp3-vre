@@ -8,10 +8,19 @@ import java.util.Arrays;
  */
 public enum DeploymentStatus {
 
+    /**
+     * 200 OK
+     */
     FINISHED(200, true),
 
+    /**
+     * 202 Accepted
+     */
     RUNNING(202, true),
 
+    /**
+     * 404 Not Found
+     */
     NOT_FOUND(404, true),
 
     /**
@@ -20,11 +29,13 @@ public enum DeploymentStatus {
     STOPPED(0, false),
 
     /**
+     * 403 Forbidden
      * Status is ALREADY_RUNNING when requesting existing deployment
      */
     ALREADY_RUNNING(403, false),
 
     /**
+     * 200 OK
      * Status is DEPLOYED during deployment request, RUNNING afterwards
      */
     DEPLOYED(200, false);

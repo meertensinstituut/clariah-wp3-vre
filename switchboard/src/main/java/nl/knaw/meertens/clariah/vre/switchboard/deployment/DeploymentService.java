@@ -11,7 +11,7 @@ public interface DeploymentService {
     /**
      * Deploy requested service.
      */
-    DeploymentStatusReport deploy(DeploymentRequest request, ExceptionalConsumer<DeploymentStatusReport> deploymentConsumer);
+    DeploymentStatusReport deploy(DeploymentRequest request, FinishDeploymentConsumer<DeploymentStatusReport> deploymentConsumer);
 
     /**
      * Get status of deployed service

@@ -1,7 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.param;
 
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDto;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecord;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,12 +48,12 @@ public class ParamService {
     }
 
     public CmdiDto getParams(long serviceId) {
-        ServiceRecordDto service = servicesRegistryService.getService(serviceId);
+        ServiceRecord service = servicesRegistryService.getService(serviceId);
         CmdiDto cmdiDto = new CmdiDto();
         cmdiDto.id = serviceId;
-        cmdiDto.name = service.name;
-        cmdiDto.kind = ServiceKind.fromKind(service.kind);
-        cmdiDto.params = convertCmdiXmlToParams(service.semantics);
+        cmdiDto.name = service.getName();
+        cmdiDto.kind = ServiceKind.fromKind(service.getKind());
+        cmdiDto.params = convertCmdiXmlToParams(service.getSemantics());
         return cmdiDto;
     }
 

@@ -38,7 +38,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
         String json = deployResponse.readEntity(String.class);
 
         String workDir = JsonPath.parse(json).read("$.workDir");
-        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}");
+        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
 
         Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
         waitUntil(request, RUNNING);
@@ -59,7 +59,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
         assertThat(pollInterval).isLessThanOrEqualTo(3);
 
         Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
-        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}");
+        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
         TimeUnit.SECONDS.sleep(pollInterval + 5);
         waitUntil(request, FINISHED);
 

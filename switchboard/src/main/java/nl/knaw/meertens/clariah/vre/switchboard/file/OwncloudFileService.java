@@ -102,7 +102,7 @@ public class OwncloudFileService implements FileService {
     public Path unstageViewerOutputFile(String workDir, String inputFile, String service) {
         // TODO:
         // move output file to {pathToOwncloud}/{pathToUserDir}/{hiddenViewerDir}/{fileInUserDirPath}
-        logger.info("workDir, inputFile, service: ", workDir, inputFile, service);
+        logger.info(String.format("workDir, inputFile, service: [%s] [%s] [%s]", workDir, inputFile, service));
         Path result = null;
         String pathToOwncloud = tmpPath.toString();
         String pathToUserDir = getPathToUserDir(inputFile); // find in inputFile?

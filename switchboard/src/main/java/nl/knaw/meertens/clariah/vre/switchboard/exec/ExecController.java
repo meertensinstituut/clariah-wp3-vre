@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractController;
 import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardMsg;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
@@ -21,7 +22,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleControllerException;
 
 @Path("/exec")
-public class ExecController {
+public class ExecController extends AbstractController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -33,10 +34,9 @@ public class ExecController {
 
     @GET
     @Produces(APPLICATION_JSON)
-    public Response getHelp() throws JsonProcessingException {
-        return Response.status(200).entity(mapper.writeValueAsString(new SwitchboardMsg(
-                "See readme for info on how to use exec api"
-        ))).build();
+    public Response getHelp() {
+        SwitchboardMsg msg = new SwitchboardMsg("See readme for info on how to use exec api");
+        return createResponse(msg);
     }
 
     @POST
@@ -47,21 +47,14 @@ public class ExecController {
             @PathParam("service") String service,
             String body
     ) {
-        try {
-            logger.info(String.format("Received request of service [%s] with body [%s]", service, body));
-            DeploymentRequest request = execService.deploy(service, body);
-            SwitchboardMsg switchboardMsg = new SwitchboardMsg(String.format(
-                    "Deployment of service [%s] has been requested.", request.getService()
-            ));
-            switchboardMsg.workDir = request.getWorkDir();
-            switchboardMsg.status = request.getStatusReport().getStatus();
-            return Response
-                    .status(request.getStatusReport().getStatus().getHttpStatus())
-                    .entity(mapper.writeValueAsString(switchboardMsg))
-                    .build();
-        } catch (Exception e) {
-            return handleControllerException(e);
-        }
+        logger.info(String.format("Received request of service [%s] with body [%s]", service, body));
+        DeploymentRequest request = execService.deploy(service, body);
+        SwitchboardMsg switchboardMsg = new SwitchboardMsg(String.format(
+                "Deployment of service [%s] has been requested.", request.getService()
+        ));
+        switchboardMsg.workDir = request.getWorkDir();
+        switchboardMsg.status = request.getStatusReport().getStatus();
+        return createResponse(switchboardMsg, switchboardMsg.status.getHttpStatus());
     }
 
     @GET
@@ -69,19 +62,8 @@ public class ExecController {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public Response getDeploymentStatus(@PathParam("workDir") String workDir) {
-        try {
-            DeploymentStatusReport report = execService.getStatus(workDir);
-            logger.info(String.format(
-                    "Status request of [%s]; respond with [%s]",
-                    workDir, mapper.writeValueAsString(report))
-            );
-            return Response
-                    .status(report.getStatus().getHttpStatus())
-                    .entity(mapper.writeValueAsString(report))
-                    .build();
-        } catch (Exception e) {
-            return handleControllerException(e);
-        }
-
+        logger.info(String.format("Status request of [%s]", workDir));
+        DeploymentStatusReport report = execService.getStatus(workDir);
+        return createResponse(report, report.getStatus().getHttpStatus());
     }
 }

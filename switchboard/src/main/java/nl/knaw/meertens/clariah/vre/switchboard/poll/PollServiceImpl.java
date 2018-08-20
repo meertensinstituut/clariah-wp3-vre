@@ -7,6 +7,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusResponseDto;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,13 +78,13 @@ public class PollServiceImpl implements PollService {
                 String workDir = report.getWorkDir();
                 logger.info(String.format("Polling [%s]", workDir));
 
-                DeploymentStatusReport updatedReport = getDeploymentStatus(report);
-                requestRepositoryService.saveStatusReport(updatedReport);
-                runConsumer(updatedReport);
+                DeploymentStatusReport newReport = getDeploymentStatus(report);
+                runConsumer(newReport);
+                requestRepositoryService.saveStatusReport(newReport);
 
                 logger.info(String.format(
                         "Polled deployment [%s]; received status [%s]",
-                        updatedReport.getWorkDir(), updatedReport.getStatus()
+                        newReport.getWorkDir(), newReport.getStatus()
                 ));
             }
         }
@@ -95,22 +96,24 @@ public class PollServiceImpl implements PollService {
 
     private void runConsumer(DeploymentStatusReport report) {
         try {
-            requestRepositoryService
-                    .getConsumer(report.getWorkDir())
-                    .accept(report);
+            FinishDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer =
+                    requestRepositoryService.getConsumer(report.getWorkDir());
+            finishDeploymentConsumer.accept(report);
         } catch (Exception e) {
             logger.error(String.format("Consumer of deployment [%s] threw exception", report.getWorkDir()), e);
         }
     }
 
     private DeploymentStatusReport getDeploymentStatus(DeploymentStatusReport report) {
+        DeploymentStatusReport result = new DeploymentStatusReport(report);
+
         URI uri = createDeploymentStatusUri(report);
         DeploymentStatusResponseDto response = requestDeploymentStatusReport(uri);
-        report.setStatus(DeploymentStatus.getPollStatus(response.httpStatus));
-        report.setMsg(response.message);
-        report.setPolled(now());
-        report.setInterval(calculateNewInterval(report.getInterval()));
-        return report;
+        result.setStatus(DeploymentStatus.getPollStatus(response.httpStatus));
+        result.setMsg(response.message);
+        result.setPolled(now());
+        result.setInterval(calculateNewInterval(report.getInterval()));
+        return result;
     }
 
     private int calculateNewInterval(int previousInterval) {

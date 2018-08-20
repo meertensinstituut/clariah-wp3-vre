@@ -5,21 +5,21 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.ExceptionalConsumer;
-import nl.knaw.meertens.clariah.vre.switchboard.param.ParamDto;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
-import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
+import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentResultDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentStartDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaOwncloudCreateFileDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamType;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDto;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecord;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -50,18 +50,21 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
-import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.*;
+import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
+import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.SERVICE;
+import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.VIEWER;
+import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.fromKind;
 
 /**
  * ExecService:
- *
+ * <p>
  * When receives request:
  * - create config file
  * - send kafka msg of received request
  * - lock input files
  * - create soft links to input files
  * - deploy service
- *
+ * <p>
  * When deployed service finishes or is stopped:
  * - unlock files
  * - move dir with results to data dir
@@ -98,15 +101,52 @@ public class ExecService {
     }
 
     public DeploymentRequest deploy(
-            String service,
+            String serviceName,
             String body
-    ) throws IOException {
-        DeploymentRequest request = prepareDeployment(service, body);
+    ) {
+
+        ServiceRecord service = serviceRegistryService.getServiceByName(serviceName);
+        ServiceKind kind = ServiceKind.fromKind(service.getKind());
+
+        DeploymentRequest request;
+        try {
+            switch (kind) {
+                case SERVICE:
+                    request = prepareDeployment(serviceName, body);
+                    break;
+                case VIEWER:
+                    request = prepareViewerDeployment(serviceName, body);
+                    break;
+                default:
+                    throw new UnsupportedOperationException(String.format("Unsupported deployment of service with kind [%s]", kind));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Could not prepare deployment of [%s]", serviceName), e);
+        }
+
         List<String> files = new ArrayList<>(request.getFiles().values());
         owncloudFileService.stage(request.getWorkDir(), files);
         DeploymentStatusReport statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
         request.setStatusReport(statusReport);
         return request;
+    }
+
+    private DeploymentRequest prepareViewerDeployment(
+            String service,
+            String body
+    ) throws IOException {
+        DeploymentRequest result = prepareDeployment(service, body);
+        ParamDto output = new ParamDto();
+        output.name = "output";
+        output.type = STRING;
+        output.value = result.getParams()
+                .stream()
+                .filter(p -> p.name.equals("input"))
+                .findFirst()
+                .orElseGet(() -> {throw new IllegalStateException(String.format("No input field in params for deployment of viewer [%s]", result.getService()));})
+                .value;
+        result.getParams().add(output);
+        return result;
     }
 
     private DeploymentRequest prepareDeployment(
@@ -128,7 +168,7 @@ public class ExecService {
                 .randomAlphabetic(WORK_DIR_LENGTH)
                 .toLowerCase();
         Path path = Paths.get(DEPLOYMENT_VOLUME, name);
-        assert(path.toFile().mkdirs());
+        assert (path.toFile().mkdirs());
         logger.info(String.format(
                 "Created workDir [%s]",
                 path.toString()
@@ -136,7 +176,7 @@ public class ExecService {
         return name;
     }
 
-    private ExceptionalConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
+    private FinishDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
         logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
         if (isFinishedOrStopped(report)) {
             completeDeployment(report);
@@ -149,14 +189,14 @@ public class ExecService {
 
     private void completeDeployment(DeploymentStatusReport report) throws IOException {
 
-        ServiceRecordDto service = serviceRegistryService.getServiceByName(report.getService());
-        ServiceKind serviceKind = fromKind(service.kind);
+        ServiceRecord service = serviceRegistryService.getServiceByName(report.getService());
+        ServiceKind serviceKind = fromKind(service.getKind());
 
         owncloudFileService.unstage(report.getWorkDir(), report.getFiles());
 
-        if(serviceKind.equals(SERVICE)) {
+        if (serviceKind.equals(SERVICE)) {
             completeServiceDeployment(report);
-        } else if(serviceKind.equals(VIEWER)) {
+        } else if (serviceKind.equals(VIEWER)) {
             completeViewerDeployment(report);
         } else {
             throw new UnsupportedOperationException(String.format("Could not complete deployment because service kind was not SERVICE or VIEWER but [%s]", serviceKind));
@@ -176,7 +216,11 @@ public class ExecService {
                 report.getWorkDir(),
                 report.getFiles().get(0)
         );
-        report.setOutputDir(outputFiles.isEmpty() ? "" : outputFiles.get(0).getParent().toString());
+        if(outputFiles.isEmpty()) {
+            logger.warn(String.format("Deployment [%s] with service [%s] did not produce any output files", report.getWorkDir(), report.getService()));
+        } else {
+            report.setOutputDir(outputFiles.get(0).getParent().toString());
+        }
         report.setWorkDir(report.getWorkDir());
         sendKafkaOwncloudMsgs(outputFiles);
     }
@@ -264,7 +308,7 @@ public class ExecService {
     private HashMap<Long, String> requestFilesFromRegistry(DeploymentRequest serviceRequest) {
         HashMap<Long, String> files = new HashMap<>();
         for (ParamDto param : serviceRequest.getParams()) {
-            if(param.type.equals(ParamType.FILE)) {
+            if (param.type.equals(ParamType.FILE)) {
                 Long objectId = Long.valueOf(param.value);
                 ObjectsRecordDTO record = objectsRegistryService.getObjectById(objectId);
                 files.put(objectId, record.filepath);
@@ -278,7 +322,7 @@ public class ExecService {
             HashMap<Long, String> registryPaths
     ) {
         for (ParamDto param : params) {
-            if(param.type.equals(ParamType.FILE)) {
+            if (param.type.equals(ParamType.FILE)) {
                 param.value = registryPaths.get(Long.valueOf(param.value));
             }
         }

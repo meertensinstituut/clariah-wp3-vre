@@ -34,7 +34,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
     }
 
     @Override
-    public ServiceRecordDto getService(Long id) {
+    public ServiceRecord getService(Long id) {
         String body = "";
         try {
             String service = "_table/service";
@@ -46,7 +46,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
             );
             HttpResponse<String> response = requestServiceDb(url);
             body = response.getBody();
-            return mapper.readValue(body, ServiceRecordDto.class);
+            return mapper.readValue(body, ServiceRecord.class);
         } catch (UnirestException | IOException | IllegalStateException e) {
             return handleException(e, "Could not get service for id [%s]; response: [%s]", id, body);
         }
@@ -54,11 +54,11 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
 
     /**
      * Find service by name
-     * @return ServiceRecordDto service
+     * @return ServiceRecord service
      * @throws IllegalStateException when no service is found
      */
     @Override
-    public ServiceRecordDto getServiceByName(String name) {
+    public ServiceRecord getServiceByName(String name) {
         String service = "_table/service";
         String url = String.format(
                 "%s/%s/?filter=name%%20like%%20%s",
@@ -66,7 +66,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
                 service,
                 name
         );
-        List<ServiceRecordDto> services = this.getServices(url);
+        List<ServiceRecord> services = this.getServices(url);
         if (services.isEmpty()) {
             throw new IllegalStateException(String.format("No services found for service [%s]", name));
         }
@@ -74,7 +74,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
     }
 
     @Override
-    public List<ServiceRecordDto> getServicesByMimetype(String mimetype) {
+    public List<ServiceRecord> getServicesByMimetype(String mimetype) {
         String serviceWithMimetypeView = "_table/service_with_mimetype";
         String url = String.format(
                 "%s/%s?filter=mimetype%%20%%3D%%20%s",
@@ -86,7 +86,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
     }
 
     @Override
-    public List<ServiceRecordDto> getServicesByMimetypeAndKind(String mimetype, ServiceKind kind) {
+    public List<ServiceRecord> getServicesByMimetypeAndKind(String mimetype, ServiceKind kind) {
         String serviceWithMimetypeView = "_table/service_with_mimetype";
         String url = String.format(
                 "%s/%s?filter=(mimetype%%20%%3D%%20%s)%%20and%%20(kind%%20like%%20%s)",
@@ -98,22 +98,21 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
         return getServices(url);
     }
 
-    private List<ServiceRecordDto> getServices(String url) {
+    private List<ServiceRecord> getServices(String url) {
         try {
             HttpResponse<String> response = requestServiceDb(url);
             JsonNode resource = mapper.readTree(response.getBody()).at("/resource");
-            ObjectReader reader = mapper.readerFor(new TypeReference<List<ServiceRecordDto>>() {
-            });
-            List<ServiceRecordDto> serviceRecordDtos = reader.readValue(resource);
+            ObjectReader reader = mapper.readerFor(new TypeReference<List<ServiceRecord>>() {});
+            List<ServiceRecord> serviceRecords = reader.readValue(resource);
             logger.info(String.format(
                     "Url [%s] yielded services [%s]",
                     url,
-                    serviceRecordDtos
+                    serviceRecords
                             .stream()
-                            .map(o -> o.id.toString())
+                            .map(o -> o.getId().toString())
                             .collect(Collectors.joining(", "))
             ));
-            return serviceRecordDtos;
+            return serviceRecords;
         } catch (UnirestException | IOException e) {
             return handleException(e, "Could not determine services for url [%s]", url);
         }

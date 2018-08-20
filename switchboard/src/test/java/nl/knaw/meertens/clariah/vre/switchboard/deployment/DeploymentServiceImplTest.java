@@ -44,7 +44,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
                         .withMethod("PUT")
                         .withPath("/deployment-service/a/exec/UCTO/.*")
         );
-        startDeployMockServer(403);
+        startDeployMockServerWithUcto(403);
 
         Response secondTimeResponse = deploy(expectedService, deploymentRequestDto);
 
@@ -63,7 +63,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
                         .withMethod("PUT")
                         .withPath("/deployment-service/a/exec/UCTO/.*")
         );
-        startDeployMockServer(200);
+        startDeployMockServerWithUcto(200);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
         Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}");
+        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
 
         Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
         String json = waitUntil(request, RUNNING);
@@ -83,7 +83,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
         Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}");
+        startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}", "UCTO");
 
         Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
         String json = waitUntil(request, NOT_FOUND);

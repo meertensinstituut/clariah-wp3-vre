@@ -30,22 +30,22 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
     public void getServicesByMimetype() {
         startGetServicesByMimetypeRegistryMock();
         ServicesRegistryServiceImpl servicesRegistry = new ServicesRegistryServiceImpl("http://localhost:1080/api/v2/services", "abc", getMapper());
-        List<ServiceRecordDto> result = servicesRegistry.getServicesByMimetype("text/plain");
+        List<ServiceRecord> result = servicesRegistry.getServicesByMimetype("text/plain");
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).id).isEqualTo(1);
-        assertThat(result.get(0).name).isEqualTo("TEST");
-        assertThat(result.get(1).id).isEqualTo(13);
-        assertThat(result.get(1).name).isEqualTo("NANDOE");
+        assertThat(result.get(0).getId()).isEqualTo(1);
+        assertThat(result.get(0).getName()).isEqualTo("TEST");
+        assertThat(result.get(1).getId()).isEqualTo(13);
+        assertThat(result.get(1).getName()).isEqualTo("NANDOE");
     }
 
     @Test
     public void getService() {
         startGetServiceByIdRegistryMock();
         ServicesRegistryServiceImpl servicesRegistry = new ServicesRegistryServiceImpl("http://localhost:1080/api/v2/services", "abc", getMapper());
-        ServiceRecordDto result = servicesRegistry.getService(1L);
-        assertThat(result.id).isEqualTo(1L);
-        assertThat(result.name).isEqualTo("TEST");
-        assertThat(result.semantics).startsWith("<cmd:CMD xmlns:cmd=\"http://www.clarin.eu/cmd/1\"");
+        ServiceRecord result = servicesRegistry.getService(1L);
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getName()).isEqualTo("TEST");
+        assertThat(result.getSemantics()).startsWith("<cmd:CMD xmlns:cmd=\"http://www.clarin.eu/cmd/1\"");
     }
 
     private void startGetServicesByMimetypeRegistryMock() {
