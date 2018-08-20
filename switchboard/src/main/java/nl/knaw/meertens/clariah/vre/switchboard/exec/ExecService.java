@@ -18,6 +18,9 @@ import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamType;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDto;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -33,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
@@ -46,6 +50,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
+import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.*;
 
 /**
  * ExecService:
@@ -75,16 +80,19 @@ public class ExecService {
     private final DeploymentService deploymentService;
 
     private ObjectsRegistryService objectsRegistryService;
+    private ServicesRegistryService serviceRegistryService;
 
     public ExecService(
             ObjectMapper mapper,
             ObjectsRegistryService objectsRegistryService,
-            DeploymentService deploymentService
+            DeploymentService deploymentService,
+            ServicesRegistryService serviceRegistryService
     ) {
         this.mapper = mapper;
         this.objectsRegistryService = objectsRegistryService;
         this.kafkaSwitchboardService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.kafkaOwncloudService = new KafkaProducerService(OWNCLOUD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
+        this.serviceRegistryService = serviceRegistryService;
         this.owncloudFileService = new OwncloudFileService(OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR, USER_TO_LOCK_WITH);
         this.deploymentService = deploymentService;
     }
@@ -140,16 +148,48 @@ public class ExecService {
     }
 
     private void completeDeployment(DeploymentStatusReport report) throws IOException {
-        List<Path> outputFiles = owncloudFileService.unstage(report.getWorkDir(), report.getFiles());
-        report.setOutputDir(outputFiles.isEmpty() ? "" : outputFiles.get(0).getParent().toString());
-        report.setWorkDir(report.getWorkDir());
+
+        ServiceRecordDto service = serviceRegistryService.getServiceByName(report.getService());
+        ServiceKind serviceKind = fromKind(service.kind);
+
+        owncloudFileService.unstage(report.getWorkDir(), report.getFiles());
+
+        if(serviceKind.equals(SERVICE)) {
+            completeServiceDeployment(report);
+        } else if(serviceKind.equals(VIEWER)) {
+            completeViewerDeployment(report);
+        } else {
+            throw new UnsupportedOperationException(String.format("Could not complete deployment because service kind was not SERVICE or VIEWER but [%s]", serviceKind));
+        }
+
         sendKafkaSwitchboardMsg(report);
-        sendKafkaOwncloudMsgs(outputFiles);
+
         logger.info(String.format(
                 "Completed deployment of service [%s] with workdir [%s]",
                 report.getService(),
                 report.getWorkDir()
         ));
+    }
+
+    private void completeServiceDeployment(DeploymentStatusReport report) throws IOException {
+        List<Path> outputFiles = owncloudFileService.unstageServiceOutputFiles(
+                report.getWorkDir(),
+                report.getFiles().get(0)
+        );
+        report.setOutputDir(outputFiles.isEmpty() ? "" : outputFiles.get(0).getParent().toString());
+        report.setWorkDir(report.getWorkDir());
+        sendKafkaOwncloudMsgs(outputFiles);
+    }
+
+    private void completeViewerDeployment(DeploymentStatusReport report) throws IOException {
+        Path outputFile = owncloudFileService.unstageViewerOutputFile(
+                report.getWorkDir(),
+                report.getFiles().get(0),
+                report.getService()
+        );
+        report.setOutputFile(outputFile.toString());
+        report.setWorkDir(report.getWorkDir());
+        sendKafkaOwncloudMsgs(newArrayList(outputFile));
     }
 
     private void createConfig(

@@ -46,38 +46,76 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
             );
             HttpResponse<String> response = requestServiceDb(url);
             body = response.getBody();
-            ServiceRecordDto serviceRecord = mapper.readValue(body, ServiceRecordDto.class);
-            return serviceRecord;
+            return mapper.readValue(body, ServiceRecordDto.class);
         } catch (UnirestException | IOException | IllegalStateException e) {
-            return handleException(e, "Could not get service for id [%s] and response [%s]", id, body);
+            return handleException(e, "Could not get service for id [%s]; response: [%s]", id, body);
         }
     }
 
+    /**
+     * Find service by name
+     * @return ServiceRecordDto service
+     * @throws IllegalStateException when no service is found
+     */
     @Override
-    public List<ServiceRecordDto> getServices(String mimetype) {
+    public ServiceRecordDto getServiceByName(String name) {
+        String service = "_table/service";
+        String url = String.format(
+                "%s/%s/?filter=name%%20like%%20%s",
+                serviceDbUrl,
+                service,
+                name
+        );
+        List<ServiceRecordDto> services = this.getServices(url);
+        if (services.isEmpty()) {
+            throw new IllegalStateException(String.format("No services found for service [%s]", name));
+        }
+        return services.get(0);
+    }
+
+    @Override
+    public List<ServiceRecordDto> getServicesByMimetype(String mimetype) {
+        String serviceWithMimetypeView = "_table/service_with_mimetype";
+        String url = String.format(
+                "%s/%s?filter=mimetype%%20%%3D%%20%s",
+                serviceDbUrl,
+                serviceWithMimetypeView,
+                mimetype
+        );
+        return getServices(url);
+    }
+
+    @Override
+    public List<ServiceRecordDto> getServicesByMimetypeAndKind(String mimetype, ServiceKind kind) {
+        String serviceWithMimetypeView = "_table/service_with_mimetype";
+        String url = String.format(
+                "%s/%s?filter=(mimetype%%20%%3D%%20%s)%%20and%%20(kind%%20like%%20%s)",
+                serviceDbUrl,
+                serviceWithMimetypeView,
+                mimetype,
+                kind.getKind()
+        );
+        return getServices(url);
+    }
+
+    private List<ServiceRecordDto> getServices(String url) {
         try {
-            String serviceWithMimetypeView = "_table/service_with_mimetype";
-            String url = String.format(
-                    "%s/%s?filter=mimetype%%20%%3D%%20%s",
-                    serviceDbUrl,
-                    serviceWithMimetypeView,
-                    mimetype
-            );
             HttpResponse<String> response = requestServiceDb(url);
             JsonNode resource = mapper.readTree(response.getBody()).at("/resource");
-            ObjectReader reader = mapper.readerFor(new TypeReference<List<ServiceRecordDto>>() {});
+            ObjectReader reader = mapper.readerFor(new TypeReference<List<ServiceRecordDto>>() {
+            });
             List<ServiceRecordDto> serviceRecordDtos = reader.readValue(resource);
             logger.info(String.format(
-                    "Mimetype [%s] yielded services [%s]",
-                    mimetype,
+                    "Url [%s] yielded services [%s]",
+                    url,
                     serviceRecordDtos
                             .stream()
                             .map(o -> o.id.toString())
                             .collect(Collectors.joining(", "))
             ));
             return serviceRecordDtos;
-        } catch (UnirestException | IOException | IllegalStateException e) {
-            return handleException(e, "Could not determine services for mimetype [%s]", mimetype);
+        } catch (UnirestException | IOException e) {
+            return handleException(e, "Could not determine services for url [%s]", url);
         }
     }
 

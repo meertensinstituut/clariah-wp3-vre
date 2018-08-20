@@ -25,6 +25,7 @@ export default class Poll extends React.Component {
     pollDeployment() {
         this.setState({polling: true});
         Switchboard.getDeploymentStatus(this.state.workDir).done((data) => {
+            // TODO: use actual http status code:
             const httpStatus = 200;
             const deployStatus = data;
             this.setState({httpStatus, deployStatus, polling: false}, () => {

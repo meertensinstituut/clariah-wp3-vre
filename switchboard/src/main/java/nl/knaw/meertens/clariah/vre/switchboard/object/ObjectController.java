@@ -34,7 +34,24 @@ public class ObjectController {
     public Response getServicesFor(@PathParam("objectId") long objectId) {
         try {
             logger.info(String.format("Received request of available services for object [%s]", objectId));
-            List<ServiceRecordDto> services = objectService.getServicesFor(objectId);
+            List<ServiceRecordDto> services = objectService.getServicesOfKindServiceFor(objectId);
+            return Response
+                    .status(200)
+                    .entity(mapper.writeValueAsString(services))
+                    .build();
+        } catch (Exception e) {
+            return handleControllerException(e);
+        }
+
+    }
+
+    @GET
+    @Path("/{objectId}/view/{viewer}")
+    @Produces(APPLICATION_JSON)
+    public Response getViewFor(@PathParam("objectId") long objectId, @PathParam("viewer") String viewer) {
+        try {
+            logger.info(String.format("Received request to view object [%s] with viewer [%s]", objectId, viewer));
+            List<ServiceRecordDto> services = objectService.getServicesOfKindServiceFor(objectId);
             return Response
                     .status(200)
                     .entity(mapper.writeValueAsString(services))

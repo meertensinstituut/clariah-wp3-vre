@@ -18,7 +18,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistry
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -63,7 +62,7 @@ public class SwitchboardDIBinder extends AbstractBinder {
 
     @Override
     protected void configure() {
-        bind(new ExecService(getMapper(), objectsRegistryService, deploymentService)).to(ExecService.class);
+        bind(new ExecService(getMapper(), objectsRegistryService, deploymentService, serviceRegistryService)).to(ExecService.class);
         bind(new ObjectService(objectsRegistryService,serviceRegistryService)).to(ObjectService.class);
         bind(new ParamService(serviceRegistryService)).to(ParamService.class);
         bind(getMapper()).to(ObjectMapper.class);

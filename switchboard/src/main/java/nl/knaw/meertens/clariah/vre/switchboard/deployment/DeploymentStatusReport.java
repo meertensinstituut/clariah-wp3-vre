@@ -25,6 +25,7 @@ public class DeploymentStatusReport {
     private URI uri;
     private String workDir;
     private List<String> files;
+    private String outputFile;
 
     public DeploymentStatus getStatus() {
         return status;
@@ -97,5 +98,13 @@ public class DeploymentStatusReport {
 
     public void setInterval(int interval) {
         this.interval = interval;
+    }
+
+    public void setOutputFile(String outputFile) {
+        this.outputFile = outputFile;
+    }
+
+    public String getOutputFile() {
+        return outputFile;
     }
 }

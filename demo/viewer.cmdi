@@ -23,13 +23,19 @@
           <cmdp:Operation>
             <cmdp:Name>main</cmdp:Name>
             <cmdp:Input>
-              <cmdp:ParameterGroup>
+              <cmdp:Parameter>
                 <cmdp:Name>input</cmdp:Name>
                 <cmdp:Label xml:lang="en">Input text</cmdp:Label>
                 <cmdp:MIMEType>text/plain</cmdp:MIMEType>
                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
                 <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
-              </cmdp:ParameterGroup>
+              </cmdp:Parameter>
+              <cmdp:Parameter>
+                <cmdp:Name>outputFilename</cmdp:Name>
+                <cmdp:DataType>string</cmdp:DataType>
+                <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
+                <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
+              </cmdp:Parameter>
             </cmdp:Input>
             <cmdp:Output>
               <cmdp:Parameter>

@@ -5,23 +5,17 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -84,16 +78,48 @@ public class OwncloudFileService implements FileService {
      * @return output files
      */
     @Override
-    public List<Path> unstage(String workDir, List<String> inputFiles) {
+    public void unstage(String workDir, List<String> inputFiles) {
+        unstageInputFiles(inputFiles);
+    }
+
+    private void unstageInputFiles(List<String> inputFiles) {
         if (inputFiles.isEmpty()) {
             throw new IllegalArgumentException("Cannot move output when no input file is provided");
         }
         for (String file : inputFiles) {
             unlock(file);
         }
-        Path outputFilesDir = moveOutputFiles(workDir, inputFiles.get(0));
+    }
+
+    @Override
+    public List<Path> unstageServiceOutputFiles(String workDir, String inputFile) {
+        Path outputFilesDir = moveOutputFiles(workDir, inputFile);
         unlockOutputFiles(outputFilesDir);
         return getRelativePathsIn(outputFilesDir);
+    }
+
+    @Override
+    public Path unstageViewerOutputFile(String workDir, String inputFile, String service) {
+        // TODO:
+        // move output file to {pathToOwncloud}/{pathToUserDir}/{hiddenViewerDir}/{fileInUserDirPath}
+        logger.info("workDir, inputFile, service: ", workDir, inputFile, service);
+        Path result = null;
+        String pathToOwncloud = tmpPath.toString();
+        String pathToUserDir = getPathToUserDir(inputFile); // find in inputFile?
+        String hiddenViewerDir = "/.vre/" + service;
+        String fileInUserDirPath = inputFile; // Last part of inputFile?
+        result = Paths.get(
+                pathToOwncloud,
+                pathToUserDir,
+                hiddenViewerDir,
+                fileInUserDirPath
+        );
+        return result;
+    }
+
+    private String getPathToUserDir(String inputFile) {
+        // TODO:
+        return null;
     }
 
     @Override
@@ -134,7 +160,7 @@ public class OwncloudFileService implements FileService {
     }
 
     /**
-     * Move output files to src, next to first input file
+     * Move output files to src, next to input file
      * in date and time labeled output folder
      *
      * @return output dir

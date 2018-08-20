@@ -6,6 +6,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegist
 
 import java.util.List;
 
+import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.SERVICE;
+
 public class ObjectService {
 
     private ObjectsRegistryService objectsRegistryService;
@@ -16,8 +18,8 @@ public class ObjectService {
         this.servicesRegistryService = servicesRegistryService;
     }
 
-    public List<ServiceRecordDto> getServicesFor(Long objectId) {
+    public List<ServiceRecordDto> getServicesOfKindServiceFor(Long objectId) {
         String mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
-        return servicesRegistryService.getServices(mimetype);
+        return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, SERVICE);
     }
 }

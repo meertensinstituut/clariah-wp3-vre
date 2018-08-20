@@ -9,5 +9,9 @@ public interface ServicesRegistryService {
      */
     ServiceRecordDto getService(Long id);
 
-    List<ServiceRecordDto> getServices(String mimetype);
+    ServiceRecordDto getServiceByName(String name);
+
+    List<ServiceRecordDto> getServicesByMimetype(String mimetype);
+
+    List<ServiceRecordDto> getServicesByMimetypeAndKind(String mimetype, ServiceKind kind);
 }

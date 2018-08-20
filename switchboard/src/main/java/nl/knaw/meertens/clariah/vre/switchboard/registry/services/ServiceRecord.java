@@ -6,5 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class ServiceRecordDto {
     public Long id;
     public String name;
+    public String kind;
     public String semantics;
 }

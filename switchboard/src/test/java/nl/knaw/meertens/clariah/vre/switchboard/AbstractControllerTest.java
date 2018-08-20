@@ -62,16 +62,17 @@ public abstract class AbstractControllerTest extends AbstractTest {
         isSetUp = true;
     }
 
-    /* Method prevents JerseyTest.setUp() from running. */
+    /* Method signature prevents JerseyTest.setUp() from running. */
     @Before
     public void setUp() {
     }
 
-    /* Method prevents JerseyTest.tearDown() from running. */
+    /* Method signature prevents JerseyTest.tearDown() from running. */
     @After
     public void tearDown() {
         SwitchboardJerseyTest.getRequestRepository().clearAll();
         SwitchboardJerseyTest.getOwncloudFileService().unlock(testFile);
+        logger.info("reset mockServer");
         mockServer.reset();
         startDeployMockServer(200);
     }
@@ -137,6 +138,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     protected static void startDeployMockServer(Integer status) {
+        logger.info("start deploy mock server");
         DeploymentStatus deploymentStatus = DeploymentStatus.getDeployStatus(status);
         mockServer
                 .when(

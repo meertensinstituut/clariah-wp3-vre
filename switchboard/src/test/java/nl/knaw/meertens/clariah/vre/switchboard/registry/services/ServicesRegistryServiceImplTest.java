@@ -30,7 +30,7 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
     public void getServicesByMimetype() {
         startGetServicesByMimetypeRegistryMock();
         ServicesRegistryServiceImpl servicesRegistry = new ServicesRegistryServiceImpl("http://localhost:1080/api/v2/services", "abc", getMapper());
-        List<ServiceRecordDto> result = servicesRegistry.getServices("text/plain");
+        List<ServiceRecordDto> result = servicesRegistry.getServicesByMimetype("text/plain");
         assertThat(result).hasSize(2);
         assertThat(result.get(0).id).isEqualTo(1);
         assertThat(result.get(0).name).isEqualTo("TEST");
