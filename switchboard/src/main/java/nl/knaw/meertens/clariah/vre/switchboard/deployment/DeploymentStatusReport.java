@@ -25,7 +25,7 @@ public class DeploymentStatusReport implements Cloneable {
     private URI uri;
     private String workDir;
     private List<String> files;
-    private String outputFile;
+    private String viewerFile;
 
     DeploymentStatusReport() {
         super();
@@ -45,7 +45,7 @@ public class DeploymentStatusReport implements Cloneable {
         this.uri = original.uri;
         this.workDir = original.workDir;
         this.files = original.files;
-        this.outputFile = original.outputFile;
+        this.viewerFile = original.viewerFile;
     }
 
     public DeploymentStatus getStatus() {
@@ -121,12 +121,12 @@ public class DeploymentStatusReport implements Cloneable {
         this.interval = interval;
     }
 
-    public void setOutputFile(String outputFile) {
-        this.outputFile = outputFile;
+    public void setViewerFile(String outputFile) {
+        this.viewerFile = outputFile;
     }
 
-    public String getOutputFile() {
-        return outputFile;
+    public String getViewerFile() {
+        return viewerFile;
     }
 
 }

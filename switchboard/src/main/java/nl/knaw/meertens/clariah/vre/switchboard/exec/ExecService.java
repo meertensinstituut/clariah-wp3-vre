@@ -136,6 +136,11 @@ public class ExecService {
             String body
     ) throws IOException {
         DeploymentRequest result = prepareDeployment(service, body);
+        addViewerOutputParam(result);
+        return result;
+    }
+
+    private void addViewerOutputParam(DeploymentRequest result) {
         ParamDto output = new ParamDto();
         output.name = "output";
         output.type = STRING;
@@ -146,7 +151,6 @@ public class ExecService {
                 .orElseGet(() -> {throw new IllegalStateException(String.format("No input field in params for deployment of viewer [%s]", result.getService()));})
                 .value;
         result.getParams().add(output);
-        return result;
     }
 
     private DeploymentRequest prepareDeployment(
@@ -226,14 +230,14 @@ public class ExecService {
     }
 
     private void completeViewerDeployment(DeploymentStatusReport report) throws IOException {
-        Path outputFile = owncloudFileService.unstageViewerOutputFile(
+        Path viewerFile = owncloudFileService.unstageViewerOutputFile(
                 report.getWorkDir(),
                 report.getFiles().get(0),
                 report.getService()
         );
-        report.setOutputFile(outputFile.toString());
+        report.setViewerFile(viewerFile.toString());
         report.setWorkDir(report.getWorkDir());
-        sendKafkaOwncloudMsgs(newArrayList(outputFile));
+        sendKafkaOwncloudMsgs(newArrayList(viewerFile));
     }
 
     private void createConfig(

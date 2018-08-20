@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
@@ -49,12 +50,24 @@ public class ParamService {
 
     public CmdiDto getParams(long serviceId) {
         ServiceRecord service = servicesRegistryService.getService(serviceId);
-        CmdiDto cmdiDto = new CmdiDto();
-        cmdiDto.id = serviceId;
-        cmdiDto.name = service.getName();
-        cmdiDto.kind = ServiceKind.fromKind(service.getKind());
-        cmdiDto.params = convertCmdiXmlToParams(service.getSemantics());
-        return cmdiDto;
+        CmdiDto params = new CmdiDto();
+        params.id = serviceId;
+        params.name = service.getName();
+        params.kind = ServiceKind.fromKind(service.getKind());
+        params.params = convertCmdiXmlToParams(service.getSemantics());
+        if(params.kind.equals(ServiceKind.VIEWER)) {
+            params.params = removeOutputParam(params.params);
+        }
+        return params;
+    }
+
+    /**
+     * Remove output param because it will be set by switchboard
+     */
+    private List<ParamDto> removeOutputParam(List<ParamDto> params) {
+        return params.stream()
+                .filter(p -> !p.name.equals("output"))
+                .collect(Collectors.toList());
     }
 
     private List<ParamDto> convertCmdiXmlToParams(String cmdi) {

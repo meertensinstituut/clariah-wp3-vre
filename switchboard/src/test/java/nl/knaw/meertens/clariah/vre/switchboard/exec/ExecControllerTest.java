@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
@@ -159,6 +158,7 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void postDeploymentRequest_shouldMoveViewerOutputFileToViewerFolder() throws IOException, InterruptedException {
+        mockServer.reset();
         startServicesRegistryMockServer(dummyViewerService);
 
         String viewerService = "VIEWER";
@@ -175,6 +175,10 @@ public class ExecControllerTest extends AbstractControllerTest {
         createResultFile(workDir);
 
         String finishedJson = waitUntil(request, FINISHED);
+        logger.info("finishedViewerJson: " + finishedJson);
+        Path objectPath = Paths.get(object.filepath);
+        String expectedPath = "admin/files/.vre/VIEWER/" + objectPath.subpath(2, objectPath.getNameCount());
+        assertThatJson(finishedJson).node("viewerFile").isEqualTo(expectedPath);
 
     }
 

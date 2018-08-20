@@ -49,12 +49,12 @@ public class ExecController extends AbstractController {
     ) {
         logger.info(String.format("Received request of service [%s] with body [%s]", service, body));
         DeploymentRequest request = execService.deploy(service, body);
-        SwitchboardMsg switchboardMsg = new SwitchboardMsg(String.format(
+        SwitchboardMsg msg = new SwitchboardMsg(String.format(
                 "Deployment of service [%s] has been requested.", request.getService()
         ));
-        switchboardMsg.workDir = request.getWorkDir();
-        switchboardMsg.status = request.getStatusReport().getStatus();
-        return createResponse(switchboardMsg, switchboardMsg.status.getHttpStatus());
+        msg.workDir = request.getWorkDir();
+        msg.status = request.getStatusReport().getStatus();
+        return createResponse(msg, msg.status.getHttpStatus());
     }
 
     @GET

@@ -98,28 +98,62 @@ public class OwncloudFileService implements FileService {
         return getRelativePathsIn(outputFilesDir);
     }
 
+    /**
+     * @return path of viewer file in owncloud dir
+     */
     @Override
     public Path unstageViewerOutputFile(String workDir, String inputFile, String service) {
-        // TODO:
-        // move output file to {pathToOwncloud}/{pathToUserDir}/{hiddenViewerDir}/{fileInUserDirPath}
-        logger.info(String.format("workDir, inputFile, service: [%s] [%s] [%s]", workDir, inputFile, service));
-        Path result = null;
-        String pathToOwncloud = tmpPath.toString();
-        String pathToUserDir = getPathToUserDir(inputFile); // find in inputFile?
-        String hiddenViewerDir = "/.vre/" + service;
-        String fileInUserDirPath = inputFile; // Last part of inputFile?
-        result = Paths.get(
-                pathToOwncloud,
-                pathToUserDir,
-                hiddenViewerDir,
-                fileInUserDirPath
-        );
-        return result;
+        File resultFile = createViewerFilepath(inputFile, service);
+        File tmpInputFile = createWorkdirFilepath(workDir, inputFile);
+        try {
+            FileUtils.moveFile(tmpInputFile, resultFile);
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Could not move viewer file from [%s] to [%s]", tmpInputFile, resultFile));
+        }
+        return getPathRelativeToOwncloud(resultFile);
     }
 
-    private String getPathToUserDir(String inputFile) {
-        // TODO:
-        return null;
+    private Path getPathRelativeToOwncloud(File resultFile) {
+        return resultFile.toPath().subpath(3, resultFile.toPath().getNameCount());
+    }
+
+    private File createWorkdirFilepath(String workDir, String inputFile) {
+        return Paths.get(
+                    tmpPath.toString(),
+                    workDir,
+                    "/input",
+                    inputFile
+            ).toFile();
+    }
+
+    private File createViewerFilepath(String inputFile, String service) {
+        String toOwncloud = srcPath.toString();
+        String toUser = getPathToUserDir(inputFile).toString();
+        String fileInUserDir = getPathInUserDir(inputFile).toString();
+        String toViewer = "/.vre/" + service;
+        return Paths
+                .get(toOwncloud, toUser, toViewer, fileInUserDir)
+                .toFile();
+    }
+
+    /**
+     * Path if input files constist of:
+     * {username}/files/{path}
+     * @return {username}/files
+     */
+    private Path getPathToUserDir(String inputFile) {
+        Path inputPath = Paths.get(inputFile);
+        return inputPath.subpath(0, 2);
+    }
+
+    /**
+     * Path if input files constist of:
+     * {username}/files/{path}
+     * @return {path}
+     */
+    private Path getPathInUserDir(String inputFile) {
+        Path inputPath = Paths.get(inputFile);
+        return inputPath.subpath(2, inputPath.getNameCount());
     }
 
     @Override
@@ -236,7 +270,6 @@ public class OwncloudFileService implements FileService {
             logger.info(String.format("found endpoint [%s], stop unlocking", stopAt));
         }
     }
-
 
     private String generateOutputDirName() {
         return outputDir + "-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS"));
