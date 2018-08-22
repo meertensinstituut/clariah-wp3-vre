@@ -115,7 +115,11 @@ public class ExecService {
         return request;
     }
 
-    private DeploymentRequest prepareDeploymentRequest(String serviceName, String body, ServiceKind kind) {
+    private DeploymentRequest prepareDeploymentRequest(
+            String serviceName,
+            String body,
+            ServiceKind kind
+    ) {
         DeploymentRequest request;
         try {
             switch (kind) {
@@ -138,27 +142,41 @@ public class ExecService {
             String service,
             String body
     ) throws IOException {
-        DeploymentRequest result = prepareServiceDeployment(service, body);
-        addViewerOutputParam(result);
-        return result;
+        DeploymentRequest request = prepareServiceDeployment(service, body);
+        List<Param> params = request.getParams();
+        Param outputParam = createViewerOutputParam(params);
+        params.add(outputParam);
+        createConfig(request);
+        return request;
     }
 
-    private void addViewerOutputParam(DeploymentRequest result) {
+    private Param createViewerOutputParam(
+            List<Param> params
+    ) {
         Param output = new Param();
         output.name = "output";
         output.type = STRING;
-        output.value = result.getParams()
+        output.value = params
                 .stream()
                 .filter(p -> p.name.equals("input"))
                 .findFirst()
                 .orElseGet(() -> {
-                    throw new IllegalStateException(String.format("No input field in params for deployment of viewer [%s]", result.getService()));
+                    throw new IllegalStateException("No input field in params for deployment of viewer");
                 })
                 .value;
-        result.getParams().add(output);
+        return output;
     }
 
     private DeploymentRequest prepareServiceDeployment(
+            String service,
+            String body
+    ) throws IOException {
+        DeploymentRequest request = createDeploymentRequest(service, body);
+        createConfig(request);
+        return request;
+    }
+
+    private DeploymentRequest createDeploymentRequest(
             String service,
             String body
     ) throws IOException {
@@ -167,7 +185,6 @@ public class ExecService {
         HashMap<Long, String> paths = requestFilesFromRegistry(request);
         replaceObjectIdsWithPaths(request.getParams(), paths);
         request.setFiles(paths);
-        createConfig(request);
         sendKafkaRequestMsg(request);
         return request;
     }
@@ -220,7 +237,9 @@ public class ExecService {
         ));
     }
 
-    private void completeServiceDeployment(DeploymentStatusReport report) throws IOException {
+    private void completeServiceDeployment(
+            DeploymentStatusReport report
+    ) throws IOException {
         List<Path> outputFiles = owncloudFileService.unstageServiceOutputFiles(
                 report.getWorkDir(),
                 report.getFiles().get(0)
@@ -234,7 +253,9 @@ public class ExecService {
         sendKafkaOwncloudMsgs(outputFiles);
     }
 
-    private void completeViewerDeployment(DeploymentStatusReport report) throws IOException {
+    private void completeViewerDeployment(
+            DeploymentStatusReport report
+    ) throws IOException {
         Path viewerFile = owncloudFileService.unstageViewerOutputFile(
                 report.getWorkDir(),
                 report.getFiles().get(0),
@@ -262,7 +283,9 @@ public class ExecService {
         }
     }
 
-    private ConfigDto mapRequestToConfig(DeploymentRequest serviceRequest) {
+    private ConfigDto mapRequestToConfig(
+            DeploymentRequest serviceRequest
+    ) {
         ConfigDto config = new ConfigDto();
         config.params = serviceRequest.getParams().stream().map(param -> {
             ConfigParamDto fileDto = new ConfigParamDto();
@@ -291,7 +314,9 @@ public class ExecService {
         kafkaSwitchboardService.send(kafkaMsg);
     }
 
-    private void sendKafkaOwncloudMsgs(List<Path> outputFiles) throws IOException {
+    private void sendKafkaOwncloudMsgs(
+            List<Path> outputFiles
+    ) throws IOException {
         for (Path file : outputFiles) {
             KafkaOwncloudCreateFileDto msg = new KafkaOwncloudCreateFileDto();
             msg.action = "create";
@@ -316,7 +341,9 @@ public class ExecService {
         );
     }
 
-    private HashMap<Long, String> requestFilesFromRegistry(DeploymentRequest serviceRequest) {
+    private HashMap<Long, String> requestFilesFromRegistry(
+            DeploymentRequest serviceRequest
+    ) {
         HashMap<Long, String> files = new HashMap<>();
         for (Param param : serviceRequest.getParams()) {
             if (param.type.equals(ParamType.FILE)) {
@@ -339,7 +366,9 @@ public class ExecService {
         }
     }
 
-    private void sendKafkaRequestMsg(DeploymentRequest serviceRequest) throws IOException {
+    private void sendKafkaRequestMsg(
+            DeploymentRequest serviceRequest
+    ) throws IOException {
         KafkaDeploymentStartDto msg = new KafkaDeploymentStartDto();
         msg.dateTime = serviceRequest.getDateTime();
         msg.service = serviceRequest.getService();

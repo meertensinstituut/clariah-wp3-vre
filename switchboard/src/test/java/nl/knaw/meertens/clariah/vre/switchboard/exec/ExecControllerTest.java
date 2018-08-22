@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
@@ -164,25 +165,40 @@ public class ExecControllerTest extends AbstractControllerTest {
         mockServer.reset();
         startServicesRegistryMockServer(dummyViewerService);
 
+        // create file and dummy registry object:
         String viewerService = "VIEWER";
         startDeployMockServer(viewerService, 200);
         ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        Path inputPath = Paths.get(object.filepath);
+        String expectedOutputPath = "admin/files/.vre/VIEWER/" + inputPath.subpath(2, inputPath.getNameCount());
+
+        // request deployment:
         DeploymentRequestDto deploymentRequestDto = getViewerDeploymentRequestDto("" + object.id);
         Response deployed = deploy(viewerService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+        // check output param in config:
+        Path configFile = Paths.get(DEPLOYMENT_VOLUME, workDir, CONFIG_FILE_NAME);
+        assertThat(configFile.toFile()).exists();
+        String configJson = new String(Files.readAllBytes(configFile));
+        ConfigDto config = new ObjectMapper().readValue(configJson, ConfigDto.class);
+        assertThat(config.params.get(1).name).isEqualTo("output");
+        assertThat(config.params.get(1).value).contains(inputPath.toString());
 
+        // finish deployment:
+        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
         startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
         createResultFile(workDir);
-
         String finishedJson = waitUntil(request, FINISHED);
-        logger.info("finishedViewerJson: " + finishedJson);
-        Path objectPath = Paths.get(object.filepath);
-        String expectedPath = "admin/files/.vre/VIEWER/" + objectPath.subpath(2, objectPath.getNameCount());
-        assertThatJson(finishedJson).node("viewerFile").isEqualTo(expectedPath);
 
+        // check output path:
+        String viewerFile = JsonPath.parse(finishedJson).read("$.viewerFile");
+        assertThat(viewerFile).isEqualTo(expectedOutputPath);
+        Path viewerFilePath = Paths.get(OWNCLOUD_VOLUME, viewerFile);
+        assertThat(viewerFilePath.toFile()).exists();
+        List<String> lines = Files.readAllLines(viewerFilePath);
+        assertThat(lines.get(0)).contains("Reetveerdegem");
     }
 
     private File findOutputFolder(String finishedJson) {

@@ -102,13 +102,24 @@ public class OwncloudFileService implements FileService {
      * @return path of viewer file in owncloud dir
      */
     @Override
-    public Path unstageViewerOutputFile(String workDir, String inputFile, String service) {
+    public Path unstageViewerOutputFile(
+            String workDir,
+            String inputFile,
+            String service
+    ) {
         File resultFile = createViewerFilepath(inputFile, service);
         File tmpInputFile = createWorkdirFilepath(workDir, inputFile);
         try {
+            logger.info(String.format(
+                    "Move viewer output from [%s] to [%s]",
+                    tmpInputFile, resultFile
+            ));
             FileUtils.moveFile(tmpInputFile, resultFile);
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Could not move viewer file from [%s] to [%s]", tmpInputFile, resultFile));
+            throw new RuntimeException(String.format(
+                    "Could not move viewer file from [%s] to [%s]",
+                    tmpInputFile, resultFile
+            ));
         }
         return getPathRelativeToOwncloud(resultFile);
     }
