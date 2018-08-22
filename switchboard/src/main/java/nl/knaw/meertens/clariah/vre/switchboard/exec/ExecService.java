@@ -105,15 +105,22 @@ public class ExecService {
             String serviceName,
             String body
     ) {
-
         ServiceRecord service = serviceRegistryService.getServiceByName(serviceName);
         ServiceKind kind = ServiceKind.fromKind(service.getKind());
+        DeploymentRequest request = prepareDeploymentRequest(serviceName, body, kind);
+        List<String> files = new ArrayList<>(request.getFiles().values());
+        owncloudFileService.stageFiles(request.getWorkDir(), files);
+        DeploymentStatusReport statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
+        request.setStatusReport(statusReport);
+        return request;
+    }
 
+    private DeploymentRequest prepareDeploymentRequest(String serviceName, String body, ServiceKind kind) {
         DeploymentRequest request;
         try {
             switch (kind) {
                 case SERVICE:
-                    request = prepareDeployment(serviceName, body);
+                    request = prepareServiceDeployment(serviceName, body);
                     break;
                 case VIEWER:
                     request = prepareViewerDeployment(serviceName, body);
@@ -124,11 +131,6 @@ public class ExecService {
         } catch (IOException e) {
             throw new RuntimeException(String.format("Could not prepare deployment of [%s]", serviceName), e);
         }
-
-        List<String> files = new ArrayList<>(request.getFiles().values());
-        owncloudFileService.stage(request.getWorkDir(), files);
-        DeploymentStatusReport statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
-        request.setStatusReport(statusReport);
         return request;
     }
 
@@ -136,7 +138,7 @@ public class ExecService {
             String service,
             String body
     ) throws IOException {
-        DeploymentRequest result = prepareDeployment(service, body);
+        DeploymentRequest result = prepareServiceDeployment(service, body);
         addViewerOutputParam(result);
         return result;
     }
@@ -156,7 +158,7 @@ public class ExecService {
         result.getParams().add(output);
     }
 
-    private DeploymentRequest prepareDeployment(
+    private DeploymentRequest prepareServiceDeployment(
             String service,
             String body
     ) throws IOException {

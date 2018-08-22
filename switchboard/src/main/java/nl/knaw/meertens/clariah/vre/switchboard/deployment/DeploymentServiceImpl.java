@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.ArrayList;
 
+import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.DEPLOYED;
+
 public class DeploymentServiceImpl implements DeploymentService {
 
     private final String hostName;
@@ -46,7 +48,13 @@ public class DeploymentServiceImpl implements DeploymentService {
 
         HttpResponse<String> response = sendRequest(report.getUri());
         report.setMsg(response.getBody());
-        report.setStatus(DeploymentStatus.getDeployStatus(response.getStatus()));
+        int httpStatus = response.getStatus();
+
+        if(httpStatus == 200) {
+            report.setStatus(DEPLOYED);
+        } else {
+            report.setStatus(DeploymentStatus.getDeployStatus(httpStatus));
+        }
 
         return report;
     }

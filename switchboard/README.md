@@ -85,4 +85,9 @@ Example format of `config.json`:
 }
 ```
 
-
+## Deployment status codes:
+- DEPLOYED        (201 - Created) 
+- RUNNING         (202 - Accepted) 
+- FINISHED        (200 - OK)
+- NOT_FOUND       (404 - Not Found)
+- ALREADY_RUNNING (403 - Forbidden) 

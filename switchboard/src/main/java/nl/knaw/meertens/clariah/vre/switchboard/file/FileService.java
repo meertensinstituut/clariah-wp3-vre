@@ -15,7 +15,7 @@ public interface FileService {
      * - Create workdir
      * - Create links of input files in work dir
      */
-    void stage(String workDir, List<String> inputFiles);
+    void stageFiles(String workDir, List<String> inputFiles);
 
     /**
      * Clean up files and folders used by deployed service:

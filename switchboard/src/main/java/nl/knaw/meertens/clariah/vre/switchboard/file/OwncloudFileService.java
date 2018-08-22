@@ -61,7 +61,7 @@ public class OwncloudFileService implements FileService {
     }
 
     @Override
-    public void stage(String workDir, List<String> inputFiles) {
+    public void stageFiles(String workDir, List<String> inputFiles) {
         Path inputPath = getInputDir(workDir);
         for (String file : inputFiles) {
             lock(file);

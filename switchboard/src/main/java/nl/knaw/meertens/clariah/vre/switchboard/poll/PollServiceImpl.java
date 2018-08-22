@@ -109,7 +109,7 @@ public class PollServiceImpl implements PollService {
 
         URI uri = createDeploymentStatusUri(report);
         DeploymentStatusResponseDto response = requestDeploymentStatusReport(uri);
-        result.setStatus(DeploymentStatus.getPollStatus(response.httpStatus));
+        result.setStatus(DeploymentStatus.getDeployStatus(response.httpStatus));
         result.setMsg(response.message);
         result.setPolled(now());
         result.setInterval(calculateNewInterval(report.getInterval()));
