@@ -1,11 +1,10 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
-
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleControllerException;
 
 public abstract class AbstractController {
 
@@ -23,8 +22,8 @@ public abstract class AbstractController {
                     .status(httpStatus)
                     .entity(mapper.writeValueAsString(response))
                     .build();
-        } catch (Exception e) {
-            return handleControllerException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Could not create json of response", e);
         }
     }
 

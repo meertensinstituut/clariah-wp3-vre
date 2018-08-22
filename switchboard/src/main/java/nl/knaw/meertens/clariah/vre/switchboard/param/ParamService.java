@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 
 public class ParamService {
 
@@ -97,7 +96,7 @@ public class ParamService {
 
             return result;
         } catch (SAXException | IOException | XPathExpressionException e) {
-            return handleException(e, String.format("Could not parse cmdi xml [%s]", cmdi));
+            throw new RuntimeException(String.format("Could not parse cmdi xml [%s]", cmdi), e);
         }
     }
 

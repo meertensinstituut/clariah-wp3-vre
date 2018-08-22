@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.ArrayList;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
-
 public class DeploymentServiceImpl implements DeploymentService {
 
     private final String hostName;
@@ -81,7 +79,7 @@ public class DeploymentServiceImpl implements DeploymentService {
             logger.info(String.format("Started deployment of [%s]", uri.toString()));
             return response;
         } catch (UnirestException e) {
-            return handleException(e, "Could not start deployment of [%s]", uri.toString());
+            throw new RuntimeException(String.format("Could not start deployment of [%s]", uri.toString()), e);
         }
     }
 

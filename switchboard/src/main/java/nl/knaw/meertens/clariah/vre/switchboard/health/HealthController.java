@@ -10,7 +10,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleControllerException;
 
 @Path("/health")
 public class HealthController extends AbstractController {

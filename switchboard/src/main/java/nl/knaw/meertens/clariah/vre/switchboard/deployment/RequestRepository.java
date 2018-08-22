@@ -3,6 +3,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.exception.NoReportFileException;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,6 @@ import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_MEMORY_SPAN;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 
 public class RequestRepository {
 
@@ -101,12 +101,12 @@ public class RequestRepository {
         try {
             statusJson = FileUtils.readFileToString(statusFile, UTF_8);
         } catch (IOException e) {
-            handleException(e, "Could not read [%s]", statusFile.toString());
+            throw new RuntimeIOException(String.format("Could not read [%s]", statusFile.toString()), e);
         }
         try {
             return mapper.readValue(statusJson, DeploymentStatusReport.class);
         } catch (IOException e) {
-            return handleException(e, "Could not parse [%s] to DeploymentStatusReport", statusJson);
+            throw new RuntimeIOException(String.format("Could not parse [%s] to DeploymentStatusReport", statusJson), e);
         }
     }
 
@@ -128,7 +128,7 @@ public class RequestRepository {
                     .writeValueAsString(report);
             FileUtils.write(file.toFile(), json, UTF_8);
         } catch (IOException e) {
-            handleException(e, "Could create status report file [%s]", file.toString());
+            throw new RuntimeIOException(String.format("Could create status report file [%s]", file.toString()),e );
         }
     }
 

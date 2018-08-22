@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ServicesRegistryServiceImpl implements ServicesRegistryService {
@@ -48,7 +47,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
             body = response.getBody();
             return mapper.readValue(body, ServiceRecord.class);
         } catch (UnirestException | IOException | IllegalStateException e) {
-            return handleException(e, "Could not get service for id [%s]; response: [%s]", id, body);
+            throw new RuntimeException(String.format("Could not get service for id [%s]; response: [%s]", id, body), e);
         }
     }
 
@@ -114,7 +113,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
             ));
             return serviceRecords;
         } catch (UnirestException | IOException e) {
-            return handleException(e, "Could not determine services for url [%s]", url);
+            throw new RuntimeException(String.format("Could not determine services for url [%s]", url), e);
         }
     }
 

@@ -6,6 +6,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.param.Param;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamGroup;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
+import org.assertj.core.api.exception.RuntimeIOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,7 +32,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.mockserver.model.HttpRequest.request;
@@ -153,7 +153,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         try {
             Files.write(path, newArrayList(resultSentence), UTF_8);
         } catch (IOException e) {
-            handleException(e, "DeploymentServiceStub could not create result file");
+            throw new RuntimeIOException("DeploymentServiceStub could not create result file", e);
         }
     }
 

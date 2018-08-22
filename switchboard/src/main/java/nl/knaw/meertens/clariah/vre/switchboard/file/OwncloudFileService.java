@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.file;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,6 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class OwncloudFileService implements FileService {
@@ -227,9 +227,9 @@ public class OwncloudFileService implements FileService {
                     deploymentOutput, outputDir
             ));
         } catch (IOException e) {
-            handleException(e,
-                    "Could not move output folder from deployment [%s] to [%s]",
-                    deploymentOutput.toString(), outputDir.toString()
+            throw new RuntimeIOException(
+                    String.format("Could not move output folder from deployment [%s] to [%s]",
+                    deploymentOutput.toString(), outputDir.toString()), e
             );
         }
         unlockOutputFiles(outputDir);
@@ -248,7 +248,7 @@ public class OwncloudFileService implements FileService {
                 logger.info(String.format("Unlocking [%s]", file));
                 unlockParents(toSrcPath(file), srcPath.getFileName().toString());
             } catch (IOException e) {
-                handleException(e, "Could not unlock [%s]", file);
+                throw new RuntimeIOException(String.format("Could not unlock [%s]", file), e);
             }
         }
     }
@@ -288,7 +288,7 @@ public class OwncloudFileService implements FileService {
         try {
             Files.delete(inputFilePath);
         } catch (IOException e) {
-            handleException(e, "Could not remove symbolic link [%s]", inputFilePath.toString());
+            throw new RuntimeIOException(String.format("Could not remove symbolic link [%s]", inputFilePath.toString()), e);
         }
     }
 
@@ -307,9 +307,9 @@ public class OwncloudFileService implements FileService {
             Files.createSymbolicLink(inputFilePath, owncloudFilePath);
             logger.info(String.format("Created symbolic link for [%s]", inputFilePath.toString()));
         } catch (IOException e) {
-            handleException(e,
-                    "Could not create symbolic link between owncloud [%s] and input [%s]",
-                    owncloudFilePath.toString(), inputFilePath.toString()
+            throw new RuntimeIOException(
+                    String.format("Could not create symbolic link between owncloud [%s] and input [%s]",
+                    owncloudFilePath.toString(), inputFilePath.toString()), e
             );
         }
     }

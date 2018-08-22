@@ -24,6 +24,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecord;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,6 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
 import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.SERVICE;
 import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.VIEWER;
@@ -122,7 +122,7 @@ public class ExecService {
                     throw new UnsupportedOperationException(String.format("Unsupported deployment of service with kind [%s]", kind));
             }
         } catch (IOException e) {
-            return handleException(e, "Could not prepare deployment of [%s]", serviceName);
+            throw new RuntimeException(String.format("Could not prepare deployment of [%s]", serviceName), e);
         }
 
         List<String> files = new ArrayList<>(request.getFiles().values());
@@ -256,7 +256,7 @@ public class ExecService {
             String json = mapper.writeValueAsString(config);
             FileUtils.write(configPath.toFile(), json, UTF_8);
         } catch (IOException e) {
-            handleException(e, "Could create config file [%s]", configPath.toString());
+            throw new RuntimeIOException(String.format("Could create config file [%s]", configPath.toString()), e);
         }
     }
 

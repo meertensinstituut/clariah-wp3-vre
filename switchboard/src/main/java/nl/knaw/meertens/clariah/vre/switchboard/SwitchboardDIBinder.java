@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
-import nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler;
+import nl.knaw.meertens.clariah.vre.switchboard.exception.CommonExceptionMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecService;
 import nl.knaw.meertens.clariah.vre.switchboard.health.HealthController;
@@ -66,7 +66,6 @@ public class SwitchboardDIBinder extends AbstractBinder {
         bind(new ObjectService(objectsRegistryService,serviceRegistryService)).to(ObjectService.class);
         bind(new ParamService(serviceRegistryService)).to(ParamService.class);
         bind(getMapper()).to(ObjectMapper.class);
-        ExceptionHandler.setMapper(getMapper());
     }
 
     /**

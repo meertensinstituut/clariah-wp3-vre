@@ -7,29 +7,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 import java.util.Arrays;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 
-public class ExceptionHandler {
+/**
+ * Jersey Exception Mapper that catches all Throwables,
+ * logs them as an error and returns e.message as Response.
+ */
+public class CommonExceptionMapper implements ExceptionMapper<Throwable> {
 
     private static ObjectMapper mapper = getMapper();
 
-    private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(CommonExceptionMapper.class);
 
-    private ExceptionHandler() {}
-
-    /**
-     * Handle exceptions with a msg template for String.format
-     * Note: all format specifiers in template should be of type %s
-     */
-    public static <T> T handleException(Throwable e, String template, Object... args) {
-        String msg = String.format(template, Arrays.stream(args).map(Object::toString).toArray());
-        logger.error(msg, e);
-        throw new RuntimeException(msg, e);
-    }
-
-    public static Response handleControllerException(Exception e) {
+    @Override
+    public Response toResponse(Throwable e) {
         logger.error(e.getMessage(), e);
         if(e instanceof NoReportFileException) {
             return createResponse(e, 404);
@@ -37,19 +31,15 @@ public class ExceptionHandler {
         return createResponse(e, 500);
     }
 
-    private static Response createResponse(Exception e, int httpStatus) {
+    private Response createResponse(Throwable e, int httpStatus) {
         try {
             return Response
                     .status(httpStatus)
                     .entity(mapper.writeValueAsString(new SwitchboardMsg(
                             e.getMessage()
                     ))).build();
-        } catch (JsonProcessingException e2) {
-            return handleControllerException(e2);
+        } catch (JsonProcessingException eJson) {
+            return createResponse(eJson, 500);
         }
-    }
-
-    public static void setMapper(ObjectMapper mapper) {
-        ExceptionHandler.mapper = mapper;
     }
 }
