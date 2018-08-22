@@ -35,6 +35,6 @@ CREATE VIEW service_with_mimetype AS
     *, (SELECT CAST((xpath(
       '//cmdp:Input//cmdp:MIMEType/text()',
       semantics,
-      ARRAY[ARRAY['cmdp', 'http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795']]
+      ARRAY[ARRAY['cmdp', 'http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1527668176011']]
   ))[1] AS text) AS mimetype
   ) FROM service;

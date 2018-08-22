@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -125,10 +126,10 @@ public abstract class AbstractIntegrationTest {
         HttpResponse<String> result = Unirest
                 .post(SWITCHBOARD_ENDPOINT + "/exec/TEST")
                 .header("Content-Type", "application/json; charset=UTF-8")
-                .body("{\"params\":[{\"name\":\"untokinput\",\"type\":\"file\",\"value\":\"" + expectedFilename + "\",\"params\":[{\"language\":\"eng\",\"author\":\"J. Jansen\"}]}]}")
+                .body("{\"params\":[{\"name\":\"untokinput\",\"type\":\"file\",\"value\":\"" + expectedFilename + "\",\"params\":[{\"name\":\"language\", \"value\":\"eng\"},{\"name\":\"author\", \"value\":\"J. Jansen\"}]}]}")
                 .asString();
 
-        assertThat(result.getStatus()).isIn(200, 202);
+        assertThat(result.getStatus()).isIn(200, 201, 202);
         return JsonPath.parse(result.getBody()).read("$.workDir");
     }
 
@@ -153,7 +154,8 @@ public abstract class AbstractIntegrationTest {
             TimeUnit.SECONDS.sleep(1);
             waited++;
 
-            if (responseStatus == 200 || responseStatus == 202) {
+            Integer[] ints = {200, 201, 202};
+            if (Arrays.asList(ints).contains(responseStatus)) {
                 httpStatusSuccess = true;
             }
             if (!isNull(deploymentStatus) && deploymentStatus.contains(expectedStatus)) {

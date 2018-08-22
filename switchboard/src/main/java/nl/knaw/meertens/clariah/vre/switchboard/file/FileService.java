@@ -15,7 +15,7 @@ public interface FileService {
      * - Create workdir
      * - Create links of input files in work dir
      */
-    void stage(String workDir, List<String> inputFiles);
+    void stageFiles(String workDir, List<String> inputFiles);
 
     /**
      * Clean up files and folders used by deployed service:
@@ -23,7 +23,7 @@ public interface FileService {
      * - Move output files to source
      * @return folder containing output files
      */
-    List<Path> unstage(String workDir, List<String> inputFiles);
+    void unstage(String workDir, List<String> inputFiles);
 
     /**
      * Lock "<source path>/<file string>"
@@ -31,6 +31,10 @@ public interface FileService {
     void lock(String fileString);
 
     void unlock(String fileString);
+
+    List<Path> unstageServiceOutputFiles(String workDir, String inputFile);
+
+    Path unstageViewerOutputFile(String workDir, String inputFile, String service);
 
     Path getSrcPath();
 }

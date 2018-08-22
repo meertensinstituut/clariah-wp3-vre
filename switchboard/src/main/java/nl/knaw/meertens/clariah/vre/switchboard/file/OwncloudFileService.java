@@ -2,26 +2,21 @@ package nl.knaw.meertens.clariah.vre.switchboard.file;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +34,6 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class OwncloudFileService implements FileService {
@@ -67,7 +61,7 @@ public class OwncloudFileService implements FileService {
     }
 
     @Override
-    public void stage(String workDir, List<String> inputFiles) {
+    public void stageFiles(String workDir, List<String> inputFiles) {
         Path inputPath = getInputDir(workDir);
         for (String file : inputFiles) {
             lock(file);
@@ -84,16 +78,82 @@ public class OwncloudFileService implements FileService {
      * @return output files
      */
     @Override
-    public List<Path> unstage(String workDir, List<String> inputFiles) {
+    public void unstage(String workDir, List<String> inputFiles) {
+        unstageInputFiles(inputFiles);
+    }
+
+    private void unstageInputFiles(List<String> inputFiles) {
         if (inputFiles.isEmpty()) {
             throw new IllegalArgumentException("Cannot move output when no input file is provided");
         }
         for (String file : inputFiles) {
             unlock(file);
         }
-        Path outputFilesDir = moveOutputFiles(workDir, inputFiles.get(0));
+    }
+
+    @Override
+    public List<Path> unstageServiceOutputFiles(String workDir, String inputFile) {
+        Path outputFilesDir = moveOutputFiles(workDir, inputFile);
         unlockOutputFiles(outputFilesDir);
         return getRelativePathsIn(outputFilesDir);
+    }
+
+    /**
+     * @return path of viewer file in owncloud dir
+     */
+    @Override
+    public Path unstageViewerOutputFile(String workDir, String inputFile, String service) {
+        File resultFile = createViewerFilepath(inputFile, service);
+        File tmpInputFile = createWorkdirFilepath(workDir, inputFile);
+        try {
+            FileUtils.moveFile(tmpInputFile, resultFile);
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Could not move viewer file from [%s] to [%s]", tmpInputFile, resultFile));
+        }
+        return getPathRelativeToOwncloud(resultFile);
+    }
+
+    private Path getPathRelativeToOwncloud(File resultFile) {
+        return resultFile.toPath().subpath(3, resultFile.toPath().getNameCount());
+    }
+
+    private File createWorkdirFilepath(String workDir, String inputFile) {
+        return Paths.get(
+                    tmpPath.toString(),
+                    workDir,
+                    "/input",
+                    inputFile
+            ).toFile();
+    }
+
+    private File createViewerFilepath(String inputFile, String service) {
+        String toOwncloud = srcPath.toString();
+        String toUser = getPathToUserDir(inputFile).toString();
+        String fileInUserDir = getPathInUserDir(inputFile).toString();
+        String toViewer = "/.vre/" + service;
+        return Paths
+                .get(toOwncloud, toUser, toViewer, fileInUserDir)
+                .toFile();
+    }
+
+    /**
+     * Path if input files constist of:
+     * {username}/files/{path}
+     * @return {username}/files
+     */
+    private Path getPathToUserDir(String inputFile) {
+        Path inputPath = Paths.get(inputFile);
+        return inputPath.subpath(0, 2);
+    }
+
+    /**
+     * Path if input files constist of:
+     * {username}/files/{path}
+     * @return {path}
+     */
+    private Path getPathInUserDir(String inputFile) {
+        Path inputPath = Paths.get(inputFile);
+        return inputPath.subpath(2, inputPath.getNameCount());
     }
 
     @Override
@@ -134,7 +194,7 @@ public class OwncloudFileService implements FileService {
     }
 
     /**
-     * Move output files to src, next to first input file
+     * Move output files to src, next to input file
      * in date and time labeled output folder
      *
      * @return output dir
@@ -167,9 +227,9 @@ public class OwncloudFileService implements FileService {
                     deploymentOutput, outputDir
             ));
         } catch (IOException e) {
-            handleException(e,
-                    "Could not move output folder from deployment [%s] to [%s]",
-                    deploymentOutput.toString(), outputDir.toString()
+            throw new RuntimeIOException(
+                    String.format("Could not move output folder from deployment [%s] to [%s]",
+                    deploymentOutput.toString(), outputDir.toString()), e
             );
         }
         unlockOutputFiles(outputDir);
@@ -188,7 +248,7 @@ public class OwncloudFileService implements FileService {
                 logger.info(String.format("Unlocking [%s]", file));
                 unlockParents(toSrcPath(file), srcPath.getFileName().toString());
             } catch (IOException e) {
-                handleException(e, "Could not unlock [%s]", file);
+                throw new RuntimeIOException(String.format("Could not unlock [%s]", file), e);
             }
         }
     }
@@ -211,7 +271,6 @@ public class OwncloudFileService implements FileService {
         }
     }
 
-
     private String generateOutputDirName() {
         return outputDir + "-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss-SSS"));
     }
@@ -229,7 +288,7 @@ public class OwncloudFileService implements FileService {
         try {
             Files.delete(inputFilePath);
         } catch (IOException e) {
-            handleException(e, "Could not remove symbolic link [%s]", inputFilePath.toString());
+            throw new RuntimeIOException(String.format("Could not remove symbolic link [%s]", inputFilePath.toString()), e);
         }
     }
 
@@ -248,9 +307,9 @@ public class OwncloudFileService implements FileService {
             Files.createSymbolicLink(inputFilePath, owncloudFilePath);
             logger.info(String.format("Created symbolic link for [%s]", inputFilePath.toString()));
         } catch (IOException e) {
-            handleException(e,
-                    "Could not create symbolic link between owncloud [%s] and input [%s]",
-                    owncloudFilePath.toString(), inputFilePath.toString()
+            throw new RuntimeIOException(
+                    String.format("Could not create symbolic link between owncloud [%s] and input [%s]",
+                    owncloudFilePath.toString(), inputFilePath.toString()), e
             );
         }
     }

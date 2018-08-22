@@ -10,8 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.ArrayList;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.getDeployStatus;
+import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.DEPLOYED;
 
 public class DeploymentServiceImpl implements DeploymentService {
 
@@ -33,7 +32,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     @Override
     public DeploymentStatusReport deploy(
             DeploymentRequest request,
-            ExceptionalConsumer<DeploymentStatusReport> deploymentConsumer
+            FinishDeploymentConsumer<DeploymentStatusReport> deploymentConsumer
     ) {
         DeploymentStatusReport report = requestDeployment(request);
         requestRepositoryService.saveDeploymentRequest(report, deploymentConsumer);
@@ -49,7 +48,13 @@ public class DeploymentServiceImpl implements DeploymentService {
 
         HttpResponse<String> response = sendRequest(report.getUri());
         report.setMsg(response.getBody());
-        report.setStatus(getDeployStatus(response.getStatus()));
+        int httpStatus = response.getStatus();
+
+        if(httpStatus == 200) {
+            report.setStatus(DEPLOYED);
+        } else {
+            report.setStatus(DeploymentStatus.getDeployStatus(httpStatus));
+        }
 
         return report;
     }
@@ -66,7 +71,6 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     @Override
     public DeploymentStatusReport getStatus(String workDir) {
-        logger.info(String.format("Polling deployment [%s]", workDir));
         return requestRepositoryService.getStatusReport(workDir);
     }
 
@@ -83,7 +87,7 @@ public class DeploymentServiceImpl implements DeploymentService {
             logger.info(String.format("Started deployment of [%s]", uri.toString()));
             return response;
         } catch (UnirestException e) {
-            return handleException(e, "Could not start deployment of [%s]", uri.toString());
+            throw new RuntimeException(String.format("Could not start deployment of [%s]", uri.toString()), e);
         }
     }
 

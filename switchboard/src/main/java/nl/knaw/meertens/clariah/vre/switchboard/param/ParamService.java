@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.param;
 
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecordDto;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecord;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +23,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 
 public class ParamService {
 
@@ -46,18 +47,31 @@ public class ParamService {
         this.servicesRegistryService = servicesRegistryService;
     }
 
-    public CmdiDto getParams(long serviceId) {
-        ServiceRecordDto service = servicesRegistryService.getService(serviceId);
-        CmdiDto cmdiDto = new CmdiDto();
-        cmdiDto.id = serviceId;
-        cmdiDto.name = service.name;
-        cmdiDto.params = convertCmdiXmlToParams(service.semantics);
-        return cmdiDto;
+    public Cmdi getParams(long serviceId) {
+        ServiceRecord service = servicesRegistryService.getService(serviceId);
+        Cmdi params = new Cmdi();
+        params.id = serviceId;
+        params.name = service.getName();
+        params.kind = ServiceKind.fromKind(service.getKind());
+        params.params = convertCmdiXmlToParams(service.getSemantics());
+        if(params.kind.equals(ServiceKind.VIEWER)) {
+            params.params = removeOutputParam(params.params);
+        }
+        return params;
     }
 
-    private List<ParamDto> convertCmdiXmlToParams(String cmdi) {
+    /**
+     * Remove output param because it will be set by switchboard
+     */
+    private List<Param> removeOutputParam(List<Param> params) {
+        return params.stream()
+                .filter(p -> !p.name.equals("output"))
+                .collect(Collectors.toList());
+    }
 
-        List<ParamDto> result = new ArrayList<>();
+    private List<Param> convertCmdiXmlToParams(String cmdi) {
+
+        List<Param> result = new ArrayList<>();
 
         try {
             InputSource inputSource = new InputSource(new StringReader(cmdi));
@@ -82,15 +96,15 @@ public class ParamService {
 
             return result;
         } catch (SAXException | IOException | XPathExpressionException e) {
-            return handleException(e, String.format("Could not parse cmdi xml [%s]", cmdi));
+            throw new RuntimeException(String.format("Could not parse cmdi xml [%s]", cmdi), e);
         }
     }
 
-    private List<ParamGroupDto> mapParameterGroups(NodeList groups) {
-        List<ParamGroupDto> result = new ArrayList<>();
+    private List<ParamGroup> mapParameterGroups(NodeList groups) {
+        List<ParamGroup> result = new ArrayList<>();
         for (int i = 0; i < groups.getLength(); i++) {
             Node xmlGroup = groups.item(i);
-            ParamGroupDto paramGroup = new ParamGroupDto();
+            ParamGroup paramGroup = new ParamGroup();
             mapParameter(xmlGroup, paramGroup);
             NodeList parameters = ((Element) xmlGroup).getElementsByTagName("cmdp:Parameters").item(0).getChildNodes();
             paramGroup.params.addAll(mapParameters(parameters));
@@ -99,21 +113,21 @@ public class ParamService {
         return result;
     }
 
-    private List<ParamDto> mapParameters(NodeList parameters) {
-        List<ParamDto> result = new ArrayList<>();
+    private List<Param> mapParameters(NodeList parameters) {
+        List<Param> result = new ArrayList<>();
         for (int i = 0; i < parameters.getLength(); i++) {
             Node xmlParam = parameters.item(i);
             if(!xmlParam.getNodeName().equals("cmdp:Parameter")) {
                 continue;
             }
-            ParamDto param = new ParamDto();
+            Param param = new Param();
             mapParameter(xmlParam, param);
             result.add(param);
         }
         return result;
     }
 
-    private <T extends ParamDto> void mapParameter(Node xmlParam, T result) {
+    private <T extends Param> void mapParameter(Node xmlParam, T result) {
         NodeList xmlValues = xmlParam.getChildNodes();
         for (int k = 0; k < xmlValues.getLength(); k++) {
             Node node = xmlValues.item(k);

@@ -5,6 +5,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.mockserver.model.Header;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -19,6 +21,8 @@ import static org.mockserver.model.HttpResponse.response;
 
 public class ParamControllerTest extends AbstractControllerTest {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Test
     public void getCmdiForTest() throws IOException {
         startGetServiceByIdRegistryMock();
@@ -28,14 +32,22 @@ public class ParamControllerTest extends AbstractControllerTest {
                 .get();
 
         String json = response.readEntity(String.class);
-        System.out.println("json" + json);
+        logger.info("params json: " + json);
         assertThat(response.getStatus()).isEqualTo(200);
+
+        // main fields:
+        assertThatJson(json).node("id").isEqualTo("1");
+        assertThatJson(json).node("name").isEqualTo("TEST");
+        assertThatJson(json).node("kind").isEqualTo("service");
+
+        // integer param with label:
         assertThatJson(json).node("params[0].name").isEqualTo("input");
         assertThatJson(json).node("params[0].label").isEqualTo("Input text");
         assertThatJson(json).node("params[0].type").isEqualTo("integer");
         assertThatJson(json).node("params[0].minimumCardinality").isEqualTo("\"1\"");
         assertThatJson(json).node("params[0].maximumCardinality").isEqualTo("*");
 
+        // enumeration param with two values:
         assertThatJson(json).node("params[1].name").isEqualTo("red-pill-and-blue-pill");
         assertThatJson(json).node("params[1].label").isEqualTo("Red pill and blue pill");
         assertThatJson(json).node("params[1].type").isEqualTo("enumeration");
@@ -51,15 +63,18 @@ public class ParamControllerTest extends AbstractControllerTest {
         assertThatJson(json).node("params[1].values[1].label").isEqualTo("Blue");
         assertThatJson(json).node("params[1].values[1].description").matches(containsString("happiness"));
 
+        // file param:
         assertThatJson(json).node("params[2].name").isEqualTo("inputfile");
         assertThatJson(json).node("params[2].label").isEqualTo("Input file");
         assertThatJson(json).node("params[2].type").isEqualTo("file");
 
+        // param with two params:
         assertThatJson(json).node("params[3].params").isArray().ofLength(2);
         assertThatJson(json).node("params[3].params[0].name").isEqualTo("language");
         assertThatJson(json).node("params[3].params[0].values[0].label").isEqualTo("Dutch");
         assertThatJson(json).node("params[3].params[1].name").isEqualTo("author");
 
+        // param with one param:
         assertThatJson(json).node("params[4].name").isEqualTo("second-param-group");
         assertThatJson(json).node("params[4].params").isArray().ofLength(1);
         assertThatJson(json).node("params[4].params[0].name").isEqualTo("second-param-group-param");
@@ -71,7 +86,8 @@ public class ParamControllerTest extends AbstractControllerTest {
 
         JSONObject obj = new JSONObject();
         obj.put("id", "1");
-        obj.put("type", "TEST");
+        obj.put("name", "TEST");
+        obj.put("kind", "service");
         obj.put("semantics", cmdi);
         final String json = obj.toString();
 

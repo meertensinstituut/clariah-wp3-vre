@@ -6,7 +6,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class DeploymentStatusReport {
+public class DeploymentStatusReport implements Cloneable {
 
     /**
      * Date and time that deployment was polled
@@ -25,6 +25,28 @@ public class DeploymentStatusReport {
     private URI uri;
     private String workDir;
     private List<String> files;
+    private String viewerFile;
+
+    DeploymentStatusReport() {
+        super();
+    }
+
+    /**
+     * Make a copy
+     * @param original
+     */
+    public DeploymentStatusReport(DeploymentStatusReport original) {
+        this.polled = original.polled;
+        this.interval = original.interval;
+        this.status = original.status;
+        this.msg = original.msg;
+        this.outputDir = original.outputDir;
+        this.service = original.service;
+        this.uri = original.uri;
+        this.workDir = original.workDir;
+        this.files = original.files;
+        this.viewerFile = original.viewerFile;
+    }
 
     public DeploymentStatus getStatus() {
         return status;
@@ -98,4 +120,13 @@ public class DeploymentStatusReport {
     public void setInterval(int interval) {
         this.interval = interval;
     }
+
+    public void setViewerFile(String outputFile) {
+        this.viewerFile = outputFile;
+    }
+
+    public String getViewerFile() {
+        return viewerFile;
+    }
+
 }

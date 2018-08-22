@@ -53,7 +53,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         String workDir = startDeploymentWithInputFileId(inputFileId);
         logger.info(String.format("deployment has workdir [%s]", workDir));
 
-        checkDeploymentStatus(workDir, 6, "RUNNING");
+        checkDeploymentStatus(workDir, 20, "RUNNING");
 
         // wait for occ cronjob to scan all files:
         // (see owncloud/docker-scan-files.sh)

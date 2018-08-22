@@ -1,7 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.registry.objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
@@ -46,7 +44,7 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
             logger.info(String.format("Requested [%d] from registry, received object of [%s]", id, result.filepath));
             return result;
         } catch (IOException | UnirestException e) {
-            return handleException(e, "Could not retrieve object record [%d] from registry", id.toString());
+            throw new RuntimeException(String.format("Could not retrieve object record [%d] from registry", id.toString()), e);
         }
     }
 

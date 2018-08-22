@@ -1,11 +1,14 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import nl.knaw.meertens.clariah.vre.switchboard.param.Param;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConfigParamDto {
     public String name;
     public ParamType type;
     public String value;
-    public JsonNode params;
+    public List<Param> params = new ArrayList<>();
 }

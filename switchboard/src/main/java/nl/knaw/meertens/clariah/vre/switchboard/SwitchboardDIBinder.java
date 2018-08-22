@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
-import nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler;
+import nl.knaw.meertens.clariah.vre.switchboard.exception.CommonExceptionMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecService;
 import nl.knaw.meertens.clariah.vre.switchboard.health.HealthController;
@@ -18,7 +18,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistry
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -41,7 +40,8 @@ public class SwitchboardDIBinder extends AbstractBinder {
             HealthController.class,
             ExecController.class,
             ObjectController.class,
-            ParamController.class
+            ParamController.class,
+            CommonExceptionMapper.class
     );
 
     private static ObjectMapper mapper = null;
@@ -63,11 +63,10 @@ public class SwitchboardDIBinder extends AbstractBinder {
 
     @Override
     protected void configure() {
-        bind(new ExecService(getMapper(), objectsRegistryService, deploymentService)).to(ExecService.class);
+        bind(new ExecService(getMapper(), objectsRegistryService, deploymentService, serviceRegistryService)).to(ExecService.class);
         bind(new ObjectService(objectsRegistryService,serviceRegistryService)).to(ObjectService.class);
         bind(new ParamService(serviceRegistryService)).to(ParamService.class);
         bind(getMapper()).to(ObjectMapper.class);
-        ExceptionHandler.setMapper(getMapper());
     }
 
     /**

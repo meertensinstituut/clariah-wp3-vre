@@ -8,9 +8,14 @@ Tools, languages and techniques:
  - Jersey
 
 ## Deployment
+
 - Run: `./start-switchboard.sh`. Runs at: `localhost:9010/switchboard`
 
-- To rerun in context of vre, run in container: `../tomcat/bin/shutdown.sh && ./docker/docker-run-switchboard.sh`
+- Redeploy: `docker exec vre_switchboard_1 bash -c "../tomcat/bin/shutdown.sh && ./docker/docker-run-switchboard.sh"`
+
+## Testing
+
+Run: `docker exec vre_switchboard_1 mvn clean test`
 
 ## Workflow
 - A service deployment request contains a list of input files.
@@ -38,7 +43,7 @@ Get services matching profile of object (atm only based on mimetype)
 ## How to request a deployment with switchboard
 `POST localhost:9010/switchboard/rest/exec/<service>` with json body containing info needed by service.
 
-Format of json body:
+Example format of json body:
 ```
 {
   "params": [
@@ -61,7 +66,7 @@ The value of `value` should refer to an ID in the object registry. Switchboard c
 Switchboard replaces these ids with file paths.
 The converted json is saved in a file called `config.json` in which deployment-service looks for parameters to deploy the requested service.
 
-Format of `config.json`:
+Example format of `config.json`:
 ```
 {
   "params": [
@@ -80,4 +85,9 @@ Format of `config.json`:
 }
 ```
 
-
+## Deployment status codes:
+- DEPLOYED        (201 - Created) 
+- RUNNING         (202 - Accepted) 
+- FINISHED        (200 - OK)
+- NOT_FOUND       (404 - Not Found)
+- ALREADY_RUNNING (403 - Forbidden) 

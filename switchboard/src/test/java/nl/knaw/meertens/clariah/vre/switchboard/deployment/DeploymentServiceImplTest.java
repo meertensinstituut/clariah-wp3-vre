@@ -21,19 +21,19 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Test
-    public void testStart_requestsDeploymentUrl() throws IOException {
+    public void postDeploymentRequest_shouldRequestsDeployment() throws IOException {
         String expectedService = "UCTO";
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
 
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
 
         String json = deployResponse.readEntity(String.class);
-        assertThat(deployResponse.getStatus()).isEqualTo(200);
+        assertThat(deployResponse.getStatus()).isEqualTo(201);
         assertThatJson(json).node("status").isEqualTo("DEPLOYED");
     }
 
     @Test
-    public void testStart_requestsDeploymentUrl_whenAlreadyRunning() throws IOException {
+    public void postDeploymentRequest_shouldNotRequestsDeployment_whenAlreadyRunning() throws IOException {
         String expectedService = "UCTO";
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
 
@@ -44,12 +44,12 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
                         .withMethod("PUT")
                         .withPath("/deployment-service/a/exec/UCTO/.*")
         );
-        startDeployMockServer(403);
+        startDeployMockServerWithUcto(403);
 
         Response secondTimeResponse = deploy(expectedService, deploymentRequestDto);
 
         String json = secondTimeResponse.readEntity(String.class);
-        logger.info(json);
+        logger.info("testStart_requestsDeployment_whenAlreadyRunning: " + json);
         assertThat(secondTimeResponse.getStatus()).isEqualTo(403);
         assertThatJson(json).node("status").isEqualTo("ALREADY_RUNNING");
 
@@ -57,21 +57,12 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
         setDeployBackTo200();
     }
 
-    private void setDeployBackTo200() {
-        mockServer.clear(
-                request()
-                        .withMethod("PUT")
-                        .withPath("/deployment-service/a/exec/UCTO/.*")
-        );
-        startDeployMockServer(200);
-    }
-
     @Test
-    public void testGetStatus_whenRunning() throws IOException, InterruptedException {
+    public void getDeploymentStatus_whenRunning() throws IOException, InterruptedException {
         Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}");
+        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
 
         Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
         String json = waitUntil(request, RUNNING);
@@ -79,15 +70,24 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
     }
 
     @Test
-    public void testGetStatus_whenNotFound() throws Exception {
+    public void getDeploymentStatus_whenNotFound() throws Exception {
         Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}");
+        startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}", "UCTO");
 
         Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
         String json = waitUntil(request, NOT_FOUND);
         assertThatJson(json).node("status").isEqualTo("NOT_FOUND");
     }
 
+
+    private void setDeployBackTo200() {
+        mockServer.clear(
+                request()
+                        .withMethod("PUT")
+                        .withPath("/deployment-service/a/exec/UCTO/.*")
+        );
+        startDeployMockServerWithUcto(200);
+    }
 }

@@ -46,16 +46,20 @@ public class Initializer extends AbstractIntegrationTest {
         logger.info("Finished initialisation of VRE Integration");
     }
 
-    private void waitUntilSwitchboardIsUp() throws UnirestException, InterruptedException {
+    private void waitUntilSwitchboardIsUp() throws InterruptedException {
         GetRequest getHealthRequest = Unirest.get(SWITCHBOARD_ENDPOINT + "/health");
         HttpResponse<String> response;
+        int status = 0;
         int waited = 0;
         do {
             TimeUnit.SECONDS.sleep(1);
             waited++;
-            response = getHealthRequest.asString();
-            logger.info("Poll switchboard...");
-        } while(response.getStatus() != 200 && waited < WAITING_PERIOD);
+            try {
+                response = getHealthRequest.asString();
+                status = response.getStatus();
+            } catch(UnirestException ignored) {}
+            logger.info("Switchboard not up yet...");
+        } while(status != 200 && waited < WAITING_PERIOD);
         assertThat(waited).isLessThan(WAITING_PERIOD);
         logger.info("Switchboard is up");
     }
