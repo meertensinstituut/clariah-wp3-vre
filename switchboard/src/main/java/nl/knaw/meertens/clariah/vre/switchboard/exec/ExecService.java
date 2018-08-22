@@ -14,7 +14,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentResultDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentStartDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaOwncloudCreateFileDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
-import nl.knaw.meertens.clariah.vre.switchboard.param.ParamDto;
+import nl.knaw.meertens.clariah.vre.switchboard.param.Param;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamGroup;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamType;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
@@ -121,7 +122,7 @@ public class ExecService {
                     throw new UnsupportedOperationException(String.format("Unsupported deployment of service with kind [%s]", kind));
             }
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Could not prepare deployment of [%s]", serviceName), e);
+            return handleException(e, "Could not prepare deployment of [%s]", serviceName);
         }
 
         List<String> files = new ArrayList<>(request.getFiles().values());
@@ -141,14 +142,16 @@ public class ExecService {
     }
 
     private void addViewerOutputParam(DeploymentRequest result) {
-        ParamDto output = new ParamDto();
+        Param output = new Param();
         output.name = "output";
         output.type = STRING;
         output.value = result.getParams()
                 .stream()
                 .filter(p -> p.name.equals("input"))
                 .findFirst()
-                .orElseGet(() -> {throw new IllegalStateException(String.format("No input field in params for deployment of viewer [%s]", result.getService()));})
+                .orElseGet(() -> {
+                    throw new IllegalStateException(String.format("No input field in params for deployment of viewer [%s]", result.getService()));
+                })
                 .value;
         result.getParams().add(output);
     }
@@ -220,7 +223,7 @@ public class ExecService {
                 report.getWorkDir(),
                 report.getFiles().get(0)
         );
-        if(outputFiles.isEmpty()) {
+        if (outputFiles.isEmpty()) {
             logger.warn(String.format("Deployment [%s] with service [%s] did not produce any output files", report.getWorkDir(), report.getService()));
         } else {
             report.setOutputDir(outputFiles.get(0).getParent().toString());
@@ -259,12 +262,14 @@ public class ExecService {
 
     private ConfigDto mapRequestToConfig(DeploymentRequest serviceRequest) {
         ConfigDto config = new ConfigDto();
-        config.params = serviceRequest.getParams().stream().map(file -> {
+        config.params = serviceRequest.getParams().stream().map(param -> {
             ConfigParamDto fileDto = new ConfigParamDto();
-            fileDto.name = file.name;
-            fileDto.type = file.type;
-            fileDto.params = file.params;
-            fileDto.value = file.value;
+            fileDto.name = param.name;
+            fileDto.type = param.type;
+            fileDto.value = param.value;
+            if (param instanceof ParamGroup) {
+                fileDto.params = ((ParamGroup) param).params;
+            }
             return fileDto;
         }).collect(Collectors.toList());
         return config;
@@ -305,13 +310,13 @@ public class ExecService {
                 service,
                 workDir,
                 LocalDateTime.now(),
-                deploymentRequestDto.params
+                newArrayList(deploymentRequestDto.params)
         );
     }
 
     private HashMap<Long, String> requestFilesFromRegistry(DeploymentRequest serviceRequest) {
         HashMap<Long, String> files = new HashMap<>();
-        for (ParamDto param : serviceRequest.getParams()) {
+        for (Param param : serviceRequest.getParams()) {
             if (param.type.equals(ParamType.FILE)) {
                 Long objectId = Long.valueOf(param.value);
                 ObjectsRecordDTO record = objectsRegistryService.getObjectById(objectId);
@@ -322,10 +327,10 @@ public class ExecService {
     }
 
     private void replaceObjectIdsWithPaths(
-            List<ParamDto> params,
+            List<Param> params,
             HashMap<Long, String> registryPaths
     ) {
-        for (ParamDto param : params) {
+        for (Param param : params) {
             if (param.type.equals(ParamType.FILE)) {
                 param.value = registryPaths.get(Long.valueOf(param.value));
             }

@@ -3,7 +3,8 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
-import nl.knaw.meertens.clariah.vre.switchboard.param.ParamDto;
+import nl.knaw.meertens.clariah.vre.switchboard.param.Param;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamGroup;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +31,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleException;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
 import static org.assertj.core.util.Lists.newArrayList;
@@ -71,6 +71,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         createTestFileWithRegistryObject();
         mockServer = ClientAndServer.startClientAndServer(1080);
         startDeployMockServerWithUcto(200);
+        startServicesRegistryMockServer(dummyUctoService);
         isSetUp = true;
     }
 
@@ -101,19 +102,25 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     protected DeploymentRequestDto getDeploymentRequestDto(String id) throws IOException {
-        DeploymentRequestDto deploymentRequestDto = new DeploymentRequestDto();
-        ParamDto paramDto = new ParamDto();
-        paramDto.name = "untokinput";
-        paramDto.type = FILE;
-        paramDto.value = id;
-        paramDto.params = getMapper().readTree("[{\"language\": \"eng\", \"author\": \"" + longName + "\"}]");
-        deploymentRequestDto.params.add(paramDto);
-        return deploymentRequestDto;
+        DeploymentRequestDto deploymentRequest = new DeploymentRequestDto();
+        ParamGroup paramGroup = new ParamGroup();
+        paramGroup.name = "untokinput";
+        paramGroup.type = FILE;
+        paramGroup.value = id;
+        Param param = new Param();
+        param.name = "language";
+        param.value = "eng";
+        Param param2 = new Param();
+        param2.name = "author";
+        param2.value = longName;
+        paramGroup.params = newArrayList(param, param2);
+        deploymentRequest.params.add(paramGroup);
+        return deploymentRequest;
     }
 
     protected DeploymentRequestDto getViewerDeploymentRequestDto(String id) throws IOException {
         DeploymentRequestDto deploymentRequestDto = new DeploymentRequestDto();
-        ParamDto paramDto = new ParamDto();
+        ParamGroup paramDto = new ParamGroup();
         paramDto.name = "input";
         paramDto.type = FILE;
         paramDto.value = id;
@@ -179,7 +186,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 );
     }
 
-    protected void startServicesRegistryMockServer(String serviceJson) {
+    protected static void startServicesRegistryMockServer(String serviceJson) {
         mockServer
                 .when(
                         request()

@@ -48,9 +48,9 @@ public class ParamService {
         this.servicesRegistryService = servicesRegistryService;
     }
 
-    public CmdiDto getParams(long serviceId) {
+    public Cmdi getParams(long serviceId) {
         ServiceRecord service = servicesRegistryService.getService(serviceId);
-        CmdiDto params = new CmdiDto();
+        Cmdi params = new Cmdi();
         params.id = serviceId;
         params.name = service.getName();
         params.kind = ServiceKind.fromKind(service.getKind());
@@ -64,15 +64,15 @@ public class ParamService {
     /**
      * Remove output param because it will be set by switchboard
      */
-    private List<ParamDto> removeOutputParam(List<ParamDto> params) {
+    private List<Param> removeOutputParam(List<Param> params) {
         return params.stream()
                 .filter(p -> !p.name.equals("output"))
                 .collect(Collectors.toList());
     }
 
-    private List<ParamDto> convertCmdiXmlToParams(String cmdi) {
+    private List<Param> convertCmdiXmlToParams(String cmdi) {
 
-        List<ParamDto> result = new ArrayList<>();
+        List<Param> result = new ArrayList<>();
 
         try {
             InputSource inputSource = new InputSource(new StringReader(cmdi));
@@ -101,11 +101,11 @@ public class ParamService {
         }
     }
 
-    private List<ParamGroupDto> mapParameterGroups(NodeList groups) {
-        List<ParamGroupDto> result = new ArrayList<>();
+    private List<ParamGroup> mapParameterGroups(NodeList groups) {
+        List<ParamGroup> result = new ArrayList<>();
         for (int i = 0; i < groups.getLength(); i++) {
             Node xmlGroup = groups.item(i);
-            ParamGroupDto paramGroup = new ParamGroupDto();
+            ParamGroup paramGroup = new ParamGroup();
             mapParameter(xmlGroup, paramGroup);
             NodeList parameters = ((Element) xmlGroup).getElementsByTagName("cmdp:Parameters").item(0).getChildNodes();
             paramGroup.params.addAll(mapParameters(parameters));
@@ -114,21 +114,21 @@ public class ParamService {
         return result;
     }
 
-    private List<ParamDto> mapParameters(NodeList parameters) {
-        List<ParamDto> result = new ArrayList<>();
+    private List<Param> mapParameters(NodeList parameters) {
+        List<Param> result = new ArrayList<>();
         for (int i = 0; i < parameters.getLength(); i++) {
             Node xmlParam = parameters.item(i);
             if(!xmlParam.getNodeName().equals("cmdp:Parameter")) {
                 continue;
             }
-            ParamDto param = new ParamDto();
+            Param param = new Param();
             mapParameter(xmlParam, param);
             result.add(param);
         }
         return result;
     }
 
-    private <T extends ParamDto> void mapParameter(Node xmlParam, T result) {
+    private <T extends Param> void mapParameter(Node xmlParam, T result) {
         NodeList xmlValues = xmlParam.getChildNodes();
         for (int k = 0; k < xmlValues.getLength(); k++) {
             Node node = xmlValues.item(k);

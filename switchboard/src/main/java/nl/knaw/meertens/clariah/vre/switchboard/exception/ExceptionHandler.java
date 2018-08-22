@@ -25,6 +25,7 @@ public class ExceptionHandler {
      */
     public static <T> T handleException(Throwable e, String template, Object... args) {
         String msg = String.format(template, Arrays.stream(args).map(Object::toString).toArray());
+        logger.error(msg, e);
         throw new RuntimeException(msg, e);
     }
 

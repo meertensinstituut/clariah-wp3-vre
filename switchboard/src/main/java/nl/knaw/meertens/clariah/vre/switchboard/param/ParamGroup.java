@@ -6,6 +6,6 @@ import java.util.List;
 /**
  * A ParamGroup is a Param that contains a list of Params
  */
-public class ParamGroupDto extends ParamDto {
-    public List<ParamDto> params = new ArrayList<>();
+public class ParamGroup extends Param {
+    public List<Param> params = new ArrayList<>();
 }

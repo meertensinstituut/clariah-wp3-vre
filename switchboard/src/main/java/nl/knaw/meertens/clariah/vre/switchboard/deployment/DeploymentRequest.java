@@ -1,7 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import nl.knaw.meertens.clariah.vre.switchboard.param.ParamDto;
+import nl.knaw.meertens.clariah.vre.switchboard.param.Param;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -24,13 +24,13 @@ public class DeploymentRequest {
 
     private final String service;
     private final String workDir;
-    private final List<ParamDto> dto;
+    private final List<Param> params;
 
-    public DeploymentRequest(String service, String workDir, LocalDateTime dateTime, List<ParamDto> dto) {
+    public DeploymentRequest(String service, String workDir, LocalDateTime dateTime, List<Param> params) {
         this.service = service;
         this.workDir = workDir;
         this.dateTime = dateTime;
-        this.dto = dto;
+        this.params = params;
         this.files = new HashMap<>();
     }
 
@@ -42,8 +42,8 @@ public class DeploymentRequest {
         return dateTime;
     }
 
-    public List<ParamDto> getParams() {
-        return dto;
+    public List<Param> getParams() {
+        return params;
     }
 
     public HashMap<Long, String> getFiles() {

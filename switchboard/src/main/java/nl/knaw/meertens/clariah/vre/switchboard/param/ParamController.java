@@ -13,7 +13,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleControllerException;
 
 @Path("/services")
 public class ParamController extends AbstractController {
@@ -30,7 +29,7 @@ public class ParamController extends AbstractController {
     @Path("/{service}/params")
     @Produces(APPLICATION_JSON)
     public Response getParamsFor(@PathParam("service") Long service) {
-            CmdiDto cmdi = paramService.getParams(service);
+            Cmdi cmdi = paramService.getParams(service);
             return createResponse(cmdi);
     }
 

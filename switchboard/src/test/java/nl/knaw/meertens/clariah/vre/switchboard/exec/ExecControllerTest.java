@@ -6,7 +6,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,17 +125,21 @@ public class ExecControllerTest extends AbstractControllerTest {
 
         Path configFile = Paths.get(DEPLOYMENT_VOLUME, workDir, CONFIG_FILE_NAME);
         assertThat(configFile.toFile()).exists();
-        String configContent = new String(Files.readAllBytes(configFile));
-        ConfigDto config = new ObjectMapper().readValue(configContent, ConfigDto.class);
+        String configJson = new String(Files.readAllBytes(configFile));
+        ConfigDto config = new ObjectMapper().readValue(configJson, ConfigDto.class);
 
         assertThat(config.params.get(0).value).contains(uniqueTestFile);
         assertThat(config.params.get(0).name).isEqualTo("untokinput");
 
         assertThat(config.params.get(0).type).isEqualTo(FILE);
-        assertThatJson(configContent).node("params[0].type").isEqualTo("file");
+        assertThatJson(configJson).node("params[0].type").isEqualTo("file");
 
-        assertThat(config.params.get(0).params.get(0).get("language").asText()).isEqualTo("eng");
-        assertThat(config.params.get(0).params.get(0).get("author").asText()).isEqualTo(longName);
+        // sub params:
+        assertThat(config.params.get(0).params.size()).isEqualTo(2);
+        config.params.get(0).params.forEach(p -> {
+            assertThat(p.name).isIn("language", "author");
+            assertThat(p.value).isIn("eng", longName);
+        });
     }
 
     @Test

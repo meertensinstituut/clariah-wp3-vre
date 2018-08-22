@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractController;
 import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardMsg;
@@ -19,7 +18,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static nl.knaw.meertens.clariah.vre.switchboard.exception.ExceptionHandler.handleControllerException;
 
 @Path("/exec")
 public class ExecController extends AbstractController {
