@@ -189,6 +189,8 @@ public class Folia implements RecipePlugin {
     
     public JSONObject runProject(String key) throws IOException, MalformedURLException, MalformedURLException, JDOMException, ParseException, ConfigurationException {
         final String outputPathConst = "output";
+        final String inputPathConst = "input";
+        
         JSONObject json = new JSONObject();
         DeploymentLib dplib = new DeploymentLib();
         
@@ -199,8 +201,8 @@ public class Folia implements RecipePlugin {
         
         JSONObject inputOjbect = (JSONObject) params.get(0);
         String inputFile = (String) inputOjbect.get("value");
-        String fullInputPath = Paths.get(workDir, projectName, inputFile).normalize().toString();
-        String inputPath = Paths.get(workDir, projectName).normalize().toString();
+        String fullInputPath = Paths.get(workDir, projectName, inputPathConst, inputFile).normalize().toString();
+        String inputPath = Paths.get(workDir, projectName, inputPathConst).normalize().toString();
         System.out.println(String.format("### inputPath: %s ###", inputPath));
         System.out.println(String.format("### Full Input Path: %s ###", fullInputPath));
         
