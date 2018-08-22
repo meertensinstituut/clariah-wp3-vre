@@ -30,7 +30,7 @@ public class DeployServiceByFileTest extends AbstractIntegrationTest {
         assertThatJson(json).node("[0].name").isEqualTo("TEST");
 
         String workDir = startDeploymentWithInputFileId(inputFileId);
-        checkDeploymentStatus(workDir, 6, "RUNNING");
+        checkDeploymentStatus(workDir, 20, "RUNNING");
 
     }
 }

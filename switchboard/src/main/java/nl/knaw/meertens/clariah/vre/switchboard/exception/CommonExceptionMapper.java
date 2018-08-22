@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import java.util.Arrays;
+import javax.ws.rs.ext.Provider;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 
@@ -16,6 +16,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMa
  * Jersey Exception Mapper that catches all Throwables,
  * logs them as an error and returns e.message as Response.
  */
+@Provider
 public class CommonExceptionMapper implements ExceptionMapper<Throwable> {
 
     private static ObjectMapper mapper = getMapper();

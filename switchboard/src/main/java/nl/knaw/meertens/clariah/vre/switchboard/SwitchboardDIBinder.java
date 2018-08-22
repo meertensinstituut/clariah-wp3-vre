@@ -40,7 +40,8 @@ public class SwitchboardDIBinder extends AbstractBinder {
             HealthController.class,
             ExecController.class,
             ObjectController.class,
-            ParamController.class
+            ParamController.class,
+            CommonExceptionMapper.class
     );
 
     private static ObjectMapper mapper = null;
