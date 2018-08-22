@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.meertens.clariah.vre.switchboard.AbstractController;
 import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardMsg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMa
  * logs them as an error and returns e.message as Response.
  */
 @Provider
-public class CommonExceptionMapper implements ExceptionMapper<Throwable> {
+public class CommonExceptionMapper extends AbstractController implements ExceptionMapper<Throwable> {
 
     private static ObjectMapper mapper = getMapper();
 
@@ -33,14 +34,7 @@ public class CommonExceptionMapper implements ExceptionMapper<Throwable> {
     }
 
     private Response createResponse(Throwable e, int httpStatus) {
-        try {
-            return Response
-                    .status(httpStatus)
-                    .entity(mapper.writeValueAsString(new SwitchboardMsg(
-                            e.getMessage()
-                    ))).build();
-        } catch (JsonProcessingException eJson) {
-            return createResponse(eJson, 500);
-        }
+        SwitchboardMsg msg = new SwitchboardMsg(e.getMessage());
+        return createResponse(msg, httpStatus);
     }
 }

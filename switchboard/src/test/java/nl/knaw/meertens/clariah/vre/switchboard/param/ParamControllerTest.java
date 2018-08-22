@@ -24,8 +24,8 @@ public class ParamControllerTest extends AbstractControllerTest {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Test
-    public void getCmdiForTest() throws IOException {
-        startGetServiceByIdRegistryMock();
+    public void getParamsFor_whenService() throws IOException {
+        startGetServiceByIdRegistryMock("service", "test.cmdi", "TEST");
 
         Response response = jerseyTest.target("services/1/params")
                 .request()
@@ -80,14 +80,38 @@ public class ParamControllerTest extends AbstractControllerTest {
         assertThatJson(json).node("params[4].params[0].name").isEqualTo("second-param-group-param");
     }
 
-    private void startGetServiceByIdRegistryMock() throws IOException {
-        File file = new File(getClass().getClassLoader().getResource("test.cmdi").getFile());
-        String cmdi = FileUtils.readFileToString(file, UTF_8);
+    @Test
+    public void getParamsFor_whenViewer() throws IOException {
+        startGetServiceByIdRegistryMock("viewer", "viewer.cmdi", "VIEWER");
+
+        Response response = jerseyTest.target("services/1/params")
+                .request()
+                .get();
+
+        String json = response.readEntity(String.class);
+
+        assertThat(response.getStatus()).isEqualTo(200);
+
+        // main fields:
+        assertThatJson(json).node("id").isEqualTo("1");
+        assertThatJson(json).node("name").isEqualTo("VIEWER");
+        assertThatJson(json).node("kind").isEqualTo("viewer");
+
+        // only input param exists, output param is removed:
+        assertThatJson(json).node("params").isArray().ofLength(1);
+        assertThatJson(json).node("params[0].name").isEqualTo("input");
+        assertThatJson(json).node("params[0].type").isEqualTo("file");
+
+    }
+
+    private void startGetServiceByIdRegistryMock(String kind, String cmdiFileName, String name) throws IOException {
+        File cmdiFile = new File(getClass().getClassLoader().getResource(cmdiFileName).getFile());
+        String cmdi = FileUtils.readFileToString(cmdiFile, UTF_8);
 
         JSONObject obj = new JSONObject();
         obj.put("id", "1");
-        obj.put("name", "TEST");
-        obj.put("kind", "service");
+        obj.put("name", name);
+        obj.put("kind", kind);
         obj.put("semantics", cmdi);
         final String json = obj.toString();
 

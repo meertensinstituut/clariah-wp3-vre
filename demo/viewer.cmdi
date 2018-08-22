@@ -31,7 +31,7 @@
                 <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
               </cmdp:Parameter>
               <cmdp:Parameter>
-                <cmdp:Name>outputFilename</cmdp:Name>
+                <cmdp:Name>output</cmdp:Name>
                 <cmdp:DataType>string</cmdp:DataType>
                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
                 <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>

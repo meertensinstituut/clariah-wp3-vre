@@ -17,13 +17,8 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Path("/services")
 public class ParamController extends AbstractController {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Inject
     ParamService paramService;
-
-    @Inject
-    ObjectMapper mapper;
 
     @GET
     @Path("/{service}/params")
