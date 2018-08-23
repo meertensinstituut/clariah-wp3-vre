@@ -153,6 +153,7 @@ public class Text implements RecipePlugin {
     
     public JSONObject runProject(String key) throws IOException, MalformedURLException, MalformedURLException, JDOMException, ParseException, ConfigurationException {
         final String outputPathConst = "output";
+        final String inputPathConst = "input";
         JSONObject json = new JSONObject();
         DeploymentLib dplib = new DeploymentLib();
         
@@ -163,23 +164,34 @@ public class Text implements RecipePlugin {
         
         JSONObject inputOjbect = (JSONObject) params.get(0);
         String inputFile = (String) inputOjbect.get("value");
-        String inputPath = Paths.get(workDir, projectName).normalize().toString();
-        String fullInputPath = Paths.get(workDir, projectName, inputFile).normalize().toString();
+        String inputPath = Paths.get(workDir, projectName, inputPathConst).normalize().toString();
+        String fullInputPath = Paths.get(workDir, projectName, inputPathConst, inputFile).normalize().toString();
         System.out.println(String.format("### Full inputPath: %s ###", fullInputPath));
         System.out.println(String.format("### inputPath: %s ###", inputPath));
         
         String content = new String(Files.readAllBytes(Paths.get(fullInputPath)));
         
-        File outputPathAsFile = new File(Paths.get(inputPath, outputPathConst).normalize().toString());
+        JSONObject outputOjbect;
+        String outputFile;
+        if (params.size() > 1) {
+            outputOjbect = (JSONObject) params.get(1);
+            outputFile = (String) outputOjbect.get("value");
+        } else {
+            outputFile = inputFile;
+        }
+         
+        String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
+        String fullOutputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
+        System.out.println(String.format("### outputPath: %s ###", outputPath));
+        System.out.println(String.format("### Full outputPath: %s ###", fullOutputPath));
+        
+        File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
         if (! outputPathAsFile.exists()) {
-            outputPathAsFile.mkdir();
+            System.out.println(String.format("### Creating folder: %s ###", outputPathAsFile.toString()));
+            outputPathAsFile.mkdirs();
         }
         
-        JSONObject outputOjbect = (JSONObject) params.get(1);
-        String outputFile = (String) outputOjbect.get("value");
-        String outputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
-        System.out.println(String.format("### outputPath: %s ###", outputPath));
-        File file = new File(outputPath);
+        File file = new File(fullOutputPath);
         
         try (FileWriter fileWriter = new FileWriter(file)) {
             fileWriter.write("<pre>");
