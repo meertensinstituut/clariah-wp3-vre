@@ -74,6 +74,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         TimeUnit.SECONDS.sleep(6);
         String resultFile = checkDeploymentIsFinished(workDir);
 
+        TimeUnit.SECONDS.sleep(6);
         checkResultCanBeDownloaded(resultFile);
 
         checkFilesAreUnlocked(inputFile);

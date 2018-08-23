@@ -1,22 +1,26 @@
 package nl.knaw.meertens.clariah.vre.switchboard.poll;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusResponseDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
+import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.LocalDateTime.now;
+import static java.util.Objects.isNull;
+import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class PollServiceImpl implements PollService {
@@ -74,30 +78,41 @@ public class PollServiceImpl implements PollService {
 
     private void poll() {
         for (DeploymentStatusReport report : requestRepositoryService.getAllStatusReports()) {
-            if (inNeedOfPolling(report)) {
+            if (shouldPoll(report)) {
                 String workDir = report.getWorkDir();
                 logger.info(String.format("Polling [%s]", workDir));
+                report.setPolled(now());
 
-                DeploymentStatusReport newReport = getDeploymentStatus(report);
-                runConsumer(newReport);
-                requestRepositoryService.saveStatusReport(newReport);
+                report = getDeploymentStatus(report);
+                runConsumer(report);
+                requestRepositoryService.saveStatusReport(report);
 
                 logger.info(String.format(
                         "Polled deployment [%s]; received status [%s]",
-                        newReport.getWorkDir(), newReport.getStatus()
+                        report.getWorkDir(), report.getStatus()
                 ));
             }
         }
     }
 
-    private boolean inNeedOfPolling(DeploymentStatusReport report) {
-        return report.getStatus() != DeploymentStatus.FINISHED;
+    private boolean shouldPoll(DeploymentStatusReport report) {
+        LocalDateTime lastPoll = report.getPolled();
+        if(isNull(lastPoll)) {
+            return true;
+        }
+
+        LocalDateTime nextPoll = lastPoll
+                .plusSeconds(report.getInterval());
+
+        return report.getStatus() != FINISHED
+                &&
+                now().isAfter(nextPoll);
     }
 
     private void runConsumer(DeploymentStatusReport report) {
+        FinishDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer =
+                requestRepositoryService.getConsumer(report.getWorkDir());
         try {
-            FinishDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer =
-                    requestRepositoryService.getConsumer(report.getWorkDir());
             finishDeploymentConsumer.accept(report);
         } catch (Exception e) {
             logger.error(String.format("Consumer of deployment [%s] threw exception", report.getWorkDir()), e);
@@ -109,7 +124,7 @@ public class PollServiceImpl implements PollService {
 
         URI uri = createDeploymentStatusUri(report);
         DeploymentStatusResponseDto response = requestDeploymentStatusReport(uri);
-        result.setStatus(DeploymentStatus.getDeployStatus(response.httpStatus));
+        result.setStatus(getDeployStatus(response.httpStatus));
         result.setMsg(response.message);
         result.setPolled(now());
         result.setInterval(calculateNewInterval(report.getInterval()));
@@ -121,19 +136,24 @@ public class PollServiceImpl implements PollService {
     }
 
     private DeploymentStatusResponseDto requestDeploymentStatusReport(URI uri) {
-        DeploymentStatusResponseDto response = new DeploymentStatusResponseDto();
         try {
+            DeploymentStatusResponseDto response;
             HttpResponse<String> httpResponse = Unirest
                     .get(uri.toString())
                     .asString();
-            response = isBlank(httpResponse.getBody())
-                    ? new DeploymentStatusResponseDto()
-                    : mapper.readValue(httpResponse.getBody(), DeploymentStatusResponseDto.class);
+            if (isBlank(httpResponse.getBody())) {
+                response = new DeploymentStatusResponseDto();
+            } else {
+                response = mapper.readValue(
+                        httpResponse.getBody(),
+                        DeploymentStatusResponseDto.class
+                );
+            }
             response.httpStatus = httpResponse.getStatus();
+            return response;
         } catch (UnirestException | IOException e) {
-            logger.error(String.format("Deployment status request failed for [%s]", uri.toString()), e);
+            throw new RuntimeIOException(String.format("Deployment status request failed for [%s]", uri.toString()), e);
         }
-        return response;
     }
 
     private URI createDeploymentStatusUri(DeploymentStatusReport report) {

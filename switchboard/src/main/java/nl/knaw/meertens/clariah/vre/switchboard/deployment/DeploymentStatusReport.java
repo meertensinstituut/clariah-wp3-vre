@@ -27,7 +27,7 @@ public class DeploymentStatusReport implements Cloneable {
     private List<String> files;
     private String viewerFile;
 
-    DeploymentStatusReport() {
+    public DeploymentStatusReport() {
         super();
     }
 

@@ -9,6 +9,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusRepor
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
@@ -19,6 +21,8 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.LocalDateTime.now;
+import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
@@ -26,12 +30,14 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class PollingServiceImplTest extends AbstractControllerTest {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Test
     public void testDeploymentStatusReportFile() throws Exception {
         ObjectsRecordDTO object = createTestFileWithRegistryObject();
         String uniqueTestFile = object.filepath;
 
-        LocalDateTime startTest = LocalDateTime.now();
+        LocalDateTime startTest = now();
         String expectedService = "UCTO";
         DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
@@ -54,17 +60,50 @@ public class PollingServiceImplTest extends AbstractControllerTest {
         String json = deployResponse.readEntity(String.class);
         String workDir = JsonPath.parse(json).read("$.workDir");
 
-        int pollInterval = getPollIntervalFromReportFile(workDir);
-        assertThat(pollInterval).isGreaterThanOrEqualTo(1);
-        assertThat(pollInterval).isLessThanOrEqualTo(3);
+        DeploymentStatusReport report = waitUntillDeploymentIsPolled(workDir);
 
-        Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
-        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
-        TimeUnit.SECONDS.sleep(pollInterval + 5);
-        waitUntil(request, FINISHED);
+        LocalDateTime firstTimePolled = report.getPolled();
+        assertThat(firstTimePolled.isBefore(now())).isTrue();
+        assertThat(report.getInterval()).isLessThanOrEqualTo(3);
+        report = getReportWhenPollInterval(workDir, 5);
 
-        pollInterval = getPollIntervalFromReportFile(workDir);
-        assertThat(pollInterval).isLessThanOrEqualTo(4);
+        assertThat(report.getInterval()).isGreaterThanOrEqualTo(4);
+        assertThat(report.getPolled().isAfter(firstTimePolled)).isTrue();
+    }
+
+    private DeploymentStatusReport waitUntillDeploymentIsPolled(String workDir) throws IOException, InterruptedException {
+        int maxWaitPeriod = 20;
+        int waited = 0;
+        DeploymentStatusReport report;
+        while(waited < maxWaitPeriod) {
+            report = getReport(workDir);
+            if(isNull(report.getPolled())) {
+               logger.info(String.format("Deployment [%s] not polled yet", workDir));
+            }
+            else {
+                return report;
+            }
+            waited++;
+            TimeUnit.SECONDS.sleep(1);
+        }
+        throw new IllegalStateException(String.format("Deployment [%s] was not polled within [%s] seconds", workDir, maxWaitPeriod));
+    }
+
+    private DeploymentStatusReport getReportWhenPollInterval(String workDir, int pollInterval) throws IOException, InterruptedException {
+        int maxWaitPeriod = 20;
+        int waited = 0;
+
+        while (waited < maxWaitPeriod) {
+            DeploymentStatusReport report = getReport(workDir);
+            if(report.getInterval() >= pollInterval) {
+                logger.info(String.format("Found poll interval: [%d]", pollInterval));
+                return report;
+            }
+            logger.info(String.format("Current poll interval is: [%d]", pollInterval));
+            waited++;
+            TimeUnit.SECONDS.sleep(1);
+        }
+        throw new IllegalStateException(String.format("Could not find report with poll interval [%d] within [%s] seconds", pollInterval, maxWaitPeriod));
     }
 
     private void testReportFileFields(
@@ -82,16 +121,16 @@ public class PollingServiceImplTest extends AbstractControllerTest {
         assertThat(report.getStatus()).isEqualTo(status);
         assertThat(report.getWorkDir()).isEqualTo(workDir);
         assertThat(report.getPolled()).isAfter(startTest);
-        assertThat(report.getPolled()).isBefore(LocalDateTime.now());
+        assertThat(report.getPolled()).isBefore(now());
         assertThat(report.getService()).isEqualTo(expectedService);
         assertThat(report.getFiles().get(0)).isEqualTo(uniqueTestFile);
     }
 
-    private int getPollIntervalFromReportFile(String workDir) throws IOException {
+    private DeploymentStatusReport getReport(String workDir) throws IOException {
         Path reportPath = Paths.get(Config.DEPLOYMENT_VOLUME, workDir, Config.STATUS_FILE_NAME);
         assertThat(reportPath.toFile()).exists();
         String reportJson = FileUtils.readFileToString(reportPath.toFile(), UTF_8);
         DeploymentStatusReport report = getMapper().readValue(reportJson, DeploymentStatusReport.class);
-        return report.getInterval();
+        return report;
     }
 }
