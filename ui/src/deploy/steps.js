@@ -77,7 +77,10 @@ class Steps extends React.Component {
         return steps[activeIndex].key;
     }
 
-    goTo = (step) => {
+    goTo = (step, disabled) => {
+        if(disabled) {
+            return;
+        }
         this.clearParamsAfter(step.key);
         let newParams = convertStepsToParams(this.state.steps);
         updateUrlParams(newParams, this.props.history);
@@ -101,7 +104,7 @@ class Steps extends React.Component {
                         return (
                             <Pagination.Item
                                 key={i}
-                                onClick={() => this.goTo(step)}
+                                onClick={() => this.goTo(step, disabled)}
                                 active={i === activeIndex}
                                 disabled={disabled}
                             >

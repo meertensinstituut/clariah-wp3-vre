@@ -84,21 +84,38 @@ export default class Files extends React.Component {
                         <th>Mimetype</th>
                         <th>Created</th>
                         <th>User</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     {objects.map(function (object, i) {
                         return (
-                            <tr className="clickable"
-                                key={object.id}
-                                onClick={() => this.handleRowClick(object)}
-                            >
+                            <tr key={object.id}>
                                 <td>{object.id}</td>
-                                <td>{object.filepath}</td>
+                                <td>
+                                    {object.filepath}
+                                </td>
                                 <td>{object.format}</td>
                                 <td>{object.mimetype}</td>
                                 <td>{object.time_created}</td>
                                 <td>{object.user_id}</td>
+                                <td>
+                                    <button
+                                        title="view file"
+                                    >
+                                        <i className="fa fa-eye"
+                                           aria-hidden="true"
+                                        />
+                                    </button>
+                                    <button
+                                        title="process file with a service"
+                                        onClick={() => this.handleRowClick(object)}
+                                    >
+                                        <i className="fa fa-play"
+                                           aria-hidden="true"
+                                        />
+                                    </button>
+                                </td>
                             </tr>
                         );
                     }, this)}
