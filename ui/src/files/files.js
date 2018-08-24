@@ -55,8 +55,10 @@ export default class Files extends React.Component {
     }
 
     handleViewFileClick(object) {
+        const pathParts = object.filepath.split('/');
+        const filename = pathParts[pathParts.length - 1];
         this.setState({
-            redirect: `/view/${object.id}`
+            redirect: `/view/${object.id}/${filename}`
         });
     }
 
@@ -76,7 +78,7 @@ export default class Files extends React.Component {
             return <div className="main">Loading...</div>;
 
         if (this.state.redirect !== null)
-            return <Redirect to={this.state.redirect} />;
+            return <Redirect to={this.state.redirect}/>;
 
         let objects = this.state.data.resource;
 
@@ -96,6 +98,20 @@ export default class Files extends React.Component {
                     </thead>
                     <tbody>
                     {objects.map(function (object, i) {
+
+                        const view = object.format !== "directory"
+                            ?
+                            <button
+                                data-tip="view file"
+                                onClick={() => this.handleViewFileClick(object)}
+                            >
+                                <i className="fa fa-eye"
+                                   aria-hidden="true"
+                                />
+                            </button>
+                            :
+                            null;
+
                         return (
                             <tr key={object.id}>
                                 <td>{object.id}</td>
@@ -107,14 +123,7 @@ export default class Files extends React.Component {
                                 <td>{object.time_created}</td>
                                 <td>{object.user_id}</td>
                                 <td>
-                                    <button
-                                        data-tip="view file"
-                                        onClick={() => this.handleViewFileClick(object)}
-                                    >
-                                        <i className="fa fa-eye"
-                                           aria-hidden="true"
-                                        />
-                                    </button>
+                                    {view}
                                     <button
                                         data-tip="process file with a service"
                                         onClick={() => this.handleProcessFileClick(object)}
@@ -123,7 +132,7 @@ export default class Files extends React.Component {
                                            aria-hidden="true"
                                         />
                                     </button>
-                                    <ReactTooltip />
+                                    <ReactTooltip/>
                                 </td>
                             </tr>
                         );

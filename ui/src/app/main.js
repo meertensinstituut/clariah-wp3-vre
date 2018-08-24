@@ -14,7 +14,7 @@ class Main extends React.Component {
                 <Switch>
                     <Route exact path='/' component={Home}/>
                     <Route exact path='/files' component={Files}/>
-                    <Route exact path='/view/:objectId' component={Viewer}/>
+                    <Route exact path='/view/:objectId/:objectName' component={Viewer}/>
                     <Route exact path='/deploy' component={Deploy}/>
                     <Route exact path='/poll/:workDir' component={Poll} />
                 </Switch>

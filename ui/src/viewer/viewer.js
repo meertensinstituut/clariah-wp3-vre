@@ -9,6 +9,7 @@ class Viewer extends React.Component {
         super(props);
         this.state = {
             objectId: this.props.match.params.objectId,
+            objectName: this.props.match.params.objectName,
             viewerFile: null
         };
         this.getViewOfObject();
@@ -33,7 +34,7 @@ class Viewer extends React.Component {
 
         return (
             <div>
-                <h1>Viewing file {this.state.objectId} using <code>{this.props.viewer}</code></h1>
+                <h1>Viewing file {this.state.objectName} using <code>{this.props.viewer}</code></h1>
                 <div>{this.props.content}</div>
                 {viewerFile}
             </div>
@@ -44,7 +45,8 @@ class Viewer extends React.Component {
 Viewer.propTypes = {
     match: PropTypes.shape({
         params: PropTypes.shape({
-            objectId: PropTypes.string.isRequired
+            objectId: PropTypes.string.isRequired,
+            objectName: PropTypes.string.isRequired
         })
     })
 };
