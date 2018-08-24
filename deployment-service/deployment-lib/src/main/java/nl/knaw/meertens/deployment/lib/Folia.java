@@ -212,17 +212,29 @@ public class Folia implements RecipePlugin {
 //        Source xslt = new StreamSource(new File(Paths.get(inputPath, "folia2html.xsl").normalize().toString()));
         Source xslt = new StreamSource(url.openStream());
         
-        File outputPathAsFile = new File(Paths.get(inputPath, outputPathConst).normalize().toString());
-        if (! outputPathAsFile.exists()) {
-            outputPathAsFile.mkdir();
+        JSONObject outputOjbect;
+        String outputFile;
+        if (params.size() > 1) {
+            outputOjbect = (JSONObject) params.get(1);
+            outputFile = (String) outputOjbect.get("value");
+        } else {
+            outputFile = inputFile;
         }
         
-        JSONObject outputOjbect = (JSONObject) params.get(1);
-        String outputFile = (String) outputOjbect.get("value");
-        String outputPath = Paths.get(workDir, projectName, outputFile).normalize().toString();
+//        JSONObject outputOjbect = (JSONObject) params.get(1);
+//        String outputFile = (String) outputOjbect.get("value");
+        String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
+        String fullOutputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
         System.out.println(String.format("### outputPath: %s ###", outputPath));
-        File file = new File(outputPath);
+        System.out.println(String.format("### Full outputPath: %s ###", fullOutputPath));
         
+        File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
+        if (! outputPathAsFile.exists()) {
+            System.out.println(String.format("### Creating folder: %s ###", outputPathAsFile.toString()));
+            outputPathAsFile.mkdirs();
+        }
+        
+        File file = new File(fullOutputPath);        
         convertXmlToHtml(xml, xslt, file);
                         
         return json;
