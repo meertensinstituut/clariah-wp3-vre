@@ -21,6 +21,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.VRE_DIR;
 
 /**
  * Wrapper around JerseyTest which is used
@@ -43,7 +44,8 @@ public class SwitchboardJerseyTest extends JerseyTest {
             DEPLOYMENT_VOLUME,
             OUTPUT_DIR,
             INPUT_DIR,
-            USER_TO_LOCK_WITH
+            USER_TO_LOCK_WITH,
+            VRE_DIR
     );
 
     private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(

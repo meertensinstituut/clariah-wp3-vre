@@ -163,8 +163,9 @@ public class Text implements RecipePlugin {
         
         JSONObject inputOjbect = (JSONObject) params.get(0);
         String inputFile = (String) inputOjbect.get("value");
-        String inputPath = Paths.get(workDir, projectName).normalize().toString();
-        String fullInputPath = Paths.get(workDir, projectName, inputFile).normalize().toString();
+        String inputPath = Paths.get(workDir, projectName, "input").normalize().toString();
+        String fullInputPath = Paths.get(workDir, projectName, "input", inputFile).normalize().toString();
+        System.out.println("### Rebuild?");
         System.out.println(String.format("### Full inputPath: %s ###", fullInputPath));
         System.out.println(String.format("### inputPath: %s ###", inputPath));
         
@@ -178,9 +179,10 @@ public class Text implements RecipePlugin {
         JSONObject outputOjbect = (JSONObject) params.get(1);
         String outputFile = (String) outputOjbect.get("value");
         String outputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
-        System.out.println(String.format("### outputPath: %s ###", outputPath));
+        System.out.println(String.format("### outputPath2: %s ###", outputPath));
         File file = new File(outputPath);
-        
+        file.getParentFile().mkdirs();
+        file.createNewFile();
         try (FileWriter fileWriter = new FileWriter(file)) {
             fileWriter.write("<pre>");
             fileWriter.write(content);

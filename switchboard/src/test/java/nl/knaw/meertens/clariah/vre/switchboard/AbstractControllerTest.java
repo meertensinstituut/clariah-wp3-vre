@@ -145,13 +145,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 );
     }
 
-    protected void createResultFile(String workDir) {
+    protected void createResultFile(String workDir, String resultFilename, String content) {
         Path path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, resultFilename);
         assert (path.toFile().getParentFile().mkdirs());
         logger.info("result file path: " + path.toString());
         path.toFile().getParentFile().mkdirs();
         try {
-            Files.write(path, newArrayList(resultSentence), UTF_8);
+            Files.write(path, newArrayList(content), UTF_8);
         } catch (IOException e) {
             throw new RuntimeIOException("DeploymentServiceStub could not create result file", e);
         }
@@ -222,9 +222,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         Path path = Paths.get(OWNCLOUD_VOLUME + "/" + fileName);
         File file = path.toFile();
         file.getParentFile().mkdirs();
-        String someText = "De vermeende terugkeer van tante Rosie naar Reetveerdegem werd als " +
-                "een aangename schok ervaren in de levens van onze volstrekt nutteloze mannen, waarvan ik er op dat " +
-                "ogenblik een in wording was.";
+        String someText = resultSentence;
         Files.write(path, newArrayList(someText), Charset.forName("UTF-8"));
     }
 

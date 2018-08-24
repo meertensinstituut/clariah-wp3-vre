@@ -18,12 +18,12 @@ export default class Switchboard extends React.Component {
         });
     }
 
-    static postDeployment(serviceName, config) {
+    static postDeployment(serviceName, params) {
         let url = `${DOMAIN}/exec/${serviceName}`;
         return $.post({
             url: url,
             contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(config)
+            data: JSON.stringify(params)
         });
     }
 
@@ -32,6 +32,24 @@ export default class Switchboard extends React.Component {
         return $.get({
             url: url,
         });
+    }
+
+    static getDeploymentStatusWhenStatus(workDir, status, deferred = new $.Deferred()) {
+        const timeout = 1000;
+
+        this.getDeploymentStatus(workDir).done((data, textStatus, xhr) => {
+            if (status === data.status) {
+                deferred.resolve(data);
+            } else {
+                setTimeout(() => this.getDeploymentStatusWhenStatus(workDir, status, deferred), timeout);
+            }
+        }).fail((xhr) => {
+            deferred.resolve({
+                httpStatus: xhr.status,
+                msg: xhr.responseJSON.msg
+            });
+        });
+        return deferred;
     }
 
 }

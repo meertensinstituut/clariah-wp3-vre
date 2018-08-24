@@ -5,5 +5,4 @@ services:
     build: ./
     tty: true
     working_dir: /conf
-
-
+    command: /tmp/deployment/docker/docker-run-deployment.sh

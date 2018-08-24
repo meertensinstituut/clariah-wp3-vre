@@ -6,6 +6,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
@@ -75,7 +77,7 @@ public class ExecControllerTest extends AbstractControllerTest {
         String response = waitUntil(request, FINISHED);
 
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
-        createResultFile(workDir);
+        createResultFile(workDir, resultFilename, resultSentence);
         assertThatJson(response).node("status").isEqualTo("FINISHED");
 
         // Atm links are kept:
@@ -100,7 +102,7 @@ public class ExecControllerTest extends AbstractControllerTest {
 
         startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
         startServicesRegistryMockServer(dummyUctoService);
-        createResultFile(workDir);
+        createResultFile(workDir, resultFilename, resultSentence);
         String finishedJson = waitUntil(request, FINISHED);
 
         // Check output file is moved:
@@ -152,7 +154,7 @@ public class ExecControllerTest extends AbstractControllerTest {
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
         Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
-        createResultFile(workDir);
+        createResultFile(workDir, resultFilename, resultSentence);
         startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}", "UCTO");
 
         // Check status is finished:
@@ -189,16 +191,22 @@ public class ExecControllerTest extends AbstractControllerTest {
         // finish deployment:
         Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
         startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
-        createResultFile(workDir);
+        createResultFile(workDir, object.filepath, "<pre>" + resultSentence + "</pre>");
         String finishedJson = waitUntil(request, FINISHED);
 
         // check output path:
         String viewerFile = JsonPath.parse(finishedJson).read("$.viewerFile");
         assertThat(viewerFile).isEqualTo(expectedOutputPath);
+
+        // viewer content:
         Path viewerFilePath = Paths.get(OWNCLOUD_VOLUME, viewerFile);
         assertThat(viewerFilePath.toFile()).exists();
-        List<String> lines = Files.readAllLines(viewerFilePath);
-        assertThat(lines.get(0)).contains("Reetveerdegem");
+        String viewerFileContent = FileUtils.readFileToString(viewerFilePath.toFile(), UTF_8);
+        assertThat(viewerFileContent).contains("<pre>");
+        assertThat(viewerFileContent).contains("Insanity");
+        assertThat(viewerFileContent).contains("</pre>");
+        String viewerFileContentInJson = JsonPath.parse(finishedJson).read("$.viewerFileContent");
+        assertThat(viewerFileContentInJson).isEqualTo(viewerFileContent);
     }
 
     private File findOutputFolder(String finishedJson) {

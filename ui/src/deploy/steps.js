@@ -116,7 +116,6 @@ class Steps extends React.Component {
             </div>
         );
     }
-
 }
 
 function convertStepsToParams(steps) {

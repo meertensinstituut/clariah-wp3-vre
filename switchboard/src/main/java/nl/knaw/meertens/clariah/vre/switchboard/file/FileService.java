@@ -36,5 +36,7 @@ public interface FileService {
 
     Path unstageViewerOutputFile(String workDir, String inputFile, String service);
 
+    String getContent(String inputFile);
+
     Path getSrcPath();
 }

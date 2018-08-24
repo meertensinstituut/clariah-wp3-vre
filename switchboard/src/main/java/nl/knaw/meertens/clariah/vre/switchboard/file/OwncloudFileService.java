@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.getFileAttributeView;
 import static java.nio.file.Files.setPosixFilePermissions;
 import static java.nio.file.LinkOption.*;
@@ -36,14 +37,52 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+/**
+ * Moves, locks and unlocks files in owncloud.
+ *
+ * It expects the following owncloud dir structure:
+ * /{srcPath}/{username}/files/{inputFile}
+ *
+ * It expects the following tmp dir structures:
+ * /{tmpPath}/{workDir}/{inputDir}/{inputFile}
+ * /{tmpPath}/{workDir}/{outputDir}/{outputFile}
+ *
+ * An input- and output file exist of the following properties:
+ * {user}/files/{filepath}
+ *
+ */
 public class OwncloudFileService implements FileService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    /**
+     * Root path containing input files
+     */
     private final Path srcPath;
+
+    /**
+     * Root path containing files staged for deployment
+     */
     private final Path tmpPath;
-    private final String outputDir;
+
+    /**
+     * Directory that contains all input files
+     */
     private final String inputDir;
+
+    /**
+     * Directory that contains all output files
+     */
+    private final String outputDir;
+
+    /**
+     * Directory that contains VRE-specific user files
+     */
+    private final String vreDir;
+
+    /**
+     * User that is used to lock staged files
+     */
     private final String locker;
 
     public OwncloudFileService(
@@ -51,13 +90,15 @@ public class OwncloudFileService implements FileService {
             String tmpPath,
             String outputDir,
             String inputDir,
-            String locker
+            String locker,
+            String vreDir
     ) {
         this.srcPath = Paths.get(srcPath);
         this.tmpPath = Paths.get(tmpPath);
         this.outputDir = outputDir;
         this.inputDir = inputDir;
         this.locker = locker;
+        this.vreDir = vreDir;
     }
 
     @Override
@@ -99,6 +140,8 @@ public class OwncloudFileService implements FileService {
     }
 
     /**
+     * Move and unlock viewer output file.
+     * Replaces viewer file if it already exists.
      * @return path of viewer file in owncloud dir
      */
     @Override
@@ -107,49 +150,82 @@ public class OwncloudFileService implements FileService {
             String inputFile,
             String service
     ) {
-        File resultFile = createViewerFilepath(inputFile, service);
-        File tmpInputFile = createWorkdirFilepath(workDir, inputFile);
+        File tmpOutputFile = createAbsoluteViewerOutputfilePath(workDir, inputFile);
+        File resultFile = createAbsoluteViewerFilepath(inputFile, service);
         try {
             logger.info(String.format(
                     "Move viewer output from [%s] to [%s]",
-                    tmpInputFile, resultFile
+                    tmpOutputFile, resultFile
             ));
-            FileUtils.moveFile(tmpInputFile, resultFile);
+            if(resultFile.exists()) {
+                resultFile.delete();
+            }
+            FileUtils.moveFile(tmpOutputFile, resultFile);
+            unlock(createViewerOutputfilePath(inputFile, service).getPath());
         } catch (IOException e) {
             throw new RuntimeException(String.format(
                     "Could not move viewer file from [%s] to [%s]",
-                    tmpInputFile, resultFile
+                    tmpOutputFile, resultFile
             ));
         }
         return getPathRelativeToOwncloud(resultFile);
+    }
+
+    @Override
+    public String getContent(String inputFile) {
+        File file = Paths.get(
+                srcPath.toString(),
+                inputFile
+        ).toFile();
+        try {
+            return FileUtils.readFileToString(file, UTF_8);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(String.format("Could not get content of inputFile [%s]", inputFile));
+        }
     }
 
     private Path getPathRelativeToOwncloud(File resultFile) {
         return resultFile.toPath().subpath(3, resultFile.toPath().getNameCount());
     }
 
-    private File createWorkdirFilepath(String workDir, String inputFile) {
+    /**
+     * Use path of inputFile to generate path of outputFile:
+     * viewer file has same path as original file
+     */
+    private File createAbsoluteViewerOutputfilePath(String workDir, String inputFile) {
         return Paths.get(
                     tmpPath.toString(),
                     workDir,
-                    "/input",
+                    "/output",
                     inputFile
             ).toFile();
     }
 
-    private File createViewerFilepath(String inputFile, String service) {
-        String toOwncloud = srcPath.toString();
-        String toUser = getPathToUserDir(inputFile).toString();
-        String fileInUserDir = getPathInUserDir(inputFile).toString();
-        String toViewer = "/.vre/" + service;
+    /**
+     * @return File /{srcPath}/{username}/files/{vreDir}/{service}/{inputFile}
+     */
+    private File createAbsoluteViewerFilepath(String inputFile, String service) {
+        return Paths.get(
+                srcPath.toString(),
+                createViewerOutputfilePath(inputFile, service).toPath().toString()
+        ).toFile();
+    }
+
+    /**
+     * @return File {username}/files/{vreDir}/{service}/{inputFile}
+     */
+    private File createViewerOutputfilePath(String inputFile, String service) {
         return Paths
-                .get(toOwncloud, toUser, toViewer, fileInUserDir)
-                .toFile();
+                .get(getPathToUserDir(inputFile).toString(),
+                     vreDir,
+                     service,
+                     getPathInUserDir(inputFile).toString()
+                ).toFile();
     }
 
     /**
      * Path if input files constist of:
-     * {username}/files/{path}
+     * {username}/files/{inputFile}
      * @return {username}/files
      */
     private Path getPathToUserDir(String inputFile) {
@@ -159,7 +235,7 @@ public class OwncloudFileService implements FileService {
 
     /**
      * Path if input files constist of:
-     * {username}/files/{path}
+     * {username}/files/{inputFile}
      * @return {path}
      */
     private Path getPathInUserDir(String inputFile) {
@@ -175,7 +251,7 @@ public class OwncloudFileService implements FileService {
     @Override
     public void lock(String fileString) {
         assert (!isBlank(fileString));
-        Path file = toSrcPath(fileString);
+        Path file = toAbsoluteSrcPath(fileString);
         try {
             chown(file, locker);
             setPosixFilePermissions(file, get444());
@@ -186,21 +262,25 @@ public class OwncloudFileService implements FileService {
     }
 
     @Override
-    public void unlock(String fileString) {
-        assert (!isBlank(fileString));
-        Path file = toSrcPath(fileString);
-        try {
-            chown(file, "www-data");
-            setPosixFilePermissions(file, get644());
-            Path parent = file.getParent();
-            chown(parent, "www-data");
-        } catch (IOException e) {
-            logger.error(String.format("Could not unlock file [%s]", fileString), e);
-        }
-        logger.info(String.format("Unlocked file [%s]", file));
+    public void unlock(String inputfile) {
+        assert (!isBlank(inputfile));
+        Path file = toAbsoluteSrcPath(inputfile);
+        unlockAbs(file);
     }
 
-    private Path toSrcPath(String fileString) {
+    private void unlockAbs(Path absoluteFilePath) {
+        try {
+            chown(absoluteFilePath, "www-data");
+            setPosixFilePermissions(absoluteFilePath, get644());
+            Path parent = absoluteFilePath.getParent();
+            chown(parent, "www-data");
+        } catch (IOException e) {
+            logger.error(String.format("Could not unlock file [%s]", absoluteFilePath.toString()), e);
+        }
+        logger.info(String.format("Unlocked file [%s]", absoluteFilePath));
+    }
+
+    private Path toAbsoluteSrcPath(String fileString) {
         return new File(srcPath + "/" + fileString).toPath();
     }
 
@@ -254,13 +334,17 @@ public class OwncloudFileService implements FileService {
                 .map(Path::toString)
                 .collect(toList());
         for (String file : filePaths) {
-            unlock(file);
-            try {
-                logger.info(String.format("Unlocking [%s]", file));
-                unlockParents(toSrcPath(file), srcPath.getFileName().toString());
-            } catch (IOException e) {
-                throw new RuntimeIOException(String.format("Could not unlock [%s]", file), e);
-            }
+            unlockFileAndParents(file);
+        }
+    }
+
+    private void unlockFileAndParents(String file) {
+        unlock(file);
+        try {
+            logger.info(String.format("Unlocking [%s]", file));
+            unlockParents(toAbsoluteSrcPath(file), srcPath.getFileName().toString());
+        } catch (IOException e) {
+            throw new RuntimeIOException(String.format("Could not unlock [%s]", file), e);
         }
     }
 

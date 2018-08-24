@@ -26,6 +26,7 @@ public class DeploymentStatusReport implements Cloneable {
     private String workDir;
     private List<String> files;
     private String viewerFile;
+    private String viewerFileContent;
 
     public DeploymentStatusReport() {
         super();
@@ -46,6 +47,7 @@ public class DeploymentStatusReport implements Cloneable {
         this.workDir = original.workDir;
         this.files = original.files;
         this.viewerFile = original.viewerFile;
+        this.viewerFileContent = original.viewerFileContent;
     }
 
     public DeploymentStatus getStatus() {
@@ -129,4 +131,11 @@ public class DeploymentStatusReport implements Cloneable {
         return viewerFile;
     }
 
+    public void setViewerFileContent(String viewerFileContent) {
+        this.viewerFileContent = viewerFileContent;
+    }
+
+    public String getViewerFileContent() {
+        return viewerFileContent;
+    }
 }

@@ -49,6 +49,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_TOPIC_NAM
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.VRE_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
@@ -97,7 +98,7 @@ public class ExecService {
         this.kafkaSwitchboardService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.kafkaOwncloudService = new KafkaProducerService(OWNCLOUD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.serviceRegistryService = serviceRegistryService;
-        this.owncloudFileService = new OwncloudFileService(OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR, USER_TO_LOCK_WITH);
+        this.owncloudFileService = new OwncloudFileService(OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR, USER_TO_LOCK_WITH, VRE_DIR);
         this.deploymentService = deploymentService;
     }
 
@@ -202,7 +203,10 @@ public class ExecService {
         return name;
     }
 
-    private FinishDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
+    /**
+     * Consumer that is called when deployment is finished
+     */
+    public FinishDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
         logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
         if (isFinishedOrStopped(report)) {
             completeDeployment(report);
@@ -262,6 +266,7 @@ public class ExecService {
                 report.getService()
         );
         report.setViewerFile(viewerFile.toString());
+        report.setViewerFileContent(owncloudFileService.getContent(viewerFile.toString()));
         report.setWorkDir(report.getWorkDir());
         sendKafkaOwncloudMsgs(newArrayList(viewerFile));
     }

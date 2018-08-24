@@ -4,6 +4,7 @@ import PageNumbering from "./page-numbering";
 import Dreamfactory from "../common/dreamfactory";
 
 import {Table} from "react-bootstrap";
+import ReactTooltip from 'react-tooltip'
 
 const PAGE_SIZE = 6;
 
@@ -53,7 +54,13 @@ export default class Files extends React.Component {
         );
     }
 
-    handleRowClick(object) {
+    handleViewFileClick(object) {
+        this.setState({
+            redirect: `/view/${object.id}`
+        });
+    }
+
+    handleProcessFileClick(object) {
         this.setState({
             selectedObject: object,
             redirect: `/deploy?file=${object.id}`
@@ -101,20 +108,22 @@ export default class Files extends React.Component {
                                 <td>{object.user_id}</td>
                                 <td>
                                     <button
-                                        title="view file"
+                                        data-tip="view file"
+                                        onClick={() => this.handleViewFileClick(object)}
                                     >
                                         <i className="fa fa-eye"
                                            aria-hidden="true"
                                         />
                                     </button>
                                     <button
-                                        title="process file with a service"
-                                        onClick={() => this.handleRowClick(object)}
+                                        data-tip="process file with a service"
+                                        onClick={() => this.handleProcessFileClick(object)}
                                     >
                                         <i className="fa fa-play"
                                            aria-hidden="true"
                                         />
                                     </button>
+                                    <ReactTooltip />
                                 </td>
                             </tr>
                         );
@@ -129,5 +138,4 @@ export default class Files extends React.Component {
             </div>
         )
     }
-
 }
