@@ -17,5 +17,3 @@ RUN apt-get update \
  && echo "extension=rdkafka.so" >> /usr/local/etc/php/php.ini \
  # occ requires pcntl:
  && docker-php-ext-install pcntl
-
-RUN a2enmod headers && service apache2 restart

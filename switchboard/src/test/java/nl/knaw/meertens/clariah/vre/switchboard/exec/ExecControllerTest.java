@@ -198,7 +198,7 @@ public class ExecControllerTest extends AbstractControllerTest {
         String viewerFile = JsonPath.parse(finishedJson).read("$.viewerFile");
         assertThat(viewerFile).isEqualTo(expectedOutputPath);
 
-        // viewer content:
+        // viewer file content:
         Path viewerFilePath = Paths.get(OWNCLOUD_VOLUME, viewerFile);
         assertThat(viewerFilePath.toFile()).exists();
         String viewerFileContent = FileUtils.readFileToString(viewerFilePath.toFile(), UTF_8);

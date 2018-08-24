@@ -33,7 +33,6 @@ sudo -u www-data /usr/local/bin/php /var/www/html/occ maintenance:install \
 sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set skeletondirectory
 
 # add docker link 'owncloud' to trusted domains:
-
 sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 1 --value "owncloud"
 
 # activate vre app:

@@ -1,6 +1,5 @@
 import React from "react";
 import {withRouter} from "react-router-dom";
-import StatePropsViewer from "../common/state-props-viewer";
 import PropTypes from 'prop-types';
 import Switchboard from "../common/switchboard";
 
@@ -18,9 +17,7 @@ class Viewer extends React.Component {
     getViewOfObject() {
         const params = {"params": [{"name": "input", "type": "file", "value": this.state.objectId}]};
         Switchboard.postDeployment("VIEWER", params).done((deployData) => {
-            console.log("deployData", deployData);
             Switchboard.getDeploymentStatusWhenStatus(deployData.workDir, "FINISHED").done((viewerData) => {
-                console.log("viewerData", viewerData);
                 this.setState({
                     viewerFileContent: {__html: viewerData.viewerFileContent},
                     viewerFileName: viewerData.viewerFile
@@ -39,7 +36,6 @@ class Viewer extends React.Component {
                 <h1>Viewing file {this.state.objectId} using <code>{this.props.viewer}</code></h1>
                 <div>{this.props.content}</div>
                 {viewerFile}
-                <StatePropsViewer state={this.state} props={this.props}/>
             </div>
         );
     }
