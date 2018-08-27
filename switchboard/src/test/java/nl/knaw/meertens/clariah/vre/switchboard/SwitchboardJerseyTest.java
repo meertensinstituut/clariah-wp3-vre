@@ -40,7 +40,6 @@ public class SwitchboardJerseyTest extends JerseyTest {
     );
 
     private static OwncloudFileService owncloudFileService = new OwncloudFileService(
-            OWNCLOUD_VOLUME,
             DEPLOYMENT_VOLUME,
             OUTPUT_DIR,
             INPUT_DIR,

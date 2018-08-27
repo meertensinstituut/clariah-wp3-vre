@@ -25,7 +25,7 @@ import java.util.Set;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.getFileAttributeView;
 import static java.nio.file.Files.setPosixFilePermissions;
-import static java.nio.file.LinkOption.*;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
@@ -35,21 +35,22 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFilePath.FILES;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Moves, locks and unlocks files in owncloud.
- *
+ * <p>
  * It expects the following owncloud dir structure:
  * /{srcPath}/{username}/files/{inputFile}
- *
+ * <p>
  * It expects the following tmp dir structures:
  * /{tmpPath}/{workDir}/{inputDir}/{inputFile}
  * /{tmpPath}/{workDir}/{outputDir}/{outputFile}
- *
+ * <p>
  * An input- and output file exist of the following properties:
  * {user}/files/{filepath}
- *
  */
 public class OwncloudFileService implements FileService {
 
@@ -58,7 +59,8 @@ public class OwncloudFileService implements FileService {
     /**
      * Root path containing input files
      */
-    private final Path srcPath;
+    // TODO: remove
+    private final Path srcPath = Paths.get(OWNCLOUD_VOLUME);
 
     /**
      * Root path containing files staged for deployment
@@ -86,14 +88,12 @@ public class OwncloudFileService implements FileService {
     private final String locker;
 
     public OwncloudFileService(
-            String srcPath,
             String tmpPath,
             String outputDir,
             String inputDir,
             String locker,
             String vreDir
     ) {
-        this.srcPath = Paths.get(srcPath);
         this.tmpPath = Paths.get(tmpPath);
         this.outputDir = outputDir;
         this.inputDir = inputDir;
@@ -103,6 +103,7 @@ public class OwncloudFileService implements FileService {
 
     @Override
     public void stageFiles(String workDir, List<String> inputFiles) {
+        List<OwncloudFilePath> inputPaths = OwncloudFilePath.convertToPaths(inputFiles);
         Path inputPath = getInputDir(workDir);
         for (String file : inputFiles) {
             lock(file);
@@ -112,7 +113,7 @@ public class OwncloudFileService implements FileService {
 
     /**
      * Unlock files and move output files to owncloud
-     *
+     * <p>
      * At least one input file is needed, next to which
      * an output folder is created.
      *
@@ -142,6 +143,7 @@ public class OwncloudFileService implements FileService {
     /**
      * Move and unlock viewer output file.
      * Replaces viewer file if it already exists.
+     *
      * @return path of viewer file in owncloud dir
      */
     @Override
@@ -157,7 +159,7 @@ public class OwncloudFileService implements FileService {
                     "Move viewer output from [%s] to [%s]",
                     tmpOutputFile, resultFile
             ));
-            if(resultFile.exists()) {
+            if (resultFile.exists()) {
                 resultFile.delete();
             }
             FileUtils.moveFile(tmpOutputFile, resultFile);
@@ -173,10 +175,10 @@ public class OwncloudFileService implements FileService {
 
     @Override
     public String getContent(String inputFile) {
-        File file = Paths.get(
-                srcPath.toString(),
-                inputFile
-        ).toFile();
+        File file = OwncloudFilePath
+                .convertToPath(inputFile)
+                .toPath()
+                .toFile();
         try {
             return FileUtils.readFileToString(file, UTF_8);
         } catch (IOException e) {
@@ -194,11 +196,11 @@ public class OwncloudFileService implements FileService {
      */
     private File createAbsoluteViewerOutputfilePath(String workDir, String inputFile) {
         return Paths.get(
-                    tmpPath.toString(),
-                    workDir,
-                    "/output",
-                    inputFile
-            ).toFile();
+                tmpPath.toString(),
+                workDir,
+                "/output",
+                inputFile
+        ).toFile();
     }
 
     /**
@@ -216,31 +218,11 @@ public class OwncloudFileService implements FileService {
      */
     private File createViewerOutputfilePath(String inputFile, String service) {
         return Paths
-                .get(getPathToUserDir(inputFile).toString(),
-                     vreDir,
-                     service,
-                     getPathInUserDir(inputFile).toString()
+                .get(OwncloudFilePath.getPathToUserDir(inputFile).toString(),
+                        vreDir,
+                        service,
+                        OwncloudFilePath.getPathInUserDir(inputFile).toString()
                 ).toFile();
-    }
-
-    /**
-     * Path if input files constist of:
-     * {username}/files/{inputFile}
-     * @return {username}/files
-     */
-    private Path getPathToUserDir(String inputFile) {
-        Path inputPath = Paths.get(inputFile);
-        return inputPath.subpath(0, 2);
-    }
-
-    /**
-     * Path if input files constist of:
-     * {username}/files/{inputFile}
-     * @return {path}
-     */
-    private Path getPathInUserDir(String inputFile) {
-        Path inputPath = Paths.get(inputFile);
-        return inputPath.subpath(2, inputPath.getNameCount());
     }
 
     @Override
@@ -320,7 +302,7 @@ public class OwncloudFileService implements FileService {
         } catch (IOException e) {
             throw new RuntimeIOException(
                     String.format("Could not move output folder from deployment [%s] to [%s]",
-                    deploymentOutput.toString(), outputDir.toString()), e
+                            deploymentOutput.toString(), outputDir.toString()), e
             );
         }
         unlockOutputFiles(outputDir);
@@ -404,7 +386,7 @@ public class OwncloudFileService implements FileService {
         } catch (IOException e) {
             throw new RuntimeIOException(
                     String.format("Could not create symbolic link between owncloud [%s] and input [%s]",
-                    owncloudFilePath.toString(), inputFilePath.toString()), e
+                            owncloudFilePath.toString(), inputFilePath.toString()), e
             );
         }
     }
