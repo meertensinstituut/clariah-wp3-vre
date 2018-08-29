@@ -5,8 +5,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceStub;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -19,7 +17,6 @@ import javax.ws.rs.core.Response;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.VRE_DIR;
 
@@ -41,10 +38,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
 
     private static OwncloudFileService owncloudFileService = new OwncloudFileService(
             DEPLOYMENT_VOLUME,
-            OUTPUT_DIR,
-            INPUT_DIR,
-            USER_TO_LOCK_WITH,
-            VRE_DIR
+            USER_TO_LOCK_WITH
     );
 
     private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(

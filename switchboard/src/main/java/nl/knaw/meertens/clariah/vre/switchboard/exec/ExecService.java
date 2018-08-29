@@ -98,7 +98,7 @@ public class ExecService {
         this.kafkaSwitchboardService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.kafkaOwncloudService = new KafkaProducerService(OWNCLOUD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.serviceRegistryService = serviceRegistryService;
-        this.owncloudFileService = new OwncloudFileService(DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR, USER_TO_LOCK_WITH, VRE_DIR);
+        this.owncloudFileService = new OwncloudFileService(DEPLOYMENT_VOLUME, USER_TO_LOCK_WITH);
         this.deploymentService = deploymentService;
     }
 

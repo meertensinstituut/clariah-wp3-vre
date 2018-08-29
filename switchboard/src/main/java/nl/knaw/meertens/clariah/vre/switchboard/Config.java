@@ -8,9 +8,10 @@ public class Config {
     public static final String SWITCHBOARD_TOPIC_NAME = System.getenv("SWITCHBOARD_TOPIC_NAME");
     public static final String OWNCLOUD_TOPIC_NAME = System.getenv("OWNCLOUD_TOPIC_NAME");
     public static final String OWNCLOUD_VOLUME = System.getenv("OWNCLOUD_VOLUME");
+    public static final String VRE_DIR = ".vre";
     public static final String OUTPUT_DIR = "output";
     public static final String INPUT_DIR = "input";
-    public static final String VRE_DIR = ".vre";
+    public static final String FILES_DIR = "files";
     public static final String CONFIG_FILE_NAME = "config.json";
     public static final String STATUS_FILE_NAME = "switchboard.status.json";
     public static final String OBJECTS_DB_URL = "http://dreamfactory/api/v2/objects";
