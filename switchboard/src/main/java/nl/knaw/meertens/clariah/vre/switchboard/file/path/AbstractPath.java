@@ -65,41 +65,41 @@ abstract class AbstractPath {
     public abstract Path toPath();
 
     /**
-     * InputFile: path as found in object registry
+     * ObjectPath: path as found in object registry
      * @return relative path
      */
     public abstract String toObjectPath();
 
     /**
-     * Path if input files constist of:
+     * Object paths constist of:
      * {user}/{files}/{file}
      *
      * @return {file}
      */
-    static String getFileFrom(String inputFile) {
-        assertIsInputfile(inputFile);
-        Path inputPath = Paths.get(inputFile);
+    static String getFileFrom(String objectPath) {
+        assertIsInputfile(objectPath);
+        Path inputPath = Paths.get(objectPath);
         return inputPath
                 .subpath(2, inputPath.getNameCount())
                 .toString();
     }
 
     /**
-     * Path of input file constists of:
+     * Object path constists of:
      * {user}/{files}/{file}
      * @return {user}
      */
-    static String getUserFrom(String inputFile) {
-        assertIsInputfile(inputFile);
-        Path inputPath = Paths.get(inputFile);
+    static String getUserFrom(String objectPath) {
+        assertIsInputfile(objectPath);
+        Path inputPath = Paths.get(objectPath);
         return inputPath.subpath(0, 1).toString();
     }
 
-    private static void assertIsInputfile(String inputFile) {
+    private static void assertIsInputfile(String objectPath) {
         String pattern = "(.*)/" + Config.FILES_DIR + "/(.*)";
-        boolean match = Pattern.compile(pattern).matcher(inputFile).matches();
+        boolean match = Pattern.compile(pattern).matcher(objectPath).matches();
         if(!match) {
-            throw new IllegalArgumentException(String.format("inputFile [%s] did not match pattern [%s]", inputFile, pattern));
+            throw new IllegalArgumentException(String.format("objectPath [%s] did not match pattern [%s]", objectPath, pattern));
         }
     }
 }

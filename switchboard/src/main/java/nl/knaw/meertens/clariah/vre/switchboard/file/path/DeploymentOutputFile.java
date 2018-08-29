@@ -35,14 +35,14 @@ public class DeploymentOutputFile extends AbstractPath {
         return Paths.get(user, files, file).toString();
     }
 
-    public static DeploymentOutputFile from(String workDir, String inputFile) {
+    public static DeploymentOutputFile from(String workDir, String objectPath) {
         return new DeploymentOutputFile(
                 DEPLOYMENT_VOLUME,
                 workDir,
                 OUTPUT_DIR,
-                getUserFrom(inputFile),
+                getUserFrom(objectPath),
                 FILES_DIR,
-                getFileFrom(inputFile)
+                getFileFrom(objectPath)
         );
     }
 

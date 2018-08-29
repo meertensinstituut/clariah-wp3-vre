@@ -32,14 +32,14 @@ public class OwncloudViewPath extends AbstractPath {
         return Paths.get(user, files, vre, service, file).toString();
     }
 
-    public static OwncloudViewPath from(String service, String inputFile) {
+    public static OwncloudViewPath from(String service, String objectPath) {
         return new OwncloudViewPath(
                 OWNCLOUD_VOLUME,
-                getUserFrom(inputFile),
+                getUserFrom(objectPath),
                 FILES_DIR,
                 VRE_DIR,
                 service,
-                getFileFrom(inputFile)
+                getFileFrom(objectPath)
         );
     }
 

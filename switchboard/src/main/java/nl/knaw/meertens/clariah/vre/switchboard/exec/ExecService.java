@@ -42,14 +42,10 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.KAFKA_HOST_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.VRE_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
@@ -98,7 +94,7 @@ public class ExecService {
         this.kafkaSwitchboardService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.kafkaOwncloudService = new KafkaProducerService(OWNCLOUD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.serviceRegistryService = serviceRegistryService;
-        this.owncloudFileService = new OwncloudFileService(DEPLOYMENT_VOLUME, USER_TO_LOCK_WITH);
+        this.owncloudFileService = new OwncloudFileService(USER_TO_LOCK_WITH);
         this.deploymentService = deploymentService;
     }
 

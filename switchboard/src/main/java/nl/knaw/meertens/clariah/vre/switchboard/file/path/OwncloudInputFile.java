@@ -29,12 +29,12 @@ public class OwncloudInputFile extends AbstractPath {
         return owncloud;
     }
 
-    public static OwncloudInputFile from(String inputFile) {
+    public static OwncloudInputFile from(String objectPath) {
         return new OwncloudInputFile(
                 OWNCLOUD_VOLUME,
-                getUserFrom(inputFile),
+                getUserFrom(objectPath),
                 FILES_DIR,
-                getFileFrom(inputFile)
+                getFileFrom(objectPath)
         );
     }
 

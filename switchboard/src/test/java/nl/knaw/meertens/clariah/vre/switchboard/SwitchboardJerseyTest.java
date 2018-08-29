@@ -36,10 +36,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
             "http://localhost:1080"
     );
 
-    private static OwncloudFileService owncloudFileService = new OwncloudFileService(
-            DEPLOYMENT_VOLUME,
-            USER_TO_LOCK_WITH
-    );
+    private static OwncloudFileService owncloudFileService = new OwncloudFileService(USER_TO_LOCK_WITH);
 
     private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(
             "http://localhost:1080",

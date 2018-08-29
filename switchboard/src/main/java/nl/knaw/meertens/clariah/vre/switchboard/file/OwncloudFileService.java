@@ -44,10 +44,10 @@ import static java.util.stream.Collectors.toList;
  * Moves, locks and unlocks files in owncloud.
  * <p>
  * It expects the following owncloud dir structure:
- * /{srcPath}/{username}/files/{inputFile}
+ * /{srcPath}/{username}/files/{objectPath}
  * <p>
  * It expects the following tmp dir structures:
- * /{tmpPath}/{workDir}/{inputDir}/{inputFile}
+ * /{tmpPath}/{workDir}/{inputDir}/{objectPath}
  * /{tmpPath}/{workDir}/{outputDir}/{outputFile}
  * <p>
  * An input- and output file exist of the following properties:
@@ -58,26 +58,17 @@ public class OwncloudFileService implements FileService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
-     * Root path containing files staged for deployment
-     */
-    private final Path tmpPath;
-
-    /**
      * User that is used to lock staged files
      */
     private final String locker;
 
-    public OwncloudFileService(
-            String tmpPath,
-            String locker
-    ) {
-        this.tmpPath = Paths.get(tmpPath);
+    public OwncloudFileService(String locker) {
         this.locker = locker;
     }
 
     @Override
-    public void stageFiles(String workDir, List<String> inputFiles) {
-        List<OwncloudInputFile> inputPaths = inputFiles.stream()
+    public void stageFiles(String workDir, List<String> objectPaths) {
+        List<OwncloudInputFile> inputPaths = objectPaths.stream()
                 .map(OwncloudInputFile::from)
                 .collect(toList());
 
@@ -94,22 +85,22 @@ public class OwncloudFileService implements FileService {
      * an output folder is created.
      */
     @Override
-    public void unstage(String workDir, List<String> inputFiles) {
-        unstageInputFiles(inputFiles);
+    public void unstage(String workDir, List<String> objectPaths) {
+        unstageObjectPaths(objectPaths);
     }
 
-    private void unstageInputFiles(List<String> inputFiles) {
-        if (inputFiles.isEmpty()) {
+    private void unstageObjectPaths(List<String> objectPaths) {
+        if (objectPaths.isEmpty()) {
             throw new IllegalArgumentException("Cannot move output when no input file is provided");
         }
-        for (String file : inputFiles) {
+        for (String file : objectPaths) {
             unlock(file);
         }
     }
 
     @Override
-    public List<Path> unstageServiceOutputFiles(String workDir, String inputFile) {
-        DeploymentInputFile owncloudPath = DeploymentInputFile.from(workDir, inputFile);
+    public List<Path> unstageServiceOutputFiles(String workDir, String objectPath) {
+        DeploymentInputFile owncloudPath = DeploymentInputFile.from(workDir, objectPath);
         Path outputFilesDir = moveOutputFiles(workDir, owncloudPath);
         unlockOutputFiles(outputFilesDir);
         return getRelativePathsIn(outputFilesDir);
@@ -124,15 +115,15 @@ public class OwncloudFileService implements FileService {
     @Override
     public Path unstageViewerOutputFile(
             String workDir,
-            String inputFile,
+            String objectPath,
             String service
     ) {
         File viewPath = DeploymentOutputFile
-                .from(workDir, inputFile)
+                .from(workDir, objectPath)
                 .toPath()
                 .toFile();
         OwncloudViewPath from = OwncloudViewPath
-                .from(service, inputFile);
+                .from(service, objectPath);
         File viewFile = from
                 .toPath()
                 .toFile();
@@ -155,26 +146,16 @@ public class OwncloudFileService implements FileService {
     }
 
     @Override
-    public String getContent(String inputFile) {
+    public String getContent(String objectPath) {
         File file = OwncloudInputFile
-                .from(inputFile)
+                .from(objectPath)
                 .toPath()
                 .toFile();
         try {
             return FileUtils.readFileToString(file, UTF_8);
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Could not get content of inputFile [%s]", inputFile), e);
+            throw new IllegalArgumentException(String.format("Could not get content of objectPath [%s]", objectPath), e);
         }
-    }
-
-    private Path getPathRelativeToOwncloud(OwncloudViewPath view) {
-        return Paths.get(
-                view.getUser(),
-                view.getFiles(),
-                view.getVre(),
-                view.getService(),
-                view.getFile()
-        );
     }
 
     @Override
@@ -215,13 +196,14 @@ public class OwncloudFileService implements FileService {
      */
     private Path moveOutputFiles(String workDir, DeploymentInputFile file) {
         Path deploymentOutput = DeploymentOutputDir.from(workDir).toPath();
-
         Path owncloudOutput = OwncloudOutputDir.from(file.getUser()).toPath();
+
         owncloudOutput.getParent().toFile().mkdirs();
         if (!deploymentOutput.toFile().exists()) {
             return createEmptyOutputFolder(workDir, owncloudOutput);
+        } else {
+            return moveOutputFolder(deploymentOutput, owncloudOutput);
         }
-        return moveOutputFolder(deploymentOutput, owncloudOutput);
     }
 
     private Path createEmptyOutputFolder(String workDir, Path outputDir) {
@@ -289,19 +271,19 @@ public class OwncloudFileService implements FileService {
 
     private void createSoftLink(String workDir, OwncloudInputFile relativeFilepath) {
         Path owncloudFilePath = relativeFilepath.toPath();
-        Path inputFilePath = DeploymentInputFile
+        Path objectPath = DeploymentInputFile
                 .from(workDir, relativeFilepath.toObjectPath())
                 .toPath();
-        inputFilePath
+        objectPath
                 .toFile()
                 .getParentFile()
                 .mkdirs();
         try {
-            Files.createSymbolicLink(inputFilePath, owncloudFilePath);
-            logger.info(String.format("Created symbolic link for [%s]", inputFilePath.toString()));
+            Files.createSymbolicLink(objectPath, owncloudFilePath);
+            logger.info(String.format("Created symbolic link for [%s]", objectPath.toString()));
         } catch (IOException e) {
             throw new RuntimeIOException(String.format("Could not link owncloud [%s] and input [%s]",
-                    owncloudFilePath.toString(), inputFilePath.toString()
+                    owncloudFilePath.toString(), objectPath.toString()
             ), e);
         }
     }

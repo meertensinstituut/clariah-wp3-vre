@@ -10,12 +10,12 @@ import java.util.List;
 public interface FileService {
 
     /**
-     * Create folder structure with input files for deployed service:
+     * Create folder structure with object paths for deployed service:
      * - Lock files
      * - Create workdir
-     * - Create links of input files in work dir
+     * - Create links of object paths in work dir
      */
-    void stageFiles(String workDir, List<String> inputFiles);
+    void stageFiles(String workDir, List<String> objectPaths);
 
     /**
      * Clean up files and folders used by deployed service:
@@ -23,7 +23,7 @@ public interface FileService {
      * - Move output files to source
      * @return folder containing output files
      */
-    void unstage(String workDir, List<String> inputFiles);
+    void unstage(String workDir, List<String> objectPaths);
 
     /**
      * Lock "<source path>/<file string>"
@@ -32,9 +32,9 @@ public interface FileService {
 
     void unlock(String fileString);
 
-    List<Path> unstageServiceOutputFiles(String workDir, String inputFile);
+    List<Path> unstageServiceOutputFiles(String workDir, String objectPath);
 
-    Path unstageViewerOutputFile(String workDir, String inputFile, String service);
+    Path unstageViewerOutputFile(String workDir, String objectPath, String service);
 
-    String getContent(String inputFile);
+    String getContent(String objectPath);
 }
