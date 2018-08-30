@@ -21,5 +21,6 @@ public class Config {
     public static final long DEPLOYMENT_MEMORY_SPAN = 5; // seconds
     public static final int MIN_POLL_INTERVAL = 1; // seconds
     public static final String USER_TO_LOCK_WITH = "locker";
+    public static final String USER_TO_UNLOCK_WITH = "www-data";
 
 }

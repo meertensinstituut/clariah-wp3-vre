@@ -14,12 +14,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.VRE_DIR;
-
 /**
  * Wrapper around JerseyTest which is used
  * to start Jersey Test Container only once.
@@ -36,7 +30,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
             "http://localhost:1080"
     );
 
-    private static OwncloudFileService owncloudFileService = new OwncloudFileService(USER_TO_LOCK_WITH);
+    private static OwncloudFileService owncloudFileService = new OwncloudFileService();
 
     private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(
             "http://localhost:1080",

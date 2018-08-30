@@ -20,21 +20,15 @@ public interface FileService {
     /**
      * Clean up files and folders used by deployed service:
      * - Unlock files
-     * - Move output files to source
-     * @return folder containing output files
+     * - Move output files back to source
      */
     void unstage(String workDir, List<String> objectPaths);
-
-    /**
-     * Lock "<source path>/<file string>"
-     */
-    void lock(String fileString);
-
-    void unlock(String fileString);
 
     List<Path> unstageServiceOutputFiles(String workDir, String objectPath);
 
     Path unstageViewerOutputFile(String workDir, String objectPath, String service);
 
     String getContent(String objectPath);
+
+    void unlock(String objectPath);
 }

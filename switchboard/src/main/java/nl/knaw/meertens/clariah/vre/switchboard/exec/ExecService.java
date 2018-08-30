@@ -45,7 +45,6 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.KAFKA_HOST_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
@@ -94,7 +93,7 @@ public class ExecService {
         this.kafkaSwitchboardService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.kafkaOwncloudService = new KafkaProducerService(OWNCLOUD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
         this.serviceRegistryService = serviceRegistryService;
-        this.owncloudFileService = new OwncloudFileService(USER_TO_LOCK_WITH);
+        this.owncloudFileService = new OwncloudFileService();
         this.deploymentService = deploymentService;
     }
 
@@ -225,7 +224,10 @@ public class ExecService {
         } else if (serviceKind.equals(VIEWER)) {
             completeViewerDeployment(report);
         } else {
-            throw new UnsupportedOperationException(String.format("Could not complete deployment because service kind was not SERVICE or VIEWER but [%s]", serviceKind));
+            throw new UnsupportedOperationException(String.format(
+                    "Could not complete deployment because service kind was not SERVICE or VIEWER but [%s]",
+                    serviceKind
+            ));
         }
 
         sendKafkaSwitchboardMsg(report);
@@ -280,7 +282,10 @@ public class ExecService {
             String json = mapper.writeValueAsString(config);
             FileUtils.write(configPath.toFile(), json, UTF_8);
         } catch (IOException e) {
-            throw new RuntimeIOException(String.format("Could create config file [%s]", configPath.toString()), e);
+            throw new RuntimeIOException(String.format(
+                    "Could create config file [%s]",
+                    configPath.toString()
+            ), e);
         }
     }
 

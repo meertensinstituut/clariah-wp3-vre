@@ -49,14 +49,10 @@ import static java.util.stream.Collectors.toList;
 public class OwncloudFileService implements FileService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final LockService locker;
 
-    /**
-     * Locks staged files
-     */
-    private final String locker;
-
-    public OwncloudFileService(String locker) {
-        this.locker = locker;
+    public OwncloudFileService() {
+        this.locker = new LockService();
     }
 
     @Override
@@ -66,7 +62,7 @@ public class OwncloudFileService implements FileService {
                 .map(OwncloudInputFile::from)
                 .collect(toList());
         for (OwncloudInputFile file : inputPaths) {
-            lock(file);
+            locker.lock(file);
             createSoftLink(workDir, file);
         }
     }
@@ -74,23 +70,12 @@ public class OwncloudFileService implements FileService {
     /**
      * Unlock files and move output files to owncloud
      * <p>
-     * At least one input file is needed, next to which
-     * an output folder is created.
+     * At least one input file is needed,
+     * next to which the output folder is created.
      */
     @Override
     public void unstage(String workDir, List<String> objectPaths) {
         unstageObjectPaths(objectPaths);
-    }
-
-    private void unstageObjectPaths(List<String> objectPaths) {
-        if (objectPaths.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Moving output next to input: input file is unknown"
-            );
-        }
-        for (String file : objectPaths) {
-            unlock(file);
-        }
     }
 
     @Override
@@ -102,6 +87,22 @@ public class OwncloudFileService implements FileService {
                 .stream()
                 .map(f -> Paths.get(f.toObjectPath()))
                 .collect(toList());
+    }
+
+    @Override
+    public void unlock(String objectPath) {
+        locker.unlock(OwncloudInputFile.from(objectPath));
+    }
+
+    private void unstageObjectPaths(List<String> objectPaths) {
+        if (objectPaths.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Could not move output next to input: input file is unknown"
+            );
+        }
+        for (String file : objectPaths) {
+            unlock(file);
+        }
     }
 
     /**
@@ -117,7 +118,7 @@ public class OwncloudFileService implements FileService {
         OwncloudViewPath owncloudView = OwncloudViewPath
                 .from(service, objectPath);
         moveFile(deploymentView, owncloudView);
-        unlock(owncloudView);
+        locker.unlock(owncloudView);
         return Paths.get(owncloudView.toObjectPath());
     }
 
@@ -154,44 +155,6 @@ public class OwncloudFileService implements FileService {
                     "Could not get content of objectPath [%s]",
                     objectPath
             ), e);
-        }
-    }
-
-    @Override
-    public void lock(String objectPath) {
-        lock(OwncloudInputFile.from(objectPath));
-    }
-
-    private void lock(AbstractPath path) {
-        Path file = path.toPath();
-        logger.info(String.format("Locking [%s]", file));
-        try {
-            chown(file, locker);
-            setPosixFilePermissions(file, get444());
-        } catch (IOException e) {
-            logger.error(String.format("Could not lock [%s]", file), e);
-        }
-    }
-
-    @Override
-    public void unlock(String objectPath) {
-        unlock(OwncloudInputFile.from(objectPath));
-    }
-
-    private void unlock(AbstractPath abstractPath) {
-        Path path = abstractPath.toPath();
-        unlock(path);
-    }
-
-    private void unlock(Path path) {
-        logger.info(String.format("Unlocking [%s]", path));
-        try {
-            chown(path, "www-data");
-            setPosixFilePermissions(path, get644());
-            Path parent = path.getParent();
-            chown(parent, "www-data");
-        } catch (IOException e) {
-            logger.error(String.format("Could not unlock [%s]", path), e);
         }
     }
 
@@ -254,7 +217,7 @@ public class OwncloudFileService implements FileService {
     private List<OwncloudOutputFile> unlockOutputFiles(OwncloudOutputDir outputDir) {
         List<OwncloudOutputFile> outputFiles = getFilesFromOutputDir(outputDir);
         for (OwncloudOutputFile file : outputFiles) {
-            unlockFileAndParents(file);
+            locker.unlockFileAndParents(file);
         }
         return outputFiles;
     }
@@ -269,43 +232,10 @@ public class OwncloudFileService implements FileService {
         }
         return Arrays
                 .stream(outputFiles)
-                .map(file -> {
-                    System.out.println("getFilesFromOutputDir:" + file.toPath());
-                    return OwncloudOutputFile.from(outputDir, file);
-                })
+                .map(file -> OwncloudOutputFile.from(outputDir, file))
                 .collect(toList());
     }
 
-
-    private void unlockFileAndParents(AbstractPath file) {
-        unlock(file);
-        try {
-            logger.info(String.format(
-                    "Unlocking parents of [%s]", file
-            ));
-            Path path = file.toPath();
-            String owncloudDir = Paths
-                    .get(Config.OWNCLOUD_VOLUME)
-                    .getFileName()
-                    .toString();
-            unlockParents(path, owncloudDir);
-        } catch (IOException e) {
-            throw new RuntimeIOException(String.format(
-                    "Could not unlock [%s]", file
-            ), e);
-        }
-    }
-
-    private void unlockParents(Path path, String stopAt) throws IOException {
-        Path parent = path.getParent();
-        chown(parent, "www-data");
-        setPosixFilePermissions(parent, get755());
-        if (!parent.getFileName().toString().equals(stopAt)) {
-            unlockParents(parent, stopAt);
-        } else {
-            logger.info(String.format("Found [%s], stop unlocking", stopAt));
-        }
-    }
 
     private void createSoftLink(String workDir, OwncloudInputFile inputFile) {
         Path owncloud = inputFile.toPath();
@@ -326,43 +256,4 @@ public class OwncloudFileService implements FileService {
         }
     }
 
-    private void chown(Path file, String user) throws IOException {
-        UserPrincipalLookupService lookupService = FileSystems
-                .getDefault()
-                .getUserPrincipalLookupService();
-        PosixFileAttributeView fileAttributeView = getFileAttributeView(
-                file, PosixFileAttributeView.class, NOFOLLOW_LINKS
-        );
-        fileAttributeView.setGroup(
-                lookupService.lookupPrincipalByGroupName(user)
-        );
-        fileAttributeView.setOwner(
-                lookupService.lookupPrincipalByName(user)
-        );
-    }
-
-    private Set<PosixFilePermission> get644() {
-        Set<PosixFilePermission> permissions = get444();
-        permissions.add(OWNER_WRITE);
-        return permissions;
-    }
-
-    private Set<PosixFilePermission> get755() {
-        Set<PosixFilePermission> permissions = get444();
-        permissions.add(OWNER_EXECUTE);
-        permissions.add(OTHERS_EXECUTE);
-        permissions.add(GROUP_EXECUTE);
-
-        permissions.add(OWNER_WRITE);
-
-        return permissions;
-    }
-
-    private Set<PosixFilePermission> get444() {
-        Set<PosixFilePermission> permissions = new HashSet<>();
-        permissions.add(OWNER_READ);
-        permissions.add(OTHERS_READ);
-        permissions.add(GROUP_READ);
-        return permissions;
-    }
 }
