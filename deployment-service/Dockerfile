@@ -11,5 +11,5 @@ RUN apt-get update && \
 ENV CATALINA_OPTS="-Xmx700m --add-modules java.xml.bind,java.xml.ws --add-exports java.base/jdk.internal.ref=ALL-UNNAMED"
 
 ADD . /tmp/deployment
-
+ADD logging.properties /usr/local/tomcat/conf/logging.properties
 CMD ["catalina.sh", "run"]

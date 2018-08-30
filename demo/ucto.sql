@@ -6,5 +6,5 @@ INSERT INTO service("name","recipe","semantics","kind") VALUES ('FROG', 'nl.knaw
 INSERT INTO service("name","recipe","semantics","kind") VALUES ('VIEWER', 'nl.knaw.meertens.deployment.lib.Text', :'viewer', 'viewer');
 \set folia `cat /tmp/folia.xml`
 INSERT INTO service("name","recipe","semantics","kind") VALUES ('FOLIA', 'nl.knaw.meertens.deployment.lib.Folia', :'folia', 'viewer');
--- \set frog `cat /tmp/frog.xml`
--- INSERT INTO service("name","recipe","semantics","kind") VALUES ('EDITOR', 'nl.knaw.meertens.deployment.lib.Text', , 'editor');
+\set foliaeditor `cat /tmp/foliaeditor.xml`
+INSERT INTO service("name","recipe","semantics","kind") VALUES ('FOLIAEDITOR', 'nl.knaw.meertens.deployment.lib.FoliaEditor', :'foliaeditor', 'editor');
