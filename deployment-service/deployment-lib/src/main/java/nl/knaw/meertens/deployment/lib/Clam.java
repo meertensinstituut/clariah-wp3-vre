@@ -248,11 +248,25 @@ public class Clam implements RecipePlugin {
             
             String author = "";
             String language = "";
-            if (innerParams.get(0) instanceof JSONObject) {
-                JSONObject innerParam = (JSONObject)innerParams.get(0);
-                author = (String)innerParam.get("author");
-                language = (String)innerParam.get("language");
-            } 
+            
+            for (Object r: innerParams) {
+                JSONObject obj = (JSONObject) r;
+                
+                System.out.println(r);
+                switch ((String)obj.get("name")) {
+                    case "author":
+                        author = (String)obj.get("value");
+                        break;
+                    case "language":
+                        language = (String)obj.get("value");
+                }
+            }
+            
+//            if (innerParams.get(0) instanceof JSONObject) {
+//                JSONObject innerParam = (JSONObject)innerParams.get(0);
+//                author = (String)innerParam.get("author");
+//                language = (String)innerParam.get("language");
+//            } 
             
             if ("file".equals(type)) {
                 jsonResult = this.uploadFile(key, value, language, inputTemplate, author);
@@ -425,7 +439,7 @@ public class Clam implements RecipePlugin {
                 this.serviceUrl.getProtocol(), 
                 this.serviceUrl.getHost(), 
                 this.serviceUrl.getPort(),
-                this.serviceUrl.getFile() + "/" +projectName + "/input/" + filenameOnly + "?inputtemplate="+inputTemplate+"&language=eng&documentid=&author=myauthor&filename="+filenameOnly, 
+                this.serviceUrl.getFile() + "/" +projectName + "/input/" + filenameOnly + "?inputtemplate="+inputTemplate+"&language="+language+"&documentid=&author="+author+"&filename="+filenameOnly, 
                 null
         );
         System.out.println("### Upload URL:" + url.toString() + " ###");
