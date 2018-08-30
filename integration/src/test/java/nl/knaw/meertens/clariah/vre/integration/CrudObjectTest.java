@@ -47,7 +47,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
         checkFileTypeIsStillText(newHtmlFileName);
 
         updateContentToHtml(newHtmlFileName);
-        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(20);
 
         checkFileTypeIsHtml(newHtmlFileName);
 
@@ -96,7 +96,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
 
     private void updateContentToHtml(String newFileName) throws UnirestException {
         logger.info("Add html to html file");
-        HttpResponse<String> result = Unirest.put(OWNCLOUD_ENDPOINT + newFileName)
+        Unirest.put(OWNCLOUD_ENDPOINT + newFileName)
                 .header("Content-Type", "text/html; charset=utf-8") // set type to html
                 .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
                 .body("<!DOCTYPE html>\n" +
