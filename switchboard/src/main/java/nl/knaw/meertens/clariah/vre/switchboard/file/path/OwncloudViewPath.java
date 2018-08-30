@@ -3,21 +3,14 @@ package nl.knaw.meertens.clariah.vre.switchboard.file.path;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.FILES_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.VRE_DIR;
-
 /**
- * Path of a user file stored in owncloud has the following structure:
+ * View path of a user file stored in owncloud has the following structure:
  * `/{owncloud}/{user}/{files}/{vre}/{service}/{file}`
  */
 public class OwncloudViewPath extends AbstractPath {
 
-    private OwncloudViewPath(String owncloud, String user, String files, String vre, String service, String file) {
-        this.owncloud = owncloud;
+    private OwncloudViewPath(String user, String service, String file) {
         this.user = user;
-        this.files = files;
-        this.vre = vre;
         this.service = service;
         this.file = file;
     }
@@ -34,10 +27,7 @@ public class OwncloudViewPath extends AbstractPath {
 
     public static OwncloudViewPath from(String service, String objectPath) {
         return new OwncloudViewPath(
-                OWNCLOUD_VOLUME,
                 getUserFrom(objectPath),
-                FILES_DIR,
-                VRE_DIR,
                 service,
                 getFileFrom(objectPath)
         );

@@ -6,22 +6,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
-abstract class AbstractPath {
+public abstract class AbstractPath {
 
     /**
      * Deployment dir that contains all workDirs and their temporary files
      */
-    String tmp;
+    final String tmp = Config.DEPLOYMENT_VOLUME;
 
     /**
      * Owncloud root dir that contains users and their files
      */
-    String owncloud;
+    final String owncloud = Config.OWNCLOUD_VOLUME;
 
     /**
      * Hidden folder in user folder that contains vre specific files
      */
-    String vre;
+    final String vre = Config.VRE_DIR;
 
     /**
      * Folder of viewer service
@@ -37,7 +37,7 @@ abstract class AbstractPath {
     /**
      * Dir that contains files uploaded by user
      */
-    String files;
+    final String files = Config.FILES_DIR;
 
     /**
      * File and parent dirs as created by user
@@ -52,12 +52,18 @@ abstract class AbstractPath {
     /**
      * Deployment dir that contains input files of a deployed service
      */
-    String input;
+    final String input = Config.INPUT_DIR;
 
     /**
      * Deployment dir that contains output files of a deployed service
      */
-    String output;
+    final String output = Config.OUTPUT_DIR;
+
+    /**
+     * Owncloud dir that contains output files of a finished deployment
+     * Contains time stamp
+     */
+    String outputResult;
 
     /**
      * @return absolute path
@@ -77,7 +83,7 @@ abstract class AbstractPath {
      * @return {file}
      */
     static String getFileFrom(String objectPath) {
-        assertIsInputfile(objectPath);
+        assertIsObjectPath(objectPath);
         Path inputPath = Paths.get(objectPath);
         return inputPath
                 .subpath(2, inputPath.getNameCount())
@@ -90,16 +96,27 @@ abstract class AbstractPath {
      * @return {user}
      */
     static String getUserFrom(String objectPath) {
-        assertIsInputfile(objectPath);
+        assertIsObjectPath(objectPath);
         Path inputPath = Paths.get(objectPath);
         return inputPath.subpath(0, 1).toString();
     }
 
-    private static void assertIsInputfile(String objectPath) {
+    /**
+     * Assert that objectPath has the following structure:
+     * {user}/files/{rest/of/file/path.txt}
+     * Nb. Validity of user name is not checked
+     */
+    private static void assertIsObjectPath(String objectPath) {
         String pattern = "(.*)/" + Config.FILES_DIR + "/(.*)";
-        boolean match = Pattern.compile(pattern).matcher(objectPath).matches();
+        boolean match = Pattern
+                .compile(pattern)
+                .matcher(objectPath)
+                .matches();
         if(!match) {
-            throw new IllegalArgumentException(String.format("objectPath [%s] did not match pattern [%s]", objectPath, pattern));
+            throw new IllegalArgumentException(String.format(
+                    "objectPath [%s] did not match pattern [%s]"
+                    , objectPath, pattern
+            ));
         }
     }
 }

@@ -1,11 +1,13 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
 import nl.knaw.meertens.clariah.vre.switchboard.Config;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractPath;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentOutputDir;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentOutputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.OwncloudInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.OwncloudOutputDir;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.OwncloudOutputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.OwncloudViewPath;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.exception.RuntimeIOException;
@@ -37,28 +39,19 @@ import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-import static java.util.Objects.requireNonNull;
+import static java.util.Collections.emptyList;
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
 /**
  * Moves, locks and unlocks files in owncloud.
- * <p>
- * It expects the following owncloud dir structure:
- * /{srcPath}/{username}/files/{objectPath}
- * <p>
- * It expects the following tmp dir structures:
- * /{tmpPath}/{workDir}/{inputDir}/{objectPath}
- * /{tmpPath}/{workDir}/{outputDir}/{outputFile}
- * <p>
- * An input- and output file exist of the following properties:
- * {user}/files/{filepath}
  */
 public class OwncloudFileService implements FileService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
-     * User that is used to lock staged files
+     * Locks staged files
      */
     private final String locker;
 
@@ -68,12 +61,12 @@ public class OwncloudFileService implements FileService {
 
     @Override
     public void stageFiles(String workDir, List<String> objectPaths) {
-        List<OwncloudInputFile> inputPaths = objectPaths.stream()
+        List<OwncloudInputFile> inputPaths = objectPaths
+                .stream()
                 .map(OwncloudInputFile::from)
                 .collect(toList());
-
         for (OwncloudInputFile file : inputPaths) {
-            lock(file.toObjectPath());
+            lock(file);
             createSoftLink(workDir, file);
         }
     }
@@ -91,7 +84,9 @@ public class OwncloudFileService implements FileService {
 
     private void unstageObjectPaths(List<String> objectPaths) {
         if (objectPaths.isEmpty()) {
-            throw new IllegalArgumentException("Cannot move output when no input file is provided");
+            throw new IllegalArgumentException(
+                    "Moving output next to input: input file is unknown"
+            );
         }
         for (String file : objectPaths) {
             unlock(file);
@@ -100,10 +95,13 @@ public class OwncloudFileService implements FileService {
 
     @Override
     public List<Path> unstageServiceOutputFiles(String workDir, String objectPath) {
-        DeploymentInputFile owncloudPath = DeploymentInputFile.from(workDir, objectPath);
-        Path outputFilesDir = moveOutputFiles(workDir, owncloudPath);
-        unlockOutputFiles(outputFilesDir);
-        return getRelativePathsIn(outputFilesDir);
+        DeploymentInputFile inputFile = DeploymentInputFile.from(workDir, objectPath);
+        OwncloudOutputDir outputDir = moveOutputDir(inputFile);
+        List<OwncloudOutputFile> output = unlockOutputFiles(outputDir);
+        return output
+                .stream()
+                .map(f -> Paths.get(f.toObjectPath()))
+                .collect(toList());
     }
 
     /**
@@ -113,36 +111,34 @@ public class OwncloudFileService implements FileService {
      * @return path of viewer file in owncloud dir
      */
     @Override
-    public Path unstageViewerOutputFile(
-            String workDir,
-            String objectPath,
-            String service
-    ) {
-        File viewPath = DeploymentOutputFile
-                .from(workDir, objectPath)
-                .toPath()
-                .toFile();
-        OwncloudViewPath from = OwncloudViewPath
+    public Path unstageViewerOutputFile(String workDir, String objectPath, String service) {
+        DeploymentOutputFile deploymentView = DeploymentOutputFile
+                .from(workDir, objectPath);
+        OwncloudViewPath owncloudView = OwncloudViewPath
                 .from(service, objectPath);
-        File viewFile = from
-                .toPath()
-                .toFile();
-        try {
-            logger.info(String.format(
-                    "Move viewer output from [%s] to [%s]",
-                    viewPath, viewFile
-            ));
-            if (viewFile.exists()) {
-                viewFile.delete();
-            }
-            FileUtils.moveFile(viewPath, viewFile);
-            Path view = from
-                    .toPath();
-            unlockAbs(view);
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("Could not move viewer file from [%s] to [%s]", viewPath, viewFile), e);
+        moveFile(deploymentView, owncloudView);
+        unlock(owncloudView);
+        return Paths.get(owncloudView.toObjectPath());
+    }
+
+    private void moveFile(AbstractPath fromPath, AbstractPath toPath) {
+        File from = fromPath.toPath().toFile();
+        File to = toPath.toPath().toFile();
+        logger.info(String.format(
+                "Move [%s] to [%s]",
+                from, to
+        ));
+        if (to.exists()) {
+            to.delete();
         }
-        return Paths.get(from.toObjectPath());
+        try {
+            FileUtils.moveFile(from, to);
+        } catch (IOException e) {
+            throw new RuntimeException(String.format(
+                    "Could not move [%s] to [%s]",
+                    from, to
+            ), e);
+        }
     }
 
     @Override
@@ -154,108 +150,150 @@ public class OwncloudFileService implements FileService {
         try {
             return FileUtils.readFileToString(file, UTF_8);
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Could not get content of objectPath [%s]", objectPath), e);
+            throw new IllegalArgumentException(String.format(
+                    "Could not get content of objectPath [%s]",
+                    objectPath
+            ), e);
         }
     }
 
     @Override
-    public void lock(String fileString) {
-        Path file = OwncloudInputFile.from(fileString).toPath();
+    public void lock(String objectPath) {
+        lock(OwncloudInputFile.from(objectPath));
+    }
+
+    private void lock(AbstractPath path) {
+        Path file = path.toPath();
+        logger.info(String.format("Locking [%s]", file));
         try {
             chown(file, locker);
             setPosixFilePermissions(file, get444());
         } catch (IOException e) {
-            logger.error(String.format("Could not lock file [%s]", fileString), e);
+            logger.error(String.format("Could not lock [%s]", file), e);
         }
-        logger.info(String.format("Locked file [%s]", file));
     }
 
     @Override
-    public void unlock(String inputfile) {
-        Path file = OwncloudInputFile.from(inputfile).toPath();
-        unlockAbs(file);
+    public void unlock(String objectPath) {
+        unlock(OwncloudInputFile.from(objectPath));
     }
 
-    private void unlockAbs(Path absoluteFilePath) {
+    private void unlock(AbstractPath abstractPath) {
+        Path path = abstractPath.toPath();
+        unlock(path);
+    }
+
+    private void unlock(Path path) {
+        logger.info(String.format("Unlocking [%s]", path));
         try {
-            chown(absoluteFilePath, "www-data");
-            setPosixFilePermissions(absoluteFilePath, get644());
-            Path parent = absoluteFilePath.getParent();
+            chown(path, "www-data");
+            setPosixFilePermissions(path, get644());
+            Path parent = path.getParent();
             chown(parent, "www-data");
         } catch (IOException e) {
-            logger.error(String.format("Could not unlock file [%s]", absoluteFilePath.toString()), e);
+            logger.error(String.format("Could not unlock [%s]", path), e);
         }
-        logger.info(String.format("Unlocked file [%s]", absoluteFilePath));
     }
 
     /**
-     * Move output files to src, next to input file
+     * Move output files in folder next to input file
      * in date and time labeled output folder
      *
      * @return output dir
      */
-    private Path moveOutputFiles(String workDir, DeploymentInputFile file) {
-        Path deploymentOutput = DeploymentOutputDir.from(workDir).toPath();
-        Path owncloudOutput = OwncloudOutputDir.from(file.getUser()).toPath();
-
-        owncloudOutput.getParent().toFile().mkdirs();
-        if (!deploymentOutput.toFile().exists()) {
-            return createEmptyOutputFolder(workDir, owncloudOutput);
+    private OwncloudOutputDir moveOutputDir(DeploymentInputFile inputFile) {
+        DeploymentOutputDir deployment = DeploymentOutputDir.from(inputFile);
+        OwncloudOutputDir owncloud = OwncloudOutputDir.from(inputFile);
+        if (!hasOutput(deployment)) {
+            createEmptyOutputFolder(inputFile.getWorkDir(), owncloud);
         } else {
-            return moveOutputFolder(deploymentOutput, owncloudOutput);
+            moveOutputDir(deployment, owncloud);
         }
+        return owncloud;
     }
 
-    private Path createEmptyOutputFolder(String workDir, Path outputDir) {
-        outputDir.toFile().mkdirs();
-        logger.warn(String.format("No output folder for deployment [%s], created empty [%s]", workDir, outputDir.toString()));
-        return outputDir;
+    private void createEmptyOutputFolder(String workDir, OwncloudOutputDir owncloudOutput) {
+        logger.warn(String.format(
+                "No output for [%s], create empty [%s]",
+                workDir, owncloudOutput.toPath())
+        );
+        owncloudOutput
+                .toPath()
+                .toFile()
+                .mkdirs();
     }
 
-    private Path moveOutputFolder(Path deploymentOutput, Path outputDir) {
+    private boolean hasOutput(DeploymentOutputDir file) {
+        File outputDir = file.toPath().toFile();
+        return outputDir.exists()
+                &&
+                outputDir.listFiles().length > 0;
+    }
+
+
+    private void moveOutputDir(DeploymentOutputDir deploymentOutput, OwncloudOutputDir outputDir) {
+        Path deployment = deploymentOutput.toPath();
+        Path owncloud = outputDir.toPath();
         try {
-            FileUtils.moveDirectory(deploymentOutput.toFile(), outputDir.toFile());
             logger.info(String.format(
-                    "Move output files from workdir [%s] to [%s]",
-                    deploymentOutput, outputDir
+                    "Move output dir from [%s] to [%s]",
+                    deployment, owncloud
             ));
-        } catch (IOException e) {
-            throw new RuntimeIOException(
-                    String.format("Could not move output folder from deployment [%s] to [%s]",
-                            deploymentOutput.toString(), outputDir.toString()), e
+            FileUtils.moveDirectory(
+                    deployment.toFile(),
+                    owncloud.toFile()
             );
+        } catch (IOException e) {
+            throw new RuntimeException(String.format(
+                    "Could not move [%s] to [%s]",
+                    deployment, owncloud
+            ), e);
         }
-        unlockOutputFiles(outputDir);
-        return outputDir;
     }
 
-    private void unlockOutputFiles(Path outputDir) {
-        List<Path> outputFilePaths = getRelativePathsIn(outputDir);
-        List<String> filePaths = outputFilePaths
-                .stream()
-                .map(Path::toString)
-                .collect(toList());
-        for (String file : filePaths) {
+    private List<OwncloudOutputFile> unlockOutputFiles(OwncloudOutputDir outputDir) {
+        List<OwncloudOutputFile> outputFiles = getFilesFromOutputDir(outputDir);
+        for (OwncloudOutputFile file : outputFiles) {
             unlockFileAndParents(file);
         }
+        return outputFiles;
     }
 
-    private void unlockFileAndParents(String file) {
+    private List<OwncloudOutputFile> getFilesFromOutputDir(OwncloudOutputDir outputDir) {
+        File[] outputFiles = outputDir
+                .toPath()
+                .toFile()
+                .listFiles();
+        if (isNull(outputFiles)) {
+            return emptyList();
+        }
+        return Arrays
+                .stream(outputFiles)
+                .map(file -> {
+                    System.out.println("getFilesFromOutputDir:" + file.toPath());
+                    return OwncloudOutputFile.from(outputDir, file);
+                })
+                .collect(toList());
+    }
+
+
+    private void unlockFileAndParents(AbstractPath file) {
         unlock(file);
         try {
-            logger.info(String.format("Unlocking [%s]", file));
-            Path path = OwncloudInputFile.from(file).toPath();
-            unlockParents(path, Paths.get(Config.OWNCLOUD_VOLUME).getFileName().toString());
+            logger.info(String.format(
+                    "Unlocking parents of [%s]", file
+            ));
+            Path path = file.toPath();
+            String owncloudDir = Paths
+                    .get(Config.OWNCLOUD_VOLUME)
+                    .getFileName()
+                    .toString();
+            unlockParents(path, owncloudDir);
         } catch (IOException e) {
-            throw new RuntimeIOException(String.format("Could not unlock [%s]", file), e);
+            throw new RuntimeIOException(String.format(
+                    "Could not unlock [%s]", file
+            ), e);
         }
-    }
-
-    private List<Path> getRelativePathsIn(Path outputDir) {
-        return Arrays
-                .stream(requireNonNull(outputDir.toFile().listFiles()))
-                .map(file -> Paths.get(Config.OWNCLOUD_VOLUME).relativize(file.toPath()))
-                .collect(toList());
     }
 
     private void unlockParents(Path path, String stopAt) throws IOException {
@@ -265,36 +303,42 @@ public class OwncloudFileService implements FileService {
         if (!parent.getFileName().toString().equals(stopAt)) {
             unlockParents(parent, stopAt);
         } else {
-            logger.info(String.format("found endpoint [%s], stop unlocking", stopAt));
+            logger.info(String.format("Found [%s], stop unlocking", stopAt));
         }
     }
 
-    private void createSoftLink(String workDir, OwncloudInputFile relativeFilepath) {
-        Path owncloudFilePath = relativeFilepath.toPath();
-        Path objectPath = DeploymentInputFile
-                .from(workDir, relativeFilepath.toObjectPath())
+    private void createSoftLink(String workDir, OwncloudInputFile inputFile) {
+        Path owncloud = inputFile.toPath();
+        Path deployment = DeploymentInputFile
+                .from(workDir, inputFile.toObjectPath())
                 .toPath();
-        objectPath
+        deployment
                 .toFile()
                 .getParentFile()
                 .mkdirs();
         try {
-            Files.createSymbolicLink(objectPath, owncloudFilePath);
-            logger.info(String.format("Created symbolic link for [%s]", objectPath.toString()));
+            Files.createSymbolicLink(deployment, owncloud);
         } catch (IOException e) {
-            throw new RuntimeIOException(String.format("Could not link owncloud [%s] and input [%s]",
-                    owncloudFilePath.toString(), objectPath.toString()
+            throw new RuntimeIOException(String.format(
+                    "Could not link owncloud [%s] and input [%s]",
+                    owncloud.toString(), deployment.toString()
             ), e);
         }
     }
 
     private void chown(Path file, String user) throws IOException {
-        UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
+        UserPrincipalLookupService lookupService = FileSystems
+                .getDefault()
+                .getUserPrincipalLookupService();
         PosixFileAttributeView fileAttributeView = getFileAttributeView(
                 file, PosixFileAttributeView.class, NOFOLLOW_LINKS
         );
-        fileAttributeView.setGroup(lookupService.lookupPrincipalByGroupName(user));
-        fileAttributeView.setOwner(lookupService.lookupPrincipalByName(user));
+        fileAttributeView.setGroup(
+                lookupService.lookupPrincipalByGroupName(user)
+        );
+        fileAttributeView.setOwner(
+                lookupService.lookupPrincipalByName(user)
+        );
     }
 
     private Set<PosixFilePermission> get644() {

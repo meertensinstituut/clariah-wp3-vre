@@ -13,15 +13,8 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.*;
  */
 public class OwncloudInputFile extends AbstractPath {
 
-    /**
-     * Root dir that contains owncloud users and their files
-     */
-    private final String owncloud;
-
-    private OwncloudInputFile(String owncloud, String user, String files, String file) {
-        this.owncloud = owncloud;
+    private OwncloudInputFile(String user, String file) {
         this.user = user;
-        this.files = files;
         this.file = file;
     }
 
@@ -31,9 +24,7 @@ public class OwncloudInputFile extends AbstractPath {
 
     public static OwncloudInputFile from(String objectPath) {
         return new OwncloudInputFile(
-                OWNCLOUD_VOLUME,
                 getUserFrom(objectPath),
-                FILES_DIR,
                 getFileFrom(objectPath)
         );
     }

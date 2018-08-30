@@ -14,12 +14,9 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
  */
 public class DeploymentInputFile extends AbstractPath {
 
-    private DeploymentInputFile(String tmp, String workDir, String input, String user, String files, String file) {
-        this.tmp = tmp;
+    private DeploymentInputFile(String workDir, String user, String file) {
         this.workDir = workDir;
-        this.input = input;
         this.user = user;
-        this.files = files;
         this.file = file;
     }
 
@@ -35,11 +32,8 @@ public class DeploymentInputFile extends AbstractPath {
 
     public static DeploymentInputFile from(String workDir, String objectPath) {
         return new DeploymentInputFile(
-                DEPLOYMENT_VOLUME,
                 workDir,
-                INPUT_DIR,
                 getUserFrom(objectPath),
-                FILES_DIR,
                 getFileFrom(objectPath)
         );
     }

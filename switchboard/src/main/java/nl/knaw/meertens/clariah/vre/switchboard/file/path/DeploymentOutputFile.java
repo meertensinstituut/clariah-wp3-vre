@@ -1,13 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file.path;
 
-import nl.knaw.meertens.clariah.vre.switchboard.Config;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.*;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 
 /**
  * Path of an output file of a deployed service
@@ -16,12 +10,9 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
  */
 public class DeploymentOutputFile extends AbstractPath {
 
-    private DeploymentOutputFile(String tmp, String workDir, String output, String user, String files, String file) {
-        this.tmp = tmp;
+    private DeploymentOutputFile(String workDir, String user, String file) {
         this.workDir = workDir;
-        this.output = output;
         this.user = user;
-        this.files = files;
         this.file = file;
     }
 
@@ -37,11 +28,8 @@ public class DeploymentOutputFile extends AbstractPath {
 
     public static DeploymentOutputFile from(String workDir, String objectPath) {
         return new DeploymentOutputFile(
-                DEPLOYMENT_VOLUME,
                 workDir,
-                OUTPUT_DIR,
                 getUserFrom(objectPath),
-                FILES_DIR,
                 getFileFrom(objectPath)
         );
     }

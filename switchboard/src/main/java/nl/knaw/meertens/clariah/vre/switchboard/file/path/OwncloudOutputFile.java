@@ -1,45 +1,38 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file.path;
 
-import nl.knaw.meertens.clariah.vre.switchboard.Config;
-
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static java.time.LocalDateTime.now;
-import static java.time.format.DateTimeFormatter.ofPattern;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.*;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.FILES_DIR;
 
 /**
  * Path of a output file stored in owncloud has the following structure:
- * `/{owncloud}/{user}/{files}/{output}/{file}`
+ * `/{owncloud}/{user}/{files}/{outputResult}/{file}`
  */
 public class OwncloudOutputFile extends AbstractPath {
 
-    private OwncloudOutputFile(String owncloud, String user, String files, String output, String file) {
-        this.owncloud = owncloud;
-        this.output = output;
+    private OwncloudOutputFile(String user, String outputResult, String file) {
+        this.outputResult = outputResult;
         this.user = user;
-        this.files = files;
         this.file = file;
     }
 
     @Override
     public Path toPath() {
-        return Paths.get(owncloud, user, files, output, file);
+        return Paths.get(owncloud, user, files, outputResult, file);
     }
 
     @Override
     public String toObjectPath() {
-        return Paths.get(user, files, output, file).toString();
+        return Paths.get(user, files, outputResult, file).toString();
     }
 
-    public static OwncloudOutputFile from(OwncloudOutputDir dir, String file) {
+    public static OwncloudOutputFile from(OwncloudOutputDir dir, File file) {
         return new OwncloudOutputFile(
-                OWNCLOUD_VOLUME,
                 dir.getUser(),
-                FILES_DIR,
-                dir.getOutput(),
-                file
+                dir.getOutputResult(),
+                getRelativeFilePath(dir, file)
         );
     }
 
@@ -55,12 +48,16 @@ public class OwncloudOutputFile extends AbstractPath {
         return files;
     }
 
-    public String getOutput() {
-        return output;
+    public String getOutputResult() {
+        return outputResult;
     }
 
     public String getFile() {
         return file;
+    }
+
+    private static String getRelativeFilePath(OwncloudOutputDir dir, File file) {
+        return dir.toPath().relativize(file.toPath()).toString();
     }
 
 }
