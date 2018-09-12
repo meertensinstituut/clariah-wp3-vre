@@ -42,13 +42,16 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
  
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -59,6 +62,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.apache.http.HttpRequest;
 /**
  *
  * @author Vic
@@ -352,59 +356,101 @@ public class FoliaEditor implements RecipePlugin {
         
     public JSONObject uploadFile(String projectName, String filename, String language, String inputTemplate, String author) throws MalformedURLException, IOException, JDOMException, FileNotFoundException, ParseException, ParseException, ConfigurationException {
         JSONObject jsonResult = new JSONObject();
-        JSONObject json = new JSONObject();
-
-        String charset = "UTF-8";
-        String param = "value";
-        File textFile = new File("/path/to/file.txt");
-        String boundary = Long.toHexString(System.currentTimeMillis()); // Just generate some unique random value.
-        String CRLF = "\r\n"; // Line separator required by multipart/form-data.
-
         DeploymentLib dplib = new DeploymentLib();
         
         String path = Paths.get(dplib.getWd(), projectName, dplib.getInputDir(), filename).normalize().toString();
-        System.out.println(path);
+        System.out.println("### File path to be uploaded:" + path + " ###");
         
         jsonResult.put("pathUploadFile", path);
         File file = new File(path);
         String filenameOnly = file.getName();
         jsonResult.put("filenameOnly", filenameOnly);
         
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        String payload = new String(encoded, "UTF-8");
-
         URL url = new URL(
                 this.serviceUrl.getProtocol(), 
                 this.serviceUrl.getHost(), 
                 this.serviceUrl.getPort(),
-                this.serviceUrl.getFile() + "/pub/upload", 
+                this.serviceUrl.getFile() + "/pub/upload/", 
                 null
         );
-
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-        connection.setRequestMethod("POST");
+        System.out.println("### Upload URL:" + url.toString() + " ###");
+        
+        HttpURLConnection connection = null;
+        try {
+            String boundary = Long.toHexString(System.currentTimeMillis());
+            String LINE_FEED = "\r\n";
             
-        try (
-            OutputStream output = connection.getOutputStream();
-            PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, charset), true);
-        ) {
-            // Send text file.
-            writer.append("--" + boundary).append(CRLF);
-            writer.append("Content-Disposition: form-data; file=\"" + textFile.getName() + "\"").append(CRLF);
-            writer.append("Content-Type: text/plain; charset=" + charset).append(CRLF); // Text file itself must be saved in this charset!
-            writer.append(CRLF).flush();
-            Files.copy(textFile.toPath(), output);
-            output.flush(); // Important before continuing with writer!
-            writer.append(CRLF).flush(); // CRLF is important! It indicates end of boundary.            
-            writer.append("--" + boundary + "--").append(CRLF).flush();
-            
-            int responseCode = ((HttpURLConnection) connection).getResponseCode();
-            System.out.println(responseCode); // Should be 200
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            connection.setRequestProperty("file", filenameOnly);
 
-            connection.disconnect();
-        } catch (IOException e) {
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
+            
+            writer.append("--" + boundary).append(LINE_FEED);
+            writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"" + filenameOnly + "\"; file=\"" + filenameOnly + "\"").append(LINE_FEED);
+            writer.append("Content-Type: text/plain").append(LINE_FEED);
+            writer.append(LINE_FEED);
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+                for (String line; (line = reader.readLine()) != null; ) {
+                    writer.append(line).append(LINE_FEED);
+                }
+            } finally {
+                if (reader != null) try {
+                    reader.close();
+                } catch (IOException logOrIgnore) {
+                }
+            }
+
+            writer.append(LINE_FEED);
+            writer.append("--" + boundary + "--").append(LINE_FEED);
+            writer.append(LINE_FEED);
+            writer.flush();
+            writer.close();
+            
+            InputStream is;
+            if (connection.getResponseCode() >= 400) {
+                is = connection.getInputStream();
+            } else {
+                 /* error from server */
+                is = connection.getErrorStream();
+            }
+            
+            System.out.println("### Response: " + is);
+            System.out.println("### File uplaoded! " + connection.getResponseCode() + connection.getResponseMessage() + " ###");
+
+        } catch (Exception e) {
+            System.out.println("### File upload failed ###");
+            System.out.println(e.getMessage());
+            if (connection!=null) {
+                System.out.println("### Output stream");
+                try {
+                    BufferedReader bf = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+                    for (String line; (line = bf.readLine()) != null; ) {
+                        System.out.println(line);
+                    }
+                    connection.disconnect();
+                } catch (Exception e2) {
+                    System.out.println(e2.getMessage());
+                    throw new RuntimeException(e2.getMessage());
+                }
+                
+                System.out.println("### request properties");
+                Map<String,List<String>> lists = connection.getRequestProperties();
+                lists.entrySet().forEach((entry) -> {
+                    System.out.println(entry);
+                });
+                
+            }
+            else {
+                System.out.println("### No connection ###");
+            }
+            
             throw new RuntimeException(e.getMessage());
         }
 

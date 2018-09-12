@@ -1,0 +1,44 @@
+---
+###########################################################################
+#           LaMachine Host Configuration
+#
+# INSTRUCTIONS: Here you can check and set any configuration variables
+#               for your LaMachine build.
+#               Most likely you don't need to change anything
+#               at all and can just accept the values by saving
+#               and closing your editor.
+#
+#               Note that most of these variables can not be changed
+#               once they have been set.
+#
+###########################################################################
+conf_name: "latest" #Name of this LaMachine configuration (don't change this once set)
+flavour: "docker" #LaMachine flavour (don't change this once set)
+hostname: "lamachine" #Name of the host (or fully qualified domain name) (changing this won't automatically change the system hostname!)
+version: "stable" #stable, development or custom
+localenv_type: "virtualenv" #Local environment type (virtualenv), only used when locality == local (don't change this once set)
+locality: "global" #local or global? (don't change this once set)
+controller: "internal" #internal or external? Is this installation managed inside or outside the environment/host? You can't change this value here, run bootstrap with --external to force this to external.
+maintainer_name: "proycon" #Enter your name here to let people know who the maintainer of this LaMachine installation is
+maintainer_mail: "proycon@latest" #Enter your e-mail address here
+
+unix_user: "lamachine"
+unix_group: "lamachine" #must be same as unix_user, changing this is not supported yet
+homedir: "/home/lamachine"
+lamachine_path: "/lamachine" #Path where LaMachine source is initially stored/shared
+host_data_path: "/home/proycon/work/LaMachine/builds" #Data path on the host machine that will be shared with LaMachine
+data_path: "/data" #Shared data path (in LaMachine) that is tied to host_data_path
+global_prefix: "/usr/local" #Path for global installations (only change once on initial installation)
+source_path: "/usr/local/src" #Path where sources will be stored/compiled (only change once on initial installation)
+root: true #Do you have root on the target system?
+private: true #opt-out of sending back anonymous analytics regarding your LaMachine build 
+minimal: false #install less than normal for certain categories (this might break things)
+prefer_distro: false #prefer using the distribution's packages as much as possible rather than distribution channels such as pip (this will install more conservative versions but may break certain things)
+webserver: true #include a webserver and web-based services/applications. Disabling this turns all web-based functionality off.
+http_port: 80 #webserver port, you may want to change this to a port like 8080 if you don't want to run on a reserved port or already have something running there!
+mapped_http_port: 8080 #mapped webserver port on host system (for VM or docker only)
+services: [ all ]  #List of services to provide, if set to [ all ], all possible services from the software categories you install will be provided. You can remove this and list specific services you want to enable. This is especially needed in case of a LaMachine installation that intends to only provide a single service.
+webservertype: nginx #If set to anything different, the internal webserver will not be enabled/provided by LaMachine (which allows you to run your own external one), do leave webserver: true set as is though.
+
+web_user: "www-data" #The user for the webserver, change this on first install if needed!!!
+web_group: "www-data" #The group for the webserver, change this on first install if needed!!!

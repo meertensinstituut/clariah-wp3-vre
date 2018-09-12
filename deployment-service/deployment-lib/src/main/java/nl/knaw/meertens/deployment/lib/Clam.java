@@ -430,10 +430,6 @@ public class Clam implements RecipePlugin {
         File file = new File(path);
         String filenameOnly = file.getName();
         jsonResult.put("filenameOnly", filenameOnly);
-        
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        String accessToken = (String)json.get("accessToken");
-        String payload = new String(encoded, "UTF-8");
 
         URL url = new URL(
                 this.serviceUrl.getProtocol(), 
@@ -445,7 +441,6 @@ public class Clam implements RecipePlugin {
         System.out.println("### Upload URL:" + url.toString() + " ###");
             
         try {
-//            sun.util.logging.PlatformLogger.getLogger("sun.net.www.protocol.http.HttpURLConnection").setLevel(PlatformLogger.Level.ALL);
             String boundary = Long.toHexString(System.currentTimeMillis());
             String LINE_FEED = "\r\n";
             
@@ -454,7 +449,6 @@ public class Clam implements RecipePlugin {
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Accept", "application/json");
-//            connection.setRequestProperty("Content-Type", "application/octet-stream");
             connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
 
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
@@ -481,66 +475,15 @@ public class Clam implements RecipePlugin {
             writer.append(LINE_FEED);
             writer.flush();
             writer.close();
-            
-//            try (OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8")) {
-//                writer.write(payload);
-//                writer.flush();
-//                writer.close();
-//            }
-//            
-//            try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-//                StringBuilder jsonString = new StringBuilder();
-//                String line;
-//                while ((line = br.readLine()) != null) {
-//                    jsonString.append(line);
-//                }
-//                br.close(); 
-//            }
 
             connection.disconnect();
             System.out.println("### File uplaoded! " + connection.getResponseCode() + connection.getResponseMessage() + " ###");
 
-//            CloseableHttpClient httpClient = HttpClients.createDefault();
-//            HttpPost uploadFile = new HttpPost(url.toString());
-//            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-////            builder.addTextBody("field1", "yes", ContentType.TEXT_PLAIN);
-//
-//            // This attaches the file to the POST:
-//            builder.addBinaryBody(
-//                "contents",
-//                new FileInputStream(file),
-//                ContentType.DEFAULT_TEXT,
-//                file.getName()
-//            );
-//
-//            HttpEntity multipart = builder.build();
-//            uploadFile.setEntity(multipart);
-//            CloseableHttpResponse response = httpClient.execute(uploadFile);
-//            StatusLine sl = response.getStatusLine();
-//            
-//            Header[] headers = response.getAllHeaders();
-//            for (Header header : headers) {
-//                System.out.println("### Key : " + header.getName() + " ,Value : " + header.getValue() + "###");
-//            }
-//            HttpEntity responseEntity = response.getEntity();
-//            System.out.println("### File uplaoded! " + sl.getStatusCode() + sl.getReasonPhrase() + " ###");
-//            assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-//            httpClient.close();
         } catch (Exception e) {
             System.out.println("### File upload failed ###");
             throw new RuntimeException(e.getMessage());
         }
 
-//        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-//        httpCon.setDoOutput(true);
-//        httpCon.setRequestMethod("POST");
-//        OutputStreamWriter out = new OutputStreamWriter(httpCon.getOutputStream());
-//        out.write("Resource content");
-//        out.close();
-//        httpCon.getInputStream();
-//        json.put("status", httpCon.getResponseCode());
-//        json.put("message", httpCon.getResponseMessage());
-//        httpCon.disconnect();
         return jsonResult;
     }
     
