@@ -377,7 +377,7 @@ public class FoliaEditor implements RecipePlugin {
         
         HttpURLConnection connection = null;
         try {
-            String boundary = "--" + Long.toHexString(System.currentTimeMillis());
+            String boundary = Long.toHexString(System.currentTimeMillis());
             String LINE_FEED = "\r\n";
             
             connection = (HttpURLConnection) url.openConnection();
@@ -390,8 +390,8 @@ public class FoliaEditor implements RecipePlugin {
 
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
             
-            writer.append(boundary).append(LINE_FEED);
-            writer.append("Content-Disposition: form-data; name=\"file_upload\"; filename=\"" + filenameOnly + "\"; file=\"" + filenameOnly + "\"").append(LINE_FEED);
+            writer.append("--" + boundary).append(LINE_FEED);
+            writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"" + filenameOnly + "\"; file=\"" + filenameOnly + "\"").append(LINE_FEED);
             writer.append("Content-Type: text/plain").append(LINE_FEED);
             writer.append(LINE_FEED);
             BufferedReader reader = null;
@@ -408,7 +408,7 @@ public class FoliaEditor implements RecipePlugin {
             }
 
             writer.append(LINE_FEED);
-            writer.append(boundary).append(LINE_FEED);
+            writer.append("--" + boundary + "--").append(LINE_FEED);
             writer.append(LINE_FEED);
             writer.flush();
             writer.close();
