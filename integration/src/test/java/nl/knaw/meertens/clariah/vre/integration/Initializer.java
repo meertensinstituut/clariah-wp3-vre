@@ -40,7 +40,7 @@ public class Initializer extends AbstractIntegrationTest {
         logger.info("Wait 15 seconds for registry to process...");
         TimeUnit.SECONDS.sleep(15);
 
-        logger.info("Poll " + WAITING_PERIOD + "s for services to start...");
+        logger.info("Check if services have started yet (max " + WAITING_PERIOD + "s");
         waitUntilSwitchboardIsUp();
 
         logger.info("Finished initialisation of VRE Integration");

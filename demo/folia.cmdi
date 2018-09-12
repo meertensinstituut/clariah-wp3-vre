@@ -26,7 +26,7 @@
               <cmdp:ParameterGroup>
                 <cmdp:Name>input</cmdp:Name>
                 <cmdp:Label xml:lang="en">Input Folia file</cmdp:Label>
-                <cmdp:MIMEType>text/plain</cmdp:MIMEType>
+                <cmdp:MIMEType>text/xml</cmdp:MIMEType>
                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
                 <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
               </cmdp:ParameterGroup>

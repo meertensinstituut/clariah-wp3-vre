@@ -7,6 +7,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegist
 import java.util.List;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.SERVICE;
+import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.VIEWER;
 
 public class ObjectService {
 
@@ -18,7 +19,18 @@ public class ObjectService {
         this.servicesRegistryService = servicesRegistryService;
     }
 
-    public List<ServiceRecord> getServicesOfKindServiceFor(Long objectId) {
+    /**
+     * A service of kind viewer
+     */
+    public List<ServiceRecord> getViewersFor(long objectId) {
+        String mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
+        return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, VIEWER);
+    }
+
+    /**
+     * A service of kind service >:)
+     */
+    public List<ServiceRecord> getServiceServicesFor(Long objectId) {
         String mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
         return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, SERVICE);
     }

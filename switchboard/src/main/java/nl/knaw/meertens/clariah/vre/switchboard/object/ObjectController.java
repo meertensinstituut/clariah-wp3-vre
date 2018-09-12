@@ -28,17 +28,17 @@ public class ObjectController extends AbstractController {
     @Path("/{objectId}/services")
     @Produces(APPLICATION_JSON)
     public Response getServicesFor(@PathParam("objectId") long objectId) {
-        logger.info(String.format("Received request of available services for object [%s]", objectId));
-        List<ServiceRecord> services = objectService.getServicesOfKindServiceFor(objectId);
+        logger.info(String.format("Received request of available 'service' services for object [%s]", objectId));
+        List<ServiceRecord> services = objectService.getServiceServicesFor(objectId);
         return createResponse(services);
     }
 
     @GET
-    @Path("/{objectId}/view/{viewer}")
+    @Path("/{objectId}/viewers")
     @Produces(APPLICATION_JSON)
-    public Response getViewFor(@PathParam("objectId") long objectId, @PathParam("viewer") String viewer) {
-        logger.info(String.format("Received request to view object [%s] with viewer [%s]", objectId, viewer));
-        List<ServiceRecord> services = objectService.getServicesOfKindServiceFor(objectId);
+    public Response getViewersFor(@PathParam("objectId") long objectId) {
+        logger.info(String.format("Received request of available viewers for object [%s]", objectId));
+        List<ServiceRecord> services = objectService.getViewersFor(objectId);
         return createResponse(services);
     }
 

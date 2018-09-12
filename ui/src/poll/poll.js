@@ -1,9 +1,11 @@
 import React from "react";
 import Switchboard from "../common/switchboard";
+import Spinner from "../common/spinner";
 import {Alert, Panel} from "react-bootstrap";
 import PropTypes from 'prop-types';
 
 import './poll.css';
+import {DeploymentStatus} from "../common/deployment-status";
 
 export default class Poll extends React.Component {
 
@@ -24,7 +26,7 @@ export default class Poll extends React.Component {
 
     pollDeployment() {
         this.setState({polling: true});
-        Switchboard.getDeploymentStatus(this.state.workDir).done((data) => {
+        Switchboard.getDeploymentStatusResult(this.state.workDir).done((data) => {
             // TODO: use actual http status code:
             const httpStatus = 200;
             const deployStatus = data;
@@ -84,7 +86,7 @@ export default class Poll extends React.Component {
                         (f, i) => <div key={i}>{f}</div>
                     )}</td>
                 </tr>
-                {deployStatus.status === 'FINISHED'
+                {deployStatus.status === DeploymentStatus.FINISHED
                     ? <tr>
                         <td>output folder</td>
                         <td>{deployStatus.outputDir}</td>
@@ -101,7 +103,9 @@ export default class Poll extends React.Component {
                     <Panel.Heading>
                         <Panel.Title>
                             Deployment status of <code>{this.state.workDir}</code>
-                            {this.state.polling ? <i className="fa fa-refresh pull-right"/> : null}
+                            <span className="pull-right">
+                            {deployStatus && deployStatus.status === 'RUNNING' ? <Spinner/> : <i className="fa fa-check-square-o" aria-hidden="true"/>}
+                            </span>
                         </Panel.Title>
                     </Panel.Heading>
                     <Panel.Body>

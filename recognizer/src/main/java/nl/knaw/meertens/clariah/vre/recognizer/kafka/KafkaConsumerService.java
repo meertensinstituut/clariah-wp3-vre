@@ -25,12 +25,20 @@ public class KafkaConsumerService {
     private KafkaConsumer<String, String> configureConsumer(String server, String groupName) {
         Properties props = new Properties();
         props.put("bootstrap.servers", server);
+        props.put("advertised.host.name", "kafka");
+        props.put("advertised.port", 9092);
         props.put("group.id", "vre_recognizer");
-        props.put("enable.auto.commit", "true");
-        props.put("auto.commit.interval.ms", "1000");
-        props.put("session.timeout.ms", "30000");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+        // ten minutes:
+        props.put("session.timeout.ms", "" + (10 * 60 * 1000));
+
+        // should be greater than session timeout:
+        props.put("request.timeout.ms", "" + (10 * 60 * 1000 + 1));
+
         return new KafkaConsumer<>(props);
     }
 

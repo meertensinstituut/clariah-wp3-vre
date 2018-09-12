@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -222,11 +223,15 @@ public class OwncloudFileService implements FileService {
         return outputFiles;
     }
 
+    /**
+     * Return files, and only files
+     */
     private List<OwncloudOutputFile> getFilesFromOutputDir(OwncloudOutputDir outputDir) {
         File[] outputFiles = outputDir
                 .toPath()
                 .toFile()
-                .listFiles();
+                .listFiles(File::isFile);
+
         if (isNull(outputFiles)) {
             return emptyList();
         }
