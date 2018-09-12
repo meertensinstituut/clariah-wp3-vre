@@ -33,6 +33,7 @@ import net.sf.saxon.s9api.SaxonApiException;
 import nl.knaw.meertens.deployment.lib.Clam;
 
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.FoliaEditor;
 import nl.knaw.meertens.deployment.lib.Queue;
 import nl.knaw.meertens.deployment.lib.Service;
 
@@ -83,14 +84,16 @@ public class WebExec {
     @GET
     @Path("/test")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response test() throws IOException, MalformedURLException, ConfigurationException, ParseException, JDOMException {
+    public Response test() throws IOException, MalformedURLException, ConfigurationException, ParseException, JDOMException, SaxonApiException {
         String projectName = "wd12345";
-        String serviceId = "UCTO";
-//        DeploymentLib dplib = new DeploymentLib();
-//        Service service = dplib.getServiceByName(serviceId);
-
+        String serviceId = "FOLIAEDITOR";
+        DeploymentLib dplib = new DeploymentLib();
+        Service service = dplib.getServiceByName(serviceId);
+    
         JSONObject json = new JSONObject();
-//        Clam clam = new Clam();
+        FoliaEditor fe = new FoliaEditor();
+        fe.init(projectName, service);
+        fe.uploadFile(projectName, "example.xml", "eng", "template", "author");
 //        clam.init(projectName, service);
 //        json = clam.downloadProject(projectName);
         json.put("test", "test");
