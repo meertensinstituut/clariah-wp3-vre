@@ -1,29 +1,29 @@
 package nl.knaw.meertens.clariah.vre.integration;
 
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.ParseContext;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
-import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
-import org.apache.maven.surefire.shade.org.apache.commons.lang.RandomStringUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Objects.isNull;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.checkDeploymentStatus;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.checkFileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.checkFileIsLocked;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.checkNewFileCanBeAdded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.deleteInputFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.putInputFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeployServiceTest extends AbstractIntegrationTest {
@@ -59,7 +59,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         // (see owncloud/docker-scan-files.sh)
         TimeUnit.SECONDS.sleep(6);
 
-        checkFileCanBeDownloaded(inputFile);
+        checkFileCanBeDownloaded(inputFile, someContent);
         
         checkFileIsLocked(inputFile);
 
@@ -74,7 +74,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         TimeUnit.SECONDS.sleep(6);
         String resultFile = checkDeploymentIsFinished(workDir);
 
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(20);
         checkResultCanBeDownloaded(resultFile);
 
         checkFilesAreUnlocked(inputFile);
@@ -90,13 +90,6 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     }
 
-    private void checkFileCanBeDownloaded(String inputFile) throws UnirestException {
-        logger.info(String.format("check file [%s] can be downloaded", inputFile));
-        HttpResponse<String> downloadResult = downloadFile(inputFile);
-        assertThat(downloadResult.getBody()).isEqualTo(someContent);
-        assertThat(downloadResult.getStatus()).isEqualTo(200);
-    }
-
     private void checkFilesAreUnlocked(String inputFile) throws UnirestException {
         logger.info(String.format("check file [%s] is unlocked", inputFile));
         HttpResponse<String> downloadResult = downloadFile(inputFile);
@@ -108,17 +101,6 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
         HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
         assertThat(deleteInputFile.getStatus()).isEqualTo(204);
-    }
-
-    private void checkFileIsLocked(String inputFile) throws UnirestException, InterruptedException {
-        logger.info(String.format("check file [%s] is locked", inputFile));
-        HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-        // http 423 is 'locked'
-        assertThat(putAfterDeployment.getStatus()).isIn(403, 423, 500);
-        
-        // http 423 is 'locked'
-        HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-        assertThat(deleteInputFile.getStatus()).isIn(403, 423);
     }
 
     private void checkResultCanBeDownloaded(String resultFile) throws UnirestException {
@@ -152,12 +134,6 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         });
     }
 
-    private void checkNewFileCanBeAdded(String newInputFile) throws SQLException {
-        logger.info("check that a new file is added");
-        long newInputFileId = getObjectIdFromRegistry(newInputFile);
-        assertThat(newInputFileId).isNotEqualTo(0L);
-    }
-
     private String getOutputFilePath(HttpResponse<String> finishedDeployment) {
         String outputDir = JsonPath.parse(finishedDeployment.getBody()).read("$.outputDir");
         Path pathAbsolute = Paths.get(outputDir);
@@ -168,36 +144,12 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         return outputPath;
     }
 
-    private HttpResponse<String> downloadFile(String inputFile) throws UnirestException {
-        return Unirest
-                .get(OWNCLOUD_ENDPOINT + inputFile)
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
-                .asString();
-    }
-
-    private HttpResponse<String> putInputFile(String expectedFilename) throws UnirestException {
-        return Unirest
-                .put(OWNCLOUD_ENDPOINT + expectedFilename)
-                .header("Content-Type", "text/plain; charset=UTF-8")
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
-                .body("new content " + RandomStringUtils.random(8))
-                .asString();
-    }
-
-    private HttpResponse<String> deleteInputFile(String expectedFilename) throws UnirestException {
-        return Unirest
-                .delete(OWNCLOUD_ENDPOINT + expectedFilename)
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
-                .asString();
-    }
-
     private KafkaConsumerService getOwncloudTopic() {
         KafkaConsumerService recognizerKafkaConsumer = new KafkaConsumerService(
-                KAFKA_ENDPOINT, OWNCLOUD_TOPIC_NAME, getRandomGroupName());
+                Config.KAFKA_ENDPOINT, Config.OWNCLOUD_TOPIC_NAME, getRandomGroupName());
         recognizerKafkaConsumer.subscribe();
         recognizerKafkaConsumer.pollOnce();
         return recognizerKafkaConsumer;
     }
-
 
 }

@@ -14,15 +14,19 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomFilenameWithTime;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static org.apache.http.auth.AuthScope.ANY_HOST;
 import static org.apache.http.auth.AuthScope.ANY_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +36,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private static Integer id;
     private ObjectsRepositoryService objectsRepositoryService = new ObjectsRepositoryService(
-            DB_OBJECTS_DATABASE, DB_OBJECTS_USER, DB_OBJECTS_PASSWORD);
+            Config.DB_OBJECTS_DATABASE, Config.DB_OBJECTS_USER, Config.DB_OBJECTS_PASSWORD);
 
     @Test
     public void testRecognizer_creates_updates_deletes_recordInObjectsRegistry() throws Exception {
@@ -78,18 +82,19 @@ public class CrudObjectTest extends AbstractIntegrationTest {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
                 new AuthScope(ANY_HOST, ANY_PORT),
-                new UsernamePasswordCredentials(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
+                new UsernamePasswordCredentials(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
         );
         CloseableHttpClient httpclient = HttpClients.custom()
                 .setDefaultCredentialsProvider(credsProvider)
                 .build();
         HttpUriRequest moveRequest = RequestBuilder
                 .create("MOVE")
-                .setUri(OWNCLOUD_ENDPOINT + oldFilename)
-                .addHeader(HttpHeaders.DESTINATION, OWNCLOUD_ENDPOINT + newFileName)
+                .setUri(Config.OWNCLOUD_ENDPOINT + oldFilename)
+                .addHeader(HttpHeaders.DESTINATION, Config.OWNCLOUD_ENDPOINT + newFileName)
                 .build();
 
         CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
+        String content = EntityUtils.toString(httpResponse.getEntity());
         int status = httpResponse.getStatusLine().getStatusCode();
         assertThat(status).isEqualTo(201);
         return newFileName;
@@ -97,9 +102,9 @@ public class CrudObjectTest extends AbstractIntegrationTest {
 
     private void updateContentToHtml(String newFileName) throws UnirestException {
         logger.info("Add html to html file");
-        Unirest.put(OWNCLOUD_ENDPOINT + newFileName)
+        Unirest.put(Config.OWNCLOUD_ENDPOINT + newFileName)
                 .header("Content-Type", "text/html; charset=utf-8") // set type to html
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
+                .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
                 .body("<!DOCTYPE html>\n" +
                         "<html>\n" +
                         "<head>\n" +
@@ -136,8 +141,8 @@ public class CrudObjectTest extends AbstractIntegrationTest {
 
     private void deleteFile(String file) throws UnirestException {
         logger.info(String.format("Delete file [%s]", file));
-        HttpResponse<String> response = Unirest.delete(OWNCLOUD_ENDPOINT + file)
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
+        HttpResponse<String> response = Unirest.delete(Config.OWNCLOUD_ENDPOINT + file)
+                .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
                 .asString();
         assertThat(response.getStatus()).isEqualTo(204);
     }

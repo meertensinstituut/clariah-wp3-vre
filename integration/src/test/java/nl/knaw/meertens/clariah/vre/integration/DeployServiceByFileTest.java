@@ -8,6 +8,10 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.checkDeploymentStatus;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
 
 public class DeployServiceByFileTest extends AbstractIntegrationTest {
 
@@ -16,7 +20,7 @@ public class DeployServiceByFileTest extends AbstractIntegrationTest {
     @Test
     public void testServiceIsFoundByFile_andServiceCanBeDeployed() throws Exception {
         String someContent = "'t Is vreemd, in al die jaren heb ik niet geweten dat het op kantoor zo gezellig kan zijn. In die kaas moest ik stikken, terwijl ik hier, tussen twee briefjes in, even kan luisteren naar innerlijke stemmen.";
-            String inputFile = uploadTestFile(someContent);
+        String inputFile = uploadTestFile(  someContent);
 
         // wait for services to process new file:
         TimeUnit.SECONDS.sleep(6);
@@ -24,7 +28,7 @@ public class DeployServiceByFileTest extends AbstractIntegrationTest {
         long inputFileId = getObjectIdFromRegistry(inputFile);
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
-        String url = String.format("%s/object/%d/services", SWITCHBOARD_ENDPOINT, inputFileId);
+        String url = String.format("%s/object/%d/services", Config.SWITCHBOARD_ENDPOINT, inputFileId);
         String json = Unirest.get(url).asString().getBody();
         assertThatJson(json).node("[0]").isPresent();
         assertThatJson(json).node("[0].name").isEqualTo("TEST");
