@@ -1,9 +1,7 @@
 #!/bin/bash
 cd /usr/local/integration/
 
-echo "populate service registry with test service with user [${DB_SERVICES_USER}] and database [${DB_SERVICES_DATABASE}]..."
-PGPASSWORD=${DB_SERVICES_PASSWORD}
-psql -h postgres -U ${DB_SERVICES_USER} ${DB_SERVICES_DATABASE} -f test-service.sql
+(cd ./services && ./insert-services.sh)
 
 echo 'start integration tests...'
 if [ "$1" = "debug" ]; then
