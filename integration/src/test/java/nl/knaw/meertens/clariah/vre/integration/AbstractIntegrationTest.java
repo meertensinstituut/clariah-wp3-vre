@@ -62,7 +62,6 @@ public abstract class AbstractIntegrationTest {
         );
     }
 
-
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {

@@ -37,23 +37,24 @@ public class CrudObjectTest extends AbstractIntegrationTest {
     @Test
     public void testRecognizer_creates_updates_deletes_recordInObjectsRegistry() throws Exception {
         final String expectedFilename = uploadTestFile();
-        TimeUnit.SECONDS.sleep(6);
 
+        TimeUnit.SECONDS.sleep(10);
         checkFileExistsInRegistry(expectedFilename);
 
-        String newHtmlFileName = updateTestFilePath(expectedFilename);
         TimeUnit.SECONDS.sleep(10);
+        String newHtmlFileName = updateTestFilePath(expectedFilename);
 
+        TimeUnit.SECONDS.sleep(10);
         checkFileTypeIsStillText(newHtmlFileName);
 
         updateContentToHtml(newHtmlFileName);
-        TimeUnit.SECONDS.sleep(20);
 
+        TimeUnit.SECONDS.sleep(20);
         checkFileTypeIsHtml(newHtmlFileName);
 
         deleteFile(newHtmlFileName);
-        TimeUnit.SECONDS.sleep(6);
 
+        TimeUnit.SECONDS.sleep(20);
         checkFileDoesNotExistInRegistry();
     }
 

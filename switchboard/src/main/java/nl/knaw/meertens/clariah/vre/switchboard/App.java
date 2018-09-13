@@ -50,7 +50,8 @@ public class App extends ResourceConfig {
                 ),
                 new KafkaProducerServiceImpl(
                         SWITCHBOARD_TOPIC_NAME,
-                        KAFKA_HOST_NAME, getMapper()
+                        KAFKA_HOST_NAME,
+                        getMapper()
                 ),
                 new KafkaProducerServiceImpl(
                         OWNCLOUD_TOPIC_NAME,

@@ -29,10 +29,10 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
             producer.getKafkaProducer().send(new ProducerRecord<>(
                     topic, "key", mapper.writeValueAsString(kafkaMsg)
             ));
+            logger.info(String.format("Kafka message sent successfully to [%s]", topic));
         } catch (JsonProcessingException e) {
             logger.error("Could not create json for kafka msg", e);
         }
-        logger.info("Kafka message sent successfully");
     }
 
 }
