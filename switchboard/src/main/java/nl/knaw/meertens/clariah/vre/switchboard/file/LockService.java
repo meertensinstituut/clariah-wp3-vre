@@ -64,7 +64,7 @@ public class LockService {
         unlock(file);
         try {
             logger.info(String.format(
-                    "Unlocking parents of [%s]", file
+                    "Unlocking parent dirs of [%s]", file.toPath()
             ));
             Path path = file.toPath();
             String owncloudDir = Paths

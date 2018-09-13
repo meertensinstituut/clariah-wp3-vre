@@ -4,11 +4,13 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
+import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceStub;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
+import org.mockito.Mockito;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
@@ -40,8 +42,13 @@ public class SwitchboardJerseyTest extends JerseyTest {
 
     private static ObjectsRegistryServiceStub objectsRegistryServiceStub = new ObjectsRegistryServiceStub();
 
+    private KafkaProducerService kafkaSwitchboardServiceMock;
+    private KafkaProducerService kafkaOwncloudServiceMock;
+
     @Override
     protected Application configure() {
+        setMocks();
+
         if(resourceConfig != null) {
             return resourceConfig;
         }
@@ -57,10 +64,17 @@ public class SwitchboardJerseyTest extends JerseyTest {
                         "http://localhost:1080",
                         requestRepository,
                         pollService
-                )
+                ),
+                kafkaSwitchboardServiceMock,
+                kafkaOwncloudServiceMock
         );
         resourceConfig.register(diBinder);
         return resourceConfig;
+    }
+
+    private void setMocks() {
+        kafkaSwitchboardServiceMock = Mockito.mock(KafkaProducerService.class);
+        kafkaOwncloudServiceMock = Mockito.mock(KafkaProducerService.class);
     }
 
     public Response deploy(String expectedService, DeploymentRequestDto deploymentRequestDto) {
@@ -80,4 +94,13 @@ public class SwitchboardJerseyTest extends JerseyTest {
     public static ObjectsRegistryServiceStub getObjectsRegistryServiceStub() {
         return objectsRegistryServiceStub;
     }
+
+    public KafkaProducerService getKafkaSwitchboardServiceMock() {
+        return kafkaSwitchboardServiceMock;
+    }
+
+    public KafkaProducerService getKafkaOwncloudServiceMock() {
+        return kafkaOwncloudServiceMock;
+    }
+
 }

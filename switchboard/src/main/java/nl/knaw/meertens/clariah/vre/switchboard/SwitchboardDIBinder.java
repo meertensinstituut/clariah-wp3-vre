@@ -8,6 +8,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.exception.CommonExceptionMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecService;
 import nl.knaw.meertens.clariah.vre.switchboard.health.HealthController;
+import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.object.ObjectController;
 import nl.knaw.meertens.clariah.vre.switchboard.object.ObjectService;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamController;
@@ -50,22 +51,43 @@ public class SwitchboardDIBinder extends AbstractBinder {
     private ObjectsRegistryService objectsRegistryService;
     private DeploymentService deploymentService;
     private ServicesRegistryService serviceRegistryService;
+    private KafkaProducerService kafkaSwitchboardService;
+    private KafkaProducerService kafkaOwncloudService;
 
     SwitchboardDIBinder(
             ObjectsRegistryService objectsRegistryService,
             ServicesRegistryService servicesRegistryService,
-            DeploymentService deploymentService
+            DeploymentService deploymentService,
+            KafkaProducerService kafkaSwitchboardService,
+            KafkaProducerService kafkaOwncloudService
     ) {
         this.objectsRegistryService = objectsRegistryService;
         this.deploymentService = deploymentService;
         this.serviceRegistryService = servicesRegistryService;
+        this.kafkaSwitchboardService = kafkaSwitchboardService;
+        this.kafkaOwncloudService = kafkaOwncloudService;
     }
 
     @Override
     protected void configure() {
-        bind(new ExecService(getMapper(), objectsRegistryService, deploymentService, serviceRegistryService)).to(ExecService.class);
-        bind(new ObjectService(objectsRegistryService,serviceRegistryService)).to(ObjectService.class);
-        bind(new ParamService(serviceRegistryService)).to(ParamService.class);
+        bind(new ExecService(
+                getMapper(),
+                objectsRegistryService,
+                deploymentService,
+                serviceRegistryService,
+                kafkaSwitchboardService,
+                kafkaOwncloudService
+        )).to(ExecService.class);
+
+        bind(new ObjectService(
+                objectsRegistryService,
+                serviceRegistryService
+        )).to(ObjectService.class);
+
+        bind(new ParamService(
+                serviceRegistryService
+        )).to(ParamService.class);
+
         bind(getMapper()).to(ObjectMapper.class);
     }
 
