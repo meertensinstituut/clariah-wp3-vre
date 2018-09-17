@@ -51,6 +51,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
         TimeUnit.SECONDS.sleep(10);
         checkFileTypeIsStillText(newHtmlFileName);
 
+        TimeUnit.SECONDS.sleep(20);
         updateContentToHtml(newHtmlFileName);
 
         TimeUnit.SECONDS.sleep(20);
