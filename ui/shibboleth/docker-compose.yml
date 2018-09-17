@@ -4,4 +4,9 @@ services:
   ui:
     build: .
     ports:
-      - 3001:80
+      - 443:443
+
+    extra_hosts:
+      # replace 10.184.32.113 by your IP
+      sp.example.org: 10.184.32.113
+      idp.example.org: 10.184.32.113
