@@ -121,6 +121,7 @@
                         <exclude>**/Initializer.java</exclude>
                     </excludes>
                 </configuration>
+                <!-- Always run Initializer first: -->
                 <executions>
                     <execution>
                         <id>init</id>

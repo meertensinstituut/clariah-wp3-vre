@@ -106,14 +106,15 @@ public class CrudObjectTest extends AbstractIntegrationTest {
                 .header("Content-Type", "text/html; charset=utf-8") // set type to html
                 .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
                 .body("<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        "<head>\n" +
-                        "<title>Hello world</title>\n" +
+                        "<html lang=\"en\">\n" +
+                        "<head><title>Hello world</title>\n" +
                         "<link media=\"all\" rel=\"stylesheet\" href=\"styles.css\" />\n" +
                         "</head>\n" +
                         "<body>\n" +
-                        "<div>Lorem ipsum!</div>" +
-                        "</body>" +
+                        "<div>Lorem ipsum!</div>\n" +
+                        "<br />\n" +
+                        "<p>Foo bar</p>\n" +
+                        "</body>\n" +
                         "</html>"
                 ).asString();
     }
