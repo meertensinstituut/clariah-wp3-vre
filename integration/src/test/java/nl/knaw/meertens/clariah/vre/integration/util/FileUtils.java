@@ -7,6 +7,7 @@ import nl.knaw.meertens.clariah.vre.integration.AbstractIntegrationTest;
 import nl.knaw.meertens.clariah.vre.integration.Config;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.surefire.shade.org.apache.commons.lang.RandomStringUtils;
+import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.UUID;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.integration.Config.OWNCLOUD_ADMIN_NAME;
 import static nl.knaw.meertens.clariah.vre.integration.Config.OWNCLOUD_ADMIN_PASSWORD;
 import static nl.knaw.meertens.clariah.vre.integration.Config.OWNCLOUD_ENDPOINT;
@@ -26,29 +28,39 @@ public class FileUtils {
 
     private static Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
-    public static void checkFileCanBeDownloaded(String inputFile, String someContent) throws UnirestException {
+    public static void fileCanBeDownloaded(String inputFile, String someContent) {
         logger.info(String.format("check file [%s] can be downloaded", inputFile));
         HttpResponse<String> downloadResult = downloadFile(inputFile);
         assertThat(downloadResult.getBody()).isEqualTo(someContent);
         assertThat(downloadResult.getStatus()).isEqualTo(200);
     }
 
-    public static HttpResponse<String> downloadFile(String inputFile) throws UnirestException {
-        return Unirest
-                .get(OWNCLOUD_ENDPOINT + inputFile)
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
-                .asString();
+    public static HttpResponse<String> downloadFile(String inputFile) {
+        try {
+            return Unirest
+                    .get(OWNCLOUD_ENDPOINT + inputFile)
+                    .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
+                    .asString();
+        } catch (UnirestException e) {
+            throw new RuntimeException("Could not download file " + inputFile, e);
+        }
     }
 
-    public static void checkFileIsLocked(String inputFile) throws UnirestException, InterruptedException {
-        logger.info(String.format("check file [%s] is locked", inputFile));
-        HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-        // http 423 is 'locked'
-        assertThat(putAfterDeployment.getStatus()).isIn(403, 423, 500);
+    public static void fileIsLocked(String inputFile) {
+        try {
+            logger.info(String.format("check file [%s] is locked", inputFile));
+            HttpResponse<String> putAfterDeployment;
+            putAfterDeployment = putInputFile(inputFile);
 
-        // http 423 is 'locked'
-        HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-        assertThat(deleteInputFile.getStatus()).isIn(403, 423);
+            // http 423 is 'locked'
+            assertThat(putAfterDeployment.getStatus()).isIn(403, 423, 500);
+
+            // http 423 is 'locked'
+            HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
+            assertThat(deleteInputFile.getStatus()).isIn(403, 423);
+        } catch (UnirestException e) {
+            throw new RuntimeException("could not check file is locked", e);
+        }
     }
 
     public static HttpResponse<String> putInputFile(String expectedFilename) throws UnirestException {
@@ -67,9 +79,10 @@ public class FileUtils {
                 .asString();
     }
 
-    public static void checkNewFileCanBeAdded(String newInputFile) throws SQLException {
+    public static void checkNewFileCanBeAdded(String newInputFile) {
         logger.info("check that a new file is added");
-        long newInputFileId = ObjectUtils.getObjectIdFromRegistry(newInputFile);
+        long newInputFileId = 0;
+        newInputFileId = ObjectUtils.getObjectIdFromRegistry(newInputFile);
         assertThat(newInputFileId).isNotEqualTo(0L);
     }
 
@@ -77,7 +90,7 @@ public class FileUtils {
      * Upload file with a random filename
      */
     public static String uploadTestFile() throws UnirestException, IOException, URISyntaxException {
-        return uploadTestFile(new String(getTestFileContent()));
+        return uploadTestFile(getTestFileContent());
     }
 
     /**
@@ -95,8 +108,17 @@ public class FileUtils {
         return expectedFilename;
     }
 
-    public static byte[] getTestFileContent() throws IOException, URISyntaxException {
-        return IOUtils.toByteArray(AbstractIntegrationTest.class.getResource("test.txt").toURI());
+    public static String getTestFileContent() {
+        String defaultTestFileName = "test.txt";
+        return getTestFileContent(defaultTestFileName);
+    }
+
+    public static String getTestFileContent(String defaultTestFileName) {
+        try {
+            return IOUtils.toString(AbstractIntegrationTest.class.getResource(defaultTestFileName).toURI(), UTF_8);
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeIOException("Could not get test file content", e);
+        }
     }
 
     public static String getRandomFilenameWithTime() {

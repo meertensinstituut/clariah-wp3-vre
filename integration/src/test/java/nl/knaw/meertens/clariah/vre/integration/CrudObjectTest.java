@@ -14,19 +14,21 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
 
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomFilenameWithTime;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollUntil;
 import static org.apache.http.auth.AuthScope.ANY_HOST;
 import static org.apache.http.auth.AuthScope.ANY_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,46 +36,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CrudObjectTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private static Integer id;
     private ObjectsRepositoryService objectsRepositoryService = new ObjectsRepositoryService(
-            Config.DB_OBJECTS_DATABASE, Config.DB_OBJECTS_USER, Config.DB_OBJECTS_PASSWORD);
+            Config.DB_OBJECTS_DATABASE, Config.DB_OBJECTS_USER, Config.DB_OBJECTS_PASSWORD
+    );
+
+    private static final String html = "test.html";
+    private long id;
 
     @Test
     public void testRecognizer_creates_updates_deletes_recordInObjectsRegistry() throws Exception {
         final String expectedFilename = uploadTestFile();
+        pollUntil(() -> fileExistsInRegistry(expectedFilename), maxPollPeriod);
+        pollUntil(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()), maxPollPeriod);
+        id = getObjectIdFromRegistry(expectedFilename);
 
-        TimeUnit.SECONDS.sleep(10);
-        checkFileExistsInRegistry(expectedFilename);
-
-        TimeUnit.SECONDS.sleep(10);
         String newHtmlFileName = updateTestFilePath(expectedFilename);
 
-        TimeUnit.SECONDS.sleep(10);
+        pollUntil(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent()), maxPollPeriod);
         checkFileTypeIsStillText(newHtmlFileName);
 
-        TimeUnit.SECONDS.sleep(20);
         updateContentToHtml(newHtmlFileName);
 
-        TimeUnit.SECONDS.sleep(20);
-        checkFileTypeIsHtml(newHtmlFileName);
+        pollUntil(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent(html)), maxPollPeriod);
+        pollUntil(() -> fileTypeIsHtml(newHtmlFileName), maxPollPeriod);
 
         deleteFile(newHtmlFileName);
 
-        TimeUnit.SECONDS.sleep(20);
-        checkFileDoesNotExistInRegistry();
-    }
-
-    private void checkFileExistsInRegistry(String expectedFilename) throws SQLException {
-        String query = "select * from object WHERE filepath LIKE '%" + expectedFilename + "%' LIMIT 1;";
-        objectsRepositoryService.processQuery(query, (ResultSet rs) -> {
-            while (rs.next()) {
-                id = rs.getInt("id");
-                assertThat(id).isNotZero();
-                assertThat(rs.getString("filepath")).contains(expectedFilename);
-                assertThat(rs.getString("format")).isEqualTo("Plain text");
-                assertThat(rs.getString("mimetype")).isEqualTo("text/plain");
-            }
-        });
+        pollUntil(this::fileDoesNotExistInRegistry, maxPollPeriod);
     }
 
     private String updateTestFilePath(String oldFilename) throws IOException {
@@ -95,7 +84,6 @@ public class CrudObjectTest extends AbstractIntegrationTest {
                 .build();
 
         CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
-        String content = EntityUtils.toString(httpResponse.getEntity());
         int status = httpResponse.getStatusLine().getStatusCode();
         assertThat(status).isEqualTo(201);
         return newFileName;
@@ -106,18 +94,8 @@ public class CrudObjectTest extends AbstractIntegrationTest {
         Unirest.put(Config.OWNCLOUD_ENDPOINT + newFileName)
                 .header("Content-Type", "text/html; charset=utf-8") // set type to html
                 .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
-                .body("<!DOCTYPE html>\n" +
-                        "<html lang=\"en\">\n" +
-                        "<head><title>Hello world</title>\n" +
-                        "<link media=\"all\" rel=\"stylesheet\" href=\"styles.css\" />\n" +
-                        "</head>\n" +
-                        "<body>\n" +
-                        "<div>Lorem ipsum!</div>\n" +
-                        "<br />\n" +
-                        "<p>Foo bar</p>\n" +
-                        "</body>\n" +
-                        "</html>"
-                ).asString();
+                .body(getTestFileContent(html))
+                .asString();
     }
 
     private void checkFileTypeIsStillText(String newHtmlFileName) throws SQLException {
@@ -131,14 +109,18 @@ public class CrudObjectTest extends AbstractIntegrationTest {
         });
     }
 
-    private void checkFileTypeIsHtml(String newHtmlFileName) throws SQLException {
+    private void fileTypeIsHtml(String newHtmlFileName) {
         String queryHtml = "select * from object WHERE id=" + id;
-        objectsRepositoryService.processQuery(queryHtml, (ResultSet rs) -> {
-            while (rs.next()) {
-                assertThat(rs.getString("filepath")).contains(newHtmlFileName);
-                assertThat(rs.getString("mimetype")).isEqualTo("text/html");
-            }
-        });
+        try {
+            objectsRepositoryService.processQuery(queryHtml, (ResultSet rs) -> {
+                while (rs.next()) {
+                    assertThat(rs.getString("filepath")).contains(newHtmlFileName);
+                    assertThat(rs.getString("mimetype")).isEqualTo("text/html");
+                }
+            });
+        } catch (SQLException e) {
+            logger.error("Could not check file type of " + newHtmlFileName, e);
+        }
     }
 
     private void deleteFile(String file) throws UnirestException {
@@ -149,12 +131,16 @@ public class CrudObjectTest extends AbstractIntegrationTest {
         assertThat(response.getStatus()).isEqualTo(204);
     }
 
-    private void checkFileDoesNotExistInRegistry() throws SQLException {
+    private void fileDoesNotExistInRegistry() {
         String countAfterDelete = "SELECT count(*) AS exact_count FROM object WHERE id=" + id;
-        objectsRepositoryService.processQuery(countAfterDelete, (ResultSet rs) -> {
-            rs.next();
-            int recordsCount = rs.getInt("exact_count");
-            assertThat(recordsCount).isGreaterThanOrEqualTo(0);
-        });
+        try {
+            objectsRepositoryService.processQuery(countAfterDelete, (ResultSet rs) -> {
+                rs.next();
+                int recordsCount = rs.getInt("exact_count");
+                assertThat(recordsCount).isGreaterThanOrEqualTo(0);
+            });
+        } catch (SQLException e) {
+            logger.info("Could not check existance of file with id " + id);
+        }
     }
 }

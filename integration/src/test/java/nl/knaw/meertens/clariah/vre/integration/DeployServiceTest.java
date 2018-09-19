@@ -16,25 +16,24 @@ import java.util.concurrent.TimeUnit;
 
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.checkDeploymentStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.checkFileCanBeDownloaded;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.checkFileIsLocked;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.checkNewFileCanBeAdded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.deleteInputFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileIsLocked;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.putInputFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollUntil;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeployServiceTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private long id;
-    private String someContent = "En het beeld werd een volmaakte verschrikking als men in zijn gevolg " +
-            "dien reus zag aanslingeren met zijn slappen hals, zijn grooten bungelenden kop, en zijn mond " +
-            "die zich boven een prooi kon openen, openen.";
-
-    private final String resultFileName = "result.txt";
+    private String deploymentTestFile = "deployment-test.txt";
 
     /**
      * Test switchboard and deployment-service before, during and after deployment of TEST-service.
@@ -42,12 +41,12 @@ public class DeployServiceTest extends AbstractIntegrationTest {
      */
     @Test
     public void testDeployment_locksFiles_movesOutput_unlocksFiles() throws Exception {
-        String inputFile = uploadTestFile(someContent);
+        String testFileContent = getTestFileContent(deploymentTestFile);
+        String testFilename = uploadTestFile(testFileContent);
 
-        // wait for services to process new file:
-        TimeUnit.SECONDS.sleep(6);
-
-        long inputFileId = getObjectIdFromRegistry(inputFile);
+        pollUntil(() -> fileCanBeDownloaded(testFilename, testFileContent), maxPollPeriod);
+        pollUntil(() -> fileExistsInRegistry(testFilename), maxPollPeriod);
+        long inputFileId = pollUntil(() -> getObjectIdFromRegistry(testFilename), maxPollPeriod);
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
         String workDir = startDeploymentWithInputFileId(inputFileId);
@@ -55,52 +54,47 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
         checkDeploymentStatus(workDir, 20, "RUNNING");
 
-        // wait for occ cronjob to scan all files:
+        // Wait for occ cronjob to scan all files:
         // (see owncloud/docker-scan-files.sh)
-        TimeUnit.SECONDS.sleep(6);
+        TimeUnit.SECONDS.sleep(10);
 
-        checkFileCanBeDownloaded(inputFile, someContent);
-        
-        checkFileIsLocked(inputFile);
+        pollUntil(() -> fileCanBeDownloaded(testFilename, testFileContent), maxPollPeriod);
+        pollUntil(() -> fileIsLocked(testFilename), maxPollPeriod);
 
-        String newInputFile = uploadTestFile(someContent);
+        String newInputFile = uploadTestFile(testFileContent);
 
-        // wait for services to process new file:
-        TimeUnit.SECONDS.sleep(6);
+        pollUntil(() -> checkNewFileCanBeAdded(newInputFile), maxPollPeriod);
 
-        checkNewFileCanBeAdded(newInputFile);
+        String resultFile = pollUntil(() -> deploymentIsFinished(workDir), maxPollPeriod);
 
-        // wait for TEST deployment to finish:
-        TimeUnit.SECONDS.sleep(6);
-        String resultFile = checkDeploymentIsFinished(workDir);
+        pollUntil(() -> fileCanBeDownloaded(resultFile, getTestFileContent("test-result.txt")), maxPollPeriod);
 
-        TimeUnit.SECONDS.sleep(20);
-        checkResultCanBeDownloaded(resultFile);
-
-        checkFilesAreUnlocked(inputFile);
+        pollUntil(() -> checkFilesAreUnlocked(testFilename), maxPollPeriod);
 
         checkKafkaMsgsAreCreatedForOutputFiles(resultFile);
 
-        String secondNewInputFile = uploadTestFile(someContent);
+        String secondNewInputFile = uploadTestFile(testFileContent);
 
-        // wait for services to process new file:
-        TimeUnit.SECONDS.sleep(6);
-
-        checkNewFileCanBeAdded(secondNewInputFile);
+        pollUntil(() -> checkNewFileCanBeAdded(secondNewInputFile), maxPollPeriod);
 
     }
 
-    private void checkFilesAreUnlocked(String inputFile) throws UnirestException {
-        logger.info(String.format("check file [%s] is unlocked", inputFile));
-        HttpResponse<String> downloadResult = downloadFile(inputFile);
-        assertThat(downloadResult.getBody()).isEqualTo(someContent);
-        assertThat(downloadResult.getStatus()).isIn(200, 202);
+    private void checkFilesAreUnlocked(String inputFile) {
+        try {
+            logger.info(String.format("check file [%s] is unlocked", inputFile));
+            HttpResponse<String> downloadResult = downloadFile(inputFile);
+            assertThat(downloadResult.getBody()).isEqualTo(getTestFileContent(deploymentTestFile));
+            assertThat(downloadResult.getStatus()).isIn(200, 202);
 
-        HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-        assertThat(putAfterDeployment.getStatus()).isEqualTo(204);
+            HttpResponse<String> putAfterDeployment = null;
+            putAfterDeployment = putInputFile(inputFile);
+            assertThat(putAfterDeployment.getStatus()).isEqualTo(204);
 
-        HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-        assertThat(deleteInputFile.getStatus()).isEqualTo(204);
+            HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
+            assertThat(deleteInputFile.getStatus()).isEqualTo(204);
+        } catch (UnirestException e) {
+            throw new RuntimeException("Could not check files are unlocked", e);
+        }
     }
 
     private void checkResultCanBeDownloaded(String resultFile) throws UnirestException {
@@ -109,7 +103,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         assertThat(downloadResultTxt.getBody()).contains("Insanity");
     }
 
-    private String checkDeploymentIsFinished(String workDir) throws UnirestException, InterruptedException {
+    private String deploymentIsFinished(String workDir) {
         logger.info(String.format("check deployment [%s] is finished", workDir));
         HttpResponse<String> statusResponse = checkDeploymentStatus(workDir, 3, "FINISHED");
         String outputFilePath = getOutputFilePath(statusResponse);
@@ -139,6 +133,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         Path pathAbsolute = Paths.get(outputDir);
         Path pathBase = Paths.get("admin/files/");
         Path pathRelative = pathBase.relativize(pathAbsolute);
+        String resultFileName = "result.txt";
         String outputPath = Paths.get(pathRelative.toString(), resultFileName).toString();
         logger.info(String.format("output file path is [%s]", outputPath));
         return outputPath;

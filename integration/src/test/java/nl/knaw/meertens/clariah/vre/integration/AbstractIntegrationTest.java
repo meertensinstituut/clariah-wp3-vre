@@ -16,6 +16,7 @@ import java.util.UUID;
 public abstract class AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(UploadingNewFileTest.class);
+    final static int maxPollPeriod = 20;
 
     @Rule
     public TestRule watcher = new TestWatcher() {

@@ -29,7 +29,7 @@ public class DeployUtils {
             String workDir,
             int pollPeriod,
             String expectedStatus
-    ) throws UnirestException, InterruptedException {
+    ) {
         logger.info(String.format("Check status is [%s] of [%s]", expectedStatus, workDir));
         int waited = 0;
         boolean httpStatusSuccess = false;
@@ -43,7 +43,11 @@ public class DeployUtils {
             logger.info(String.format("Http status was [%s] and response body was [%s]",
                     responseStatus, body
             ));
-            TimeUnit.SECONDS.sleep(1);
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("polling interrupted", e);
+            }
             waited++;
 
             Integer[] ints = {200, 201, 202};
@@ -73,11 +77,15 @@ public class DeployUtils {
         return JsonPath.parse(result.getBody()).read("$.workDir");
     }
 
-    private static HttpResponse<String> getDeploymentStatus(String workDir) throws UnirestException {
-        return Unirest
-                .get(Config.SWITCHBOARD_ENDPOINT + "/exec/task/" + workDir + "/")
-                .header("Content-Type", "application/json; charset=UTF-8")
-                .asString();
+    private static HttpResponse<String> getDeploymentStatus(String workDir) {
+        try {
+            return Unirest
+                    .get(Config.SWITCHBOARD_ENDPOINT + "/exec/task/" + workDir + "/")
+                    .header("Content-Type", "application/json; charset=UTF-8")
+                    .asString();
+        } catch (UnirestException e) {
+            throw new RuntimeException("Could not get deployment status", e);
+        }
     }
 
 

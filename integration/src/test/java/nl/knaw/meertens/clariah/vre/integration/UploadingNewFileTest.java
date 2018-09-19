@@ -29,7 +29,7 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
     public void testOwncloudFileUpload() throws Exception {
         logger.info("Test upload and download of file");
         String expectedFilename = getRandomFilenameWithTime();
-        byte[] expectedFileContent = getTestFileContent();
+        String expectedFileContent = getTestFileContent();
 
         logger.info("Uploading file...");
         HttpResponse<String> uploadResult = Unirest
@@ -46,7 +46,7 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
                 .get(Config.OWNCLOUD_ENDPOINT + expectedFilename)
                 .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
                 .asString();
-        assertThat(downloadResult.getBody()).isEqualTo(new String(expectedFileContent));
+        assertThat(downloadResult.getBody()).isEqualTo(expectedFileContent);
         logger.info("Downloaded file");
 
     }
