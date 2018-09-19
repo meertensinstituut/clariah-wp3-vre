@@ -5,13 +5,17 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
+import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
@@ -30,11 +34,13 @@ public class Initializer extends AbstractIntegrationTest {
     @Test
     public void init() throws Exception {
         logger.info("Initialize VRE Integration");
-        uploadTestFile();
-        TimeUnit.SECONDS.sleep(2);
+        String testFilename = uploadTestFile();
+        pollAndAssert(() -> fileCanBeDownloaded(testFilename, getTestFileContent()));
+
         KafkaConsumerService initConsumer = new KafkaConsumerService(
                 Config.KAFKA_ENDPOINT, Config.RECOGNIZER_TOPIC_NAME, getRandomGroupName()
         );
+
         initConsumer.subscribe();
         initConsumer.pollOnce();
 

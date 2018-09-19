@@ -79,7 +79,7 @@ public class FileUtils {
                 .asString();
     }
 
-    public static void checkNewFileCanBeAdded(String newInputFile) {
+    public static void newFileCanBeAdded(String newInputFile) {
         logger.info("check that a new file is added");
         long newInputFileId = 0;
         newInputFileId = ObjectUtils.getObjectIdFromRegistry(newInputFile);

@@ -25,41 +25,33 @@ public class DeployUtils {
             Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build()
     );
 
-    public static HttpResponse<String> checkDeploymentStatus(
+    public static HttpResponse<String> deploymentHasStatus(
             String workDir,
-            int pollPeriod,
-            String expectedStatus
+            String status
     ) {
-        logger.info(String.format("Check status is [%s] of [%s]", expectedStatus, workDir));
-        int waited = 0;
+        logger.info(String.format("Check status is [%s] of [%s]", status, workDir));
         boolean httpStatusSuccess = false;
         boolean deploymentStatusFound = false;
         HttpResponse<String> deploymentStatusResponse = null;
-        while (waited <= pollPeriod) {
-            deploymentStatusResponse = getDeploymentStatus(workDir);
-            String body = deploymentStatusResponse.getBody();
-            String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
-            int responseStatus = deploymentStatusResponse.getStatus();
-            logger.info(String.format("Http status was [%s] and response body was [%s]",
-                    responseStatus, body
-            ));
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException("polling interrupted", e);
-            }
-            waited++;
+        deploymentStatusResponse = getDeploymentStatus(workDir);
+        String body = deploymentStatusResponse.getBody();
+        String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
+        int responseStatus = deploymentStatusResponse.getStatus();
+        logger.info(String.format("Http status was [%s] and response body was [%s]",
+                responseStatus, body
+        ));
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("polling interrupted", e);
+        }
 
-            Integer[] ints = {200, 201, 202};
-            if (Arrays.asList(ints).contains(responseStatus)) {
-                httpStatusSuccess = true;
-            }
-            if (!isNull(deploymentStatus) && deploymentStatus.contains(expectedStatus)) {
-                deploymentStatusFound = true;
-            }
-            if (httpStatusSuccess && deploymentStatusFound) {
-                break;
-            }
+        Integer[] success = {200, 201, 202};
+        if (Arrays.asList(success).contains(responseStatus)) {
+            httpStatusSuccess = true;
+        }
+        if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {
+            deploymentStatusFound = true;
         }
         assertThat(httpStatusSuccess).isTrue();
         assertThat(deploymentStatusFound).isTrue();

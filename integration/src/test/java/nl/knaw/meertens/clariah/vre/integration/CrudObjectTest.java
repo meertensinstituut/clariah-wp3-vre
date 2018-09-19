@@ -28,7 +28,8 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFil
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollUntil;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssertUntil;
 import static org.apache.http.auth.AuthScope.ANY_HOST;
 import static org.apache.http.auth.AuthScope.ANY_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,23 +47,23 @@ public class CrudObjectTest extends AbstractIntegrationTest {
     @Test
     public void testRecognizer_creates_updates_deletes_recordInObjectsRegistry() throws Exception {
         final String expectedFilename = uploadTestFile();
-        pollUntil(() -> fileExistsInRegistry(expectedFilename), maxPollPeriod);
-        pollUntil(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()), maxPollPeriod);
-        id = getObjectIdFromRegistry(expectedFilename);
+        pollAndAssert(() -> fileExistsInRegistry(expectedFilename));
+        pollAndAssert(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()));
+        id = pollAndAssert(() -> getObjectIdFromRegistry(expectedFilename));
 
         String newHtmlFileName = updateTestFilePath(expectedFilename);
 
-        pollUntil(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent()), maxPollPeriod);
-        checkFileTypeIsStillText(newHtmlFileName);
+        pollAndAssert(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent()));
+        pollAndAssert(() -> fileNameChangedButTypeDidNot(newHtmlFileName));
 
         updateContentToHtml(newHtmlFileName);
 
-        pollUntil(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent(html)), maxPollPeriod);
-        pollUntil(() -> fileTypeIsHtml(newHtmlFileName), maxPollPeriod);
+        pollAndAssert(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent(html)));
+        pollAndAssert(() -> fileTypeIsHtml(newHtmlFileName));
 
         deleteFile(newHtmlFileName);
 
-        pollUntil(this::fileDoesNotExistInRegistry, maxPollPeriod);
+        pollAndAssert(this::fileDoesNotExistInRegistry);
     }
 
     private String updateTestFilePath(String oldFilename) throws IOException {
@@ -98,15 +99,19 @@ public class CrudObjectTest extends AbstractIntegrationTest {
                 .asString();
     }
 
-    private void checkFileTypeIsStillText(String newHtmlFileName) throws SQLException {
+    private void fileNameChangedButTypeDidNot(String newHtmlFileName) {
         String query = "select * from object WHERE id=" + id;
-        objectsRepositoryService.processQuery(query, (ResultSet rs) -> {
-            while (rs.next()) {
-                assertThat(rs.getString("filepath")).contains(newHtmlFileName);
-                assertThat(rs.getString("format")).isEqualTo("Plain text");
-                assertThat(rs.getString("mimetype")).isEqualTo("text/plain");
-            }
-        });
+        try {
+            objectsRepositoryService.processQuery(query, (ResultSet rs) -> {
+                while (rs.next()) {
+                    assertThat(rs.getString("filepath")).contains(newHtmlFileName);
+                    assertThat(rs.getString("format")).isEqualTo("Plain text");
+                    assertThat(rs.getString("mimetype")).isEqualTo("text/plain");
+                }
+            });
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void fileTypeIsHtml(String newHtmlFileName) {
@@ -119,7 +124,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
                 }
             });
         } catch (SQLException e) {
-            logger.error("Could not check file type of " + newHtmlFileName, e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -140,7 +145,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
                 assertThat(recordsCount).isGreaterThanOrEqualTo(0);
             });
         } catch (SQLException e) {
-            logger.info("Could not check existance of file with id " + id);
+            throw new RuntimeException(e);
         }
     }
 }

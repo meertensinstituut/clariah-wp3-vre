@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
+import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.checkDeploymentStatus;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.checkNewFileCanBeAdded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newFileCanBeAdded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.deleteInputFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
@@ -26,7 +27,8 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.putInputFi
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollUntil;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssertUntil;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeployServiceTest extends AbstractIntegrationTest {
@@ -44,38 +46,38 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         String testFileContent = getTestFileContent(deploymentTestFile);
         String testFilename = uploadTestFile(testFileContent);
 
-        pollUntil(() -> fileCanBeDownloaded(testFilename, testFileContent), maxPollPeriod);
-        pollUntil(() -> fileExistsInRegistry(testFilename), maxPollPeriod);
-        long inputFileId = pollUntil(() -> getObjectIdFromRegistry(testFilename), maxPollPeriod);
+        pollAndAssert(() -> fileCanBeDownloaded(testFilename, testFileContent));
+        pollAndAssert(() -> fileExistsInRegistry(testFilename));
+        long inputFileId = pollAndAssert(() -> getObjectIdFromRegistry(testFilename));
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
         String workDir = startDeploymentWithInputFileId(inputFileId);
         logger.info(String.format("deployment has workdir [%s]", workDir));
 
-        checkDeploymentStatus(workDir, 20, "RUNNING");
+        pollAndAssert(() -> deploymentHasStatus(workDir, "RUNNING"));
 
         // Wait for occ cronjob to scan all files:
         // (see owncloud/docker-scan-files.sh)
         TimeUnit.SECONDS.sleep(10);
 
-        pollUntil(() -> fileCanBeDownloaded(testFilename, testFileContent), maxPollPeriod);
-        pollUntil(() -> fileIsLocked(testFilename), maxPollPeriod);
+        Poller.pollAndAssert(() -> fileCanBeDownloaded(testFilename, testFileContent));
+        Poller.pollAndAssert(() -> fileIsLocked(testFilename));
 
         String newInputFile = uploadTestFile(testFileContent);
 
-        pollUntil(() -> checkNewFileCanBeAdded(newInputFile), maxPollPeriod);
+        Poller.pollAndAssert(() -> newFileCanBeAdded(newInputFile));
 
-        String resultFile = pollUntil(() -> deploymentIsFinished(workDir), maxPollPeriod);
+        String resultFile = pollAndAssert(() -> deploymentIsFinished(workDir));
 
-        pollUntil(() -> fileCanBeDownloaded(resultFile, getTestFileContent("test-result.txt")), maxPollPeriod);
+        Poller.pollAndAssert(() -> fileCanBeDownloaded(resultFile, getTestFileContent("test-result.txt")));
 
-        pollUntil(() -> checkFilesAreUnlocked(testFilename), maxPollPeriod);
+        Poller.pollAndAssert(() -> checkFilesAreUnlocked(testFilename));
 
         checkKafkaMsgsAreCreatedForOutputFiles(resultFile);
 
         String secondNewInputFile = uploadTestFile(testFileContent);
 
-        pollUntil(() -> checkNewFileCanBeAdded(secondNewInputFile), maxPollPeriod);
+        Poller.pollAndAssert(() -> newFileCanBeAdded(secondNewInputFile));
 
     }
 
@@ -97,15 +99,9 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         }
     }
 
-    private void checkResultCanBeDownloaded(String resultFile) throws UnirestException {
-        logger.info(String.format("check file [%s] can be downloaded", resultFile));
-        HttpResponse<String> downloadResultTxt = downloadFile(resultFile);
-        assertThat(downloadResultTxt.getBody()).contains("Insanity");
-    }
-
     private String deploymentIsFinished(String workDir) {
         logger.info(String.format("check deployment [%s] is finished", workDir));
-        HttpResponse<String> statusResponse = checkDeploymentStatus(workDir, 3, "FINISHED");
+        HttpResponse<String> statusResponse = pollAndAssert(() -> deploymentHasStatus(workDir, "FINISHED"));
         String outputFilePath = getOutputFilePath(statusResponse);
         logger.info(String.format("deployment has result file [%s]", outputFilePath));
         return outputFilePath;

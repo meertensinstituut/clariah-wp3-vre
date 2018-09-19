@@ -11,4 +11,5 @@ public class Config {
     public final static String DB_OBJECTS_PASSWORD = System.getenv("DB_OBJECTS_PASSWORD");
     public final static String DB_OBJECTS_DATABASE = System.getenv("DB_OBJECTS_DATABASE");
     public final static String SWITCHBOARD_ENDPOINT = "http://switchboard:8080/switchboard/rest";
+    public final static int MAX_POLLING_PERIOD = 30;
 }
