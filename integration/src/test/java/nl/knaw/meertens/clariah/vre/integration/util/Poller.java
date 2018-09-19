@@ -21,9 +21,9 @@ public class Poller {
         return pollAndAssertUntil(check, MAX_POLLING_PERIOD);
     }
 
-    private static <T> T pollAndAssertUntil(Supplier<T> check, int pollPeriod) {
+    private static <T> T pollAndAssertUntil(Supplier<T> check, int maxPolled) {
         T result = null;
-        int count = 0;
+        int polled = 0;
         AssertionError checkError;
         while (true) {
             checkError = null;
@@ -33,14 +33,14 @@ public class Poller {
                 checkError = e;
             }
             if (isNull(checkError)) {
-                logger.info(String.format("Polled %ds", count));
+                logger.info(String.format("Polled %ds", polled));
                 break;
             }
-            if (pollPeriod < count) {
-                throw new AssertionError("Poller timed out", checkError);
+            if (polled > maxPolled) {
+                throw new AssertionError("Timed out with assertion error", checkError);
             }
-            count++;
             waitASecond();
+            polled++;
         }
         return result;
     }

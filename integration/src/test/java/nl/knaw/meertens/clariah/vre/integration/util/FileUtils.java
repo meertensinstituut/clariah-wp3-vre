@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.integration.Config.OWNCLOUD_ADMIN_NAME;
@@ -42,7 +43,7 @@ public class FileUtils {
                     .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
                     .asString();
         } catch (UnirestException e) {
-            throw new RuntimeException("Could not download file " + inputFile, e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -59,16 +60,21 @@ public class FileUtils {
             HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
             assertThat(deleteInputFile.getStatus()).isIn(403, 423);
         } catch (UnirestException e) {
-            throw new RuntimeException("could not check file is locked", e);
+            throw new RuntimeException(e);
         }
     }
 
     public static HttpResponse<String> putInputFile(String expectedFilename) throws UnirestException {
+        String body = "new content " + RandomStringUtils.random(8);
+        return putInputFile(expectedFilename, body);
+    }
+
+    public static HttpResponse<String> putInputFile(String expectedFilename, String body) throws UnirestException {
         return Unirest
                 .put(OWNCLOUD_ENDPOINT + expectedFilename)
                 .header("Content-Type", "text/plain; charset=UTF-8")
                 .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
-                .body("new content " + RandomStringUtils.random(8))
+                .body(body)
                 .asString();
     }
 
@@ -79,7 +85,7 @@ public class FileUtils {
                 .asString();
     }
 
-    public static void newFileCanBeAdded(String newInputFile) {
+    public static void newObjectIsAdded(String newInputFile) {
         logger.info("check that a new file is added");
         long newInputFileId = 0;
         newInputFileId = ObjectUtils.getObjectIdFromRegistry(newInputFile);
@@ -117,13 +123,26 @@ public class FileUtils {
         try {
             return IOUtils.toString(AbstractIntegrationTest.class.getResource(defaultTestFileName).toURI(), UTF_8);
         } catch (IOException | URISyntaxException e) {
-            throw new RuntimeIOException("Could not get test file content", e);
+            throw new RuntimeException(e);
         }
     }
 
     public static String getRandomFilenameWithTime() {
         return "test-" + UUID.randomUUID() + new SimpleDateFormat("-yyyyMMdd_HHmmss")
                 .format(Calendar.getInstance().getTime()) + ".txt";
+    }
+
+    /**
+     * Wait for occ cronjob to scan all files
+     * Should happen every 5-6 seconds.
+     * (see owncloud/docker-scan-files.sh)
+     */
+    public static void waitForOcc() {
+        try {
+            TimeUnit.SECONDS.sleep(7);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

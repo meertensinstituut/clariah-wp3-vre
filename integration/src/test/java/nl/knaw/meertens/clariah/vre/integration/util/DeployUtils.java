@@ -11,10 +11,17 @@ import nl.knaw.meertens.clariah.vre.integration.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.isNull;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.deleteInputFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.putInputFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeployUtils {
@@ -68,6 +75,44 @@ public class DeployUtils {
         assertThat(result.getStatus()).isIn(200, 201, 202);
         return JsonPath.parse(result.getBody()).read("$.workDir");
     }
+
+    public static String deploymentIsFinished(String workDir) {
+        logger.info(String.format("check deployment [%s] is finished", workDir));
+        HttpResponse<String> statusResponse = pollAndAssert(() -> deploymentHasStatus(workDir, "FINISHED"));
+        String outputFilePath = getOutputFilePath(statusResponse);
+        logger.info(String.format("deployment has result file [%s]", outputFilePath));
+        return outputFilePath;
+    }
+
+    private static String getOutputFilePath(HttpResponse<String> finishedDeployment) {
+        String outputDir = JsonPath.parse(finishedDeployment.getBody()).read("$.outputDir");
+        Path pathAbsolute = Paths.get(outputDir);
+        Path pathBase = Paths.get("admin/files/");
+        Path pathRelative = pathBase.relativize(pathAbsolute);
+        String resultFileName = "result.txt";
+        String outputPath = Paths.get(pathRelative.toString(), resultFileName).toString();
+        logger.info(String.format("output file path is [%s]", outputPath));
+        return outputPath;
+    }
+
+    public static void filesAreUnlocked(String inputFile, String testFileContent) {
+        try {
+            logger.info(String.format("check file [%s] is unlocked", inputFile));
+            HttpResponse<String> downloadResult = downloadFile(inputFile);
+            assertThat(downloadResult.getBody()).isEqualTo(testFileContent);
+            assertThat(downloadResult.getStatus()).isIn(200, 202);
+
+            HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
+            assertThat(putAfterDeployment.getStatus()).isEqualTo(204);
+
+            HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
+            assertThat(deleteInputFile.getStatus()).isEqualTo(204);
+        } catch (UnirestException e) {
+            throw new RuntimeException("Could not check files are unlocked", e);
+        }
+    }
+
+
 
     private static HttpResponse<String> getDeploymentStatus(String workDir) {
         try {
