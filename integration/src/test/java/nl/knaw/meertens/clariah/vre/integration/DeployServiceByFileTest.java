@@ -9,11 +9,9 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssertUntil;
 
 public class DeployServiceByFileTest extends AbstractIntegrationTest {
 
@@ -34,7 +32,7 @@ public class DeployServiceByFileTest extends AbstractIntegrationTest {
         assertThatJson(json).node("[0].name").isEqualTo("TEST");
 
         String workDir = startDeploymentWithInputFileId(inputFileId);
-        pollAndAssertUntil(() -> deploymentHasStatus(workDir, "RUNNING"), maxPollPeriod);
+        pollAndAssert(() -> deploymentHasStatus(workDir, "RUNNING"));
 
     }
 }

@@ -21,7 +21,7 @@ public class Poller {
         return pollAndAssertUntil(check, MAX_POLLING_PERIOD);
     }
 
-    public static <T> T pollAndAssertUntil(Supplier<T> check, int pollPeriod) {
+    private static <T> T pollAndAssertUntil(Supplier<T> check, int pollPeriod) {
         T result = null;
         int count = 0;
         AssertionError checkError;

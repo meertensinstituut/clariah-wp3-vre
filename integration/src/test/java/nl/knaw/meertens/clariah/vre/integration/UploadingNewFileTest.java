@@ -19,7 +19,6 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomF
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssertUntil;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 

@@ -29,7 +29,6 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTest
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssertUntil;
 import static org.apache.http.auth.AuthScope.ANY_HOST;
 import static org.apache.http.auth.AuthScope.ANY_PORT;
 import static org.assertj.core.api.Assertions.assertThat;

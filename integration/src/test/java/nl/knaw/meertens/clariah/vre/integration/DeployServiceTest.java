@@ -17,18 +17,17 @@ import java.util.concurrent.TimeUnit;
 
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newFileCanBeAdded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.deleteInputFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileIsLocked;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newFileCanBeAdded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.putInputFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssertUntil;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeployServiceTest extends AbstractIntegrationTest {
