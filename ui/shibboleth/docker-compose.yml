@@ -7,6 +7,7 @@ services:
       - 443:443
 
     extra_hosts:
-      # replace 10.184.32.113 by your IP
-      sp.example.org: 10.184.32.113
-      idp.example.org: 10.184.32.113
+      # replace by your IP:
+      sp.example.org: 10.184.32.218
+      idp.example.org: 10.184.32.218
+
