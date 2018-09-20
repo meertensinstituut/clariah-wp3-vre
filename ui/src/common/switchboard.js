@@ -1,5 +1,5 @@
-import $ from "jquery";
 import React from "react";
+import $ from "jquery";
 
 const DOMAIN = 'http://localhost:9010/switchboard/rest';
 export default class Switchboard extends React.Component {

@@ -1,5 +1,6 @@
 import React from "react";
 import {Panel} from "react-bootstrap";
+import User from "../user/user";
 
 export default class Home extends React.Component {
 
@@ -15,6 +16,7 @@ export default class Home extends React.Component {
             <Panel>
                 <Panel.Body>
                     {this.state.msg}
+                    <User/>
                 </Panel.Body>
             </Panel>
         );

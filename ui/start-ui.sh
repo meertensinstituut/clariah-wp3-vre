@@ -5,7 +5,6 @@ cp ../.env ./.env
 
 # variables that start with 'REACT_APP' are passed to react app:
 REACT_APP_KEY_GET_OBJECTS="${APP_KEY_GET_OBJECTS}"
-REACT_WHOAMI_ENDPOINT="${WHOAMI_ENDPOINT}"
 
 echo "start UI..."
 npm start
