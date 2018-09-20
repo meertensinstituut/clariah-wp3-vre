@@ -35,8 +35,6 @@ services:
       - /tmp/recognizer:/tmp/recognizer
     extra_hosts:
       - moby:127.0.0.1
-#    ports:
-#      - 8080:8080
 
   kafka:
     image: wurstmeister/kafka:1.0.0
@@ -44,6 +42,8 @@ services:
       - zookeeper
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 1200000
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 1200000
     extra_hosts:
      - moby:127.0.0.1
     ports:

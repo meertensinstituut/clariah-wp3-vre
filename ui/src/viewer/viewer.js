@@ -2,7 +2,14 @@ import React from "react";
 import {withRouter} from "react-router-dom";
 import PropTypes from 'prop-types';
 import Switchboard from "../common/switchboard";
+import Spinner from "../common/spinner";
+import ErrorMsg from "../common/error-msg";
+import {DeploymentStatus} from "../common/deployment-status";
 
+/**
+ * Views a file using the first viewer
+ * out of the list with found viewers.
+ */
 class Viewer extends React.Component {
 
     constructor(props) {
@@ -10,33 +17,70 @@ class Viewer extends React.Component {
         this.state = {
             objectId: this.props.match.params.objectId,
             objectName: this.props.match.params.objectName,
-            viewerFile: null
+            viewerFile: null,
+            view: false
         };
         this.getViewOfObject();
     }
 
     getViewOfObject() {
         const params = {"params": [{"name": "input", "type": "file", "value": this.state.objectId}]};
-        Switchboard.postDeployment("VIEWER", params).done((deployData) => {
-            Switchboard.getDeploymentStatusWhenStatus(deployData.workDir, "FINISHED").done((viewerData) => {
-                this.setState({
-                    viewerFileContent: {__html: viewerData.viewerFileContent},
-                    viewerFileName: viewerData.viewerFile
+
+        Switchboard
+            .getViewers(this.state.objectId)
+            .fail((xhr) => {
+                this.setState({errorResponse: xhr.responseJSON})
+            })
+            .done((data) => {
+                const hasViewer = data.length > 0;
+                if (!hasViewer) {
+                    this.setState({errorResponse: {msg: "No viewer found for " + this.state.objectName}});
+                    return;
+                }
+                const viewer = data[0].name;
+                this.setState({viewer}, () => {
+                    Switchboard.postDeployment(viewer, params)
+                        .fail((xhr) => {
+                            this.setState({errorResponse: xhr.responseJSON})
+                        })
+                        .done((deployData) => {
+                            Switchboard.getDeploymentStatusResultWhen(deployData.workDir, DeploymentStatus.FINISHED)
+                                .fail((xhr) => {
+                                    this.setState({errorResponse: xhr.responseJSON})
+                                })
+                                .done((viewerData) => {
+                                    this.setState({
+                                        viewerFileContent: {__html: viewerData.viewerFileContent},
+                                        viewerFileName: viewerData.viewerFile
+                                    });
+                                });
+                        });
                 });
             });
-        });
+
     }
 
     render() {
         const viewerFile = this.state.viewerFileContent
             ? <div dangerouslySetInnerHTML={this.state.viewerFileContent}/>
-            : <i className="fa fa-spinner fa-spin" aria-hidden="true" />;
+            : null;
+
+        const spinner = !this.state.viewerFileContent && !this.state.errorResponse
+            ? <Spinner response={this.state.errorResponse}/>
+            : null;
+
+        const usingViewer = this.state.viewer
+            ? <span>With viewer: <code>{this.state.viewer}</code></span>
+            : null;
 
         return (
             <div>
-                <h1>Viewing file {this.state.objectName} using <code>{this.props.viewer}</code></h1>
+                <h1>Viewing file {this.state.objectName} </h1>
+                <ErrorMsg response={this.state.errorResponse}/>
+                <p>{usingViewer}</p>
                 <div>{this.props.content}</div>
                 {viewerFile}
+                {spinner}
             </div>
         );
     }
@@ -49,10 +93,6 @@ Viewer.propTypes = {
             objectName: PropTypes.string.isRequired
         })
     })
-};
-
-Viewer.defaultProps = {
-    viewer: "VIEWER",
 };
 
 export default withRouter(Viewer);

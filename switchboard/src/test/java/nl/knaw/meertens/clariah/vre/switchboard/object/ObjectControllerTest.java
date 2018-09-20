@@ -76,6 +76,24 @@ public class ObjectControllerTest extends AbstractControllerTest {
         assertThat(JsonPath.parse(json).read("$[1].name", String.class)).isEqualTo("NANDOE");
     }
 
+    @Test
+    public void getViewersFor_shouldGetServicesOfKindViewer_whenCorrectMimetype() {
+        startServicesRegistryMock(
+                newArrayList(viewer),
+                "(mimetype = text/plain) and (kind like viewer)"
+        );
+
+        Response response = target("object/1/viewers")
+                .request()
+                .get();
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        String json = response.readEntity(String.class);
+        assertThat(JsonPath.parse(json).read("$.length()", Integer.class)).isEqualTo(1);
+        assertThat(JsonPath.parse(json).read("$[0].id", Integer.class)).isEqualTo(14);
+        assertThat(JsonPath.parse(json).read("$[0].name", String.class)).isEqualTo("VIEWER");
+    }
+
     private void startServicesRegistryMock(List<String> servicesList, String filter) {
         String services = servicesList.stream().collect(Collectors.joining(", "));
 

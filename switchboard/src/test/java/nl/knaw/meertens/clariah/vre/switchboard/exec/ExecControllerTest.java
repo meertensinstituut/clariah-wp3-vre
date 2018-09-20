@@ -5,9 +5,12 @@ import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
+import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDto;
+import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +33,10 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 public class ExecControllerTest extends AbstractControllerTest {
 
@@ -207,6 +213,38 @@ public class ExecControllerTest extends AbstractControllerTest {
         assertThat(viewerFileContent).contains("</pre>");
         String viewerFileContentInJson = JsonPath.parse(finishedJson).read("$.viewerFileContent");
         assertThat(viewerFileContentInJson).isEqualTo(viewerFileContent);
+    }
+
+    @Test
+    public void postDeploymentRequest_shouldNotCreateKafkaMsg_whenViewerService() throws IOException, InterruptedException {
+        mockServer.reset();
+        startServicesRegistryMockServer(dummyViewerService);
+
+        // create file and dummy registry object:
+        String viewerService = "VIEWER";
+        startDeployMockServer(viewerService, 200);
+        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        Path inputPath = Paths.get(object.filepath);
+        String expectedOutputPath = "admin/files/.vre/VIEWER/" + inputPath.subpath(2, inputPath.getNameCount());
+
+        // request deployment:
+        DeploymentRequestDto deploymentRequestDto = getViewerDeploymentRequestDto("" + object.id);
+        Response deployed = deploy(viewerService, deploymentRequestDto);
+        assertThat(deployed.getStatus()).isBetween(200, 203);
+        String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
+
+        // finish deployment:
+        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
+        createResultFile(workDir, object.filepath, "<pre>" + resultSentence + "</pre>");
+        String finishedJson = waitUntil(request, FINISHED);
+
+        // verify:
+        KafkaProducerService kafkaOwncloudServiceMock = jerseyTest.getKafkaOwncloudServiceMock();
+        Mockito.verify(
+                kafkaOwncloudServiceMock,
+                never())
+                .send(Mockito.any());
     }
 
     private File findOutputFolder(String finishedJson) {

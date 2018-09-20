@@ -4,24 +4,17 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
+import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceStub;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
+import org.mockito.Mockito;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
-
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.VRE_DIR;
 
 /**
  * Wrapper around JerseyTest which is used
@@ -39,14 +32,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
             "http://localhost:1080"
     );
 
-    private static OwncloudFileService owncloudFileService = new OwncloudFileService(
-            OWNCLOUD_VOLUME,
-            DEPLOYMENT_VOLUME,
-            OUTPUT_DIR,
-            INPUT_DIR,
-            USER_TO_LOCK_WITH,
-            VRE_DIR
-    );
+    private static OwncloudFileService owncloudFileService = new OwncloudFileService();
 
     private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(
             "http://localhost:1080",
@@ -56,8 +42,13 @@ public class SwitchboardJerseyTest extends JerseyTest {
 
     private static ObjectsRegistryServiceStub objectsRegistryServiceStub = new ObjectsRegistryServiceStub();
 
+    private KafkaProducerService kafkaSwitchboardServiceMock;
+    private KafkaProducerService kafkaOwncloudServiceMock;
+
     @Override
     protected Application configure() {
+        setMocks();
+
         if(resourceConfig != null) {
             return resourceConfig;
         }
@@ -73,10 +64,17 @@ public class SwitchboardJerseyTest extends JerseyTest {
                         "http://localhost:1080",
                         requestRepository,
                         pollService
-                )
+                ),
+                kafkaSwitchboardServiceMock,
+                kafkaOwncloudServiceMock
         );
         resourceConfig.register(diBinder);
         return resourceConfig;
+    }
+
+    private void setMocks() {
+        kafkaSwitchboardServiceMock = Mockito.mock(KafkaProducerService.class);
+        kafkaOwncloudServiceMock = Mockito.mock(KafkaProducerService.class);
     }
 
     public Response deploy(String expectedService, DeploymentRequestDto deploymentRequestDto) {
@@ -96,4 +94,13 @@ public class SwitchboardJerseyTest extends JerseyTest {
     public static ObjectsRegistryServiceStub getObjectsRegistryServiceStub() {
         return objectsRegistryServiceStub;
     }
+
+    public KafkaProducerService getKafkaSwitchboardServiceMock() {
+        return kafkaSwitchboardServiceMock;
+    }
+
+    public KafkaProducerService getKafkaOwncloudServiceMock() {
+        return kafkaOwncloudServiceMock;
+    }
+
 }

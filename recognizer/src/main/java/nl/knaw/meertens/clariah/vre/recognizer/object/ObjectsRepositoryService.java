@@ -53,7 +53,7 @@ public class ObjectsRepositoryService {
      * @return objectId
      */
     public Long create(Report report) {
-        String recordJson = createJson(report);
+        String recordJson = createObjectRecordJson(report);
         String persistResult = persistRecord(recordJson, null);
         return jsonPath.parse(persistResult).read("$.resource[0].id", Integer.class).longValue();
     }
@@ -65,7 +65,7 @@ public class ObjectsRepositoryService {
      */
     public Long update(Report report) {
         Long id = getObjectIdByPath(report.getPath());
-        String recordJson = createJson(report);
+        String recordJson = createObjectRecordJson(report);
         String persistResult = persistRecord(recordJson, id);
         return Long.valueOf(jsonPath.parse(persistResult).read("$.id", String.class));
     }
@@ -177,7 +177,7 @@ public class ObjectsRepositoryService {
         }
     }
 
-    public String createJson(Report report) {
+    public String createObjectRecordJson(Report report) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(WRITE_DATES_AS_TIMESTAMPS);

@@ -12,9 +12,16 @@ do
 done
 echo " done"
 
-# clear all files from admin:
-rm -rf data/$OWNCLOUD_ADMIN_NAME/files_versions/*
+# clear existing admin user files:
 rm -rf data/$OWNCLOUD_ADMIN_NAME/files/*
+rm -rf data/$OWNCLOUD_ADMIN_NAME/files/.vre/*
+rm -rf data/$OWNCLOUD_ADMIN_NAME/files_trashbin/*
+rm -rf data/$OWNCLOUD_ADMIN_NAME/files_versions/*
+rm -rf data/$OWNCLOUD_ADMIN_NAME/thumbnails/*
+
+# empty log files:
+> data/vrelog.txt
+> data/files-scan.log
 
 echo "creating owncloud admin and enabling vre app..."
 

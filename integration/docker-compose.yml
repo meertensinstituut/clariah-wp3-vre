@@ -40,6 +40,6 @@ services:
       - DB_SERVICES_USER=${DB_SERVICES_USER}
       - DB_SERVICES_PASSWORD=${DB_SERVICES_PASSWORD}
 
-    command: tail -f /dev/null # keep container up. TODO: BL, why doesn't tty work?
+    command: tail -f /dev/null # to keep container up
     ports:
       - "8085:8085"

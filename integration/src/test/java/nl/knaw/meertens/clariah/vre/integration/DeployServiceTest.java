@@ -1,40 +1,34 @@
 package nl.knaw.meertens.clariah.vre.integration;
 
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.ParseContext;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
-import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
-import org.apache.maven.surefire.shade.org.apache.commons.lang.RandomStringUtils;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import static java.util.Objects.isNull;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.filesAreUnlocked;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentIsFinished;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileIsLocked;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newObjectIsAdded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.waitForOcc;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeployServiceTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private long id;
-    private String someContent = "En het beeld werd een volmaakte verschrikking als men in zijn gevolg " +
-            "dien reus zag aanslingeren met zijn slappen hals, zijn grooten bungelenden kop, en zijn mond " +
-            "die zich boven een prooi kon openen, openen.";
-
-    private final String resultFileName = "result.txt";
+    private String deploymentTestFile = "deployment-test.txt";
 
     /**
      * Test switchboard and deployment-service before, during and after deployment of TEST-service.
@@ -42,97 +36,40 @@ public class DeployServiceTest extends AbstractIntegrationTest {
      */
     @Test
     public void testDeployment_locksFiles_movesOutput_unlocksFiles() throws Exception {
-        String inputFile = uploadTestFile(someContent);
+        String testFileContent = getTestFileContent(deploymentTestFile);
+        String testFilename = uploadTestFile(testFileContent);
 
-        // wait for services to process new file:
-        TimeUnit.SECONDS.sleep(6);
-
-        long inputFileId = getObjectIdFromRegistry(inputFile);
+        pollAndAssert(() -> fileCanBeDownloaded(testFilename, testFileContent));
+        pollAndAssert(() -> fileExistsInRegistry(testFilename));
+        long inputFileId = pollAndAssert(() -> getObjectIdFromRegistry(testFilename));
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
         String workDir = startDeploymentWithInputFileId(inputFileId);
         logger.info(String.format("deployment has workdir [%s]", workDir));
 
-        checkDeploymentStatus(workDir, 20, "RUNNING");
+        pollAndAssert(() -> deploymentHasStatus(workDir, "RUNNING"));
 
-        // wait for occ cronjob to scan all files:
-        // (see owncloud/docker-scan-files.sh)
-        TimeUnit.SECONDS.sleep(6);
+        waitForOcc();
 
-        checkFileCanBeDownloaded(inputFile);
-        
-        checkFileIsLocked(inputFile);
+        pollAndAssert(() -> fileCanBeDownloaded(testFilename, testFileContent));
+        pollAndAssert(() -> fileIsLocked(testFilename));
 
-        String newInputFile = uploadTestFile(someContent);
+        String newInputFile = uploadTestFile(testFileContent);
 
-        // wait for services to process new file:
-        TimeUnit.SECONDS.sleep(6);
+        pollAndAssert(() -> newObjectIsAdded(newInputFile));
 
-        checkNewFileCanBeAdded(newInputFile);
+        String resultFile = pollAndAssert(() -> deploymentIsFinished(workDir));
 
-        // wait for TEST deployment to finish:
-        TimeUnit.SECONDS.sleep(6);
-        String resultFile = checkDeploymentIsFinished(workDir);
+        pollAndAssert(() -> fileCanBeDownloaded(resultFile, getTestFileContent("test-result.txt")));
 
-        TimeUnit.SECONDS.sleep(6);
-        checkResultCanBeDownloaded(resultFile);
-
-        checkFilesAreUnlocked(inputFile);
+        pollAndAssert(() -> filesAreUnlocked(testFilename, getTestFileContent(deploymentTestFile)));
 
         checkKafkaMsgsAreCreatedForOutputFiles(resultFile);
 
-        String secondNewInputFile = uploadTestFile(someContent);
+        String secondNewInputFile = uploadTestFile(testFileContent);
 
-        // wait for services to process new file:
-        TimeUnit.SECONDS.sleep(6);
+        pollAndAssert(() -> newObjectIsAdded(secondNewInputFile));
 
-        checkNewFileCanBeAdded(secondNewInputFile);
-
-    }
-
-    private void checkFileCanBeDownloaded(String inputFile) throws UnirestException {
-        logger.info(String.format("check file [%s] can be downloaded", inputFile));
-        HttpResponse<String> downloadResult = downloadFile(inputFile);
-        assertThat(downloadResult.getBody()).isEqualTo(someContent);
-        assertThat(downloadResult.getStatus()).isEqualTo(200);
-    }
-
-    private void checkFilesAreUnlocked(String inputFile) throws UnirestException {
-        logger.info(String.format("check file [%s] is unlocked", inputFile));
-        HttpResponse<String> downloadResult = downloadFile(inputFile);
-        assertThat(downloadResult.getBody()).isEqualTo(someContent);
-        assertThat(downloadResult.getStatus()).isIn(200, 202);
-
-        HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-        assertThat(putAfterDeployment.getStatus()).isEqualTo(204);
-
-        HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-        assertThat(deleteInputFile.getStatus()).isEqualTo(204);
-    }
-
-    private void checkFileIsLocked(String inputFile) throws UnirestException, InterruptedException {
-        logger.info(String.format("check file [%s] is locked", inputFile));
-        HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-        // http 423 is 'locked'
-        assertThat(putAfterDeployment.getStatus()).isIn(403, 423, 500);
-        
-        // http 423 is 'locked'
-        HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-        assertThat(deleteInputFile.getStatus()).isIn(403, 423);
-    }
-
-    private void checkResultCanBeDownloaded(String resultFile) throws UnirestException {
-        logger.info(String.format("check file [%s] can be downloaded", resultFile));
-        HttpResponse<String> downloadResultTxt = downloadFile(resultFile);
-        assertThat(downloadResultTxt.getBody()).contains("Insanity");
-    }
-
-    private String checkDeploymentIsFinished(String workDir) throws UnirestException, InterruptedException {
-        logger.info(String.format("check deployment [%s] is finished", workDir));
-        HttpResponse<String> statusResponse = checkDeploymentStatus(workDir, 3, "FINISHED");
-        String outputFilePath = getOutputFilePath(statusResponse);
-        logger.info(String.format("deployment has result file [%s]", outputFilePath));
-        return outputFilePath;
     }
 
     private void checkKafkaMsgsAreCreatedForOutputFiles(String outputFilename) throws InterruptedException {
@@ -152,52 +89,12 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         });
     }
 
-    private void checkNewFileCanBeAdded(String newInputFile) throws SQLException {
-        logger.info("check that a new file is added");
-        long newInputFileId = getObjectIdFromRegistry(newInputFile);
-        assertThat(newInputFileId).isNotEqualTo(0L);
-    }
-
-    private String getOutputFilePath(HttpResponse<String> finishedDeployment) {
-        String outputDir = JsonPath.parse(finishedDeployment.getBody()).read("$.outputDir");
-        Path pathAbsolute = Paths.get(outputDir);
-        Path pathBase = Paths.get("admin/files/");
-        Path pathRelative = pathBase.relativize(pathAbsolute);
-        String outputPath = Paths.get(pathRelative.toString(), resultFileName).toString();
-        logger.info(String.format("output file path is [%s]", outputPath));
-        return outputPath;
-    }
-
-    private HttpResponse<String> downloadFile(String inputFile) throws UnirestException {
-        return Unirest
-                .get(OWNCLOUD_ENDPOINT + inputFile)
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
-                .asString();
-    }
-
-    private HttpResponse<String> putInputFile(String expectedFilename) throws UnirestException {
-        return Unirest
-                .put(OWNCLOUD_ENDPOINT + expectedFilename)
-                .header("Content-Type", "text/plain; charset=UTF-8")
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
-                .body("new content " + RandomStringUtils.random(8))
-                .asString();
-    }
-
-    private HttpResponse<String> deleteInputFile(String expectedFilename) throws UnirestException {
-        return Unirest
-                .delete(OWNCLOUD_ENDPOINT + expectedFilename)
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
-                .asString();
-    }
-
     private KafkaConsumerService getOwncloudTopic() {
         KafkaConsumerService recognizerKafkaConsumer = new KafkaConsumerService(
-                KAFKA_ENDPOINT, OWNCLOUD_TOPIC_NAME, getRandomGroupName());
+                Config.KAFKA_ENDPOINT, Config.OWNCLOUD_TOPIC_NAME, getRandomGroupName());
         recognizerKafkaConsumer.subscribe();
         recognizerKafkaConsumer.pollOnce();
         return recognizerKafkaConsumer;
     }
-
 
 }

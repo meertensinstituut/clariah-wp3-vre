@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
-import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -13,12 +12,10 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.Path;
 import javax.ws.rs.ext.Provider;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.internal.util.collections.Sets.newSet;
 
 public class SwitchboardDIBinderTest extends AbstractTest {
 

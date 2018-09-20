@@ -7,6 +7,9 @@ Tools, languages and techniques:
  - Tomcat
  - Jersey
 
+# Development
+- Add static files (e.g. users) to `./static_files`
+
 ## Deployment
 
 - Run: `./start-switchboard.sh`. Runs at: `localhost:9010/switchboard`

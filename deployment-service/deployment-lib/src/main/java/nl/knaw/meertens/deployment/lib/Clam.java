@@ -7,12 +7,14 @@ package nl.knaw.meertens.deployment.lib;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -36,6 +38,16 @@ import net.sf.saxon.s9api.XdmNode;
 import nl.mpi.tla.util.Saxon;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -45,6 +57,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import static org.junit.Assert.assertThat;
+//import sun.util.logging.PlatformLogger;
 
 /**
  *
@@ -234,11 +248,25 @@ public class Clam implements RecipePlugin {
             
             String author = "";
             String language = "";
-            if (innerParams.get(0) instanceof JSONObject) {
-                JSONObject innerParam = (JSONObject)innerParams.get(0);
-                author = (String)innerParam.get("author");
-                language = (String)innerParam.get("language");
-            } 
+            
+            for (Object r: innerParams) {
+                JSONObject obj = (JSONObject) r;
+                
+                System.out.println(r);
+                switch ((String)obj.get("name")) {
+                    case "author":
+                        author = (String)obj.get("value");
+                        break;
+                    case "language":
+                        language = (String)obj.get("value");
+                }
+            }
+            
+//            if (innerParams.get(0) instanceof JSONObject) {
+//                JSONObject innerParam = (JSONObject)innerParams.get(0);
+//                author = (String)innerParam.get("author");
+//                language = (String)innerParam.get("language");
+//            } 
             
             if ("file".equals(type)) {
                 jsonResult = this.uploadFile(key, value, language, inputTemplate, author);
@@ -396,60 +424,66 @@ public class Clam implements RecipePlugin {
         DeploymentLib dplib = new DeploymentLib();
         
         String path = Paths.get(dplib.getWd(), projectName, dplib.getInputDir(), filename).normalize().toString();
-        System.out.println(path);
+        System.out.println("### File path to be uploaded:" + path + " ###");
         
         jsonResult.put("pathUploadFile", path);
         File file = new File(path);
         String filenameOnly = file.getName();
         jsonResult.put("filenameOnly", filenameOnly);
-        
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        String accessToken = (String)json.get("accessToken");
-        String payload = new String(encoded, "UTF-8");
 
         URL url = new URL(
                 this.serviceUrl.getProtocol(), 
                 this.serviceUrl.getHost(), 
                 this.serviceUrl.getPort(),
-                this.serviceUrl.getFile() + "/" +projectName + "/upload/?inputtemplate="+inputTemplate+"&user=anonymous&accesstoken="+accessToken+"&language="+language+"&documentid=&author="+author+"&filename="+filenameOnly, 
+                this.serviceUrl.getFile() + "/" +projectName + "/input/" + filenameOnly + "?inputtemplate="+inputTemplate+"&language="+language+"&documentid=&author="+author+"&filename="+filenameOnly, 
                 null
         );
-
+        System.out.println("### Upload URL:" + url.toString() + " ###");
+            
         try {
+            String boundary = Long.toHexString(System.currentTimeMillis());
+            String LINE_FEED = "\r\n";
             
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Accept", "application/json");
-            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
 
-            OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
-            writer.write(payload);
-            writer.close();
-            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuffer jsonString = new StringBuffer();
-            String line;
-            while ((line = br.readLine()) != null) {
-                jsonString.append(line);
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"));
+            
+            writer.append("--" + boundary).append(LINE_FEED);
+            writer.append("Content-Disposition: form-data; name=\"file\"; filename=\"" + filenameOnly + "\"").append(LINE_FEED);
+            writer.append("Content-Type: text/plain").append(LINE_FEED);
+            writer.append(LINE_FEED);
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+                for (String line; (line = reader.readLine()) != null; ) {
+                    writer.append(line).append(LINE_FEED);
+                }
+            } finally {
+                if (reader != null) try {
+                    reader.close();
+                } catch (IOException logOrIgnore) {
+                }
             }
-            br.close();
+
+            writer.append(LINE_FEED);
+            writer.append("--" + boundary + "--").append(LINE_FEED);
+            writer.append(LINE_FEED);
+            writer.flush();
+            writer.close();
+
             connection.disconnect();
-        } catch (IOException e) {
+            System.out.println("### File uplaoded! " + connection.getResponseCode() + connection.getResponseMessage() + " ###");
+
+        } catch (Exception e) {
+            System.out.println("### File upload failed ###");
             throw new RuntimeException(e.getMessage());
         }
 
-//        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-//        httpCon.setDoOutput(true);
-//        httpCon.setRequestMethod("POST");
-//        OutputStreamWriter out = new OutputStreamWriter(httpCon.getOutputStream());
-//        out.write("Resource content");
-//        out.close();
-//        httpCon.getInputStream();
-//        json.put("status", httpCon.getResponseCode());
-//        json.put("message", httpCon.getResponseMessage());
-//        httpCon.disconnect();
         return jsonResult;
     }
     
@@ -480,11 +514,17 @@ public class Clam implements RecipePlugin {
     }
         
     public JSONObject downloadProject(String projectName) throws MalformedURLException, IOException, JDOMException, SaxonApiException, ConfigurationException {
+        final String outputPathConst = "output";
+        
         JSONObject jsonFiles = this.getOutputFiles(projectName);
         JSONObject json = new JSONObject();
         DeploymentLib dplib = new DeploymentLib();
         String workDir = dplib.getWd();
         String outputDir = dplib.getOutputDir();
+        System.out.println(String.format("### current outputPath: %s ###", outputDir));
+        
+        String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
+        System.out.println(String.format("### outputPath: %s ###", outputPath));
         String path = Paths.get(workDir, projectName, outputDir).normalize().toString();
         
         /* create output directory if not there */

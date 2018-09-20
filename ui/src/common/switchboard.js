@@ -11,6 +11,13 @@ export default class Switchboard extends React.Component {
         });
     }
 
+    static getViewers(objectId) {
+        let url = `${DOMAIN}/object/${objectId}/viewers`;
+        return $.get({
+            url: url
+        });
+    }
+
     static getParams(serviceId) {
         let url = `${DOMAIN}/services/${serviceId}/params`;
         return $.get({
@@ -27,21 +34,26 @@ export default class Switchboard extends React.Component {
         });
     }
 
-    static getDeploymentStatus(workDir) {
+    static getDeploymentStatusResult(workDir) {
         let url = `${DOMAIN}/exec/task/${workDir}`;
         return $.get({
             url: url,
         });
     }
 
-    static getDeploymentStatusWhenStatus(workDir, status, deferred = new $.Deferred()) {
+    /**
+     * Poll and wait untill requestBody.status equals deploymentStatus
+     */
+    static getDeploymentStatusResultWhen(workDir, deploymentStatus, deferred = new $.Deferred()) {
         const timeout = 1000;
 
-        this.getDeploymentStatus(workDir).done((data, textStatus, xhr) => {
-            if (status === data.status) {
+        this.getDeploymentStatusResult(workDir).done((data, textStatus, xhr) => {
+            if (deploymentStatus === data.status) {
                 deferred.resolve(data);
             } else {
-                setTimeout(() => this.getDeploymentStatusWhenStatus(workDir, status, deferred), timeout);
+                setTimeout(() => {
+                    this.getDeploymentStatusResultWhen(workDir, deploymentStatus, deferred)
+                }, timeout);
             }
         }).fail((xhr) => {
             deferred.resolve({

@@ -10,33 +10,25 @@ import java.util.List;
 public interface FileService {
 
     /**
-     * Create folder structure with input files for deployed service:
+     * Create folder structure with object paths for deployed service:
      * - Lock files
      * - Create workdir
-     * - Create links of input files in work dir
+     * - Create links of object paths in work dir
      */
-    void stageFiles(String workDir, List<String> inputFiles);
+    void stageFiles(String workDir, List<String> objectPaths);
 
     /**
      * Clean up files and folders used by deployed service:
      * - Unlock files
-     * - Move output files to source
-     * @return folder containing output files
+     * - Move output files back to source
      */
-    void unstage(String workDir, List<String> inputFiles);
+    void unstage(String workDir, List<String> objectPaths);
 
-    /**
-     * Lock "<source path>/<file string>"
-     */
-    void lock(String fileString);
+    List<Path> unstageServiceOutputFiles(String workDir, String objectPath);
 
-    void unlock(String fileString);
+    Path unstageViewerOutputFile(String workDir, String objectPath, String service);
 
-    List<Path> unstageServiceOutputFiles(String workDir, String inputFile);
+    String getContent(String objectPath);
 
-    Path unstageViewerOutputFile(String workDir, String inputFile, String service);
-
-    String getContent(String inputFile);
-
-    Path getSrcPath();
+    void unlock(String objectPath);
 }

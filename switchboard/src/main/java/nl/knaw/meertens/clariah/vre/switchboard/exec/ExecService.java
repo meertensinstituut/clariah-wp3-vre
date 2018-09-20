@@ -42,14 +42,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.KAFKA_HOST_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.USER_TO_LOCK_WITH;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.VRE_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
@@ -91,14 +83,16 @@ public class ExecService {
             ObjectMapper mapper,
             ObjectsRegistryService objectsRegistryService,
             DeploymentService deploymentService,
-            ServicesRegistryService serviceRegistryService
+            ServicesRegistryService serviceRegistryService,
+            KafkaProducerService kafkaSwitchboardService,
+            KafkaProducerService kafkaOwncloudService
     ) {
         this.mapper = mapper;
         this.objectsRegistryService = objectsRegistryService;
-        this.kafkaSwitchboardService = new KafkaProducerService(SWITCHBOARD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
-        this.kafkaOwncloudService = new KafkaProducerService(OWNCLOUD_TOPIC_NAME, KAFKA_HOST_NAME, mapper);
+        this.kafkaSwitchboardService = kafkaSwitchboardService;
+        this.kafkaOwncloudService = kafkaOwncloudService;
         this.serviceRegistryService = serviceRegistryService;
-        this.owncloudFileService = new OwncloudFileService(OWNCLOUD_VOLUME, DEPLOYMENT_VOLUME, OUTPUT_DIR, INPUT_DIR, USER_TO_LOCK_WITH, VRE_DIR);
+        this.owncloudFileService = new OwncloudFileService();
         this.deploymentService = deploymentService;
     }
 
@@ -217,7 +211,7 @@ public class ExecService {
         return report.getStatus() == FINISHED || report.getStatus() == STOPPED;
     }
 
-    private void completeDeployment(DeploymentStatusReport report) throws IOException {
+    private void completeDeployment(DeploymentStatusReport report) {
 
         ServiceRecord service = serviceRegistryService.getServiceByName(report.getService());
         ServiceKind serviceKind = fromKind(service.getKind());
@@ -229,7 +223,10 @@ public class ExecService {
         } else if (serviceKind.equals(VIEWER)) {
             completeViewerDeployment(report);
         } else {
-            throw new UnsupportedOperationException(String.format("Could not complete deployment because service kind was not SERVICE or VIEWER but [%s]", serviceKind));
+            throw new UnsupportedOperationException(String.format(
+                    "Could not complete deployment because service kind was not SERVICE or VIEWER but [%s]",
+                    serviceKind
+            ));
         }
 
         sendKafkaSwitchboardMsg(report);
@@ -243,7 +240,7 @@ public class ExecService {
 
     private void completeServiceDeployment(
             DeploymentStatusReport report
-    ) throws IOException {
+    ) {
         List<Path> outputFiles = owncloudFileService.unstageServiceOutputFiles(
                 report.getWorkDir(),
                 report.getFiles().get(0)
@@ -259,7 +256,7 @@ public class ExecService {
 
     private void completeViewerDeployment(
             DeploymentStatusReport report
-    ) throws IOException {
+    ) {
         Path viewerFile = owncloudFileService.unstageViewerOutputFile(
                 report.getWorkDir(),
                 report.getFiles().get(0),
@@ -268,7 +265,6 @@ public class ExecService {
         report.setViewerFile(viewerFile.toString());
         report.setViewerFileContent(owncloudFileService.getContent(viewerFile.toString()));
         report.setWorkDir(report.getWorkDir());
-        sendKafkaOwncloudMsgs(newArrayList(viewerFile));
     }
 
     private void createConfig(
@@ -284,7 +280,10 @@ public class ExecService {
             String json = mapper.writeValueAsString(config);
             FileUtils.write(configPath.toFile(), json, UTF_8);
         } catch (IOException e) {
-            throw new RuntimeIOException(String.format("Could create config file [%s]", configPath.toString()), e);
+            throw new RuntimeIOException(String.format(
+                    "Could create config file [%s]",
+                    configPath.toString()
+            ), e);
         }
     }
 
@@ -311,7 +310,7 @@ public class ExecService {
 
     private void sendKafkaSwitchboardMsg(
             DeploymentStatusReport report
-    ) throws IOException {
+    ) {
         KafkaDeploymentResultDto kafkaMsg = new KafkaDeploymentResultDto();
         kafkaMsg.service = report.getService();
         kafkaMsg.dateTime = LocalDateTime.now();
@@ -321,7 +320,7 @@ public class ExecService {
 
     private void sendKafkaOwncloudMsgs(
             List<Path> outputFiles
-    ) throws IOException {
+    ) {
         for (Path file : outputFiles) {
             KafkaOwncloudCreateFileDto msg = new KafkaOwncloudCreateFileDto();
             msg.action = "create";

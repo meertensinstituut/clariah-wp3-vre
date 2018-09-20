@@ -13,8 +13,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomFilenameWithTime;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 
@@ -26,11 +30,11 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
     public void testOwncloudFileUpload() throws Exception {
         logger.info("Test upload and download of file");
         String expectedFilename = getRandomFilenameWithTime();
-        byte[] expectedFileContent = getTestFileContent();
+        String expectedFileContent = getTestFileContent();
 
         logger.info("Uploading file...");
         HttpResponse<String> uploadResult = Unirest
-                .put(OWNCLOUD_ENDPOINT + expectedFilename)
+                .put(Config.OWNCLOUD_ENDPOINT + expectedFilename)
                 .header("Content-Type", "text/plain; charset=UTF-8")
                 .basicAuth("admin", "admin")
                 .body(expectedFileContent)
@@ -40,10 +44,10 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
 
         logger.info("Downloading file...");
         HttpResponse<String> downloadResult = Unirest
-                .get(OWNCLOUD_ENDPOINT + expectedFilename)
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
+                .get(Config.OWNCLOUD_ENDPOINT + expectedFilename)
+                .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
                 .asString();
-        assertThat(downloadResult.getBody()).isEqualTo(new String(expectedFileContent));
+        assertThat(downloadResult.getBody()).isEqualTo(expectedFileContent);
         logger.info("Downloaded file");
 
     }
@@ -56,14 +60,14 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
         );
 
         KafkaConsumerService owncloudKafkaConsumer = new KafkaConsumerService(
-                KAFKA_ENDPOINT, OWNCLOUD_TOPIC_NAME, getRandomGroupName());
+                Config.KAFKA_ENDPOINT, Config.OWNCLOUD_TOPIC_NAME, getRandomGroupName());
         owncloudKafkaConsumer.subscribe();
         owncloudKafkaConsumer.pollOnce();
 
         logger.info("Uploading file...");
-        Unirest.put(OWNCLOUD_ENDPOINT + expectedFilename)
+        Unirest.put(Config.OWNCLOUD_ENDPOINT + expectedFilename)
                 .header("Content-Type", "text/plain; charset=UTF-8")
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
+                .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
                 .body(getTestFileContent())
                 .asString();
         logger.info("Uploaded file");
@@ -90,8 +94,8 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
         KafkaConsumerService recognizerKafkaConsumer = getRecognizerTopic();
 
         final String expectedFilename = uploadTestFile();
+        pollAndAssert(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()));
         logger.info("Uploaded file");
-        TimeUnit.SECONDS.sleep(5);
 
         recognizerKafkaConsumer.consumeAll(consumerRecords -> {
             logger.info("Check recognizer results");
@@ -119,7 +123,7 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
 
     private KafkaConsumerService getRecognizerTopic() {
         KafkaConsumerService recognizerKafkaConsumer = new KafkaConsumerService(
-                KAFKA_ENDPOINT, RECOGNIZER_TOPIC_NAME, getRandomGroupName());
+                Config.KAFKA_ENDPOINT, Config.RECOGNIZER_TOPIC_NAME, getRandomGroupName());
         recognizerKafkaConsumer.subscribe();
         recognizerKafkaConsumer.pollOnce();
         return recognizerKafkaConsumer;

@@ -34,7 +34,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
         report.setUser(expectedUser);
         report.setXml(testFitsXml);
 
-        String result = objectsRepositoryService.createJson(report);
+        String result = objectsRepositoryService.createObjectRecordJson(report);
 
         assertThatJson(result).node("timecreated").matches(
                 containsString(now().format(ofPattern("yyyy-MM-dd'T'HH"))));

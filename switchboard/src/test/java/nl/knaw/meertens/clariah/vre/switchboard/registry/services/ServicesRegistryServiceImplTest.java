@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.registry.services;
 
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import org.junit.Test;
+import org.mockserver.matchers.Times;
 import org.mockserver.model.Header;
 import org.mockserver.model.Parameter;
 
@@ -54,8 +55,9 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
                         request()
                                 .withMethod("GET")
                                 .withPath("/api/v2/services/_table/service_with_mimetype")
-                                .withQueryStringParameter(new Parameter("filter", "mimetype = text/plain")))
-                .respond(
+                                .withQueryStringParameter(new Parameter("filter", "mimetype = text/plain")),
+                        Times.exactly(1)
+                ).respond(
                         response()
                                 .withStatusCode(200)
                                 .withHeaders(new Header("Content-Type", "application/json; charset=utf-8"))
