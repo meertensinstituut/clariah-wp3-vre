@@ -38,7 +38,6 @@ export default class Files extends React.Component {
             this.state.pageSize
         ).done((data) => {
             this.setState({data: data});
-            this.forceUpdate();
         });
     }
 

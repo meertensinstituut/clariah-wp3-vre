@@ -16,9 +16,7 @@ export default class User extends React.Component {
             return null;
         }
         return (
-            <div>
-                <p>Logged in as <em>{this.state.user}</em></p>
-            </div>
+            <p>Logged in as <em>{this.state.user}</em></p>
         );
     }
 }

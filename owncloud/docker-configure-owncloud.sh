@@ -45,5 +45,10 @@ sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_
 # activate vre app:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ app:enable vre
 
+# add test user
+export OC_PASS=$TEST_PASSWORD
+su -s /bin/sh www-data -c \
+  "php occ user:add --password-from-env --display-name=\"$TEST_USER\" --group=\"users\" $TEST_USER"
+
 # check for new files:
-nohup /var/www/html/apps/vre/docker-scan-files.sh </dev/null &>/dev/null &
+nohup /var/www/html/apps/vre/scan-files.sh </dev/null &>/dev/null &

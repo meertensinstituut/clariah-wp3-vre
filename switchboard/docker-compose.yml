@@ -4,7 +4,7 @@ services:
   switchboard:
     build: ./docker
     working_dir: /usr/local/switchboard
-    command: ./docker/docker-run-switchboard.sh
+    command: ./docker/set-test-user.sh && ./docker/docker-run-switchboard.sh
     tty: true
     extra_hosts:
       - moby:127.0.0.1
@@ -26,6 +26,8 @@ services:
       KAFKA_PORT: ${KAFKA_PORT}
       OWNCLOUD_VOLUME: ${SWITCHBOARD_OWNCLOUD_VOLUME}
       DEPLOYMENT_VOLUME: ${SWITCHBOARD_DEPLOYMENT_VOLUME}
+      TEST_USER: ${TEST_USER}
+      TEST_PASSWORD: ${TEST_PASSWORD}
 
   kafka:
     image: wurstmeister/kafka:1.0.0
