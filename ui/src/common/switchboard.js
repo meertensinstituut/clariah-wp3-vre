@@ -11,26 +11,30 @@ export default class Switchboard extends React.Component {
         });
     }
 
-    static getViewers(objectId) {
+    static async getViewers(objectId) {
         let url = `${DOMAIN}/object/${objectId}/viewers`;
-        return $.get({
-            url: url
+        const response = await fetch(url);
+        this.validate(response);
+        return await response.json();
+    }
+
+    static async postDeployment(serviceName, params) {
+        let url = `${DOMAIN}/exec/${serviceName}`;
+        const response =  await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            body: JSON.stringify(params)
         });
+        this.validate(response);
+        return await response.json();
     }
 
     static getParams(serviceId) {
         let url = `${DOMAIN}/services/${serviceId}/params`;
         return $.get({
             url: url
-        });
-    }
-
-    static postDeployment(serviceName, params) {
-        let url = `${DOMAIN}/exec/${serviceName}`;
-        return $.post({
-            url: url,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(params)
         });
     }
 
@@ -62,6 +66,15 @@ export default class Switchboard extends React.Component {
             });
         });
         return deferred;
+    }
+
+
+    static validate(response) {
+        if (!response.ok) {
+            console.log("response error", response);
+            throw Error(response.statusText);
+        }
+        return response;
     }
 
 }

@@ -20,43 +20,36 @@ class Viewer extends React.Component {
             viewerFile: null,
             view: false
         };
-        this.getViewOfObject();
+        this.getViewOfObject(this.state);
     }
 
-    getViewOfObject() {
+    async getViewOfObject() {
         const params = {"params": [{"name": "input", "type": "file", "value": this.state.objectId}]};
 
-        Switchboard
-            .getViewers(this.state.objectId)
-            .fail((xhr) => {
-                this.setState({errorResponse: xhr.responseJSON})
-            })
-            .done((data) => {
-                const hasViewer = data.length > 0;
-                if (!hasViewer) {
-                    this.setState({errorResponse: {msg: "No viewer found for " + this.state.objectName}});
-                    return;
-                }
-                const viewer = data[0].name;
-                this.setState({viewer}, () => {
-                    Switchboard.postDeployment(viewer, params)
-                        .fail((xhr) => {
-                            this.setState({errorResponse: xhr.responseJSON})
-                        })
-                        .done((deployData) => {
-                            Switchboard.getDeploymentStatusResultWhen(deployData.workDir, DeploymentStatus.FINISHED)
-                                .fail((xhr) => {
-                                    this.setState({errorResponse: xhr.responseJSON})
-                                })
-                                .done((viewerData) => {
-                                    this.setState({
-                                        viewerFileContent: {__html: viewerData.viewerFileContent},
-                                        viewerFileName: viewerData.viewerFile
-                                    });
-                                });
-                        });
+        try {
+            const data = await Switchboard.getViewers(this.state.objectId);
+            const hasViewer = data.length > 0;
+            if (!hasViewer) {
+                throw Error("No viewer found for " + this.state.objectName);
+            }
+            const viewer = data[0].name;
+            const deployData = await Switchboard.postDeployment(viewer, params);
+
+            Switchboard.getDeploymentStatusResultWhen(deployData.workDir, DeploymentStatus.FINISHED)
+                .fail((xhr) => {
+                    this.setState({errorResponse: xhr.responseJSON})
+                })
+                .done((viewerData) => {
+                    this.setState({
+                        viewer: viewer,
+                        viewerFileContent: {__html: viewerData.viewerFileContent},
+                        viewerFileName: viewerData.viewerFile
+                    });
                 });
-            });
+        } catch (e) {
+            console.log(e);
+            this.setState({errorResponse: {msg: e.message}})
+        }
 
     }
 
