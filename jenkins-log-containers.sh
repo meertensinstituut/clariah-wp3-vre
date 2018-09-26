@@ -6,7 +6,7 @@ docker logs vre_integration_1  > logs/vre_integration_1.log
 docker logs vre_recognizer_1 > logs/vre_recognizer_1.log
 docker logs vre_deployment_1 > logs/vre_deployment_1.log
 docker logs vre_dreamfactory_1 > logs/vre_dreamfactory_1.log
-docker logs vre_owncloud_1 > logs/vre_owncloud_1.log
+docker logs vre_nextcloud_1 > logs/vre_nextcloud_1.log
 docker logs vre_trifecta_1 > logs/vre_trifecta_1.log
 docker logs vre_kafka_1 > logs/vre_kafka_1.log
 docker logs vre_fits_1 > logs/vre_fits_1.log

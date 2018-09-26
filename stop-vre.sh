@@ -5,7 +5,7 @@ docker kill vre_integration_1
 docker kill vre_recognizer_1
 docker kill vre_deployment_1
 docker kill vre_dreamfactory_1
-docker kill vre_owncloud_1
+docker kill vre_nextcloud_1
 docker kill vre_trifecta_1
 docker kill vre_kafka_1
 docker kill vre_fits_1

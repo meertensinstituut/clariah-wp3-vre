@@ -57,7 +57,7 @@ curl -v 'http://localhost:8082/remote.php/webdav/testfile.txt' \
 ```
 
 - Upload file using client:
-  - Install owncloud client
+  - Install nextcloud client
   - Login to server `http://localhost:8082` (credentials, see e.g. `OWNCLOUD_ADMIN_NAME` and `OWNCLOUD_ADMIN_PASSWORD` in `.env`)
   - Add file.
 
@@ -70,7 +70,7 @@ Containers expose the following ports:
 80->8080/tcp     vre_deployment_1
 8080->8080/tcp   vre_fits_1
 8081->80/tcp     vre_recognizer_1
-8082->80/tcp     vre_owncloud_1
+8082->80/tcp     vre_nextcloud_1
 8085->8085/tcp   vre_integration_1
 8089->80/tcp     vre_dreamfactory_1
 9000->9000/tcp   vre_trifecta_1

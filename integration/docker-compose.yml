@@ -10,10 +10,10 @@ services:
     tty: true
     depends_on:
       - recognizer
-      - owncloud
+      - nextcloud
     links:
       - recognizer
-      - owncloud
+      - nextcloud
       - postgres
       - kafka
       - switchboard

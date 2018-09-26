@@ -18,17 +18,15 @@ services:
       APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
       APP_KEY_SERVICES: ${APP_KEY_SERVICES}
 
-  # owncloud:
-  #   build: ./owncloud
-  #   volumes:
-  #     - ./owncloud:/var/www/html/apps/vre
-  #     - data-volume:/var/www/html/data
-
   nextcloud:
     build: ./nextcloud
     volumes:
-      # - ./nextcloud:/var/www/html/apps/vre
       - data-volume:/var/www/html/data
+    networks:
+      default:
+        aliases:
+          - owncloud
+          - nextcloud
 
   recognizer:
     build: ./recognizer/recognizer
