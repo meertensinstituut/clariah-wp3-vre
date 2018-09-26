@@ -1,17 +1,22 @@
 <?xml version="1.0"?>
+
 <info>
     <id>vre</id>
-    <name>VRE Owncloud</name>
-    <description>VRE Owncloud service for storing data</description>
+    <name>VRE NextCloud</name>
+    <description>VRE NextCloud service for storing data</description>
     <version>0.1</version>
+    <licence>AGPL</licence>
     <author>Matthijs Brouwer</author>
     <namespace>Vre</namespace>
+
     <types>
         <filesystem/>
     </types>
+
     <category>tool</category>
+
     <dependencies>
-        <php min-version="5.4" />
-        <owncloud min-version="10" max-version="10"/>
+        <php min-version="5.6"/>
+        <nextcloud min-version="14" max-version="16"/>
     </dependencies>
 </info>

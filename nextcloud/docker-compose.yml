@@ -1,13 +1,13 @@
 version: '3.4'
 
 services:
-  owncloud:
+  nextcloud:
+    # image: nextcloud:latest
     build: .
+    container_name: vre_nextcloud_1
 #    restart: always
     ports:
       - "8082:80"
-    volumes:
-      - ./:/var/www/html/apps/vre
     environment:
       KAFKA_BROKER: localhost
     extra_hosts:
@@ -34,6 +34,7 @@ services:
 
   kafka:
     image: wurstmeister/kafka:1.0.0
+    container_name: vre_kafka_1
     depends_on:
       - zookeeper
     environment:
@@ -47,3 +48,4 @@ services:
 
   zookeeper:
     image: zookeeper:3.4
+    container_name: vre_zookeeper_1

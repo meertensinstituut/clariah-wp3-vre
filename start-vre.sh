@@ -5,7 +5,7 @@
 docker-compose \
   -f ./docker-compose-blank.yml \
   -f ./integration/docker-compose.yml \
-  -f ./owncloud/docker-compose.yml \
+  -f ./nextcloud/docker-compose.yml \
   -f ./recognizer/docker-compose.yml \
   -f ./registry/docker-compose.yml \
   -f ./switchboard/docker-compose.yml \

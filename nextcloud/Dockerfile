@@ -1,11 +1,11 @@
-FROM owncloud:latest
+FROM nextcloud:latest
 
 RUN apt-get update \
  && apt-get -y install watch \
- && apt-get -y install git \
- && apt-get -y install python \
- && apt-get -y install nano \
- && apt-get -y install sudo \
+ git \
+ python \
+ vim \
+ sudo \
  # rdkafka:
  && cd /tmp \
  && mkdir librdkafka && cd librdkafka \
@@ -15,5 +15,7 @@ RUN apt-get update \
  && make install \
  && pecl install rdkafka \
  && echo "extension=rdkafka.so" >> /usr/local/etc/php/php.ini \
+ && echo "memory_limit = 512M" >> /usr/local/etc/php/php.ini \
  # occ requires pcntl:
- && docker-php-ext-install pcntl
+ && docker-php-ext-install pcntl \
+ && echo "finish docker file!"

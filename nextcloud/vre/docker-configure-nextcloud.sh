@@ -1,5 +1,21 @@
 #!/bin/bash
 cd /var/www/html
+echo "waiting for apps folder to be populated!"
+while [ ! -d "/var/www/html/apps" ]
+do
+    echo -n "."
+    sleep 5
+done
+echo "apps folder populated!"
+
+cp -a /tmp/vre/. /var/www/html/apps/vre
+echo "waiting for apps/vre folder to be populated!"
+while [ ! -d "/var/www/html/apps/vre" ]
+do
+    echo -n "."
+    sleep 5
+done
+echo "apps/vre folder populated!"
 
 # sometimes occ is not yet installed
 # apache is run when occ is installed
@@ -41,6 +57,7 @@ sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set skeleton
 
 # add docker link 'owncloud' to trusted domains:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 1 --value "owncloud"
+sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 1 --value "nextcloud"
 
 # activate vre app:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ app:enable vre
@@ -51,4 +68,9 @@ su -s /bin/sh www-data -c \
   "php occ user:add --password-from-env --display-name=\"$TEST_USER\" --group=\"users\" $TEST_USER"
 
 # check for new files:
-nohup /var/www/html/apps/vre/scan-files.sh </dev/null &>/dev/null &
+nohup /var/www/html/apps/vre/docker-scan-files.sh </dev/null &>/dev/null &
+# nohup bash -c "/var/www/html/apps/vre/docker-scan-files.sh </dev/null &>/dev/null" &
+
+# do not delete or comment out the ps aux below, it is required to have the nohup command working. no idea why 
+ps aux
+echo "file scanner started!"

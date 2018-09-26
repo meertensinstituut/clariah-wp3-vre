@@ -5,7 +5,7 @@ while true ; do
     >> /var/www/html/data/files-scan.log
 
   SCAN_RESULT="$(sudo -u www-data /usr/local/bin/php /var/www/html/occ files:scan --all)"
-  if [ $SCAN_RESULT = *"LockedException"* ]; then
+  if [[ $SCAN_RESULT = *"LockedException"* ]]; then
     printf "found a LockedException; try again..\n" \
       >> /var/www/html/data/files-scan.log
     sudo -u www-data /usr/local/bin/php /var/www/html/occ files:scan --all \
