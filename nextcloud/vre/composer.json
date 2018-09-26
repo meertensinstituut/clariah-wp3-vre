@@ -1,6 +1,6 @@
 {
     "name": "vre/owncloud-with-kafka-client",
-    "description": "Owncloud with kafka",
+    "description": "NextCloud with kafka",
     "authors": [
         {
             "name": "VRE",
