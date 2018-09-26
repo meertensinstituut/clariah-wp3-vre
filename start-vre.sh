@@ -15,6 +15,7 @@ docker-compose \
   -p vre up -d --build # replace with 'config' to see generated docker-compose-file
 
 docker cp nextcloud/vre vre_nextcloud_1:/tmp/vre
+
 docker exec vre_nextcloud_1 /tmp/vre/docker-configure-nextcloud.sh
 echo "wait 180 secs to make sure all services are running..."
 sleep 180

@@ -17,6 +17,15 @@ do
 done
 echo "apps/vre folder populated!"
 
+echo "downloading SAML app"
+git clone -b v1.6.2 https://github.com/nextcloud/user_saml.git /var/www/html/apps/user_saml
+while [ ! -d "/var/www/html/apps/user_saml" ]
+do
+    echo -n "."
+    sleep 5
+done
+echo "apps/user_saml folder populated!"
+
 # sometimes occ is not yet installed
 # apache is run when occ is installed
 
@@ -57,10 +66,12 @@ sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set skeleton
 
 # add docker link 'owncloud' to trusted domains:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 1 --value "owncloud"
-# sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 1 --value "nextcloud"
+sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 2 --value "nextcloud"
 
 # activate vre app:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ app:enable vre
+# activate SAML
+sudo -u www-data /usr/local/bin/php /var/www/html/occ app:enable user_saml
 
 # add test user
 export OC_PASS=$TEST_PASSWORD
