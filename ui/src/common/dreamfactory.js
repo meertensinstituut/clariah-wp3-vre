@@ -1,52 +1,42 @@
-import $ from "jquery";
 import UserResource from "../user/user-resource";
+import Resource from "./resource";
 
 const DOMAIN = 'http://localhost:8089/api/v2';
 const OBJECT = 'objects/_table/object';
-let user = null;
 
 export default class Dreamfactory {
 
-    static getObjects(params) {
+    static async getObjects(params) {
         const url = `${DOMAIN}/${OBJECT}?${params}`;
         return getWithUser(url);
     }
 
-    static getObject(id) {
+    static async getObject(id) {
         const url = `${DOMAIN}/${OBJECT}/${id}`;
-        return get(url);
+        const response = await get(url);
+        return Resource.validate(response);
     }
 
-    static getObjectCount() {
+    static async getObjectCount() {
         const url = `${DOMAIN}/objects/_table/user_file_count`;
-        return getWithUser(url);
+        return await getWithUser(url);
     }
 }
 
-function getWithUser(url) {
-    if (user) {
-        return get(addUser(url));
-    }
-    const deferred = new $.Deferred();
-    UserResource.whoAmI().done((data) => {
-        user = data.user;
-        get(addUser(url)).done((data) => {
-            deferred.resolve(data);
-        });
-    });
-    return deferred;
+async function getWithUser(url) {
+    const userData = await UserResource.whoAmI();
+    const response = await get(addUser(url, userData.user));
+    return Resource.validate(response);
 }
 
-function get(url) {
-    return $.get({
-        url: url,
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('X-DreamFactory-Api-Key', process.env.REACT_APP_KEY_GET_OBJECTS)
-        }
+async function get(url) {
+    return await fetch(url, {
+        method: 'GET',
+        headers: {'X-DreamFactory-Api-Key': `${process.env.REACT_APP_KEY_GET_OBJECTS}`}
     });
 }
 
-function addUser(url) {
+function addUser(url, user) {
     return url
         + ((url.indexOf('?') === -1) ? '?' : '&')
         + `filter=user_id%20%3D%20${user}`;

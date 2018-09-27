@@ -24,25 +24,32 @@ export default class Poll extends React.Component {
         this.pollDeployment();
     }
 
-    pollDeployment() {
+    async pollDeployment() {
         this.setState({polling: true});
-        Switchboard.getDeploymentStatusResult(this.state.workDir).done((data) => {
+        try {
+
+            const data = await Switchboard.getDeploymentStatusResult(this.state.workDir);
+
             // TODO: use actual http status code:
             const httpStatus = 200;
             const deployStatus = data;
-            this.setState({httpStatus, deployStatus, polling: false}, () => {
+            this.setState({httpStatus, deployStatus, polling: false}, async () => {
                 const toPoll = ['DEPLOYED', 'RUNNING'];
                 if (toPoll.includes(deployStatus.status)) {
                     const timeout = this.props.interval;
-                    setTimeout(() => this.pollDeployment(), timeout);
+                    await Poll.wait(timeout);
+                    await this.pollDeployment();
                 }
             });
-        }).fail((xhr) => {
-            const httpStatus = xhr.status;
-            const deployStatus = {status: xhr.responseJSON.msg};
+
+        } catch (e) {
+            const httpStatus = e.status;
+            const deployStatus = {status: e.message};
             this.setState({httpStatus, deployStatus, polling: false});
-        });
+        }
     }
+
+    static wait = async (ms) => new Promise((r)=>setTimeout(r, ms));
 
     handlePanelClick = () => {
         this.setState({opened: !this.state.opened});
@@ -104,7 +111,10 @@ export default class Poll extends React.Component {
                         <Panel.Title>
                             Deployment status of <code>{this.state.workDir}</code>
                             <span className="pull-right">
-                            {deployStatus && deployStatus.status === 'RUNNING' ? <Spinner/> : <i className="fa fa-check-square-o" aria-hidden="true"/>}
+                            {deployStatus && deployStatus.status === 'RUNNING'
+                                ? <Spinner/>
+                                : <i className="fa fa-check-square-o" aria-hidden="true"/>
+                            }
                             </span>
                         </Panel.Title>
                     </Panel.Heading>
@@ -120,6 +130,10 @@ export default class Poll extends React.Component {
                             onClick={this.handlePanelClick}
                         >
                             Details
+                            <span className="pull-right">
+                                <i className={this.state.opened ? "fa fa-minus-square-o" : "fa fa-plus-square-o"}
+                                   aria-hidden="true"/>
+                            </span>
                         </Panel.Title>
                     </Panel.Heading>
                     <Panel.Body

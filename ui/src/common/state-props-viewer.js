@@ -26,6 +26,6 @@ StatePropsViewer.propTypes = {
     props: PropTypes.object.isRequired
 };
 
-StatePropsViewer.defaultTypes = {
+StatePropsViewer.defaultProps = {
   hide: false
 };

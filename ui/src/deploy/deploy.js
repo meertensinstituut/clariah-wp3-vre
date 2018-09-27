@@ -5,6 +5,7 @@ import Configurator from "./configurator";
 import Switchboard from "../common/switchboard";
 import DeployMsg from "./deploy-msg";
 import Steps from "./steps";
+import ErrorMsg from "../common/error-msg";
 
 import './deploy.css';
 
@@ -63,27 +64,27 @@ class Deploy extends React.Component {
         });
     };
 
-    handleDeploy = () => {
-        this.requestDeployment(
+    handleDeploy = async () => {
+        const data = await this.requestDeployment(
             this.state.serviceName,
             this.state.config
-        ).done((data) => {
-            this.setState(
-                {
-                    active: 'deploy',
-                    steps: this.state.steps,
-                    deployment: data
-                },
-                () => window.scrollTo(0, 0)
-            );
-        });
+        );
+
+        this.setState({
+                active: 'deploy',
+                steps: this.state.steps,
+                deployment: data
+            },
+            () => window.scrollTo(0, 0)
+        );
     };
 
-    requestDeployment(service, config) {
-        return Switchboard.postDeployment(service, config).done((data) => {
-            this.setState({deployment: data});
-            this.forceUpdate();
-        });
+    async requestDeployment(service, config) {
+        const data = await Switchboard
+            .postDeployment(service, config)
+            .catch((e) => this.setState({error: e}));
+        await this.setState({deployment: data});
+        return data;
     }
 
     setStepValue(key, value) {
@@ -99,7 +100,11 @@ class Deploy extends React.Component {
     }
 
     render() {
-        if (this.state.redirect) return <Redirect to='/files'/>;
+        if (this.state.error)
+            return <ErrorMsg error={this.state.error}/>;
+
+        if (this.state.redirect)
+            return <Redirect to='/files'/>;
 
         const steps =
             <Steps
