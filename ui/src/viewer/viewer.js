@@ -20,53 +20,56 @@ class Viewer extends React.Component {
             viewerFile: null,
             view: false
         };
-        this.getViewOfObject();
+        this.getViewOfObject(this.state);
     }
 
-    getViewOfObject() {
-        const params = {"params": [{"name": "input", "type": "file", "value": this.state.objectId}]};
-
-        Switchboard
-            .getViewers(this.state.objectId)
-            .fail((xhr) => {
-                this.setState({errorResponse: xhr.responseJSON})
-            })
-            .done((data) => {
-                const hasViewer = data.length > 0;
-                if (!hasViewer) {
-                    this.setState({errorResponse: {msg: "No viewer found for " + this.state.objectName}});
-                    return;
-                }
-                const viewer = data[0].name;
-                this.setState({viewer}, () => {
-                    Switchboard.postDeployment(viewer, params)
-                        .fail((xhr) => {
-                            this.setState({errorResponse: xhr.responseJSON})
-                        })
-                        .done((deployData) => {
-                            Switchboard.getDeploymentStatusResultWhen(deployData.workDir, DeploymentStatus.FINISHED)
-                                .fail((xhr) => {
-                                    this.setState({errorResponse: xhr.responseJSON})
-                                })
-                                .done((viewerData) => {
-                                    this.setState({
-                                        viewerFileContent: {__html: viewerData.viewerFileContent},
-                                        viewerFileName: viewerData.viewerFile
-                                    });
-                                });
-                        });
-                });
+    async getViewOfObject() {
+        const params = {
+            "params": [{
+                "name": "input",
+                "type": "file",
+                "value": this.state.objectId
+            }]
+        };
+        try {
+            const data = await Switchboard
+                .getViewers(this.state.objectId)
+                .catch((e) => this.setState({error: e}));
+            const hasViewer = data.length > 0;
+            if (!hasViewer) {
+                this.setState({error: Error("No viewer found for " + this.state.objectName)});
+            }
+            const viewer = data[0].name;
+            const deployData = await Switchboard
+                .postDeployment(viewer, params)
+                .catch((e) => this.setState({error: e}));
+            const workDir = deployData.workDir;
+            const finished = DeploymentStatus.FINISHED;
+            const viewerData = await Switchboard
+                .getDeploymentWhen(workDir, finished)
+                .then(viewerData => viewerData)
+                .catch((e) => this.setState({error: e}));
+            this.setState({
+                viewer: viewer,
+                viewerFileContent: {__html: viewerData.viewerFileContent},
+                viewerFileName: viewerData.viewerFile
             });
+        } catch (e) {
+            this.setState({error: {message: "Could not view file: " + e.message}})
+        }
 
     }
 
     render() {
+        if (this.state.error)
+            return <ErrorMsg error={this.state.error}/>;
+
         const viewerFile = this.state.viewerFileContent
             ? <div dangerouslySetInnerHTML={this.state.viewerFileContent}/>
             : null;
 
-        const spinner = !this.state.viewerFileContent && !this.state.errorResponse
-            ? <Spinner response={this.state.errorResponse}/>
+        const spinner = !this.state.viewerFileContent && !this.state.error
+            ? <Spinner response={this.state.error}/>
             : null;
 
         const usingViewer = this.state.viewer
@@ -75,8 +78,8 @@ class Viewer extends React.Component {
 
         return (
             <div>
-                <h1>Viewing file {this.state.objectName} </h1>
-                <ErrorMsg response={this.state.errorResponse}/>
+                <h1>Viewing file {this.state.objectName}</h1>
+                <ErrorMsg response={this.state.error}/>
                 <p>{usingViewer}</p>
                 <div>{this.props.content}</div>
                 {viewerFile}

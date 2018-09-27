@@ -44,6 +44,13 @@ rm -rf data/$OWNCLOUD_ADMIN_NAME/files_trashbin/*
 rm -rf data/$OWNCLOUD_ADMIN_NAME/files_versions/*
 rm -rf data/$OWNCLOUD_ADMIN_NAME/thumbnails/*
 
+# clear existing test user files:
+rm -rf data/$TEST_USER/files/*
+rm -rf data/$TEST_USER/files/.vre/*
+rm -rf data/$TEST_USER/files_trashbin/*
+rm -rf data/$TEST_USER/files_versions/*
+rm -rf data/$TEST_USER/thumbnails/*
+
 # empty log files:
 > data/vrelog.txt
 > data/files-scan.log

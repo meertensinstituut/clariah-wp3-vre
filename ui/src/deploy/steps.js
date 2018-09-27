@@ -3,6 +3,7 @@ import {Pagination} from 'react-bootstrap';
 import {withRouter} from 'react-router-dom';
 import queryString from 'query-string';
 import PropTypes from 'prop-types';
+import ErrorMsg from "../common/error-msg";
 
 /**
  * Keeps track of url params and different steps/states of deployment
@@ -11,7 +12,8 @@ class Steps extends React.Component {
 
     constructor(props) {
         super(props);
-        let params = normalizeParams(queryString.parse(this.props.location.search));
+
+        let params = this.createParamsFromUrl();
         let steps = this.props.steps;
         let completed = this.props.completed;
         let active = this.determineActiveStep(this.props.steps);
@@ -20,15 +22,25 @@ class Steps extends React.Component {
         if (this.props.active !== active) {
             changedSteps = true;
         }
-        if(this.addUrlValuesToSteps(params, steps)) {
+        if (this.addUrlValuesToSteps(params, steps)) {
             changedSteps = true;
         }
 
-        this.state = {params, steps, active, completed, changedSteps};
+        this.state = {
+            params,
+            steps,
+            active,
+            completed,
+            changedSteps
+        };
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
         return {steps: nextProps.steps};
+    }
+
+    createParamsFromUrl() {
+        return normalizeParams(queryString.parse(this.props.location.search));
     }
 
     addUrlValuesToSteps(params, steps) {
@@ -54,14 +66,14 @@ class Steps extends React.Component {
         );
     }
 
-    isDisabled(activeIndex, completed, index) {
+    isDisabled(activeIndex, currentIsComplete, index) {
         let disabled = true;
         if (index <= activeIndex) {
             // Previous and current steps:
             disabled = false;
         } else if (index === activeIndex + 1) {
             // Next step:
-            disabled = !completed;
+            disabled = !currentIsComplete;
         }
         return disabled;
     }
@@ -78,7 +90,7 @@ class Steps extends React.Component {
     }
 
     goTo = (step, disabled) => {
-        if(disabled) {
+        if (disabled) {
             return;
         }
         this.clearParamsAfter(step.key);
@@ -95,6 +107,9 @@ class Steps extends React.Component {
     }
 
     render() {
+        if (this.state.error)
+            return <ErrorMsg error={this.state.error}/>;
+
         let activeIndex = this.props.steps.findIndex((s) => s.key === this.props.active);
         return (
             <div>

@@ -3,6 +3,7 @@ import {Button, Panel, Table} from "react-bootstrap";
 import DeployMsg from "./deploy-msg";
 import DreamFactory from '../common/dreamfactory';
 import PropTypes from 'prop-types';
+import ErrorMsg from "../common/error-msg";
 import Switchboard from "../common/switchboard";
 
 export default class ServiceSelector extends React.Component {
@@ -15,23 +16,28 @@ export default class ServiceSelector extends React.Component {
         this.state = {
             object: null,
             services: null,
-            selected: this.props.selected
+            selected: this.props.selected,
+            error: null
         };
         this.getResources();
-        this.isSelected = this.isSelected.bind(this);
     }
 
-    getResources() {
-        DreamFactory.getObject(this.props.file).done((data) => {
-            this.setState({object: data});
-            this.getServices();
-        });
-    }
+    async getResources() {
+        let object;
 
-    getServices() {
-        Switchboard.getServices(this.state.object.id).done((data) => {
-            this.setState({services: data});
-        });
+        object = await DreamFactory
+            .getObject(this.props.file)
+            .catch((e) => this.setState({error: e}));
+
+        if (!object) {
+            return;
+        }
+        const services = await Switchboard
+            .getServices(object.id)
+            .catch((e) => this.setState({error: e}));
+
+        this.setState({services, object});
+
     }
 
     getFileName() {
@@ -41,7 +47,7 @@ export default class ServiceSelector extends React.Component {
 
     handleSelect(service) {
         let newService;
-        if(this.state.selected === service) {
+        if (this.state.selected === service) {
             newService = null;
         } else {
             newService = service;
@@ -52,11 +58,14 @@ export default class ServiceSelector extends React.Component {
         );
     }
 
-    isSelected(id) {
+    isSelected = (id) => {
         return this.state.selected !== null && this.state.selected === id;
-    }
+    };
 
     render() {
+        if (this.state.error)
+            return <ErrorMsg title="Could not select service" error={this.state.error}/>;
+
         if (this.state.services === null)
             return <div className="main">Loading service selector...</div>;
 
@@ -89,7 +98,7 @@ export default class ServiceSelector extends React.Component {
                                         onClick={() => this.handleSelect(service.id)}
                                     >
                                         {this.isSelected(service.id) ? "Selected " : "Select "}
-                                        <i className={this.isSelected(service.id) ? "fa fa-check-square-o" : "fa fa fa-square-o"} />
+                                        <i className={this.isSelected(service.id) ? "fa fa-check-square-o" : "fa fa fa-square-o"}/>
                                     </Button>
                                 </td>
                             </tr>

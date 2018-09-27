@@ -5,6 +5,7 @@ import Dreamfactory from "../common/dreamfactory";
 
 import {Table} from "react-bootstrap";
 import ReactTooltip from 'react-tooltip'
+import ErrorMsg from "../common/error-msg";
 
 const PAGE_SIZE = 6;
 
@@ -22,28 +23,33 @@ export default class Files extends React.Component {
         };
 
         this.goToPage = this.goToPage.bind(this);
-
-        Dreamfactory.getObjectCount().done((data) => {
-            let pageTotal = data.resource.length !== 0
-                ? Math.ceil(data.resource[0].count / this.state.pageSize)
-                : 0;
-            this.setState({pageTotal: pageTotal});
-            this.updateObjects();
-        });
+        this.init();
     }
 
-    updateObjects() {
-        this.getObjectPage(
-            this.state.pageCurrent,
-            this.state.pageSize
-        ).done((data) => {
-            this.setState({data: data});
-        });
+    async init() {
+        const count = await Dreamfactory
+            .getObjectCount()
+            .catch(this.err());
+        if(!count) return;
+
+        let pageTotal = count.resource.length !== 0
+            ? Math.ceil(count.resource[0].count / this.state.pageSize)
+            : 0;
+        this.setState({pageTotal});
+        this.updateObjects();
     }
 
-    getObjectPage(page, size) {
+    async updateObjects() {
+        await this.getObjectPage(this.state.pageCurrent, this.state.pageSize)
+            .then(data => this.setState({data: data}))
+            .catch((e) => this.setState({error: e}));
+    }
+
+    async getObjectPage(page, size) {
         let params = `limit=${size}&offset=${page * size}`;
-        return Dreamfactory.getObjects(params);
+        return await Dreamfactory
+            .getObjects(params)
+            .catch(this.err());
     }
 
     goToPage(i) {
@@ -72,7 +78,14 @@ export default class Files extends React.Component {
         this.setState({selectedObject: null});
     }
 
+    err() {
+        return e => this.setState({error: e});
+    }
+
     render() {
+        if (this.state.error)
+            return <ErrorMsg error={this.state.error}/>;
+
         if (this.state.data === null)
             return <div className="main">Loading...</div>;
 

@@ -1,67 +1,58 @@
-import React from "react";
-import $ from "jquery";
+import Resource from "./resource";
 
 const DOMAIN = 'http://localhost:9010/switchboard/rest';
-export default class Switchboard extends React.Component {
+export default class Switchboard {
 
-    static getServices(objectId) {
+    static async getServices(objectId) {
         let url = `${DOMAIN}/object/${objectId}/services`;
-        return $.get({
-            url: url
-        });
+        const response = await fetch(url);
+        return Resource.validate(response);
     }
 
-    static getViewers(objectId) {
+    static async getViewers(objectId) {
         let url = `${DOMAIN}/object/${objectId}/viewers`;
-        return $.get({
-            url: url
-        });
+        const response = await fetch(url);
+        return Resource.validate(response);
     }
 
-    static getParams(serviceId) {
-        let url = `${DOMAIN}/services/${serviceId}/params`;
-        return $.get({
-            url: url
-        });
-    }
-
-    static postDeployment(serviceName, params) {
+    static async postDeployment(serviceName, params) {
         let url = `${DOMAIN}/exec/${serviceName}`;
-        return $.post({
-            url: url,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(params)
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            body: JSON.stringify(params)
         });
+        return Resource.validate(response);
     }
 
-    static getDeploymentStatusResult(workDir) {
+    static async getParams(serviceId) {
+        let url = `${DOMAIN}/services/${serviceId}/params`;
+        const response = await fetch(url);
+        return Resource.validate(response);
+    }
+
+    static async getDeploymentStatusResult(workDir) {
         let url = `${DOMAIN}/exec/task/${workDir}`;
-        return $.get({
-            url: url,
-        });
+        const response = await fetch(url);
+        return Resource.validate(response);
     }
 
     /**
      * Poll and wait untill requestBody.status equals deploymentStatus
      */
-    static getDeploymentStatusResultWhen(workDir, deploymentStatus, deferred = new $.Deferred()) {
+    static async getDeploymentWhen(workDir, deploymentStatus) {
         const timeout = 1000;
-
-        this.getDeploymentStatusResult(workDir).done((data, textStatus, xhr) => {
-            if (deploymentStatus === data.status) {
-                deferred.resolve(data);
-            } else {
-                setTimeout(() => {
-                    this.getDeploymentStatusResultWhen(workDir, deploymentStatus, deferred)
-                }, timeout);
-            }
-        }).fail((xhr) => {
-            deferred.resolve({
-                httpStatus: xhr.status,
-                msg: xhr.responseJSON.msg
-            });
-        });
-        return deferred;
+        const response = await this.getDeploymentStatusResult(workDir);
+        if (deploymentStatus === response.status) {
+            return response;
+        } else {
+            await this.wait(timeout);
+            return await this.getDeploymentWhen(workDir, deploymentStatus);
+        }
     }
+
+    static wait = async (ms) => new Promise((r)=>setTimeout(r, ms));
 
 }

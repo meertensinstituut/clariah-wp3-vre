@@ -1,25 +1,25 @@
 import React from "react";
 
 /**
- * Expects response body with msg field containing error
+ * Expects error body with msg field containing error
  */
 export default class ErrorMsg extends React.Component {
     constructor(props, context) {
         super(props, context);
         this.state = {
             show: true,
-            response: this.props.response
+            error: this.props.error
         };
     }
 
     /**
-     * If props change, show error msg again
+     * If props change, show new error msg again
      */
     static getDerivedStateFromProps(nextProps, prevState) {
-        if(nextProps.response === prevState.response) {
+        if(nextProps.error === prevState.error) {
             return {};
         }
-        return {response: nextProps.response, show: true};
+        return {error: nextProps.error, show: true};
     }
 
     handleDismiss = () => {
@@ -30,21 +30,33 @@ export default class ErrorMsg extends React.Component {
         if (!this.state.show) {
             return null;
         }
-        if (!this.props.response) {
+        if (!this.props.error) {
             return null;
         }
+
+        // TODO:
+        let msg = "";
+        if(this.state.error.msg) {
+            msg = this.state.error.msg;
+        }
+        if(this.state.error.message) {
+            msg = this.state.error.message;
+        }
+
+        console.error(this.props.error);
         return (
             <div role="alert" className="alert alert-danger alert-dismissable">
                 <button type="button" className="pull-right" onClick={() => this.handleDismiss()}>
                     <span aria-hidden="true">×</span>
                 </button>
-                <h4>Error</h4>
-                <p>{this.state.response.msg}</p>
+                <h4>{this.props.title}</h4>
+                <p>{msg}</p>
             </div>
         );
     }
 }
 
-ErrorMsg.defaultTypes = {
-    response: null
+ErrorMsg.defaultProps = {
+    error: null,
+    title: "Error"
 };

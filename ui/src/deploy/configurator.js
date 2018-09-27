@@ -3,12 +3,13 @@ import Switchboard from "../common/switchboard";
 import Form from "./form";
 import PropTypes from 'prop-types';
 import Dreamfactory from "../common/dreamfactory";
+import ErrorMsg from "../common/error-msg";
 
 /**
  * ServiceParams contains a json template from which a form is created.
  * Fields can be added according to min. and max. cardinality:
  * - Params with child params are duplicated
- * - Params without chi params get an extra element in param.value[]
+ * - Params without child params get an extra element in param.value[]
  */
 export default class Configurator extends React.Component {
     constructor(props) {
@@ -18,18 +19,31 @@ export default class Configurator extends React.Component {
             serviceName: null,
             serviceParams: null
         };
+
         if (this.props.service !== undefined) {
-            Switchboard.getParams(this.props.service).then((data) => {
-                let form = this.createForm(data);
-                Dreamfactory.getObject(this.props.file).then((objectData) => {
-                    this.setFile(form, objectData);
-                    this.setState({serviceName: data.name, serviceParams: data, form: form});
-                });
-            });
+            this.init();
         }
 
         this.change = this.change.bind(this);
 
+    }
+
+    async init() {
+        const data = await Switchboard
+            .getParams(this.props.service)
+            .catch((e) => this.setState({error: e}));
+        if(!data) return;
+        let form = this.createForm(data);
+        const objectData = await Dreamfactory
+            .getObject(this.props.file)
+            .catch((e) => this.setState({error: e}));
+        this.setFile(form, objectData);
+        const newState = {
+            serviceName: data.name,
+            serviceParams: data,
+            form: form
+        };
+        this.setState(newState);
     }
 
     createForm(serviceParams) {
@@ -111,13 +125,16 @@ export default class Configurator extends React.Component {
     }
 
     render() {
+        if (this.state.error)
+            return <ErrorMsg title="Could not configure service" error={this.state.error}/>;
+
         const form = this.state.form;
 
         if (form === null) return <div>Loading...</div>;
 
         return (
             <div>
-                <Form form={form} onChange={this.change} />
+                <Form form={form} onChange={this.change}/>
             </div>
         );
     }
