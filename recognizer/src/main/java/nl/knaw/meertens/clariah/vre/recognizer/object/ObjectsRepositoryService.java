@@ -17,6 +17,8 @@ import nl.knaw.meertens.clariah.vre.recognizer.fits.output.IdentificationType.Id
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
@@ -158,14 +160,13 @@ public class ObjectsRepositoryService {
      */
     private Long getObjectIdByPath(String path) {
         String getObjectByPath;
-        getObjectByPath = new StringBuilder()
-                .append(objectsDbUrl)
-                .append(objectTable)
-                .append("?limit=1&order=id%20DESC&filter=")
-                .append("(filepath%3D'").append(path).append("')")
-                .append("%20AND%20")
-                .append("(deleted%3D'").append("0").append("')")
-                .toString();
+
+        String filter = "(filepath='" + path + "') AND (deleted='0')";
+        getObjectByPath = objectsDbUrl
+                + objectTable
+                + "?limit=1&order=id%20DESC&filter="
+                + encodeUriComponent(filter);
+
         try {
             logger.info(format(
                     "Request id by path [%s] using url [%s]",
@@ -190,6 +191,25 @@ public class ObjectsRepositoryService {
             throw new RuntimeException(format(
                     "Could not get object by path [%s]", path
             ), e);
+        }
+    }
+
+    /**
+     * Source: technicaladvices.com/2012/02/20/java-encoding-similiar-to-javascript-encodeuricomponent/
+     */
+    private String encodeUriComponent(String filter) {
+        try {
+            return URLEncoder.encode(filter, "UTF-8")
+                    .replaceAll("\\%28", "(")
+                    .replaceAll("\\%29", ")")
+                    .replaceAll("\\+", "%20")
+                    .replaceAll("\\%27", "'")
+                    .replaceAll("\\%21", "!")
+                    .replaceAll("\\%7E", "~");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(String.format(
+                    "Could not create url from filter %s", filter
+            ));
         }
     }
 
