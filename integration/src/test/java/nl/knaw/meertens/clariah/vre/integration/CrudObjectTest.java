@@ -72,15 +72,15 @@ public class CrudObjectTest extends AbstractIntegrationTest {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
                 new AuthScope(ANY_HOST, ANY_PORT),
-                new UsernamePasswordCredentials(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
+                new UsernamePasswordCredentials(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
         );
         CloseableHttpClient httpclient = HttpClients.custom()
                 .setDefaultCredentialsProvider(credsProvider)
                 .build();
         HttpUriRequest moveRequest = RequestBuilder
                 .create("MOVE")
-                .setUri(Config.OWNCLOUD_ENDPOINT + oldFilename)
-                .addHeader(HttpHeaders.DESTINATION, Config.OWNCLOUD_ENDPOINT + newFileName)
+                .setUri(Config.NEXTCLOUD_ENDPOINT + oldFilename)
+                .addHeader(HttpHeaders.DESTINATION, Config.NEXTCLOUD_ENDPOINT + newFileName)
                 .build();
 
         CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
@@ -91,9 +91,9 @@ public class CrudObjectTest extends AbstractIntegrationTest {
 
     private void updateContentToHtml(String newFileName) throws UnirestException {
         logger.info("Add html to html file");
-        Unirest.put(Config.OWNCLOUD_ENDPOINT + newFileName)
+        Unirest.put(Config.NEXTCLOUD_ENDPOINT + newFileName)
                 .header("Content-Type", "text/html; charset=utf-8") // set type to html
-                .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
+                .basicAuth(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
                 .body(getTestFileContent(html))
                 .asString();
     }
@@ -129,8 +129,8 @@ public class CrudObjectTest extends AbstractIntegrationTest {
 
     private void deleteFile(String file) throws UnirestException {
         logger.info(String.format("Delete file [%s]", file));
-        HttpResponse<String> response = Unirest.delete(Config.OWNCLOUD_ENDPOINT + file)
-                .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
+        HttpResponse<String> response = Unirest.delete(Config.NEXTCLOUD_ENDPOINT + file)
+                .basicAuth(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
                 .asString();
         assertThat(response.getStatus()).isEqualTo(204);
     }

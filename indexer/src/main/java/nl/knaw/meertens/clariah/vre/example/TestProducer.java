@@ -7,7 +7,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 public class TestProducer {
 
-    public static void produce(String kafkaServer, String owncloudTopic) {
+    public static void produce(String kafkaServer, String nextcloudTopic) {
         Properties props = new Properties();
 
         props.put("bootstrap.servers", kafkaServer);
@@ -20,7 +20,7 @@ public class TestProducer {
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         Producer<String, String> producer = new KafkaProducer<>(props);
         String msg = "{\"action\":\"read\",\"user\":\"admin\",\"path\":\"\\/test.txt\",\"userPath\":\"\\/test.txt\",\"oldPath\":null,\"newPath\":null,\"timestamp\":1516287994}";
-        producer.send(new ProducerRecord<>(owncloudTopic, "key", msg));
+        producer.send(new ProducerRecord<>(nextcloudTopic, "key", msg));
         System.out.println("Message sent successfully");
         producer.close();
     }

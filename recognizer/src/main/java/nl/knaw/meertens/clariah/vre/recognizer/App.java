@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.KAFKA_SERVER;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.OWNCLOUD_TOPIC_NAME;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.NEXTCLOUD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.RECOGNIZER_TOPIC_NAME;
 
 public class App {
@@ -31,26 +31,26 @@ public class App {
             case "test-produce":
                 startProducing();
                 break;
-            case "test-consume-owncloud":
+            case "test-consume-nextcloud":
                 startTestConsumingOwncloud();
                 break;
             case "test-consume-recognizer":
                 startTestConsumingRecognizer();
                 break;
             default:
-                logger.info("Run application with argument 'consume', 'test-consume-owncloud', 'test-consume-recognizer', or 'test-produce'.");
+                logger.info("Run application with argument 'consume', 'test-consume-nextcloud', 'test-consume-recognizer', or 'test-produce'.");
                 break;
         }
     }
 
     private static void startConsuming() {
-        logger.info("Start consuming owncloud topic...");
+        logger.info("Start consuming nextcloud topic...");
         recognizerService.consumeOwncloud();
     }
 
     private static void startProducing() {
         logger.info("Produce test msg...");
-        TestProducer.produce(KAFKA_SERVER, OWNCLOUD_TOPIC_NAME);
+        TestProducer.produce(KAFKA_SERVER, NEXTCLOUD_TOPIC_NAME);
     }
 
     private static void startTestConsumingRecognizer() {
@@ -59,8 +59,8 @@ public class App {
     }
 
     private static void startTestConsumingOwncloud() {
-        logger.info("Start test: consuming owncloud...");
-        TestConsumer.consume(KAFKA_SERVER, OWNCLOUD_TOPIC_NAME);
+        logger.info("Start test: consuming nextcloud...");
+        TestConsumer.consume(KAFKA_SERVER, NEXTCLOUD_TOPIC_NAME);
     }
 
 }

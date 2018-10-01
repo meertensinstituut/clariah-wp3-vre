@@ -10,8 +10,8 @@ import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.UPDATE;
 
 public class Config {
     public static final String KAFKA_SERVER = "kafka:" + System.getenv("KAFKA_PORT");
-    public static final String OWNCLOUD_TOPIC_NAME = System.getenv("OWNCLOUD_TOPIC_NAME");
-    public static final String OWNCLOUD_GROUP_NAME = System.getenv("OWNCLOUD_GROUP_NAME");
+    public static final String NEXTCLOUD_TOPIC_NAME = System.getenv("NEXTCLOUD_TOPIC_NAME");
+    public static final String NEXTCLOUD_GROUP_NAME = System.getenv("NEXTCLOUD_GROUP_NAME");
     public static final String RECOGNIZER_TOPIC_NAME = System.getenv("RECOGNIZER_TOPIC_NAME");
     public static final String FITS_FILES_ROOT = System.getenv("FITS_FILES_ROOT");
     public static final String FITS_URL = "http://fits:8080/fits/";

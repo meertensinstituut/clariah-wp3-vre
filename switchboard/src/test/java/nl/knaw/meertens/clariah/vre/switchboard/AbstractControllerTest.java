@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.NEXTCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.mockserver.model.HttpRequest.request;
@@ -219,7 +219,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     private static void createFile(String fileName) throws IOException {
-        Path path = Paths.get(OWNCLOUD_VOLUME + "/" + fileName);
+        Path path = Paths.get(NEXTCLOUD_VOLUME + "/" + fileName);
         File file = path.toFile();
         file.getParentFile().mkdirs();
         String someText = resultSentence;

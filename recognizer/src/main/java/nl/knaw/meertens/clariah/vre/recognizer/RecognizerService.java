@@ -24,8 +24,8 @@ import static nl.knaw.meertens.clariah.vre.recognizer.Config.KAFKA_SERVER;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_KEY;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_URL;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_TABLE;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.OWNCLOUD_GROUP_NAME;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.OWNCLOUD_TOPIC_NAME;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.NEXTCLOUD_GROUP_NAME;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.NEXTCLOUD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.RECOGNIZER_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.CREATE;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.DELETE;
@@ -37,13 +37,13 @@ public class RecognizerService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final KafkaConsumerService owncloudConsumerService = new KafkaConsumerService(KAFKA_SERVER, OWNCLOUD_TOPIC_NAME, OWNCLOUD_GROUP_NAME);
+    private final KafkaConsumerService nextcloudConsumerService = new KafkaConsumerService(KAFKA_SERVER, NEXTCLOUD_TOPIC_NAME, NEXTCLOUD_GROUP_NAME);
     private final KafkaProducerService kafkaProducer = new KafkaProducerService(new RecognizerKafkaProducer(KAFKA_SERVER), RECOGNIZER_TOPIC_NAME);
     private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(OBJECTS_DB_URL, OBJECTS_DB_KEY, OBJECT_TABLE);
     private final FitsService fitsService = new FitsService(FITS_URL, FITS_FILES_ROOT);
 
     public void consumeOwncloud() {
-        owncloudConsumerService.consumeWith((String json) -> {
+        nextcloudConsumerService.consumeWith((String json) -> {
             try {
                 OwncloudKafkaDTO msg = objectMapper.readValue(json, OwncloudKafkaDTO.class);
                 FileAction action = FileAction.from(msg.action);
@@ -55,7 +55,7 @@ public class RecognizerService {
                 }
                 if (isBlank(msg.path)) {
                     throw new IllegalArgumentException(String.format(
-                            "No field path in owncloud msg [%s]", json
+                            "No field path in nextcloud msg [%s]", json
                     ));
                 }
                 Report report = mapToReport(msg);

@@ -7,8 +7,8 @@ import java.nio.file.Paths;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.FILES_DIR;
 
 /**
- * Path of a output file stored in owncloud has the following structure:
- * `/{owncloud}/{user}/{files}/{outputResult}/{file}`
+ * Path of a output file stored in nextcloud has the following structure:
+ * `/{nextcloud}/{user}/{files}/{outputResult}/{file}`
  */
 public class OwncloudOutputFile extends AbstractPath {
 
@@ -20,7 +20,7 @@ public class OwncloudOutputFile extends AbstractPath {
 
     @Override
     public Path toPath() {
-        return Paths.get(owncloud, user, files, outputResult, file);
+        return Paths.get(nextcloud, user, files, outputResult, file);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class OwncloudOutputFile extends AbstractPath {
     }
 
     public String getOwncloud() {
-        return owncloud;
+        return nextcloud;
     }
 
     public String getUser() {

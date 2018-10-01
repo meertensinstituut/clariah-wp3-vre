@@ -67,11 +67,11 @@ public class LockService {
                     "Unlocking parent dirs of [%s]", file.toPath()
             ));
             Path path = file.toPath();
-            String owncloudDir = Paths
-                    .get(Config.OWNCLOUD_VOLUME)
+            String nextcloudDir = Paths
+                    .get(Config.NEXTCLOUD_VOLUME)
                     .getFileName()
                     .toString();
-            unlockParents(path, owncloudDir);
+            unlockParents(path, nextcloudDir);
         } catch (IOException e) {
             throw new RuntimeIOException(String.format(
                     "Could not unlock [%s]", file

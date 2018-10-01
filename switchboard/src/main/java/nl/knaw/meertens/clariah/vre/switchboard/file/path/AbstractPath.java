@@ -16,7 +16,7 @@ public abstract class AbstractPath {
     /**
      * Owncloud root dir that contains users and their files
      */
-    final String owncloud = Config.OWNCLOUD_VOLUME;
+    final String nextcloud = Config.NEXTCLOUD_VOLUME;
 
     /**
      * Hidden folder in user folder that contains vre specific files

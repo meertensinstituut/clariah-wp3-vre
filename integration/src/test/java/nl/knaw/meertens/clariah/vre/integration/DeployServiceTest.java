@@ -74,8 +74,8 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     private void checkKafkaMsgsAreCreatedForOutputFiles(String outputFilename) throws InterruptedException {
         logger.info(String.format("check kafka message is created for output file [%s]", outputFilename));
-        KafkaConsumerService owncloudKafkaConsumer = getOwncloudTopic();
-        owncloudKafkaConsumer.consumeAll(consumerRecords -> {
+        KafkaConsumerService nextcloudKafkaConsumer = getOwncloudTopic();
+        nextcloudKafkaConsumer.consumeAll(consumerRecords -> {
             assertThat(consumerRecords.size()).isGreaterThan(0);
             List<String> resultActions = new ArrayList<>();
             consumerRecords.forEach(record -> {
@@ -91,7 +91,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     private KafkaConsumerService getOwncloudTopic() {
         KafkaConsumerService recognizerKafkaConsumer = new KafkaConsumerService(
-                Config.KAFKA_ENDPOINT, Config.OWNCLOUD_TOPIC_NAME, getRandomGroupName());
+                Config.KAFKA_ENDPOINT, Config.NEXTCLOUD_TOPIC_NAME, getRandomGroupName());
         recognizerKafkaConsumer.subscribe();
         recognizerKafkaConsumer.pollOnce();
         return recognizerKafkaConsumer;

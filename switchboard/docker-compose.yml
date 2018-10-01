@@ -18,13 +18,13 @@ services:
       - ./:/usr/local/switchboard
       # share maven repository of host:
       - ${HOME}/.m2/repository:/root/.m2/repository
-      - data-volume:/usr/local/owncloud
+      - data-volume:/usr/local/nextcloud
       - deployment-volume:/tmp/deployment
     environment:
       SWITCHBOARD_TOPIC_NAME: ${SWITCHBOARD_TOPIC_NAME}
-      OWNCLOUD_TOPIC_NAME: ${OWNCLOUD_TOPIC_NAME}
+      NEXTCLOUD_TOPIC_NAME: ${NEXTCLOUD_TOPIC_NAME}
       KAFKA_PORT: ${KAFKA_PORT}
-      OWNCLOUD_VOLUME: ${SWITCHBOARD_OWNCLOUD_VOLUME}
+      NEXTCLOUD_VOLUME: ${SWITCHBOARD_NEXTCLOUD_VOLUME}
       DEPLOYMENT_VOLUME: ${SWITCHBOARD_DEPLOYMENT_VOLUME}
       TEST_USER: ${TEST_USER}
       TEST_PASSWORD: ${TEST_PASSWORD}

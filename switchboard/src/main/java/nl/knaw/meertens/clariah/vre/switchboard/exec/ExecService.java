@@ -73,7 +73,7 @@ public class ExecService {
     private final ObjectMapper mapper;
     private final KafkaProducerService kafkaSwitchboardService;
     private final KafkaProducerService kafkaOwncloudService;
-    private final FileService owncloudFileService;
+    private final FileService nextcloudFileService;
     private final DeploymentService deploymentService;
 
     private ObjectsRegistryService objectsRegistryService;
@@ -92,7 +92,7 @@ public class ExecService {
         this.kafkaSwitchboardService = kafkaSwitchboardService;
         this.kafkaOwncloudService = kafkaOwncloudService;
         this.serviceRegistryService = serviceRegistryService;
-        this.owncloudFileService = new OwncloudFileService();
+        this.nextcloudFileService = new OwncloudFileService();
         this.deploymentService = deploymentService;
     }
 
@@ -104,7 +104,7 @@ public class ExecService {
         ServiceKind kind = ServiceKind.fromKind(service.getKind());
         DeploymentRequest request = prepareDeploymentRequest(serviceName, body, kind);
         List<String> files = new ArrayList<>(request.getFiles().values());
-        owncloudFileService.stageFiles(request.getWorkDir(), files);
+        nextcloudFileService.stageFiles(request.getWorkDir(), files);
         DeploymentStatusReport statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
         request.setStatusReport(statusReport);
         return request;
@@ -216,7 +216,7 @@ public class ExecService {
         ServiceRecord service = serviceRegistryService.getServiceByName(report.getService());
         ServiceKind serviceKind = fromKind(service.getKind());
 
-        owncloudFileService.unstage(report.getWorkDir(), report.getFiles());
+        nextcloudFileService.unstage(report.getWorkDir(), report.getFiles());
 
         if (serviceKind.equals(SERVICE)) {
             completeServiceDeployment(report);
@@ -241,7 +241,7 @@ public class ExecService {
     private void completeServiceDeployment(
             DeploymentStatusReport report
     ) {
-        List<Path> outputFiles = owncloudFileService.unstageServiceOutputFiles(
+        List<Path> outputFiles = nextcloudFileService.unstageServiceOutputFiles(
                 report.getWorkDir(),
                 report.getFiles().get(0)
         );
@@ -257,13 +257,13 @@ public class ExecService {
     private void completeViewerDeployment(
             DeploymentStatusReport report
     ) {
-        Path viewerFile = owncloudFileService.unstageViewerOutputFile(
+        Path viewerFile = nextcloudFileService.unstageViewerOutputFile(
                 report.getWorkDir(),
                 report.getFiles().get(0),
                 report.getService()
         );
         report.setViewerFile(viewerFile.toString());
-        report.setViewerFileContent(owncloudFileService.getContent(viewerFile.toString()));
+        report.setViewerFileContent(nextcloudFileService.getContent(viewerFile.toString()));
         report.setWorkDir(report.getWorkDir());
     }
 

@@ -17,9 +17,9 @@ Deployment
 ### Test Kafka
 Open bash in container: `./recognizer-bash.sh`. In seperate terminals:
 
-Run **example consumer of owncloud topic**:
+Run **example consumer of nextcloud topic**:
 ```
-java -jar --add-modules java.xml.bind ./target/recognizer-0.1-SNAPSHOT.jar test-consume-owncloud
+java -jar --add-modules java.xml.bind ./target/recognizer-0.1-SNAPSHOT.jar test-consume-nextcloud
 ```
 
 Run **example consumer of recognizer topic**:

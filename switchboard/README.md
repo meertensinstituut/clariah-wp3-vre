@@ -22,8 +22,8 @@ Run: `docker exec vre_switchboard_1 mvn clean test`
 
 ## Workflow
 - A service deployment request contains a list of input files.
-- Switchboard locks the input files in owncloud, and creates links to these files for a deployment container in `<workDir>/input/`.
-- After a stopped or finished deployment links are removed, files are unlocked and files in `<workDir>/output/` are moved to owncloud in an output folder which is returned in json result when polling.
+- Switchboard locks the input files in nextcloud, and creates links to these files for a deployment container in `<workDir>/input/`.
+- After a stopped or finished deployment links are removed, files are unlocked and files in `<workDir>/output/` are moved to nextcloud in an output folder which is returned in json result when polling.
 
 ## Endpoints
 Endpoints are prefixed with `/switchboard/rest`

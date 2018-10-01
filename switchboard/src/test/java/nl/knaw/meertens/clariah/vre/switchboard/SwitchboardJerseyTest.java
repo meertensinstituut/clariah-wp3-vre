@@ -32,7 +32,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
             "http://localhost:1080"
     );
 
-    private static OwncloudFileService owncloudFileService = new OwncloudFileService();
+    private static OwncloudFileService nextcloudFileService = new OwncloudFileService();
 
     private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(
             "http://localhost:1080",
@@ -84,7 +84,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
     }
 
     public static OwncloudFileService getOwncloudFileService() {
-        return owncloudFileService;
+        return nextcloudFileService;
     }
 
     public static RequestRepository getRequestRepository() {

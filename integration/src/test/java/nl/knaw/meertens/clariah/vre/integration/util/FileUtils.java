@@ -20,9 +20,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static nl.knaw.meertens.clariah.vre.integration.Config.OWNCLOUD_ADMIN_NAME;
-import static nl.knaw.meertens.clariah.vre.integration.Config.OWNCLOUD_ADMIN_PASSWORD;
-import static nl.knaw.meertens.clariah.vre.integration.Config.OWNCLOUD_ENDPOINT;
+import static nl.knaw.meertens.clariah.vre.integration.Config.NEXTCLOUD_ADMIN_NAME;
+import static nl.knaw.meertens.clariah.vre.integration.Config.NEXTCLOUD_ADMIN_PASSWORD;
+import static nl.knaw.meertens.clariah.vre.integration.Config.NEXTCLOUD_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FileUtils {
@@ -39,8 +39,8 @@ public class FileUtils {
     public static HttpResponse<String> downloadFile(String inputFile) {
         try {
             return Unirest
-                    .get(OWNCLOUD_ENDPOINT + inputFile)
-                    .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
+                    .get(NEXTCLOUD_ENDPOINT + inputFile)
+                    .basicAuth(NEXTCLOUD_ADMIN_NAME, NEXTCLOUD_ADMIN_PASSWORD)
                     .asString();
         } catch (UnirestException e) {
             throw new RuntimeException(e);
@@ -71,17 +71,17 @@ public class FileUtils {
 
     public static HttpResponse<String> putInputFile(String expectedFilename, String body) throws UnirestException {
         return Unirest
-                .put(OWNCLOUD_ENDPOINT + expectedFilename)
+                .put(NEXTCLOUD_ENDPOINT + expectedFilename)
                 .header("Content-Type", "text/plain; charset=UTF-8")
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
+                .basicAuth(NEXTCLOUD_ADMIN_NAME, NEXTCLOUD_ADMIN_PASSWORD)
                 .body(body)
                 .asString();
     }
 
     public static HttpResponse<String> deleteInputFile(String expectedFilename) throws UnirestException {
         return Unirest
-                .delete(OWNCLOUD_ENDPOINT + expectedFilename)
-                .basicAuth(OWNCLOUD_ADMIN_NAME, OWNCLOUD_ADMIN_PASSWORD)
+                .delete(NEXTCLOUD_ENDPOINT + expectedFilename)
+                .basicAuth(NEXTCLOUD_ADMIN_NAME, NEXTCLOUD_ADMIN_PASSWORD)
                 .asString();
     }
 
@@ -105,9 +105,9 @@ public class FileUtils {
     public static String uploadTestFile(String content) throws UnirestException {
         String expectedFilename = getRandomFilenameWithTime();
 
-        Unirest.put(Config.OWNCLOUD_ENDPOINT + expectedFilename)
+        Unirest.put(Config.NEXTCLOUD_ENDPOINT + expectedFilename)
                 .header("Content-Type", "text/plain; charset=UTF-8")
-                .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
+                .basicAuth(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
                 .body(content)
                 .asString();
         logger.info("Uploaded file " + expectedFilename);
@@ -135,7 +135,7 @@ public class FileUtils {
     /**
      * Wait for occ cronjob to scan all files
      * Should happen every 5-6 seconds.
-     * (see owncloud/docker-scan-files.sh)
+     * (see nextcloud/docker-scan-files.sh)
      */
     public static void waitForOcc() {
         try {

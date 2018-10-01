@@ -13,7 +13,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_HOST_NA
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.KAFKA_HOST_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OBJECTS_DB_KEY;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OBJECTS_DB_URL;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_TOPIC_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.NEXTCLOUD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SERVICES_DB_KEY;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SERVICES_DB_URL;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
@@ -54,7 +54,7 @@ public class App extends ResourceConfig {
                         getMapper()
                 ),
                 new KafkaProducerServiceImpl(
-                        OWNCLOUD_TOPIC_NAME,
+                        NEXTCLOUD_TOPIC_NAME,
                         KAFKA_HOST_NAME,
                         getMapper()
                 )

@@ -38,11 +38,11 @@ done
 echo " done"
 
 # clear existing admin user files:
-rm -rf data/$OWNCLOUD_ADMIN_NAME/files/*
-rm -rf data/$OWNCLOUD_ADMIN_NAME/files/.vre/*
-rm -rf data/$OWNCLOUD_ADMIN_NAME/files_trashbin/*
-rm -rf data/$OWNCLOUD_ADMIN_NAME/files_versions/*
-rm -rf data/$OWNCLOUD_ADMIN_NAME/thumbnails/*
+rm -rf data/$NEXTCLOUD_ADMIN_NAME/files/*
+rm -rf data/$NEXTCLOUD_ADMIN_NAME/files/.vre/*
+rm -rf data/$NEXTCLOUD_ADMIN_NAME/files_trashbin/*
+rm -rf data/$NEXTCLOUD_ADMIN_NAME/files_versions/*
+rm -rf data/$NEXTCLOUD_ADMIN_NAME/thumbnails/*
 
 # clear existing test user files:
 rm -rf data/$TEST_USER/files/*
@@ -55,24 +55,24 @@ rm -rf data/$TEST_USER/thumbnails/*
 > data/vrelog.txt
 > data/files-scan.log
 
-echo "creating owncloud admin and enabling vre app..."
+echo "creating nextcloud admin and enabling vre app..."
 
-# install owncloud:
+# install nextcloud:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ maintenance:install \
- --database=$OWNCLOUD_DB_TYPE \
- --database-name=$OWNCLOUD_DB_NAME \
- --database-host=$OWNCLOUD_DB_HOST \
- --database-user=$OWNCLOUD_DB_USER \
- --database-pass=$OWNCLOUD_DB_PASSWORD \
- --admin-user=$OWNCLOUD_ADMIN_NAME \
- --admin-pass=$OWNCLOUD_ADMIN_PASSWORD \
- --data-dir=$OWNCLOUD_DATA_DIR
+ --database=$NEXTCLOUD_DB_TYPE \
+ --database-name=$NEXTCLOUD_DB_NAME \
+ --database-host=$NEXTCLOUD_DB_HOST \
+ --database-user=$NEXTCLOUD_DB_USER \
+ --database-pass=$NEXTCLOUD_DB_PASSWORD \
+ --admin-user=$NEXTCLOUD_ADMIN_NAME \
+ --admin-pass=$NEXTCLOUD_ADMIN_PASSWORD \
+ --data-dir=$NEXTCLOUD_DATA_DIR
 
 # do not add default files:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set skeletondirectory
 
-# add docker link 'owncloud' to trusted domains:
-sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 1 --value "owncloud"
+# add docker link 'nextcloud' to trusted domains:
+sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 1 --value "nextcloud"
 sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 2 --value "nextcloud"
 
 # activate vre app:

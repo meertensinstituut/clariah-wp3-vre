@@ -10,8 +10,8 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
 
 /**
- * Path of a output dir stored in owncloud has the following structure:
- * `/{owncloud}/{user}/{files}/{outputResult}/`
+ * Path of a output dir stored in nextcloud has the following structure:
+ * `/{nextcloud}/{user}/{files}/{outputResult}/`
  */
 public class OwncloudOutputDir extends AbstractPath {
 
@@ -22,7 +22,7 @@ public class OwncloudOutputDir extends AbstractPath {
 
     @Override
     public Path toPath() {
-        return Paths.get(owncloud, user, files, outputResult);
+        return Paths.get(nextcloud, user, files, outputResult);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class OwncloudOutputDir extends AbstractPath {
     }
 
     public String getOwncloud() {
-        return owncloud;
+        return nextcloud;
     }
 
     public String getUser() {

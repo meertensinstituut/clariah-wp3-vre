@@ -1,5 +1,5 @@
 {
-    "name": "vre/owncloud-with-kafka-client",
+    "name": "vre/nextcloud-with-kafka-client",
     "description": "NextCloud with kafka",
     "authors": [
         {

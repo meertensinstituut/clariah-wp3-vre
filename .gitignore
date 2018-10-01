@@ -21,7 +21,7 @@ integration/bin/*
 **/target/*
   
 # Owncloud
-owncloud/vendor/*
+nextcloud/vendor/*
   
 # Recognizer
 fits-1.2.0.zip

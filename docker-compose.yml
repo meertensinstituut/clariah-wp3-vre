@@ -25,7 +25,6 @@ services:
     networks:
       default:
         aliases:
-          - owncloud
           - nextcloud
 
   recognizer:
@@ -69,7 +68,7 @@ services:
     volumes:
       - ./deployment-service/conf:/conf
       - deployment-volume:/tmp/wd/
-      - data-volume:/usr/local/owncloud
+      - data-volume:/usr/local/nextcloud
       # share maven repository of host:
       - maven-m2:/root/.m2/repository
     depends_on:

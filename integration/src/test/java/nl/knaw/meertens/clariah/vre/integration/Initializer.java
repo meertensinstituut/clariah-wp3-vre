@@ -20,7 +20,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
  * Initialize vre:
- *  - add one file to owncloud
+ *  - add one file to nextcloud
  *  - initialize kafka queues
  *  - wait for registry to have processed first file
  *  - wait for switchboard to have started

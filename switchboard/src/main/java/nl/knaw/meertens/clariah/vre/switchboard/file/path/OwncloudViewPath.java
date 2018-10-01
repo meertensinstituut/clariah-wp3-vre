@@ -4,8 +4,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * View path of a user file stored in owncloud has the following structure:
- * `/{owncloud}/{user}/{files}/{vre}/{service}/{file}`
+ * View path of a user file stored in nextcloud has the following structure:
+ * `/{nextcloud}/{user}/{files}/{vre}/{service}/{file}`
  */
 public class OwncloudViewPath extends AbstractPath {
 
@@ -17,7 +17,7 @@ public class OwncloudViewPath extends AbstractPath {
 
     @Override
     public Path toPath() {
-        return Paths.get(owncloud, user, files, vre, service, file);
+        return Paths.get(nextcloud, user, files, vre, service, file);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class OwncloudViewPath extends AbstractPath {
     }
 
     public String getOwncloud() {
-        return owncloud;
+        return nextcloud;
     }
 
     public String getVre() {

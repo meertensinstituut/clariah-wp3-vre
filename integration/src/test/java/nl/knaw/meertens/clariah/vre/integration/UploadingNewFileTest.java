@@ -34,7 +34,7 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
 
         logger.info("Uploading file...");
         HttpResponse<String> uploadResult = Unirest
-                .put(Config.OWNCLOUD_ENDPOINT + expectedFilename)
+                .put(Config.NEXTCLOUD_ENDPOINT + expectedFilename)
                 .header("Content-Type", "text/plain; charset=UTF-8")
                 .basicAuth("admin", "admin")
                 .body(expectedFileContent)
@@ -44,8 +44,8 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
 
         logger.info("Downloading file...");
         HttpResponse<String> downloadResult = Unirest
-                .get(Config.OWNCLOUD_ENDPOINT + expectedFilename)
-                .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
+                .get(Config.NEXTCLOUD_ENDPOINT + expectedFilename)
+                .basicAuth(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
                 .asString();
         assertThat(downloadResult.getBody()).isEqualTo(expectedFileContent);
         logger.info("Downloaded file");
@@ -59,20 +59,20 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
                 "create"
         );
 
-        KafkaConsumerService owncloudKafkaConsumer = new KafkaConsumerService(
-                Config.KAFKA_ENDPOINT, Config.OWNCLOUD_TOPIC_NAME, getRandomGroupName());
-        owncloudKafkaConsumer.subscribe();
-        owncloudKafkaConsumer.pollOnce();
+        KafkaConsumerService nextcloudKafkaConsumer = new KafkaConsumerService(
+                Config.KAFKA_ENDPOINT, Config.NEXTCLOUD_TOPIC_NAME, getRandomGroupName());
+        nextcloudKafkaConsumer.subscribe();
+        nextcloudKafkaConsumer.pollOnce();
 
         logger.info("Uploading file...");
-        Unirest.put(Config.OWNCLOUD_ENDPOINT + expectedFilename)
+        Unirest.put(Config.NEXTCLOUD_ENDPOINT + expectedFilename)
                 .header("Content-Type", "text/plain; charset=UTF-8")
-                .basicAuth(Config.OWNCLOUD_ADMIN_NAME, Config.OWNCLOUD_ADMIN_PASSWORD)
+                .basicAuth(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
                 .body(getTestFileContent())
                 .asString();
         logger.info("Uploaded file");
 
-        owncloudKafkaConsumer.consumeAll(consumerRecords -> {
+        nextcloudKafkaConsumer.consumeAll(consumerRecords -> {
             logger.info("consumerRecords: " + Arrays.toString(consumerRecords.toArray()));
             assertThat(consumerRecords.size()).isGreaterThanOrEqualTo(expectedActions.size());
 

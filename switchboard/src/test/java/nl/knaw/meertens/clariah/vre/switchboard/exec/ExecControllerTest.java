@@ -28,7 +28,7 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OWNCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.NEXTCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
@@ -114,7 +114,7 @@ public class ExecControllerTest extends AbstractControllerTest {
         // Check output file is moved:
         File outputFolder = findOutputFolder(finishedJson);
         assertThat(outputFolder).isNotNull();
-        assertThat(outputFolder.toString()).startsWith("/usr/local/owncloud/admin/files/output-20");
+        assertThat(outputFolder.toString()).startsWith("/usr/local/nextcloud/admin/files/output-20");
         Path outputFile = Paths.get(outputFolder.getPath(), resultFilename);
         assertThat(outputFile.toFile()).exists();
         assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo(resultSentence);
@@ -205,7 +205,7 @@ public class ExecControllerTest extends AbstractControllerTest {
         assertThat(viewerFile).isEqualTo(expectedOutputPath);
 
         // viewer file content:
-        Path viewerFilePath = Paths.get(OWNCLOUD_VOLUME, viewerFile);
+        Path viewerFilePath = Paths.get(NEXTCLOUD_VOLUME, viewerFile);
         assertThat(viewerFilePath.toFile()).exists();
         String viewerFileContent = FileUtils.readFileToString(viewerFilePath.toFile(), UTF_8);
         assertThat(viewerFileContent).contains("<pre>");
@@ -250,7 +250,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     private File findOutputFolder(String finishedJson) {
         System.out.println("Find output folder in: " + finishedJson);
         String read = JsonPath.parse(finishedJson).read("$.outputDir");
-        return Paths.get(OWNCLOUD_VOLUME, read).toFile();
+        return Paths.get(NEXTCLOUD_VOLUME, read).toFile();
     }
 
 }

@@ -58,7 +58,7 @@ curl -v 'http://localhost:8082/remote.php/webdav/testfile.txt' \
 
 - Upload file using client:
   - Install nextcloud client
-  - Login to server `http://localhost:8082` (credentials, see e.g. `OWNCLOUD_ADMIN_NAME` and `OWNCLOUD_ADMIN_PASSWORD` in `.env`)
+  - Login to server `http://localhost:8082` (credentials, see e.g. `NEXTCLOUD_ADMIN_NAME` and `NEXTCLOUD_ADMIN_PASSWORD` in `.env`)
   - Add file.
 
 ## Ports

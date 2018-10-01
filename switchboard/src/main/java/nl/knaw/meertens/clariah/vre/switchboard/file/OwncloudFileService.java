@@ -45,7 +45,7 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Moves, locks and unlocks files in owncloud.
+ * Moves, locks and unlocks files in nextcloud.
  */
 public class OwncloudFileService implements FileService {
 
@@ -69,7 +69,7 @@ public class OwncloudFileService implements FileService {
     }
 
     /**
-     * Unlock files and move output files to owncloud
+     * Unlock files and move output files to nextcloud
      * <p>
      * At least one input file is needed,
      * next to which the output folder is created.
@@ -110,17 +110,17 @@ public class OwncloudFileService implements FileService {
      * Move and unlock viewer output file.
      * Replaces viewer file if it already exists.
      *
-     * @return path of viewer file in owncloud dir
+     * @return path of viewer file in nextcloud dir
      */
     @Override
     public Path unstageViewerOutputFile(String workDir, String objectPath, String service) {
         DeploymentOutputFile deploymentView = DeploymentOutputFile
                 .from(workDir, objectPath);
-        OwncloudViewPath owncloudView = OwncloudViewPath
+        OwncloudViewPath nextcloudView = OwncloudViewPath
                 .from(service, objectPath);
-        moveFile(deploymentView, owncloudView);
-        locker.unlock(owncloudView);
-        return Paths.get(owncloudView.toObjectPath());
+        moveFile(deploymentView, nextcloudView);
+        locker.unlock(nextcloudView);
+        return Paths.get(nextcloudView.toObjectPath());
     }
 
     private void moveFile(AbstractPath fromPath, AbstractPath toPath) {
@@ -167,21 +167,21 @@ public class OwncloudFileService implements FileService {
      */
     private OwncloudOutputDir moveOutputDir(DeploymentInputFile inputFile) {
         DeploymentOutputDir deployment = DeploymentOutputDir.from(inputFile);
-        OwncloudOutputDir owncloud = OwncloudOutputDir.from(inputFile);
+        OwncloudOutputDir nextcloud = OwncloudOutputDir.from(inputFile);
         if (!hasOutput(deployment)) {
-            createEmptyOutputFolder(inputFile.getWorkDir(), owncloud);
+            createEmptyOutputFolder(inputFile.getWorkDir(), nextcloud);
         } else {
-            moveOutputDir(deployment, owncloud);
+            moveOutputDir(deployment, nextcloud);
         }
-        return owncloud;
+        return nextcloud;
     }
 
-    private void createEmptyOutputFolder(String workDir, OwncloudOutputDir owncloudOutput) {
+    private void createEmptyOutputFolder(String workDir, OwncloudOutputDir nextcloudOutput) {
         logger.warn(String.format(
                 "No output for [%s], create empty [%s]",
-                workDir, owncloudOutput.toPath())
+                workDir, nextcloudOutput.toPath())
         );
-        owncloudOutput
+        nextcloudOutput
                 .toPath()
                 .toFile()
                 .mkdirs();
@@ -197,20 +197,20 @@ public class OwncloudFileService implements FileService {
 
     private void moveOutputDir(DeploymentOutputDir deploymentOutput, OwncloudOutputDir outputDir) {
         Path deployment = deploymentOutput.toPath();
-        Path owncloud = outputDir.toPath();
+        Path nextcloud = outputDir.toPath();
         try {
             logger.info(String.format(
                     "Move output dir from [%s] to [%s]",
-                    deployment, owncloud
+                    deployment, nextcloud
             ));
             FileUtils.moveDirectory(
                     deployment.toFile(),
-                    owncloud.toFile()
+                    nextcloud.toFile()
             );
         } catch (IOException e) {
             throw new RuntimeException(String.format(
                     "Could not move [%s] to [%s]",
-                    deployment, owncloud
+                    deployment, nextcloud
             ), e);
         }
     }
@@ -243,7 +243,7 @@ public class OwncloudFileService implements FileService {
 
 
     private void createSoftLink(String workDir, OwncloudInputFile inputFile) {
-        Path owncloud = inputFile.toPath();
+        Path nextcloud = inputFile.toPath();
         Path deployment = DeploymentInputFile
                 .from(workDir, inputFile.toObjectPath())
                 .toPath();
@@ -252,11 +252,11 @@ public class OwncloudFileService implements FileService {
                 .getParentFile()
                 .mkdirs();
         try {
-            Files.createSymbolicLink(deployment, owncloud);
+            Files.createSymbolicLink(deployment, nextcloud);
         } catch (IOException e) {
             throw new RuntimeIOException(String.format(
-                    "Could not link owncloud [%s] and input [%s]",
-                    owncloud.toString(), deployment.toString()
+                    "Could not link nextcloud [%s] and input [%s]",
+                    nextcloud.toString(), deployment.toString()
             ), e);
         }
     }
