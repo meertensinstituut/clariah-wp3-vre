@@ -43,11 +43,8 @@ class Viewer extends React.Component {
             const deployData = await Switchboard
                 .postDeployment(viewer, params)
                 .catch((e) => this.setState({error: e}));
-            const workDir = deployData.workDir;
-            const finished = DeploymentStatus.FINISHED;
             const viewerData = await Switchboard
-                .getDeploymentWhen(workDir, finished)
-                .then(viewerData => viewerData)
+                .getDeploymentWhen(deployData.workDir, DeploymentStatus.FINISHED)
                 .catch((e) => this.setState({error: e}));
             this.setState({
                 viewer: viewer,

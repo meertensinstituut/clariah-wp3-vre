@@ -89,7 +89,7 @@ public class RecognizerService {
         } else if (action.equals(RENAME)) {
             report.setObjectId(objectsRepository.updatePath(report.getOldPath(), report.getPath()));
         } else if (action.equals(DELETE)) {
-            report.setObjectId(objectsRepository.delete(report.getPath()));
+            report.setObjectId(objectsRepository.softDelete(report.getPath()));
         }
     }
 

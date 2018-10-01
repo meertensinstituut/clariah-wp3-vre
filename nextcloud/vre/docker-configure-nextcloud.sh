@@ -1,6 +1,6 @@
 #!/bin/bash
 cd /var/www/html
-echo "waiting for apps folder to be populated!"
+echo "waiting for apps folder to be populated"
 while [ ! -d "/var/www/html/apps" ]
 do
     echo -n "."
@@ -9,7 +9,7 @@ done
 echo "apps folder populated!"
 
 cp -a /tmp/vre/. /var/www/html/apps/vre
-echo "waiting for apps/vre folder to be populated!"
+echo "waiting for apps/vre folder to be populated"
 while [ ! -d "/var/www/html/apps/vre" ]
 do
     echo -n "."
@@ -91,4 +91,4 @@ nohup /var/www/html/apps/vre/docker-scan-files.sh </dev/null &>/dev/null &
 
 # do not delete or comment out the ps aux below, it is required to have the nohup command working. no idea why 
 ps aux
-echo "file scanner started!"
+echo "file scanner started"

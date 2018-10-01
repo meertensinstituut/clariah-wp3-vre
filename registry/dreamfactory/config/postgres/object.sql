@@ -9,8 +9,13 @@ CREATE TABLE IF NOT EXISTS object (
     fits xml,
     format character varying(255),
     mimetype character varying(255),
-    user_id character varying(255) NOT NULL
+    user_id character varying(255) NOT NULL,
+    deleted boolean NOT NULL
 );
+
+CREATE INDEX INDEX_OBJECT_ID ON object (id);
+CREATE INDEX INDEX_OBJECT_USER_ID ON object (user_id);
+CREATE INDEX INDEX_OBJECT_DELETED ON object (deleted);
 
 CREATE OR REPLACE FUNCTION object_insert() RETURNS trigger AS $object_insert$
   BEGIN

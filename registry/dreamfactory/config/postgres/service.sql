@@ -30,6 +30,7 @@ FOR EACH ROW EXECUTE PROCEDURE service_insert();
 CREATE TRIGGER service_update BEFORE UPDATE ON service
 FOR EACH ROW EXECUTE PROCEDURE service_update();
 
+-- extract mimetype from service semantics:
 CREATE VIEW service_with_mimetype AS
   SELECT
     *, (SELECT CAST((xpath(

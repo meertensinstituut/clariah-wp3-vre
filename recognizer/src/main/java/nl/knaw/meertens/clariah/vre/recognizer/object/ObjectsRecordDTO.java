@@ -22,4 +22,5 @@ public class ObjectsRecordDTO {
     public String filepath = "";
     public String filesize = "";
     public String metadataid = "";
+    public boolean deleted = false;
 }

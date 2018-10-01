@@ -65,6 +65,6 @@
       "allow_upsert": false,
       "cache_enabled": false,
       "cache_ttl": 0
-          }
+    }
   }
 ]
