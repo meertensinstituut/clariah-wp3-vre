@@ -4,7 +4,7 @@ services:
   switchboard:
     build: ./docker
     working_dir: /usr/local/switchboard
-    command: ./docker/set-test-user.sh && ./docker/docker-run-switchboard.sh
+    command: ./docker/docker-run-switchboard.sh
     tty: true
     extra_hosts:
       - moby:127.0.0.1
