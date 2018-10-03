@@ -10,29 +10,29 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.9</maven.compiler.source>
-        <maven.compiler.target>1.9</maven.compiler.target>
-        <java.version>1.9</java.version>
-        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-        <jersey.version>2.26</jersey.version>
-        <jaxrs.version>2.1</jaxrs.version>
-        <commons-lang.version>3.7</commons-lang.version>
-        <commons-io.version>2.6</commons-io.version>
-        <junit.version>4.12</junit.version>
-        <restassured.version>2.9.0</restassured.version>
-        <mavens-surefire-plugin.version>2.18.1</mavens-surefire-plugin.version>
-        <mockito.version>2.21.0</mockito.version>
+
         <assertj-core.version>3.9.0</assertj-core.version>
+        <commons-io.version>2.6</commons-io.version>
+        <commons-lang.version>3.7</commons-lang.version>
         <jackson.version>2.8.4</jackson.version>
+        <jaxb-api.version>2.2.11</jaxb-api.version>
+        <jaxrs.version>2.1</jaxrs.version>
+        <java.version>1.9</java.version>
+        <jersey.version>2.26</jersey.version>
         <json-path.version>2.3.0</json-path.version>
         <json-unit-fluent.version>1.28.1</json-unit-fluent.version>
+        <junit.version>4.12</junit.version>
         <kafka.version>0.8.1.1</kafka.version>
         <kafka-clients.version>0.9.0.0</kafka-clients.version>
-        <jaxb-api.version>2.2.11</jaxb-api.version>
         <log4j.version>2.7</log4j.version>
-        <unirest-java.version>1.4.9</unirest-java.version>
+        <maven.compiler.source>1.9</maven.compiler.source>
+        <maven.compiler.target>1.9</maven.compiler.target>
+        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+        <mavens-surefire-plugin.version>2.18.1</mavens-surefire-plugin.version>
+        <mockito.version>2.21.0</mockito.version>
         <mockserver.version>5.3.0</mockserver.version>
-
+        <restassured.version>2.9.0</restassured.version>
+        <unirest-java.version>1.4.9</unirest-java.version>
     </properties>
 
     <dependencies>
@@ -128,6 +128,18 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- mock server -->
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-netty</artifactId>
+            <version>${mockserver.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-client-java</artifactId>
+            <version>${mockserver.version}</version>
+        </dependency>
+
         <!-- jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -192,18 +204,6 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-1.2-api</artifactId>
             <version>${log4j.version}</version>
-        </dependency>
-
-        <!-- mock server -->
-        <dependency>
-            <groupId>org.mock-server</groupId>
-            <artifactId>mockserver-netty</artifactId>
-            <version>${mockserver.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mock-server</groupId>
-            <artifactId>mockserver-client-java</artifactId>
-            <version>${mockserver.version}</version>
         </dependency>
 
     </dependencies>

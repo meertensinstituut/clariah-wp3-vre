@@ -62,7 +62,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
 
         deleteFile(newHtmlFileName);
 
-        pollAndAssert(this::fileDoesNotExistInRegistry);
+        pollAndAssert(this::fileIsSoftDeletedInRegistry);
     }
 
     private String updateTestFilePath(String oldFilename) throws IOException {
@@ -135,13 +135,13 @@ public class CrudObjectTest extends AbstractIntegrationTest {
         assertThat(response.getStatus()).isEqualTo(204);
     }
 
-    private void fileDoesNotExistInRegistry() {
-        String countAfterDelete = "SELECT count(*) AS exact_count FROM object WHERE id=" + id;
+    private void fileIsSoftDeletedInRegistry() {
+        String countAfterDelete = "SELECT count(*) AS exact_count FROM object WHERE id=" + id + " AND deleted=false";
         try {
             objectsRepositoryService.processQuery(countAfterDelete, (ResultSet rs) -> {
                 rs.next();
                 int recordsCount = rs.getInt("exact_count");
-                assertThat(recordsCount).isGreaterThanOrEqualTo(0);
+                assertThat(recordsCount).isEqualTo(0);
             });
         } catch (SQLException e) {
             throw new RuntimeException(e);

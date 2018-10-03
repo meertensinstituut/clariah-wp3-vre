@@ -4,6 +4,7 @@ import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockserver.integration.ClientAndServer;
 
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.FITS_FILES_ROOT;
 
@@ -11,11 +12,24 @@ import static nl.knaw.meertens.clariah.vre.recognizer.Config.FITS_FILES_ROOT;
 @RunWith(MockitoJUnitRunner.class)
 public abstract class AbstractRecognizerTest {
 
+
+    private static boolean isSetUp;
+
     FitsService fitsService;
+    static ClientAndServer mockServer;
+
+    private static final int mockPort = 1080;
+    static final String mockUrl = "http://localhost:" + mockPort;
 
     @Before
     public void setupAbstract() {
         fitsService = new FitsService("http://someurl/", FITS_FILES_ROOT);
+
+        if (isSetUp) {
+            return;
+        }
+        mockServer = ClientAndServer.startClientAndServer(mockPort);
+        isSetUp = true;
     }
 
     String testFitsXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

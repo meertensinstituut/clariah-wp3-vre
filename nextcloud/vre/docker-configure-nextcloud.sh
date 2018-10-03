@@ -1,21 +1,21 @@
 #!/bin/bash
 cd /var/www/html
-echo "waiting for apps folder to be populated!"
+echo "waiting for apps folder to be populated"
 while [ ! -d "/var/www/html/apps" ]
 do
     echo -n "."
     sleep 5
 done
-echo "apps folder populated!"
+echo "apps folder populated"
 
 cp -a /tmp/vre/. /var/www/html/apps/vre
-echo "waiting for apps/vre folder to be populated!"
+echo "waiting for apps/vre folder to be populated"
 while [ ! -d "/var/www/html/apps/vre" ]
 do
     echo -n "."
     sleep 5
 done
-echo "apps/vre folder populated!"
+echo "apps/vre folder populated"
 
 echo "downloading SAML app"
 git clone -b v1.6.2 https://github.com/nextcloud/user_saml.git /var/www/html/apps/user_saml
@@ -24,7 +24,7 @@ do
     echo -n "."
     sleep 5
 done
-echo "apps/user_saml folder populated!"
+echo "apps/user_saml folder populated"
 
 # sometimes occ is not yet installed
 # apache is run when occ is installed
@@ -69,7 +69,9 @@ sudo -u www-data /usr/local/bin/php /var/www/html/occ maintenance:install \
  --data-dir=$NEXTCLOUD_DATA_DIR
 
 # do not add default files:
-sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set skeletondirectory
+NO_DEFAULT_FILES=/tmp/empty_skeleton
+sudo -u www-data mkdir $NO_DEFAULT_FILES
+sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set skeletondirectory --value "$NO_DEFAULT_FILES"
 
 # add docker link 'nextcloud' to trusted domains:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 1 --value "nextcloud"
@@ -90,4 +92,4 @@ nohup /var/www/html/apps/vre/docker-scan-files.sh </dev/null &>/dev/null &
 
 # do not delete or comment out the ps aux below, it is required to have the nohup command working. no idea why 
 ps aux
-echo "file scanner started!"
+echo "file scanner started"

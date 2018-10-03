@@ -17,13 +17,14 @@ import nl.knaw.meertens.clariah.vre.recognizer.fits.output.IdentificationType.Id
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
+import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_KEY;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_URL;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_TABLE;
-import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.abbreviate;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ObjectsRepositoryService {
@@ -80,7 +81,7 @@ public class ObjectsRepositoryService {
 
         String patchObject = getObjectUrl(id);
 
-        String bodyWithNewPath = String.format("{ \"filepath\" : \"%s\" }", newPath);
+        String bodyWithNewPath = format("{ \"filepath\" : \"%s\" }", newPath);
         HttpResponse<String> patchResponse;
         try {
             patchResponse = Unirest
@@ -90,13 +91,13 @@ public class ObjectsRepositoryService {
                     .body(bodyWithNewPath)
                     .asString();
         } catch (UnirestException e) {
-            throw new IllegalArgumentException(String.format(
+            throw new IllegalArgumentException(format(
                     "Could not update path [%s]", newPath
             ), e);
         }
 
         if (!isSuccess(patchResponse)) {
-            logger.error(String.format(
+            logger.error(format(
                     "Could not patch object [%s] with new path [%s]; response: [%s]",
                     id, newPath, patchResponse.getBody()
             ));
@@ -105,53 +106,69 @@ public class ObjectsRepositoryService {
     }
 
     /**
-     * Delete object by path
+     * Soft delete object with {path}
+     * by setting object.deleted to true
      *
      * @return objectId
      */
-    public Long delete(String path) {
+    public Long softDelete(String path) {
         Long id = getObjectIdByPath(path);
-        String deleteObject = getObjectUrl(id);
-        HttpResponse<String> response;
-        try {
-            response = Unirest
-                    .delete(deleteObject)
-                    .header("Content-Type", "application/json")
-                    .header("X-DreamFactory-Api-Key", OBJECTS_DB_KEY)
-                    .asString();
-        } catch (UnirestException e) {
-            throw new IllegalArgumentException(String.format(
-                    "Could not delete object [%s]", path
-            ), e);
-        }
-        if (!isSuccess(response)) {
-            logger.error(String.format(
-                    "Could not delete object [%s]; response: [%s]",
-                    id, response.getBody()
-            ));
+        String deletedTrue = "{ \"deleted\" : true }";
+        HttpResponse<String> patchResponse = patch(id, deletedTrue);
+
+        if (!isSuccess(patchResponse)) {
+            throw new RuntimeException((format(
+                    "Could not soft delete object [%s] [%s]; response: [%s][%s]",
+                    id, path, patchResponse.getStatus(), patchResponse.getBody()
+            )));
         }
         return id;
     }
 
+    private HttpResponse<String> patch(Long id, String patch) {
+        String urlToPatch = getObjectUrl(id);
+
+        HttpResponse<String> patchResponse;
+        try {
+            patchResponse = Unirest
+                    .patch(urlToPatch)
+                    .header("Content-Type", "application/json")
+                    .header("X-DreamFactory-Api-Key", objectsDbKey)
+                    .body(patch)
+                    .asString();
+        } catch (UnirestException e) {
+            throw new IllegalArgumentException(format(
+                    "Could not soft delete object [%d]", id
+            ), e);
+        }
+        return patchResponse;
+    }
+
     private String getObjectUrl(Long id) {
         return new StringBuilder()
-                .append(OBJECTS_DB_URL)
-                .append(OBJECT_TABLE)
+                .append(objectsDbUrl)
+                .append(objectTable)
                 .append("/")
                 .append(id)
                 .toString();
     }
 
+    /**
+     * Find path of object that has not been deleted
+     * Filter in dreamfactory by:
+     * (filepath='{path}') AND (deleted='0')
+     */
     private Long getObjectIdByPath(String path) {
         String getObjectByPath;
-        getObjectByPath = new StringBuilder()
-                .append(OBJECTS_DB_URL)
-                .append(OBJECT_TABLE)
-                .append("?limit=1&order=id%20DESC&filter=filepath=")
-                .append(path)
-                .toString();
+
+        String filter = "(filepath='" + path + "') AND (deleted='0')";
+        getObjectByPath = objectsDbUrl
+                + objectTable
+                + "?limit=1&order=id%20DESC&filter="
+                + encodeUriComponent(filter);
+
         try {
-            logger.info(String.format(
+            logger.info(format(
                     "Request id by path [%s] using url [%s]",
                     path, getObjectByPath
             ));
@@ -161,19 +178,38 @@ public class ObjectsRepositoryService {
                     .header("X-DreamFactory-Api-Key", OBJECTS_DB_KEY)
                     .asString();
             if (getIdResponse.getStatus() != 200) {
-                throw new RuntimeException(String.format(
+                throw new RuntimeException(format(
                         "Retrieving id of path [%s]. Registry responded: [%s]",
                         path, getIdResponse.getBody()
                 ));
             }
 
             Long id = Long.valueOf(jsonPath.parse(getIdResponse.getBody()).read("$.resource[0].id"));
-            logger.info(String.format("Path [%s] returned object id [%s]", path, id));
+            logger.info(format("Path [%s] returned object id [%s]", path, id));
             return id;
         } catch (UnirestException e) {
-            throw new RuntimeException(String.format(
+            throw new RuntimeException(format(
                     "Could not get object by path [%s]", path
             ), e);
+        }
+    }
+
+    /**
+     * Source: technicaladvices.com/2012/02/20/java-encoding-similiar-to-javascript-encodeuricomponent/
+     */
+    private String encodeUriComponent(String filter) {
+        try {
+            return URLEncoder.encode(filter, "UTF-8")
+                    .replaceAll("\\%28", "(")
+                    .replaceAll("\\%29", ")")
+                    .replaceAll("\\+", "%20")
+                    .replaceAll("\\%27", "'")
+                    .replaceAll("\\%21", "!")
+                    .replaceAll("\\%7E", "~");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(String.format(
+                    "Could not create url from filter %s", filter
+            ));
         }
     }
 
@@ -186,15 +222,15 @@ public class ObjectsRepositoryService {
         try {
             return mapper.writeValueAsString(record);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format(
-                    "Could not create json from report with path [%s]",
+            throw new RuntimeException(format(
+                    "Could not create json from report [%s]",
                     report.getPath()
             ), e);
         }
     }
 
     /**
-     * Persist record. Create new entry when id == null
+     * Update or create record
      */
     private String persistRecord(String recordJson, Long id) {
         if (!hasAllObjectsDbDetails()) {
@@ -202,41 +238,39 @@ public class ObjectsRepositoryService {
         }
         HttpResponse<String> response;
         try {
-            RequestBodyEntity body = createPostOrPutRequestBasedOnId(recordJson, id);
+            RequestBodyEntity body = createPostOrPut(recordJson, id);
             response = body.asString();
         } catch (UnirestException e) {
-            throw new RuntimeException(String.format(
-                    "Could not add new record [%s]",
+            throw new RuntimeException(format(
+                    "Could not add [%s]",
                     recordJson
             ), e);
         }
-
-        logger.info(String.format(
-                "Objects registry responded with: %d - %s",
-                response.getStatus(), response.getStatusText()
-        ));
 
         if (isSuccess(response)) {
             logger.info("Persisted record in objects registry");
             return response.getBody();
         } else {
-            throw new RuntimeException(String.format(
-                    "Failed to add object [%s]; response was: [%s]",
+            throw new RuntimeException(format(
+                    "Could not add [%s]: [%s]",
                     recordJson, response.getBody()
             ));
         }
     }
 
-    private RequestBodyEntity createPostOrPutRequestBasedOnId(String recordJson, Long id) {
+    /**
+     * Create POST request when id is null, PUT otherwise
+     */
+    private RequestBodyEntity createPostOrPut(String recordJson, Long id) {
         HttpRequestWithBody request;
         if (id == null) {
             request = Unirest.post(objectsDbUrl + objectTable);
             // wrap new entry in resource array:
-            recordJson = String.format("{\"resource\" : [%s]}", recordJson);
+            recordJson = format("{\"resource\" : [%s]}", recordJson);
         } else {
             request = Unirest.put(objectsDbUrl + objectTable + "/" + id);
         }
-        logger.info(String.format(
+        logger.info(format(
                 "Create for [%d] uri [%s] method [%s] body [%s]",
                 id, request.getUrl(), request.getHttpMethod(), abbreviate(recordJson, 1000))
         );
@@ -261,6 +295,7 @@ public class ObjectsRepositoryService {
         msg.timecreated = LocalDateTime.now();
         msg.user_id = report.getUser();
         msg.type = "object";
+        msg.deleted = false;
         return msg;
     }
 
