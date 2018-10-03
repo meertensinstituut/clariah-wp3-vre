@@ -6,7 +6,7 @@ do
     echo -n "."
     sleep 5
 done
-echo "apps folder populated!"
+echo "apps folder populated"
 
 cp -a /tmp/vre/. /var/www/html/apps/vre
 echo "waiting for apps/vre folder to be populated"
@@ -15,7 +15,7 @@ do
     echo -n "."
     sleep 5
 done
-echo "apps/vre folder populated!"
+echo "apps/vre folder populated"
 
 echo "downloading SAML app"
 git clone -b v1.6.2 https://github.com/nextcloud/user_saml.git /var/www/html/apps/user_saml
@@ -24,7 +24,7 @@ do
     echo -n "."
     sleep 5
 done
-echo "apps/user_saml folder populated!"
+echo "apps/user_saml folder populated"
 
 # sometimes occ is not yet installed
 # apache is run when occ is installed
@@ -69,7 +69,9 @@ sudo -u www-data /usr/local/bin/php /var/www/html/occ maintenance:install \
  --data-dir=$OWNCLOUD_DATA_DIR
 
 # do not add default files:
-sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set skeletondirectory
+NO_DEFAULT_FILES=/tmp/empty_skeleton
+sudo -u www-data mkdir $NO_DEFAULT_FILES
+sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set skeletondirectory --value "$NO_DEFAULT_FILES"
 
 # add docker link 'owncloud' to trusted domains:
 sudo -u www-data /usr/local/bin/php /var/www/html/occ config:system:set trusted_domains 1 --value "owncloud"

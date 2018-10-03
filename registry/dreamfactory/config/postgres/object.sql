@@ -57,4 +57,4 @@ CREATE TRIGGER object_update BEFORE UPDATE ON object
 FOR EACH ROW EXECUTE PROCEDURE object_update();
 
 CREATE VIEW user_file_count AS
-  SELECT user_id, count(id) FROM object GROUP BY user_id;
+  SELECT user_id, count(id) FROM object WHERE deleted=false GROUP BY user_id;

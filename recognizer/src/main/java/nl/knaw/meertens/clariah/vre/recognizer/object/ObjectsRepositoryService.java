@@ -113,7 +113,7 @@ public class ObjectsRepositoryService {
      */
     public Long softDelete(String path) {
         Long id = getObjectIdByPath(path);
-        String deletedTrue = "{ \"deleted\" : \"true\" }";
+        String deletedTrue = "{ \"deleted\" : true }";
         HttpResponse<String> patchResponse = patch(id, deletedTrue);
 
         if (!isSuccess(patchResponse)) {
