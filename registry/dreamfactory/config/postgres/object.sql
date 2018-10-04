@@ -58,3 +58,17 @@ FOR EACH ROW EXECUTE PROCEDURE object_update();
 
 CREATE VIEW user_file_count AS
   SELECT user_id, count(id) FROM object WHERE deleted=false GROUP BY user_id;
+
+CREATE TABLE IF NOT EXISTS tag (
+  id bigserial PRIMARY KEY,
+  name character varying(255),
+  type character varying(255),
+  owner character varying(255)
+);
+
+CREATE TABLE IF NOT EXISTS object_tag (
+  id bigserial PRIMARY KEY,
+  tag BIGINT REFERENCES tag (id),
+  object BIGINT REFERENCES object (id),
+  created timestamp with time zone
+);

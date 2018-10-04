@@ -32,10 +32,10 @@ Development
     - Environment variables can be added to `./.env`.
     - References to component files and volumes in `./<component>/docker-compose.yml` should be overwritten in `./docker-compose.yml`
   
-Manual demo
+Demo
 ---
 
-See also [demo](./demo/README.md).
+See [./demo](./demo/README.md).
 
 ### Integration
 - Run `./start-vre.sh`.
@@ -63,17 +63,4 @@ curl -v 'http://localhost:8082/remote.php/webdav/testfile.txt' \
 
 ## Ports
 
-Containers expose the following ports:
-```
-3000->3000/tcp   vre_ui
-5432->5432/tcp   vre_postgres_1
-80->8080/tcp     vre_deployment_1
-8080->8080/tcp   vre_fits_1
-8081->80/tcp     vre_recognizer_1
-8082->80/tcp     vre_nextcloud_1
-8085->8085/tcp   vre_integration_1
-8089->80/tcp     vre_dreamfactory_1
-9000->9000/tcp   vre_trifecta_1
-9010->8080/tcp   vre_switchboard_1
-33104->9092/tcp  vre_kafka_1
-```
+Run: `docker ps` to see which ports are used

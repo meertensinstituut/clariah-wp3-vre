@@ -3,6 +3,7 @@ version: '3.4'
 services:
 
   dreamfactory:
+    command: bash -c "/postgres/start.sh; /dreamfactory/start.sh; bash;"
     build: dreamfactory
     ports:
       - "8089:80"
@@ -15,8 +16,10 @@ services:
       - DB_SERVICES_PORT=5432  
       - DB_OBJECTS_HOST=postgres
       - DB_OBJECTS_PORT=5432  
-    tty: true  
-      
+    tty: true
+    volumes:
+     - ./dreamfactory/config/postgres:/postgres
+
   postgres:
     build: postgres
     env_file:

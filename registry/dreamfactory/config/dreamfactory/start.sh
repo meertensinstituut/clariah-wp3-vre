@@ -1,5 +1,4 @@
 #!/bin/bash
-
 cd /opt/dreamfactory
 
 echo "===INITIALISING DREAMFACTORY WITH ADMIN ${ADMIN_EMAIL}==="

@@ -45,6 +45,8 @@ services:
 
   dreamfactory:
     build: ./registry/dreamfactory
+    volumes:
+     - ./registry/dreamfactory/config/postgres:/postgres
 
   postgres:
     build: ./registry/postgres

@@ -14,10 +14,7 @@ ADD config/apache/dreamfactory.conf /etc/apache2/sites-available/dreamfactory.co
 RUN a2enmod deflate && \
     a2enmod rewrite && \
     a2ensite dreamfactory && a2dissite 000-default
-    
-RUN mkdir /postgres
-ADD config/postgres/* /postgres/
-    
+
 RUN php -r "copy('https://getcomposer.org/installer', '/tmp/composer-setup.php');" && \
     php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer && \
     rm -rf /tmp/composer-setup.php        
@@ -34,10 +31,9 @@ RUN chown -R www-data:www-data /opt/dreamfactory
 
 RUN mkdir /dreamfactory && \
     mkdir /dreamfactory/system 
-    
+
 ADD config/dreamfactory/package.json /dreamfactory/
 ADD config/dreamfactory/system/* /dreamfactory/system/
 ADD config/dreamfactory/start.sh /dreamfactory/
-        
-CMD bash -C '/postgres/start.sh'; bash -C '/dreamfactory/start.sh'; 'bash'    
-    
+
+
