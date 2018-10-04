@@ -72,3 +72,17 @@ CREATE TABLE IF NOT EXISTS object_tag (
   object BIGINT REFERENCES object (id),
   created timestamp with time zone
 );
+CREATE INDEX INDEX_TAG_OBJECT_OBJECT
+  ON object_tag (object);
+CREATE INDEX INDEX_TAG_OBJECT_TAG
+  ON object_tag (tag);
+
+
+CREATE VIEW object_full_tag AS
+  SELECT
+    object_tag.object,
+    object_tag.tag,
+    object_tag.created,
+    tag.*
+  FROM object_tag
+    LEFT JOIN tag ON tag.id = object_tag.tag;
