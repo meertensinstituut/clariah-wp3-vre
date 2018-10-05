@@ -5,6 +5,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
+import nl.knaw.meertens.clariah.vre.switchboard.tag.TagRegistry;
+import nl.knaw.meertens.clariah.vre.switchboard.tag.TagService;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.ApplicationPath;
@@ -56,6 +58,11 @@ public class App extends ResourceConfig {
                 new KafkaProducerServiceImpl(
                         NEXTCLOUD_TOPIC_NAME,
                         KAFKA_HOST_NAME,
+                        getMapper()
+                ),
+                new TagRegistry(
+                        OBJECTS_DB_URL,
+                        OBJECTS_DB_KEY,
                         getMapper()
                 )
         );

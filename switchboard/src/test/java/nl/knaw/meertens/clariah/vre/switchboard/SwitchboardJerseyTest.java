@@ -8,6 +8,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceStub;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
+import nl.knaw.meertens.clariah.vre.switchboard.tag.TagRegistry;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.mockito.Mockito;
@@ -16,11 +17,16 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
+
 /**
  * Wrapper around JerseyTest which is used
  * to start Jersey Test Container only once.
  */
 public class SwitchboardJerseyTest extends JerseyTest {
+
+    private static final String mockHostName = "http://localhost:1080";
+    private static final String mockRegistryKey = "abc";
 
     private static ResourceConfig resourceConfig;
 
@@ -29,14 +35,14 @@ public class SwitchboardJerseyTest extends JerseyTest {
     private static PollServiceImpl pollService = new PollServiceImpl(
             requestRepository,
             SwitchboardDIBinder.getMapper(),
-            "http://localhost:1080"
+            mockHostName
     );
 
     private static OwncloudFileService nextcloudFileService = new OwncloudFileService();
 
     private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(
-            "http://localhost:1080",
-            "abc",
+            mockHostName,
+            mockRegistryKey,
             SwitchboardDIBinder.getMapper()
     );
 
@@ -61,12 +67,17 @@ public class SwitchboardJerseyTest extends JerseyTest {
                 objectsRegistryServiceStub,
                 servicesRegistryService,
                 new DeploymentServiceImpl(
-                        "http://localhost:1080",
+                        mockHostName,
                         requestRepository,
                         pollService
                 ),
                 kafkaSwitchboardServiceMock,
-                kafkaOwncloudServiceMock
+                kafkaOwncloudServiceMock,
+                new TagRegistry(
+                        mockHostName,
+                        mockRegistryKey,
+                        getMapper()
+                )
         );
         resourceConfig.register(diBinder);
         return resourceConfig;

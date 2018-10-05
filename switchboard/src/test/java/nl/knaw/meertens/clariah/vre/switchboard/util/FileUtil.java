@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.util;
 
 import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
+import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,5 +61,18 @@ public class FileUtil {
         testFileRecord.mimetype = "text/plain";
         return testFileRecord;
     }
+
+    public static String getTestFileContent(String fileName) {
+        try {
+            return FileUtils.readFileToString(FileUtils.toFile(
+                    Thread.currentThread()
+                            .getContextClassLoader()
+                            .getResource(fileName)
+            ), UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }

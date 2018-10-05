@@ -33,7 +33,6 @@ public class ParamControllerTest extends AbstractControllerTest {
                 .get();
 
         String json = response.readEntity(String.class);
-        logger.info("params json: " + json);
         assertThat(response.getStatus()).isEqualTo(200);
 
         // main fields:

@@ -18,6 +18,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.tag.TagController;
+import nl.knaw.meertens.clariah.vre.switchboard.tag.TagRegistry;
+import nl.knaw.meertens.clariah.vre.switchboard.tag.TagService;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 import java.util.Set;
@@ -55,23 +57,28 @@ public class SwitchboardDIBinder extends AbstractBinder {
     private ServicesRegistryService serviceRegistryService;
     private KafkaProducerService kafkaSwitchboardService;
     private KafkaProducerService kafkaOwncloudService;
+    private TagRegistry tagRegistry;
 
     SwitchboardDIBinder(
             ObjectsRegistryService objectsRegistryService,
             ServicesRegistryService servicesRegistryService,
             DeploymentService deploymentService,
             KafkaProducerService kafkaSwitchboardService,
-            KafkaProducerService kafkaOwncloudService
+            KafkaProducerService kafkaOwncloudService,
+            TagRegistry tagRegistry
     ) {
         this.objectsRegistryService = objectsRegistryService;
         this.deploymentService = deploymentService;
         this.serviceRegistryService = servicesRegistryService;
         this.kafkaSwitchboardService = kafkaSwitchboardService;
         this.kafkaOwncloudService = kafkaOwncloudService;
+        this.tagRegistry = tagRegistry;
     }
 
     @Override
     protected void configure() {
+        bind(getMapper()).to(ObjectMapper.class);
+
         bind(new ExecService(
                 getMapper(),
                 objectsRegistryService,
@@ -90,7 +97,9 @@ public class SwitchboardDIBinder extends AbstractBinder {
                 serviceRegistryService
         )).to(ParamService.class);
 
-        bind(getMapper()).to(ObjectMapper.class);
+        bind(new TagService(
+                tagRegistry
+        )).to(TagService.class);
     }
 
     /**
