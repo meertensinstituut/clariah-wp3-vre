@@ -18,10 +18,9 @@ public class HealthController extends AbstractController {
 
     @GET
     @Produces(APPLICATION_JSON)
-    public Response getDeploymentStatus() {
-        logger.info("Health request; respond with 200 OK");
-        String msg = "{\"status\": \"OK\"}";
-        return createResponse(msg);
+    public Response getHealth() {
+        logger.info("Health request; respond with 200 - OK");
+        return createResponse(new Object() {public String status = "OK";});
     }
 
 }

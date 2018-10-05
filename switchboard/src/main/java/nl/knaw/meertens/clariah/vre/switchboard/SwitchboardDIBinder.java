@@ -17,6 +17,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
+import nl.knaw.meertens.clariah.vre.switchboard.tag.TagController;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 import java.util.Set;
@@ -42,7 +43,8 @@ public class SwitchboardDIBinder extends AbstractBinder {
             ExecController.class,
             ObjectController.class,
             ParamController.class,
-            CommonExceptionMapper.class
+            CommonExceptionMapper.class,
+            TagController.class
     );
 
     private static ObjectMapper mapper = null;

@@ -7,6 +7,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
+import nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil;
+import nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -24,8 +26,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.createTestFileWithRegistryObject;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class PollingServiceImplTest extends AbstractControllerTest {
@@ -34,28 +36,28 @@ public class PollingServiceImplTest extends AbstractControllerTest {
 
     @Test
     public void testDeploymentStatusReportFile() throws Exception {
-        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
         String uniqueTestFile = object.filepath;
 
         LocalDateTime startTest = now();
         String expectedService = "UCTO";
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
         String json = deployResponse.readEntity(String.class);
 
         String workDir = JsonPath.parse(json).read("$.workDir");
-        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
+        MockServerUtil.startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
 
         Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
-        waitUntil(request, RUNNING);
+        DeployUtil.waitUntil(request, RUNNING);
 
         testReportFileFields(startTest, expectedService, workDir, uniqueTestFile, RUNNING);
     }
 
     @Test
     public void testPollingInterval() throws Exception {
-        ObjectsRecordDTO object = createTestFileWithRegistryObject();
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
+        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
         Response deployResponse = deploy("UCTO", deploymentRequestDto);
         String json = deployResponse.readEntity(String.class);
         String workDir = JsonPath.parse(json).read("$.workDir");
@@ -79,8 +81,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
             report = getReport(workDir);
             if(isNull(report.getPolled())) {
                logger.info(String.format("Deployment [%s] not polled yet", workDir));
-            }
-            else {
+            } else {
                 return report;
             }
             waited++;
@@ -130,7 +131,6 @@ public class PollingServiceImplTest extends AbstractControllerTest {
         Path reportPath = Paths.get(Config.DEPLOYMENT_VOLUME, workDir, Config.STATUS_FILE_NAME);
         assertThat(reportPath.toFile()).exists();
         String reportJson = FileUtils.readFileToString(reportPath.toFile(), UTF_8);
-        DeploymentStatusReport report = getMapper().readValue(reportJson, DeploymentStatusReport.class);
-        return report;
+        return getMapper().readValue(reportJson, DeploymentStatusReport.class);
     }
 }

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.getMockServer;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -97,7 +98,7 @@ public class ObjectControllerTest extends AbstractControllerTest {
     private void startServicesRegistryMock(List<String> servicesList, String filter) {
         String services = servicesList.stream().collect(Collectors.joining(", "));
 
-        mockServer
+        getMockServer()
                 .when(
                         request()
                                 .withMethod("GET")

@@ -9,6 +9,7 @@ import org.mockserver.model.Parameter;
 import java.util.List;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.getMockServer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -50,7 +51,7 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
     }
 
     private void startGetServicesByMimetypeRegistryMock() {
-        mockServer
+        getMockServer()
                 .when(
                         request()
                                 .withMethod("GET")
@@ -81,7 +82,7 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
     }
 
     private void startGetServiceByIdRegistryMock() {
-        mockServer
+        getMockServer()
                 .when(
                         request()
                                 .withMethod("GET")

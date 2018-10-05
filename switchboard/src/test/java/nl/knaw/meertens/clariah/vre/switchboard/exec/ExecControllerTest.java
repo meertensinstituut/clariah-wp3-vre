@@ -5,9 +5,11 @@ import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
-import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
+import nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil;
+import nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil;
+import nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -21,7 +23,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
@@ -32,8 +33,9 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.NEXTCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.createResultFile;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.createTestFileWithRegistryObject;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -67,10 +69,10 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void postDeploymentRequest_shouldCreateSymbolicLinksToInputFiles() throws Exception {
-        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
         String uniqueTestFile = object.filepath;
 
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
         String expectedService = "UCTO";
 
         Response deployed = deploy(expectedService, deploymentRequestDto);
@@ -79,8 +81,8 @@ public class ExecControllerTest extends AbstractControllerTest {
 
         Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
 
-        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
-        String response = waitUntil(request, FINISHED);
+        MockServerUtil.startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
+        String response = DeployUtil.waitUntil(request, FINISHED);
 
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
         createResultFile(workDir, resultFilename, resultSentence);
@@ -92,10 +94,10 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void postDeploymentRequest_shouldOutputFolderWithTestResult() throws InterruptedException, IOException {
-        startServicesRegistryMockServer(dummyUctoService);
+        MockServerUtil.startServicesRegistryMockServer(dummyUctoService);
 
-        ObjectsRecordDTO object = createTestFileWithRegistryObject();
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
+        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
         String expectedService = "UCTO";
         Response deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
@@ -103,13 +105,13 @@ public class ExecControllerTest extends AbstractControllerTest {
 
         Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
 
-        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
-        waitUntil(request, RUNNING);
+        MockServerUtil.startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
+        DeployUtil.waitUntil(request, RUNNING);
 
-        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
-        startServicesRegistryMockServer(dummyUctoService);
+        MockServerUtil.startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
+        MockServerUtil.startServicesRegistryMockServer(dummyUctoService);
         createResultFile(workDir, resultFilename, resultSentence);
-        String finishedJson = waitUntil(request, FINISHED);
+        String finishedJson = DeployUtil.waitUntil(request, FINISHED);
 
         // Check output file is moved:
         File outputFolder = findOutputFolder(finishedJson);
@@ -122,10 +124,10 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void postDeploymentRequest_shouldCreateConfigFile() throws IOException {
-        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
         String uniqueTestFile = object.filepath;
 
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("" + object.id);
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
         String expectedService = "UCTO";
 
         Response deployed = deploy(expectedService, deploymentRequestDto);
@@ -153,7 +155,7 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void testFinishRequest_shouldIgnoreUnknownFields() throws InterruptedException, IOException {
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
         String expectedService = "UCTO";
         Response deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
@@ -161,27 +163,32 @@ public class ExecControllerTest extends AbstractControllerTest {
 
         Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
         createResultFile(workDir, resultFilename, resultSentence);
-        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}", "UCTO");
+        MockServerUtil.startOrUpdateStatusMockServer(
+                FINISHED.getHttpStatus(),
+                workDir,
+                "{\"finished\":false,\"id\":\"" + workDir + "\",\"key\":\"" + workDir + "\", \"blarpiness\":\"100%\"}",
+                "UCTO"
+        );
 
         // Check status is finished:
-        String finishedResponse = waitUntil(request, FINISHED);
+        String finishedResponse = DeployUtil.waitUntil(request, FINISHED);
         assertThatJson(finishedResponse).node("status").isEqualTo("FINISHED");
     }
 
     @Test
     public void postDeploymentRequest_shouldMoveViewerOutputFileToViewerFolder() throws IOException, InterruptedException {
-        mockServer.reset();
-        startServicesRegistryMockServer(dummyViewerService);
+        MockServerUtil.getMockServer().reset();
+        MockServerUtil.startServicesRegistryMockServer(dummyViewerService);
 
         // create file and dummy registry object:
         String viewerService = "VIEWER";
-        startDeployMockServer(viewerService, 200);
-        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        MockServerUtil.startDeployMockServer(viewerService, 200);
+        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
         Path inputPath = Paths.get(object.filepath);
         String expectedOutputPath = "admin/files/.vre/VIEWER/" + inputPath.subpath(2, inputPath.getNameCount());
 
         // request deployment:
-        DeploymentRequestDto deploymentRequestDto = getViewerDeploymentRequestDto("" + object.id);
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getViewerDeploymentRequestDto("" + object.id);
         Response deployed = deploy(viewerService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
@@ -196,9 +203,9 @@ public class ExecControllerTest extends AbstractControllerTest {
 
         // finish deployment:
         Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
-        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
+        MockServerUtil.startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
         createResultFile(workDir, object.filepath, "<pre>" + resultSentence + "</pre>");
-        String finishedJson = waitUntil(request, FINISHED);
+        String finishedJson = DeployUtil.waitUntil(request, FINISHED);
 
         // check output path:
         String viewerFile = JsonPath.parse(finishedJson).read("$.viewerFile");
@@ -217,27 +224,27 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void postDeploymentRequest_shouldNotCreateKafkaMsg_whenViewerService() throws IOException, InterruptedException {
-        mockServer.reset();
-        startServicesRegistryMockServer(dummyViewerService);
+        MockServerUtil.getMockServer().reset();
+        MockServerUtil.startServicesRegistryMockServer(dummyViewerService);
 
         // create file and dummy registry object:
         String viewerService = "VIEWER";
-        startDeployMockServer(viewerService, 200);
-        ObjectsRecordDTO object = createTestFileWithRegistryObject();
+        MockServerUtil.startDeployMockServer(viewerService, 200);
+        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
         Path inputPath = Paths.get(object.filepath);
         String expectedOutputPath = "admin/files/.vre/VIEWER/" + inputPath.subpath(2, inputPath.getNameCount());
 
         // request deployment:
-        DeploymentRequestDto deploymentRequestDto = getViewerDeploymentRequestDto("" + object.id);
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getViewerDeploymentRequestDto("" + object.id);
         Response deployed = deploy(viewerService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
         // finish deployment:
         Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
-        startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
+        MockServerUtil.startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
         createResultFile(workDir, object.filepath, "<pre>" + resultSentence + "</pre>");
-        String finishedJson = waitUntil(request, FINISHED);
+        String finishedJson = DeployUtil.waitUntil(request, FINISHED);
 
         // verify:
         KafkaProducerService kafkaOwncloudServiceMock = jerseyTest.getKafkaOwncloudServiceMock();

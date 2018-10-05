@@ -1,9 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.param;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;

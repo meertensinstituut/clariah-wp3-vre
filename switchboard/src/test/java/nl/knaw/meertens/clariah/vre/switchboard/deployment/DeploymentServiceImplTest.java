@@ -2,6 +2,8 @@ package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
+import nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil;
+import nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +25,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
     @Test
     public void postDeploymentRequest_shouldRequestsDeployment() throws IOException {
         String expectedService = "UCTO";
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
 
         Response deployResponse = deploy(expectedService, deploymentRequestDto);
 
@@ -35,59 +37,57 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
     @Test
     public void postDeploymentRequest_shouldNotRequestsDeployment_whenAlreadyRunning() throws IOException {
         String expectedService = "UCTO";
-        DeploymentRequestDto deploymentRequestDto = getDeploymentRequestDto("1");
+        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
 
         deploy(expectedService, deploymentRequestDto);
 
-        mockServer.clear(
+        MockServerUtil.getMockServer().clear(
                 request()
                         .withMethod("PUT")
                         .withPath("/deployment-service/a/exec/UCTO/.*")
         );
-        startDeployMockServerWithUcto(403);
+        MockServerUtil.startDeployMockServerWithUcto(403);
 
         Response secondTimeResponse = deploy(expectedService, deploymentRequestDto);
 
         String json = secondTimeResponse.readEntity(String.class);
-        logger.info("testStart_requestsDeployment_whenAlreadyRunning: " + json);
         assertThat(secondTimeResponse.getStatus()).isEqualTo(403);
         assertThatJson(json).node("status").isEqualTo("ALREADY_RUNNING");
 
-        // Reset:
         setDeployBackTo200();
     }
 
     @Test
-    public void getDeploymentStatus_whenRunning() throws IOException, InterruptedException {
-        Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
+    public void getDeploymentStatus_whenRunning() throws InterruptedException {
+        Response deployResponse = deploy("UCTO", DeployUtil.getDeploymentRequestDto("1", longName));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
+        MockServerUtil.startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
 
         Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
-        String json = waitUntil(request, RUNNING);
+        String json = DeployUtil.waitUntil(request, RUNNING);
         assertThatJson(json).node("status").isEqualTo("RUNNING");
     }
 
     @Test
     public void getDeploymentStatus_whenNotFound() throws Exception {
-        Response deployResponse = deploy("UCTO", getDeploymentRequestDto("1"));
+        Response deployResponse = deploy("UCTO", DeployUtil.getDeploymentRequestDto("1", longName));
         String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}", "UCTO");
+        MockServerUtil.startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}", "UCTO");
 
         Invocation.Builder request = target(String.format("exec/task/%s", workDir)).request();
-        String json = waitUntil(request, NOT_FOUND);
+        String json = DeployUtil.waitUntil(request, NOT_FOUND);
         assertThatJson(json).node("status").isEqualTo("NOT_FOUND");
     }
 
 
     private void setDeployBackTo200() {
-        mockServer.clear(
+        MockServerUtil.getMockServer().clear(
                 request()
                         .withMethod("PUT")
                         .withPath("/deployment-service/a/exec/UCTO/.*")
         );
-        startDeployMockServerWithUcto(200);
+        MockServerUtil.startDeployMockServerWithUcto(200);
     }
 }

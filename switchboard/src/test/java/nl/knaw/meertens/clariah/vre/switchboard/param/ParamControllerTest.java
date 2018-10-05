@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.getMockServer;
 import static org.apache.commons.codec.Charsets.UTF_8;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -115,7 +116,7 @@ public class ParamControllerTest extends AbstractControllerTest {
         obj.put("semantics", cmdi);
         final String json = obj.toString();
 
-        mockServer
+        getMockServer()
                 .when(
                         request()
                                 .withMethod("GET")
