@@ -1,12 +1,11 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
+import nl.knaw.meertens.clariah.vre.switchboard.tag.ObjectTagRegistry;
 import nl.knaw.meertens.clariah.vre.switchboard.tag.TagRegistry;
-import nl.knaw.meertens.clariah.vre.switchboard.tag.TagService;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.ApplicationPath;
@@ -61,6 +60,11 @@ public class App extends ResourceConfig {
                         getMapper()
                 ),
                 new TagRegistry(
+                        OBJECTS_DB_URL,
+                        OBJECTS_DB_KEY,
+                        getMapper()
+                ),
+                new ObjectTagRegistry(
                         OBJECTS_DB_URL,
                         OBJECTS_DB_KEY,
                         getMapper()

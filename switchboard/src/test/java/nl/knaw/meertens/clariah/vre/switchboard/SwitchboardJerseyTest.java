@@ -8,6 +8,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceStub;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
+import nl.knaw.meertens.clariah.vre.switchboard.tag.ObjectTagRegistry;
 import nl.knaw.meertens.clariah.vre.switchboard.tag.TagRegistry;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -74,6 +75,11 @@ public class SwitchboardJerseyTest extends JerseyTest {
                 kafkaSwitchboardServiceMock,
                 kafkaOwncloudServiceMock,
                 new TagRegistry(
+                        mockHostName,
+                        mockRegistryKey,
+                        getMapper()
+                ),
+                new ObjectTagRegistry(
                         mockHostName,
                         mockRegistryKey,
                         getMapper()

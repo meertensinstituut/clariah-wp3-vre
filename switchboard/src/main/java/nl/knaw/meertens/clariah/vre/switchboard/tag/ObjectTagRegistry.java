@@ -6,24 +6,23 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.AbstractDreamfactoryReg
 
 import java.io.IOException;
 
-import static java.lang.String.format;
-
-public class TagRegistry extends AbstractDreamfactoryRegistry {
+public class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
 
     private final ObjectMapper mapper;
 
-    public TagRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper mapper) {
-        super(objectsDbUrl, objectsDbKey, "/_table/tag");
+    public ObjectTagRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper mapper) {
+        super(objectsDbUrl, objectsDbKey, "/_table/object_tag");
         this.mapper = mapper;
     }
 
-    public Long create(TagDto tag) {
+    public Long createObjectTag(ObjectTagDto objectTag) {
         try {
-            String json = post(mapper.writeValueAsString(tag));
+            String json = post(mapper.writeValueAsString(objectTag));
             return JsonPath.parse(json).read("$.resource[0].id", Long.class);
         } catch (IOException e) {
-            throw new RuntimeException("Could not create tag", e);
+            throw new RuntimeException("Could link object to tag", e);
         }
     }
+
 
 }

@@ -17,6 +17,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
+import nl.knaw.meertens.clariah.vre.switchboard.tag.ObjectTagRegistry;
 import nl.knaw.meertens.clariah.vre.switchboard.tag.TagController;
 import nl.knaw.meertens.clariah.vre.switchboard.tag.TagRegistry;
 import nl.knaw.meertens.clariah.vre.switchboard.tag.TagService;
@@ -58,6 +59,7 @@ public class SwitchboardDIBinder extends AbstractBinder {
     private KafkaProducerService kafkaSwitchboardService;
     private KafkaProducerService kafkaOwncloudService;
     private TagRegistry tagRegistry;
+    private ObjectTagRegistry objectTagRegistry;
 
     SwitchboardDIBinder(
             ObjectsRegistryService objectsRegistryService,
@@ -65,14 +67,15 @@ public class SwitchboardDIBinder extends AbstractBinder {
             DeploymentService deploymentService,
             KafkaProducerService kafkaSwitchboardService,
             KafkaProducerService kafkaOwncloudService,
-            TagRegistry tagRegistry
-    ) {
+            TagRegistry tagRegistry,
+            ObjectTagRegistry objectTagRegistry) {
         this.objectsRegistryService = objectsRegistryService;
         this.deploymentService = deploymentService;
         this.serviceRegistryService = servicesRegistryService;
         this.kafkaSwitchboardService = kafkaSwitchboardService;
         this.kafkaOwncloudService = kafkaOwncloudService;
         this.tagRegistry = tagRegistry;
+        this.objectTagRegistry = objectTagRegistry;
     }
 
     @Override
@@ -98,7 +101,8 @@ public class SwitchboardDIBinder extends AbstractBinder {
         )).to(ParamService.class);
 
         bind(new TagService(
-                tagRegistry
+                tagRegistry,
+                objectTagRegistry
         )).to(TagService.class);
     }
 

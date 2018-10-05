@@ -63,14 +63,16 @@ CREATE TABLE IF NOT EXISTS tag (
   id bigserial PRIMARY KEY,
   name character varying(255),
   type character varying(255),
-  owner character varying(255)
+  owner character varying(255),
+  unique (name, type, owner)
 );
 
 CREATE TABLE IF NOT EXISTS object_tag (
   id bigserial PRIMARY KEY,
   tag BIGINT REFERENCES tag (id),
   object BIGINT REFERENCES object (id),
-  created timestamp with time zone
+  created timestamp with time zone,
+  unique (tag, object)
 );
 CREATE INDEX INDEX_TAG_OBJECT_OBJECT
   ON object_tag (object);
