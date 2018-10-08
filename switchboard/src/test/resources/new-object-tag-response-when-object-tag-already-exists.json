@@ -1,0 +1,18 @@
+{
+  "error": {
+    "code": 1000,
+    "context": {
+      "error": [
+        0
+      ],
+      "resource": [
+        {
+          "code": "23505",
+          "message": "SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint &quot;object_tag_tag_object_key&quot;\\nDETAIL:  Key (tag, object)=(1, 1) already exists. (SQL: insert into &quot;public&quot;.&quot;object_tag&quot; (&quot;tag&quot;, &quot;object&quot;) values (1, 1) returning &quot;id&quot;)"
+        }
+      ]
+    },
+    "message": "Batch Error: Not all requested records could be created.",
+    "status_code": 500
+  }
+}

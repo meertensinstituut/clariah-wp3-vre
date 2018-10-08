@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.registry;
 
+import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -7,6 +8,8 @@ import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.SQLException;
 
 import static java.lang.String.format;
 
@@ -26,7 +29,7 @@ public class AbstractDreamfactoryRegistry {
         this.table = table;
     }
 
-    protected String post(String recordJson) {
+    protected String post(String recordJson) throws SQLException {
         HttpResponse<String> response;
         try {
             RequestBodyEntity body = createPost(table, recordJson);
@@ -37,15 +40,13 @@ public class AbstractDreamfactoryRegistry {
                     recordJson
             ), e);
         }
-
         if (isSuccess(response)) {
             logger.info(String.format("Posted record to [%s]", table));
             return response.getBody();
         } else {
-            throw new RuntimeException(format(
-                    "Could not post [%s]: [%d][%s]",
-                    recordJson, response.getStatus(), response.getBody()
-            ));
+            String reason = JsonPath.parse(response.getBody()).read("$.error.context.resource[0].message", String.class);
+            String sqlState = JsonPath.parse(response.getBody()).read("$.error.context.resource[0].code", String.class);
+            throw new SQLException(reason, sqlState);
         }
     }
 

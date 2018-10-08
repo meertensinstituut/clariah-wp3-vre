@@ -1,0 +1,18 @@
+{
+  "error": {
+    "code": 1000,
+    "context": {
+      "error": [
+        0
+      ],
+      "resource": [
+        {
+          "code": "23503",
+          "message": "SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table &quot;object_tag&quot; violates foreign key constraint &quot;object_tag_object_fkey&quot;\\nDETAIL:  Key (object)=(11) is not present in table &quot;object&quot;. (SQL: insert into &quot;public&quot;.&quot;object_tag&quot; (&quot;tag&quot;, &quot;object&quot;) values (1, 11) returning &quot;id&quot;)"
+        }
+      ]
+    },
+    "message": "Batch Error: Not all requested records could be created.",
+    "status_code": 500
+  }
+}

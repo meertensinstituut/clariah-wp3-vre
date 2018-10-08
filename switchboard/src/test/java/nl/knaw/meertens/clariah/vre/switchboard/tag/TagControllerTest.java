@@ -41,11 +41,11 @@ public class TagControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void tagObject() throws JsonProcessingException {
+    public void tagObject_isSuccess() throws JsonProcessingException {
         ObjectTagDto objectTag = new ObjectTagDto();
         objectTag.object = 2L;
 
-        startTagObjectMock();
+        startTagObjectMock(200, "{\"resource\": [{\"id\": 6}]}");
 
         String entity = getMapper().writeValueAsString(objectTag);
         Entity<String> tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
@@ -57,6 +57,50 @@ public class TagControllerTest extends AbstractControllerTest {
         String json = response.readEntity(String.class);
         assertThat(response.getStatus()).isEqualTo(200);
         assertThatJson(json).node("id").isEqualTo(6);
+    }
+
+    @Test
+    public void tagObject_fails_whenObjectDoesNotExist() throws JsonProcessingException {
+        ObjectTagDto objectTag = new ObjectTagDto();
+        objectTag.object = 2L;
+
+        startTagObjectMock(
+                500,
+                getTestFileContent("new-object-tag-response-when-object-does-not-exist.json")
+        );
+
+        String entity = getMapper().writeValueAsString(objectTag);
+        Entity<String> tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
+
+        Response response = jerseyTest.target("tags/1")
+                .request()
+                .post(tagEntity);
+
+        String json = response.readEntity(String.class);
+        assertThat(response.getStatus()).isEqualTo(500);
+        assertThatJson(json).node("msg").isEqualTo("Could not create object tag. Tag or object does not exist.");
+    }
+
+    @Test
+    public void tagObject_fails_whenObjectTagAlreadyExists() throws JsonProcessingException {
+        ObjectTagDto objectTag = new ObjectTagDto();
+        objectTag.object = 2L;
+
+        startTagObjectMock(
+                500,
+                getTestFileContent("new-object-tag-response-when-object-tag-already-exists.json")
+        );
+
+        String entity = getMapper().writeValueAsString(objectTag);
+        Entity<String> tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
+
+        Response response = jerseyTest.target("tags/1")
+                .request()
+                .post(tagEntity);
+
+        String json = response.readEntity(String.class);
+        assertThat(response.getStatus()).isEqualTo(500);
+        assertThatJson(json).node("msg").isEqualTo("Could not create object tag. Object tag already exists.");
     }
 
     private void startPostTagMock() {
@@ -74,7 +118,7 @@ public class TagControllerTest extends AbstractControllerTest {
         );
     }
 
-    private void startTagObjectMock() {
+    private void startTagObjectMock(int statusCode, String body) {
         getMockServer()
                 .when(
                         request()
@@ -84,9 +128,9 @@ public class TagControllerTest extends AbstractControllerTest {
                                 ).withPath("/_table/object_tag")
                 ).respond(
                 response()
-                        .withStatusCode(200)
+                        .withStatusCode(statusCode)
                         .withHeaders(new Header("Content-Type", "application/json; charset=utf-8"))
-                        .withBody("{\"resource\": [{\"id\": 6}]}")
+                        .withBody(body)
         );
     }
 

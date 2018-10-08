@@ -5,6 +5,7 @@ import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.AbstractDreamfactoryRegistry;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import static java.lang.String.format;
 
@@ -19,7 +20,17 @@ public class TagRegistry extends AbstractDreamfactoryRegistry {
 
     public Long create(TagDto tag) {
         try {
-            String json = post(mapper.writeValueAsString(tag));
+            String json;
+            try {
+                json = post(mapper.writeValueAsString(tag));
+            } catch (SQLException e) {
+                String msg = "Could not create tag.";
+                if(e.getSQLState().equals("23505")) {
+                    msg += " Tag already exists.";
+                }
+                throw new RuntimeException(msg, e);
+
+            }
             return JsonPath.parse(json).read("$.resource[0].id", Long.class);
         } catch (IOException e) {
             throw new RuntimeException("Could not create tag", e);

@@ -42,7 +42,6 @@ public class TagController extends AbstractController {
             @PathParam("tag") Long tag,
             String body
     ) {
-        System.out.println("tagObject body" + body);
         Long object = JsonPath.parse(body).read("$.object", Long.class);
         ObjectTagDto result = new ObjectTagDto();
         result.id = tagService.tagObject(object, tag);
