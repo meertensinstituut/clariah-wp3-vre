@@ -6,6 +6,10 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.AbstractDreamfactoryReg
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.google.common.collect.Maps.newHashMap;
 
 public class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
 
@@ -37,4 +41,20 @@ public class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
     }
 
 
+    public Long deleteObjectTag(ObjectTagDto objectTag) {
+        String json;
+        try {
+            Map<String, String> filters = new HashMap<>();
+            filters.put("object", "" + objectTag.object);
+            filters.put("tag", "" + objectTag.tag);
+            json = delete(filters);
+        } catch (SQLException e) {
+            String msg = String.format(
+                    "Could not delete link between object [%d] and tag [%d].",
+                    objectTag.object, objectTag.tag
+            );
+            throw new RuntimeException(msg, e);
+        }
+        return JsonPath.parse(json).read("$.resource[0].id", Long.class);
+    }
 }

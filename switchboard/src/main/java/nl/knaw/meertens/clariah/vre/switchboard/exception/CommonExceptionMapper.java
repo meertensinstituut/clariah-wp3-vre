@@ -13,6 +13,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import java.util.UUID;
+
 import static javax.ws.rs.core.MediaType.*;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 
@@ -22,8 +24,6 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMa
  */
 @Provider
 public class CommonExceptionMapper extends AbstractController implements ExceptionMapper<Throwable> {
-
-    private static ObjectMapper mapper = getMapper();
 
     private static final Logger logger = LoggerFactory.getLogger(CommonExceptionMapper.class);
 

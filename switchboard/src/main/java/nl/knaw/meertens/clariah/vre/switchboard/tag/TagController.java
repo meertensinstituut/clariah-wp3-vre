@@ -6,6 +6,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.AbstractController;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -45,6 +46,19 @@ public class TagController extends AbstractController {
         Long object = JsonPath.parse(body).read("$.object", Long.class);
         ObjectTagDto result = new ObjectTagDto();
         result.id = tagService.tagObject(object, tag);
+        return createResponse(result);
+    }
+
+    @DELETE
+    @Path("/{tag}/object/{object}")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public Response untagObject(
+            @PathParam("tag") Long tag,
+            @PathParam("object") Long object
+    ) {
+        ObjectTagDto result = new ObjectTagDto();
+        result.id = tagService.untagObject(object, tag);
         return createResponse(result);
     }
 

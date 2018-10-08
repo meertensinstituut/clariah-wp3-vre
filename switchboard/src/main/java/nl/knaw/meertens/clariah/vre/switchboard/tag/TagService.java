@@ -23,4 +23,11 @@ public class TagService {
         objectTag.timestamp = LocalDateTime.now();
         return objectTagRegistry.createObjectTag(objectTag);
     }
+
+    public Long untagObject(Long object, Long tag) {
+        ObjectTagDto objectTag = new ObjectTagDto();
+        objectTag.object = object;
+        objectTag.tag = tag;
+        return objectTagRegistry.deleteObjectTag(objectTag);
+    }
 }

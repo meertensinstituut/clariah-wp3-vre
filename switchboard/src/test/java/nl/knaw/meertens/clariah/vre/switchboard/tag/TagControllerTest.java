@@ -41,7 +41,7 @@ public class TagControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void tagObject_isSuccess() throws JsonProcessingException {
+    public void tagObject_succeeds() throws JsonProcessingException {
         ObjectTagDto objectTag = new ObjectTagDto();
         objectTag.object = 2L;
 
@@ -103,6 +103,19 @@ public class TagControllerTest extends AbstractControllerTest {
         assertThatJson(json).node("msg").isEqualTo("Could not create object tag. Object tag already exists.");
     }
 
+    @Test
+    public void untagObject_succeeds() throws JsonProcessingException {
+        startUntagObjectMock();
+
+        Response response = jerseyTest.target("tags/1/object/2")
+                .request()
+                .delete();
+
+        String json = response.readEntity(String.class);
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThatJson(json).node("id").isEqualTo(3);
+    }
+
     private void startPostTagMock() {
         getMockServer()
                 .when(
@@ -131,6 +144,21 @@ public class TagControllerTest extends AbstractControllerTest {
                         .withStatusCode(statusCode)
                         .withHeaders(new Header("Content-Type", "application/json; charset=utf-8"))
                         .withBody(body)
+        );
+    }
+
+    private void startUntagObjectMock() {
+        getMockServer()
+                .when(
+                        request()
+                                .withMethod("DELETE")
+                                .withPath("/_table/object_tag")
+                                .withQueryStringParameter("filter", "(tag = 1) AND (object = 2)")
+                ).respond(
+                response()
+                        .withStatusCode(200)
+                        .withHeaders(new Header("Content-Type", "application/json; charset=utf-8"))
+                        .withBody("{\"resource\":[{\"id\":\"3\"}]}")
         );
     }
 
