@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.tag;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.AbstractDreamfactoryRegistry;
@@ -24,17 +23,17 @@ public class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
     public Long createObjectTag(CreateObjectTagDto objectTag) {
         String json = null;
         try {
-            try {
-                json = postFunc(objectTag.params, funcTagObject);
-            } catch (SQLException e) {
-                String msg = "Could not create object tag.";
-                if(e.getSQLState().equals("23503")) {
-                    msg += " Tag or object does not exist.";
-                } else if(e.getSQLState().equals("23505")) {
-                    msg += " Object tag already exists.";
-                }
-                throw new RuntimeException(msg, e);
+            json = postFunc(objectTag.params, funcTagObject);
+        } catch (SQLException e) {
+            String msg = "Could not create object tag.";
+            if (e.getSQLState().equals("23503")) {
+                msg += " Tag or object does not exist.";
+            } else if (e.getSQLState().equals("23505")) {
+                msg += " Object tag already exists.";
             }
+            throw new RuntimeException(msg, e);
+        }
+        try {
             return JsonPath.parse(json).read("$.id", Long.class);
         } catch (PathNotFoundException e) {
             logger.error("Could not parse response: " + json);

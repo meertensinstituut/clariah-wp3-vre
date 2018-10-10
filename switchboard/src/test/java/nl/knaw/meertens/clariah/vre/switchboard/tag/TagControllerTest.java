@@ -10,7 +10,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.TEST_USER;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.getMockServer;
@@ -102,7 +101,7 @@ public class TagControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void untagObject_succeeds() throws JsonProcessingException {
+    public void untagObject_succeeds() {
         startUntagObjectMock();
 
         Response response = jerseyTest.target("tags/1/objects/2")
@@ -112,6 +111,33 @@ public class TagControllerTest extends AbstractControllerTest {
         String json = response.readEntity(String.class);
         assertThat(response.getStatus()).isEqualTo(200);
         assertThatJson(json).node("id").isEqualTo(3);
+    }
+
+    @Test
+    public void deleteTag_succeeds() {
+        startDeleteTagMock(200, "{\"resource\": [{\"id\": 1}]}");
+
+        Response response = jerseyTest.target("tags/1")
+                .request()
+                .delete();
+
+        String json = response.readEntity(String.class);
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThatJson(json).node("id").isEqualTo(1);
+    }
+
+    @Test
+    public void deleteTag_failsWhenStillLinkedToObject() {
+        startDeleteTagMock(500, getTestFileContent("remove-tag.json"));
+
+        Response response = jerseyTest.target("tags/1")
+                .request()
+                .delete();
+
+        String json = response.readEntity(String.class);
+        assertThat(response.getStatus()).isEqualTo(500);
+        assertThatJson(json).node("msg").isEqualTo("Could not delete tag [1]. " +
+                "Tag cannot be removed when it is still linked to an object.");
     }
 
     private void startPostTagMock() {
@@ -161,4 +187,18 @@ public class TagControllerTest extends AbstractControllerTest {
         );
     }
 
+    private void startDeleteTagMock(int statusCode, String body) {
+        getMockServer()
+                .when(
+                        request()
+                                .withMethod("DELETE")
+                                .withPath("/_table/tag")
+                                .withQueryStringParameter("filter", "(id = 1)")
+                ).respond(
+                response()
+                        .withStatusCode(statusCode)
+                        .withHeaders(new Header("Content-Type", "application/json; charset=utf-8"))
+                        .withBody(body)
+        );
+    }
 }

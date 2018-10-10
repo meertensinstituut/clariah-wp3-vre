@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": 500,
+    "context": null,
+    "message": "Failed to delete records from 'tag'.\nSQLSTATE[23503]: Foreign key violation: 7 ERROR:  update or delete on table &quot;tag&quot; violates foreign key constraint &quot;object_tag_tag_fkey&quot; on table &quot;object_tag&quot;\nDETAIL:  Key (id)=(2) is still referenced from table &quot;object_tag&quot;. (SQL: delete from &quot;public&quot;.&quot;tag&quot; where &quot;id&quot; = 2)",
+    "status_code": 500
+  }
+}

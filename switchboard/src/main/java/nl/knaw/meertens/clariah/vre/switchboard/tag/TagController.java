@@ -57,8 +57,7 @@ public class TagController extends AbstractController {
             @PathParam("tag") Long tag
     ) {
         TagDto result = new TagDto();
-        // TODO:
-        // result.id = tagService.deleteTag(tag);
+        result.id = tagService.deleteTag(tag);
         return createResponse(result);
     }
 

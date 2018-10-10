@@ -2,12 +2,13 @@ package nl.knaw.meertens.clariah.vre.switchboard.tag;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.AbstractDreamfactoryRegistry;
 
 import java.io.IOException;
 import java.sql.SQLException;
-
-import static java.lang.String.format;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TagRegistry extends AbstractDreamfactoryRegistry {
 
@@ -38,4 +39,23 @@ public class TagRegistry extends AbstractDreamfactoryRegistry {
         }
     }
 
+    public Long deleteTag(Long tag) {
+        String json;
+        try {
+            Map<String, String> filters = new HashMap<>();
+            filters.put("id", "" + tag);
+            json = delete(filters, table);
+        } catch (SQLException e) {
+            String msg = String.format("Could not delete tag [%d].", tag);
+            if (e.getSQLState().equals("23503")) {
+                msg += " Tag cannot be removed when it is still linked to an object.";
+            }
+            throw new RuntimeException(msg, e);
+        }
+        try {
+            return JsonPath.parse(json).read("$.resource[0].id", Long.class);
+        } catch (PathNotFoundException e) {
+            throw new RuntimeException(String.format("Tag [%d] could not be found", tag));
+        }
+    }
 }

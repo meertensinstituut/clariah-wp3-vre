@@ -1,7 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.tag;
 
-import java.time.LocalDateTime;
-
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.TEST_USER;
 
 public class TagService {
@@ -31,5 +29,9 @@ public class TagService {
         objectTag.object = object;
         objectTag.tag = tag;
         return objectTagRegistry.deleteObjectTag(objectTag);
+    }
+
+    public Long deleteTag(Long tag) {
+        return tagRegistry.deleteTag(tag);
     }
 }

@@ -91,7 +91,7 @@ public class AbstractDreamfactoryRegistry {
 
     /**
      * @return response body when status is in success range
-     * @throws SQLException with sqlState and reason otherwise
+     * @throws SQLException with sqlState and reason
      */
     private String handleResponse(HttpResponse<String> response) throws SQLException {
         if (isSuccess(response)) {
@@ -101,6 +101,12 @@ public class AbstractDreamfactoryRegistry {
         }
     }
 
+    /**
+     * Try to find the reason and SQLState
+     * in Dreamfactory error response
+     *
+     * @throws SQLException e
+     */
     private String handleFailure(HttpResponse<String> response) throws SQLException {
         if(isBlank(response.getBody())) {
             throw new SQLException();
@@ -136,6 +142,10 @@ public class AbstractDreamfactoryRegistry {
         return "";
     }
 
+    /**
+     * Convert filters to a url filter query param
+     * that Dreamfactory understands
+     */
     private String convert(Map<String, String> filters) {
         List<String> filterParts = filters
                 .entrySet()
