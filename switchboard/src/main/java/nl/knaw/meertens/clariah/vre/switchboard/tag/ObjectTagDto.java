@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 
 public class ObjectTagDto {
-
     public Long id;
     public Long object;
     public Long tag;

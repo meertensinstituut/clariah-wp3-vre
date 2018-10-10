@@ -1,18 +1,8 @@
 {
   "error": {
-    "code": 1000,
-    "context": {
-      "error": [
-        0
-      ],
-      "resource": [
-        {
-          "code": "23503",
-          "message": "SQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table &quot;object_tag&quot; violates foreign key constraint &quot;object_tag_object_fkey&quot;\\nDETAIL:  Key (object)=(11) is not present in table &quot;object&quot;. (SQL: insert into &quot;public&quot;.&quot;object_tag&quot; (&quot;tag&quot;, &quot;object&quot;) values (1, 11) returning &quot;id&quot;)"
-        }
-      ]
-    },
-    "message": "Batch Error: Not all requested records could be created.",
+    "code": 500,
+    "context": null,
+    "message": "Failed to call database stored function.\nSQLSTATE[23503]: Foreign key violation: 7 ERROR:  insert or update on table &quot;object_tag&quot; violates foreign key constraint &quot;object_tag_object_fkey&quot;\nDETAIL:  Key (object)=(2) is not present in table &quot;object&quot;.\nCONTEXT:  SQL statement &quot;INSERT INTO object_tag(tag, object, created)\n  VALUES(_tag, _object, current_timestamp)&quot;\nPL/pgSQL function insert_object_tag(bigint,bigint,text) line 7 at SQL statement",
     "status_code": 500
   }
 }

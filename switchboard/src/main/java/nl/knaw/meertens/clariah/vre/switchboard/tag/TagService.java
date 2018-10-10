@@ -2,6 +2,8 @@ package nl.knaw.meertens.clariah.vre.switchboard.tag;
 
 import java.time.LocalDateTime;
 
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.TEST_USER;
+
 public class TagService {
 
     private final TagRegistry tagRegistry;
@@ -13,14 +15,14 @@ public class TagService {
     }
 
     public Long createTag(TagDto tag) {
+        // TODO: use shibboleth user:
+        tag.owner = TEST_USER;
         return tagRegistry.create(tag);
     }
 
     public Long tagObject(Long object, Long tag) {
-        ObjectTagDto objectTag = new ObjectTagDto();
-        objectTag.object = object;
-        objectTag.tag = tag;
-        objectTag.timestamp = LocalDateTime.now();
+        // TODO: use shibboleth user:
+        CreateObjectTagDto objectTag = new CreateObjectTagDto(TEST_USER, tag, object);
         return objectTagRegistry.createObjectTag(objectTag);
     }
 

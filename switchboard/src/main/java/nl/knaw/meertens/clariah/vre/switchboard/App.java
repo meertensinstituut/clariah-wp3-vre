@@ -66,8 +66,7 @@ public class App extends ResourceConfig {
                 ),
                 new ObjectTagRegistry(
                         OBJECTS_DB_URL,
-                        OBJECTS_DB_KEY,
-                        getMapper()
+                        OBJECTS_DB_KEY
                 )
         );
         register(diBinder);

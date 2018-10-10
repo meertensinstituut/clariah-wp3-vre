@@ -22,5 +22,6 @@ public class Config {
     public static final int MIN_POLL_INTERVAL = 1; // seconds
     public static final String USER_TO_LOCK_WITH = "locker";
     public static final String USER_TO_UNLOCK_WITH = "www-data";
+    public static final String TEST_USER = System.getenv("TEST_USER");
 
 }

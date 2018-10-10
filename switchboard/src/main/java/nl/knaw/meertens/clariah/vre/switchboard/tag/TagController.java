@@ -36,7 +36,7 @@ public class TagController extends AbstractController {
     }
 
     @POST
-    @Path("/{tag}")
+    @Path("/{tag}/objects")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public Response tagObject(
@@ -50,7 +50,20 @@ public class TagController extends AbstractController {
     }
 
     @DELETE
-    @Path("/{tag}/object/{object}")
+    @Path("/{tag}")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public Response deleteTag(
+            @PathParam("tag") Long tag
+    ) {
+        TagDto result = new TagDto();
+        // TODO:
+        // result.id = tagService.deleteTag(tag);
+        return createResponse(result);
+    }
+
+    @DELETE
+    @Path("/{tag}/objects/{object}")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public Response untagObject(

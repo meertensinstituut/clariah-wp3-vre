@@ -81,8 +81,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
                 ),
                 new ObjectTagRegistry(
                         mockHostName,
-                        mockRegistryKey,
-                        getMapper()
+                        mockRegistryKey
                 )
         );
         resourceConfig.register(diBinder);

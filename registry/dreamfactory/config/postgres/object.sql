@@ -59,6 +59,7 @@ FOR EACH ROW EXECUTE PROCEDURE object_update();
 CREATE VIEW user_file_count AS
   SELECT user_id, count(id) FROM object WHERE deleted=false GROUP BY user_id;
 
+-- tag:
 CREATE TABLE IF NOT EXISTS tag (
   id bigserial PRIMARY KEY,
   name character varying(255),
@@ -67,6 +68,7 @@ CREATE TABLE IF NOT EXISTS tag (
   unique (name, type, owner)
 );
 
+-- object tag link:
 CREATE TABLE IF NOT EXISTS object_tag (
   id bigserial PRIMARY KEY,
   tag BIGINT REFERENCES tag (id),
@@ -74,12 +76,28 @@ CREATE TABLE IF NOT EXISTS object_tag (
   created timestamp with time zone,
   unique (tag, object)
 );
+
 CREATE INDEX INDEX_TAG_OBJECT_OBJECT
   ON object_tag (object);
 CREATE INDEX INDEX_TAG_OBJECT_TAG
   ON object_tag (tag);
 
+-- when linking tag to object, check owners match:
+CREATE OR REPLACE FUNCTION insert_object_tag(_tag BIGINT, _object BIGINT, _owner TEXT, OUT id BIGINT) AS
+$BODY$
+BEGIN
+  IF NOT EXISTS(SELECT * FROM tag WHERE tag.id = _tag AND tag.owner = _owner) THEN
+    RAISE EXCEPTION '_tag [%] is not owned by the _owner [%]', _tag, _owner;
+  END IF;
 
+  INSERT INTO object_tag(tag, object, created)
+  VALUES(_tag, _object, current_timestamp)
+  RETURNING object_tag.id INTO id;
+END;
+$BODY$
+LANGUAGE 'plpgsql' VOLATILE;
+
+-- view object with full tags:
 CREATE VIEW object_full_tag AS
   SELECT
     object_tag.object,
@@ -88,3 +106,4 @@ CREATE VIEW object_full_tag AS
     tag.*
   FROM object_tag
     LEFT JOIN tag ON tag.id = object_tag.tag;
+

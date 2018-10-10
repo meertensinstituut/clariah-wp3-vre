@@ -12,9 +12,10 @@ import static java.lang.String.format;
 public class TagRegistry extends AbstractDreamfactoryRegistry {
 
     private final ObjectMapper mapper;
+    private final String table = "/_table/tag";
 
     public TagRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper mapper) {
-        super(objectsDbUrl, objectsDbKey, "/_table/tag");
+        super(objectsDbUrl, objectsDbKey);
         this.mapper = mapper;
     }
 
@@ -22,7 +23,7 @@ public class TagRegistry extends AbstractDreamfactoryRegistry {
         try {
             String json;
             try {
-                json = post(mapper.writeValueAsString(tag));
+                json = postResource(mapper.writeValueAsString(tag), table);
             } catch (SQLException e) {
                 String msg = "Could not create tag.";
                 if(e.getSQLState().equals("23505")) {

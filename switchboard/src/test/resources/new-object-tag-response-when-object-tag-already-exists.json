@@ -1,18 +1,8 @@
 {
   "error": {
-    "code": 1000,
-    "context": {
-      "error": [
-        0
-      ],
-      "resource": [
-        {
-          "code": "23505",
-          "message": "SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint &quot;object_tag_tag_object_key&quot;\\nDETAIL:  Key (tag, object)=(1, 1) already exists. (SQL: insert into &quot;public&quot;.&quot;object_tag&quot; (&quot;tag&quot;, &quot;object&quot;) values (1, 1) returning &quot;id&quot;)"
-        }
-      ]
-    },
-    "message": "Batch Error: Not all requested records could be created.",
+    "code": 500,
+    "context": null,
+    "message": "Failed to call database stored function.\nSQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint &quot;object_tag_tag_object_key&quot;\nDETAIL:  Key (tag, object)=(1, 1) already exists.\nCONTEXT:  SQL statement &quot;INSERT INTO object_tag(tag, object, created)\n  VALUES(_tag, _object, current_timestamp)&quot;\nPL/pgSQL function insert_object_tag(bigint,bigint,text) line 7 at SQL statement",
     "status_code": 500
   }
 }

@@ -3,7 +3,6 @@ package nl.knaw.meertens.clariah.vre.switchboard.tag;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import org.junit.Test;
-import org.mockserver.matchers.MatchType;
 import org.mockserver.model.Header;
 
 import javax.ws.rs.client.Entity;
@@ -11,13 +10,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.TEST_USER;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.getMockServer;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.model.JsonBody.json;
 
 public class TagControllerTest extends AbstractControllerTest {
 
@@ -26,7 +25,6 @@ public class TagControllerTest extends AbstractControllerTest {
         TagDto tag = new TagDto();
         tag.name = "2018";
         tag.type = "date";
-        tag.owner = "test";
 
         startPostTagMock();
 
@@ -45,12 +43,12 @@ public class TagControllerTest extends AbstractControllerTest {
         ObjectTagDto objectTag = new ObjectTagDto();
         objectTag.object = 2L;
 
-        startTagObjectMock(200, "{\"resource\": [{\"id\": 6}]}");
+        startTagObjectMock(200, "{\"id\": 6}");
 
         String entity = getMapper().writeValueAsString(objectTag);
         Entity<String> tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        Response response = jerseyTest.target("tags/1")
+        Response response = jerseyTest.target("tags/1/objects")
                 .request()
                 .post(tagEntity);
 
@@ -72,7 +70,7 @@ public class TagControllerTest extends AbstractControllerTest {
         String entity = getMapper().writeValueAsString(objectTag);
         Entity<String> tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        Response response = jerseyTest.target("tags/1")
+        Response response = jerseyTest.target("tags/1/objects")
                 .request()
                 .post(tagEntity);
 
@@ -94,7 +92,7 @@ public class TagControllerTest extends AbstractControllerTest {
         String entity = getMapper().writeValueAsString(objectTag);
         Entity<String> tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        Response response = jerseyTest.target("tags/1")
+        Response response = jerseyTest.target("tags/1/objects")
                 .request()
                 .post(tagEntity);
 
@@ -107,7 +105,7 @@ public class TagControllerTest extends AbstractControllerTest {
     public void untagObject_succeeds() throws JsonProcessingException {
         startUntagObjectMock();
 
-        Response response = jerseyTest.target("tags/1/object/2")
+        Response response = jerseyTest.target("tags/1/objects/2")
                 .request()
                 .delete();
 
@@ -136,9 +134,10 @@ public class TagControllerTest extends AbstractControllerTest {
                 .when(
                         request()
                                 .withMethod("POST")
-                                .withBody(json(getTestFileContent("new-object-tag.json"),
-                                        MatchType.ONLY_MATCHING_FIELDS)
-                                ).withPath("/_table/object_tag")
+                                .withPath("/_func/insert_object_tag")
+                                .withQueryStringParameter("_tag", "1")
+                                .withQueryStringParameter("_object", "2")
+                                .withQueryStringParameter("_owner", "test")
                 ).respond(
                 response()
                         .withStatusCode(statusCode)
