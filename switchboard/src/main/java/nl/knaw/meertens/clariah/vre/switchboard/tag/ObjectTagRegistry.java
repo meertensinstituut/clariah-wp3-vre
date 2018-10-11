@@ -13,7 +13,7 @@ import java.util.Map;
 public class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
 
     private final String table = "/_table/object_tag";
-    private final String funcTagObject = "/_func/insert_object_tag";
+    private final String insertObjectTagProcedure = "/_proc/insert_object_tag";
     private Logger logger = LoggerFactory.getLogger(ObjectTagRegistry.class);
 
     public ObjectTagRegistry(String objectsDbUrl, String objectsDbKey) {
@@ -21,9 +21,9 @@ public class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
     }
 
     public Long createObjectTag(CreateObjectTagDto objectTag) {
-        String json = null;
+        String json;
         try {
-            json = postFunc(objectTag.params, funcTagObject);
+            json = postProcedure(objectTag.params, insertObjectTagProcedure);
         } catch (SQLException e) {
             String msg = "Could not create object tag.";
             if (e.getSQLState().equals("23503")) {

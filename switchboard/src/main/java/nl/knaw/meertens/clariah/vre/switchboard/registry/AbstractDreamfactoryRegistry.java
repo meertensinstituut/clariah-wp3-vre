@@ -42,7 +42,7 @@ public class AbstractDreamfactoryRegistry {
         return post(json, endpoint, true);
     }
 
-    protected String postFunc(
+    protected String postProcedure(
             List<NameValueDto> params,
             String endpoint
     ) throws SQLException {

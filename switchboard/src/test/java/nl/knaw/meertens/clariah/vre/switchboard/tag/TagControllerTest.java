@@ -160,7 +160,7 @@ public class TagControllerTest extends AbstractControllerTest {
                 .when(
                         request()
                                 .withMethod("POST")
-                                .withPath("/_func/insert_object_tag")
+                                .withPath("/_proc/insert_object_tag")
                                 .withQueryStringParameter("_tag", "1")
                                 .withQueryStringParameter("_object", "2")
                                 .withQueryStringParameter("_owner", "test")
