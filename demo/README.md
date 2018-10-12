@@ -26,12 +26,12 @@ vi nos.txt
 curl -v 'http://localhost:8082/remote.php/webdav/nos.txt' \
      -X PUT \
      -H 'Content-Type: text/plain; charset=UTF-8' \
-     -u admin:admin \
+     -u test:achtkarakters \
      -d '@nos.txt'
 ```
 2. [X] Show the file in OwnCloud
   - goto http://localhost:8082/
-  - login `admin:admin`
+  - login `admin:achtkarakters`
 3. [X] Show the message in Kafka
   - goto http://localhost:9000/#/observe
 4. [X] Show the entry in the Object Registry
@@ -73,7 +73,7 @@ Or for the execution steps above
   - http://127.0.0.1:9998/ucto/
 14. [X] Show the output in OwnCloud
   - goto http://localhost:8082/
-  - (login `admin:admin`)
+  - (login `test:achtkarakters`)
 
 20. [X] Show the entries in the Solr
   - http://localhost:8087/solr/#/vrecore/query

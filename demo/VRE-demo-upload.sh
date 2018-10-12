@@ -2,7 +2,7 @@
 curl -v 'http://localhost:8082/remote.php/webdav/nos.txt' \
      -X PUT \
      -H 'Content-Type: text/plain; charset=UTF-8' \
-     -u admin:admin \
+     -u test:achtkarakters \
      --data-binary '@nos.txt'
 
 sleep 5

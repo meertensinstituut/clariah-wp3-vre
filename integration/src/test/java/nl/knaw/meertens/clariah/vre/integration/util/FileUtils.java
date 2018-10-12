@@ -95,7 +95,7 @@ public class FileUtils {
     /**
      * Upload file with a random filename
      */
-    public static String uploadTestFile() throws UnirestException, IOException, URISyntaxException {
+    public static String uploadTestFile() throws UnirestException {
         return uploadTestFile(getTestFileContent());
     }
 
