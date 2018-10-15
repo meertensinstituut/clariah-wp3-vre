@@ -103,7 +103,9 @@ CREATE VIEW object_full_tag AS
     object_tag.object,
     object_tag.tag,
     object_tag.created,
-    tag.*
+    tag.name,
+    tag.type,
+    tag.owner
   FROM object_tag
     LEFT JOIN tag ON tag.id = object_tag.tag;
 

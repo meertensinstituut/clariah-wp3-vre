@@ -30,7 +30,7 @@ export default class Files extends React.Component {
         const count = await Dreamfactory
             .getObjectCount()
             .catch(this.err());
-        if(!count) return;
+        if (!count) return;
 
         let pageTotal = count.resource.length !== 0
             ? Math.ceil(count.resource[0].count / this.state.pageSize)
@@ -40,9 +40,24 @@ export default class Files extends React.Component {
     }
 
     async updateObjects() {
-        await this.getObjectPage(this.state.pageCurrent, this.state.pageSize)
-            .then(data => this.setState({data: data}))
+        const objects = await this.getObjectPage(this.state.pageCurrent, this.state.pageSize)
+            .then(data => data.resource)
             .catch((e) => this.setState({error: e}));
+        const ids = [];
+        objects.forEach(o => ids.push(o.id));
+        if (ids.length > 0) {
+            await this.findTags(objects);
+        }
+        this.setState({data: objects});
+    }
+
+    async findTags(objects) {
+        const objectTags = await Dreamfactory.getObjectTags([15])
+            .then(data => data.resource)
+            .catch((e) => this.setState({error: e}));
+        objects.forEach(o => {
+            o.tags = objectTags.filter(ot => ot.object === o.id);
+        });
     }
 
     async getObjectPage(page, size) {
@@ -83,6 +98,7 @@ export default class Files extends React.Component {
     }
 
     render() {
+
         if (this.state.error)
             return <ErrorMsg error={this.state.error}/>;
 
@@ -92,7 +108,7 @@ export default class Files extends React.Component {
         if (this.state.redirect !== null)
             return <Redirect to={this.state.redirect}/>;
 
-        let objects = this.state.data.resource;
+        let objects = this.state.data;
 
         return (
             <div>
@@ -109,7 +125,7 @@ export default class Files extends React.Component {
                     </tr>
                     </thead>
                     <tbody>
-                    {objects.map(function (object, i) {
+                    {objects.map((object, i) => {
 
                         const view = object.format !== "directory"
                             ?
@@ -128,7 +144,12 @@ export default class Files extends React.Component {
                             <tr key={object.id}>
                                 <td>{object.id}</td>
                                 <td>
-                                    {object.filepath}
+                                    <p>{object.filepath}</p>
+                                    <p>
+                                        {object.tags.map((tag, i) => {
+                                            return <span key={i} className="label label-success">{tag.type}:{tag.name}</span>;
+                                        })}
+                                    </p>
                                 </td>
                                 <td>{object.format}</td>
                                 <td>{object.mimetype}</td>

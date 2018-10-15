@@ -22,6 +22,11 @@ export default class Dreamfactory {
         const url = `${DOMAIN}/objects/_table/user_file_count`;
         return await getWithUser(url);
     }
+
+    static async getObjectTags(ids) {
+        const url = `${DOMAIN}/objects/_table/object_full_tag?object=${ids.join(',')}`;
+        return Resource.validate(await get(url));
+    }
 }
 
 async function getWithUser(url, filters = {}) {
@@ -46,8 +51,8 @@ function addFilters(url, filters) {
     let filterString = "";
     let first = true;
 
-    Object.keys(filters).forEach(function(key) {
-        if(!first) {
+    Object.keys(filters).forEach(function (key) {
+        if (!first) {
             filterString += ' AND ';
         }
         filterString += `(${key} = '${filters[key]}')`;
