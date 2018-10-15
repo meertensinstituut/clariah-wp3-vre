@@ -13,7 +13,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
 import nl.knaw.meertens.clariah.vre.recognizer.Report;
-import nl.knaw.meertens.clariah.vre.recognizer.fits.output.IdentificationType.Identity;
+import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +34,7 @@ public class ObjectsRepositoryService {
     private final String objectsDbKey;
     private final String objectTable;
     private final ParseContext jsonPath;
+    private final ObjectMapper mapper;
 
     public ObjectsRepositoryService(String objectsDbUrl, String objectsDbKey, String objectTable) {
         this.objectsDbUrl = objectsDbUrl;
@@ -46,6 +47,10 @@ public class ObjectsRepositoryService {
                 .options(Option.SUPPRESS_EXCEPTIONS)
                 .build();
         jsonPath = JsonPath.using(conf);
+
+        mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(WRITE_DATES_AS_TIMESTAMPS);
     }
 
     /**
@@ -214,18 +219,11 @@ public class ObjectsRepositoryService {
     }
 
     public String createObjectRecordJson(Report report) {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(WRITE_DATES_AS_TIMESTAMPS);
-
         ObjectsRecordDTO record = fillObjectsRecordDto(report);
         try {
             return mapper.writeValueAsString(record);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(format(
-                    "Could not create json from report [%s]",
-                    report.getPath()
-            ), e);
+            throw new RuntimeException(format("Could not create json from [%s]", report.getPath()), e);
         }
     }
 
@@ -287,10 +285,11 @@ public class ObjectsRepositoryService {
     private ObjectsRecordDTO fillObjectsRecordDto(Report report) {
         ObjectsRecordDTO msg = new ObjectsRecordDTO();
         msg.filepath = report.getPath();
-        Identity identity = report.getFits().getIdentification().getIdentity().get(0);
         msg.fits = report.getXml();
-        msg.format = identity.getFormat();
-        msg.mimetype = identity.getMimetype();
+
+        msg.mimetype = FitsService.getMimeType(report.getFits());
+        msg.format = FitsService.getIdentity(report.getFits()).getFormat();
+
         msg.timechanged = LocalDateTime.now();
         msg.timecreated = LocalDateTime.now();
         msg.user_id = report.getUser();

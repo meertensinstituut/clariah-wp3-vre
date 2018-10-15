@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.recognizer.fits;
 
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.Fits;
+import nl.knaw.meertens.clariah.vre.recognizer.fits.output.IdentificationType;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.output.ObjectFactory;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -34,19 +35,27 @@ public class FitsService {
         }
     }
 
+    public static String getMimeType(Fits fits) {
+        return getIdentity(fits).getMimetype();
+    }
+
+    public static IdentificationType.Identity getIdentity(Fits fits) {
+        return fits.getIdentification().getIdentity().get(0);
+    }
+
     public FitsResult checkFile(String path) throws IOException, JAXBException {
         String fitsPath = Paths
                 .get(fitsFilesRoot, path)
                 .toString();
         logger.info(String.format("FitsService is checking file [%s]", fitsPath));
-        String fitsXmlResult = requestFits(fitsPath);
+        String fitsXmlResult = askFits(fitsPath);
         FitsResult fitsResult = new FitsResult();
         fitsResult.setXml(fitsXmlResult);
         fitsResult.setFits(unmarshalFits(fitsXmlResult));
         return fitsResult;
     }
 
-    private String requestFits(String path) throws IOException {
+    private String askFits(String path) throws IOException {
         String result = "";
         URL url = new URL(fitsUrl, "examine?file=" + path);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
