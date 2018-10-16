@@ -6,6 +6,8 @@ import {AsyncTypeahead} from 'react-bootstrap-typeahead';
 
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import './tag.css';
+import TagResource from "./tag-resource";
+import ErrorMsg from "../common/error-msg";
 
 export default class Tag extends React.Component {
 
@@ -14,7 +16,8 @@ export default class Tag extends React.Component {
         this.state = {
             object: null,
             isLoading: false,
-            options: []
+            options: [],
+            selectedTags: []
         };
         this.init();
     }
@@ -30,17 +33,61 @@ export default class Tag extends React.Component {
         this.props.onClose();
     }
 
-    handleSearch = (event) => {
-        const value = event.target.value;
-        console.log('handleSearch ', value);
+    handleSelectedTag = async (newTags) => {
+
+        // if new tag:
+        // - create tag
+        // - create object tag
+        // if removed object tag
+        // - delete object tag
+        // if new object tag
+        // - create object tag
+
+        const oldTags = this.state.selectedTags;
+        if(newTags.length > oldTags.length) {
+            let newTag = this.findUnique(newTags, oldTags)[0];
+            if(newTag.id === undefined) {
+                const result = await this.createNewTag(newTag);
+                newTag.id = result.id;
+            }
+            await this.tagObject(this.state.object.id, newTag.id);
+        } else if(newTags.length < oldTags.length) {
+            // tags were removed:
+            const removedTag = this.findUnique(oldTags, newTags)[0];
+            await this.untagObject(this.state.object.id, removedTag.id);
+        } else {
+            throw new Error("could not determine if tag was added or removed");
+        }
+        this.setState({selectedTags: newTags});
     };
 
-    handleSelectedTag = (selected) => {
-        console.log("handleSelectedTag", selected);
-        // if (selected.length) {
-        //     this.typeahead.getInstance().clear();
-        // }
-    };
+    async createNewTag(newTag) {
+        return await TagResource.postTag(newTag)
+            .catch((e) => this.setState({error: e}));
+    }
+
+    async tagObject(objectId, tagId) {
+        return await TagResource.postObjectTag(objectId, tagId)
+            .catch((e) => this.setState({error: e}));
+    }
+
+    async untagObject(objectId, tagId) {
+        return await TagResource.deleteObjectTag(objectId, tagId)
+            .then((data) => {console.log("untagObject", data);})
+            .catch((e) => this.setState({error: e}));
+    }
+
+    /**
+     * Find tags in tags1 that don't exist in tags2
+     */
+    findUnique(tags1, tags2) {
+        return tags1.filter(t1 => {
+            const foundIn2 = tags2.filter(t2 => {
+                return t2.name === t1.name && t2.type === t1.type;
+            });
+            return foundIn2.length === 0;
+        });
+    }
 
     render() {
         if (!this.state.object)
@@ -53,6 +100,7 @@ export default class Tag extends React.Component {
             <Modal.Body>
                 <Panel>
                     <Panel.Body>
+                        {this.state.error ? <ErrorMsg error={this.state.error}/> : null}
                         <p>Type to search for tags, click on a tag to select it.</p>
                         <div>
                             <AsyncTypeahead
@@ -62,15 +110,15 @@ export default class Tag extends React.Component {
                                 onSearch={async query => {
                                     this.setState({isLoading: true});
                                     const json = await Dreamfactory.searchTags(query);
-                                    json.resource = json.resource.map(i => {
-                                        i.label = i.name;
-                                        return i;
-                                    });
-                                    // always show current query string as option
-                                    // (new tag has to be created when this option is selected)
+                                    // add current query string as optional new tag
                                     if(undefined === json.resource.find(t => t.label === query)) {
                                         json.resource.unshift({label: query, name: query, type: 'user'});
                                     }
+                                    // add label:
+                                    json.resource = json.resource.map(i => {
+                                        i.label = `${i.type}:${i.name}`;
+                                        return i;
+                                    });
                                     this.setState({
                                         isLoading: false,
                                         options: json.resource,

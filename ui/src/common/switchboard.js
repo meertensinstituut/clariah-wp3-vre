@@ -1,22 +1,22 @@
 import Resource from "./resource";
+import {SWITCHBOARD_ENDPOINT} from "../config";
 
-const DOMAIN = 'http://localhost:9010/switchboard/rest';
 export default class Switchboard {
 
     static async getServices(objectId) {
-        let url = `${DOMAIN}/object/${objectId}/services`;
+        let url = `${SWITCHBOARD_ENDPOINT}/object/${objectId}/services`;
         const response = await fetch(url);
         return Resource.validate(response);
     }
 
     static async getViewers(objectId) {
-        let url = `${DOMAIN}/object/${objectId}/viewers`;
+        let url = `${SWITCHBOARD_ENDPOINT}/object/${objectId}/viewers`;
         const response = await fetch(url);
         return Resource.validate(response);
     }
 
     static async postDeployment(serviceName, params) {
-        let url = `${DOMAIN}/exec/${serviceName}`;
+        let url = `${SWITCHBOARD_ENDPOINT}/exec/${serviceName}`;
         const response = await fetch(url, {
             method: "POST",
             headers: {
@@ -28,13 +28,13 @@ export default class Switchboard {
     }
 
     static async getParams(serviceId) {
-        let url = `${DOMAIN}/services/${serviceId}/params`;
+        let url = `${SWITCHBOARD_ENDPOINT}/services/${serviceId}/params`;
         const response = await fetch(url);
         return Resource.validate(response);
     }
 
     static async getDeploymentStatusResult(workDir) {
-        let url = `${DOMAIN}/exec/task/${workDir}`;
+        let url = `${SWITCHBOARD_ENDPOINT}/exec/task/${workDir}`;
         const response = await fetch(url);
         return Resource.validate(response);
     }

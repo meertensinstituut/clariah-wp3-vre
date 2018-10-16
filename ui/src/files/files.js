@@ -8,6 +8,8 @@ import ReactTooltip from 'react-tooltip'
 import ErrorMsg from "../common/error-msg";
 import Tag from "../tag/tag";
 
+import './files.css';
+
 const PAGE_SIZE = 6;
 
 export default class Files extends React.Component {
@@ -157,9 +159,9 @@ export default class Files extends React.Component {
                                     <p>{object.filepath}</p>
                                     <p>
                                         {object.tags.map((tag, i) => {
-                                            return <span key={i} className="label label-primary">{tag.type}:{tag.name}</span>;
+                                            return <span key={i} className="label label-primary tag">{tag.type}:{tag.name}</span>;
                                         })}
-                                        <span className="label label-success clickable" onClick={() => this.handleAddTag(object.id)}><i className="fa fa-plus fa-1x" aria-hidden="true"/> Add tag</span>
+                                        <span className="label label-success clickable tag" onClick={() => this.handleAddTag(object.id)}><i className="fa fa-plus fa-1x" aria-hidden="true"/> Add tag</span>
                                     </p>
                                 </td>
                                 <td>{object.format}</td>
