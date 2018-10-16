@@ -37,9 +37,9 @@ export default class Tag extends React.Component {
 
     handleSelectedTag = (selected) => {
         console.log("handleSelectedTag", selected);
-        if (selected.length) {
-            this.typeahead.getInstance().clear();
-        }
+        // if (selected.length) {
+        //     this.typeahead.getInstance().clear();
+        // }
     };
 
     render() {
@@ -53,10 +53,12 @@ export default class Tag extends React.Component {
             <Modal.Body>
                 <Panel>
                     <Panel.Body>
-                        <p>panel body</p>
+                        <p>Type to search for tags, click on a tag to select it.</p>
                         <div>
                             <AsyncTypeahead
+                                multiple
                                 isLoading={this.state.isLoading}
+                                onChange={this.handleSelectedTag}
                                 onSearch={async query => {
                                     this.setState({isLoading: true});
                                     const json = await Dreamfactory.searchTags(query);
@@ -64,12 +66,16 @@ export default class Tag extends React.Component {
                                         i.label = i.name;
                                         return i;
                                     });
+                                    // always show current query string as option
+                                    // (new tag has to be created when this option is selected)
+                                    if(undefined === json.resource.find(t => t.label === query)) {
+                                        json.resource.unshift({label: query, name: query, type: 'user'});
+                                    }
                                     this.setState({
                                         isLoading: false,
                                         options: json.resource,
                                     });
                                 }}
-                                filterBy={['login']}
                                 options={this.state.options}
                             />
                         </div>
@@ -77,7 +83,7 @@ export default class Tag extends React.Component {
                 </Panel>
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={() => this.handleClose()}>Close</Button>
+                <Button className="btn-success" onClick={() => this.handleClose()}>Save and close</Button>
             </Modal.Footer>
         </Modal.Dialog>;
     }
