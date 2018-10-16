@@ -6,6 +6,7 @@ import Dreamfactory from "../common/dreamfactory";
 import {Table} from "react-bootstrap";
 import ReactTooltip from 'react-tooltip'
 import ErrorMsg from "../common/error-msg";
+import Tag from "../tag/tag";
 
 const PAGE_SIZE = 6;
 
@@ -20,6 +21,7 @@ export default class Files extends React.Component {
             pageTotal: null,
             data: null,
             selectedObject: null,
+            objectToTag: null,
         };
 
         this.goToPage = this.goToPage.bind(this);
@@ -89,6 +91,14 @@ export default class Files extends React.Component {
         });
     }
 
+    handleAddTag = (id) => {
+        this.setState({objectToTag:Number(id)});
+    };
+
+    handleStopTagging = () => {
+        this.setState({objectToTag:null});
+    };
+
     deselectObject() {
         this.setState({selectedObject: null});
     }
@@ -147,8 +157,9 @@ export default class Files extends React.Component {
                                     <p>{object.filepath}</p>
                                     <p>
                                         {object.tags.map((tag, i) => {
-                                            return <span key={i} className="label label-success">{tag.type}:{tag.name}</span>;
+                                            return <span key={i} className="label label-primary">{tag.type}:{tag.name}</span>;
                                         })}
+                                        <span className="label label-success clickable" onClick={() => this.handleAddTag(object.id)}><i className="fa fa-plus fa-1x" aria-hidden="true"/> Add tag</span>
                                     </p>
                                 </td>
                                 <td>{object.format}</td>
@@ -177,6 +188,10 @@ export default class Files extends React.Component {
                     pageCurrent={this.state.pageCurrent}
                     onClick={this.goToPage}
                 />
+                {this.state.objectToTag ? <Tag
+                    objectId={this.state.objectToTag}
+                    onClose={() => this.handleStopTagging()}
+                /> : null}
             </div>
         )
     }

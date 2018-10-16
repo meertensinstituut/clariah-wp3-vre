@@ -1,0 +1,6 @@
+.tag-search-bar {}
+
+.rbt-input-hint {
+    /* Alignment of input hint is wrong, so hide it (atm): */
+    display: none;
+}
