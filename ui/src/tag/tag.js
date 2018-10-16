@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from 'prop-types';
 import {Button, Modal, Panel} from "react-bootstrap";
 import Dreamfactory from "../common/dreamfactory";
-import {Typeahead} from 'react-bootstrap-typeahead';
+import {AsyncTypeahead} from 'react-bootstrap-typeahead';
 
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import './tag.css';
@@ -12,16 +12,17 @@ export default class Tag extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            object: null
+            object: null,
+            isLoading: false,
+            options: []
         };
         this.init();
     }
 
-    async init () {
+    async init() {
         const object = await Dreamfactory
             .getObject(this.props.objectId)
             .catch((e) => this.setState({error: e}));
-        console.log("init", object);
         this.setState({object});
     }
 
@@ -35,14 +36,14 @@ export default class Tag extends React.Component {
     };
 
     handleSelectedTag = (selected) => {
-      console.log("handleSelectedTag", selected);
+        console.log("handleSelectedTag", selected);
         if (selected.length) {
             this.typeahead.getInstance().clear();
         }
     };
 
     render() {
-        if(!this.state.object)
+        if (!this.state.object)
             return null;
 
         return <Modal.Dialog>
@@ -54,11 +55,22 @@ export default class Tag extends React.Component {
                     <Panel.Body>
                         <p>panel body</p>
                         <div>
-                            <Typeahead
-                                onChange={this.handleSelectedTag}
-                                options={[{id: 1, label: "tag1"}, {id: 1, label: "tag2"}, {id: 1, label: "tagZ"}]}
-                                ref={(typeahead) => this.typeahead = typeahead}
-                                className="tag-search-bar"
+                            <AsyncTypeahead
+                                isLoading={this.state.isLoading}
+                                onSearch={query => {
+                                    this.setState({isLoading: true});
+                                    fetch(`https://api.github.com/search/users?q=${query}`)
+                                        .then(resp => resp.json())
+                                        .then(json => {
+                                            json.items = json.items.map(i => {i.label = i.login; return i;});
+                                            this.setState({
+                                                isLoading: false,
+                                                options: json.items,
+                                            });
+                                        });
+                                }}
+                                filterBy={['login']}
+                                options={this.state.options}
                             />
                         </div>
                     </Panel.Body>
