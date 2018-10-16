@@ -57,17 +57,17 @@ export default class Tag extends React.Component {
                         <div>
                             <AsyncTypeahead
                                 isLoading={this.state.isLoading}
-                                onSearch={query => {
+                                onSearch={async query => {
                                     this.setState({isLoading: true});
-                                    fetch(`https://api.github.com/search/users?q=${query}`)
-                                        .then(resp => resp.json())
-                                        .then(json => {
-                                            json.items = json.items.map(i => {i.label = i.login; return i;});
-                                            this.setState({
-                                                isLoading: false,
-                                                options: json.items,
-                                            });
-                                        });
+                                    const json = await Dreamfactory.searchTags(query);
+                                    json.resource = json.resource.map(i => {
+                                        i.label = i.name;
+                                        return i;
+                                    });
+                                    this.setState({
+                                        isLoading: false,
+                                        options: json.resource,
+                                    });
                                 }}
                                 filterBy={['login']}
                                 options={this.state.options}
