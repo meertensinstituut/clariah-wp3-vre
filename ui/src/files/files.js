@@ -10,6 +10,7 @@ import Tag from "../tag/tag";
 
 import './files.css';
 import TagResource from "../tag/tag-resource";
+import ObjectTag from "../common/object-tag";
 
 const PAGE_SIZE = 6;
 
@@ -47,10 +48,8 @@ export default class Files extends React.Component {
     async updateObjects() {
         const objects = await this.getObjectPage(this.state.pageCurrent, this.state.pageSize)
             .then(data => data.resource)
-            .catch((e) => this.setState({error: e}));
-        const ids = [];
-        objects.forEach(o => ids.push(o.id));
-        if (ids.length > 0) {
+            .catch(this.err());
+        if (objects.length > 0) {
             await this.findTags(objects);
         }
         this.setState({objects});
@@ -59,7 +58,7 @@ export default class Files extends React.Component {
     async findTags(objects) {
         const objectTags = await Dreamfactory.getObjectTags(objects)
             .then(data => data.resource)
-            .catch((e) => this.setState({error: e}));
+            .catch(this.err());
         objects.forEach(o => {
             o.tags = objectTags.filter(ot => ot.object === o.id);
         });
@@ -155,34 +154,19 @@ export default class Files extends React.Component {
                     </thead>
                     <tbody>
                     {objects.map((object, i) => {
-
-                        const view = object.format !== "directory"
-                            ?
-                            <button
-                                data-tip="view file"
-                                onClick={() => this.handleViewFileClick(object)}
-                            >
-                                <i className="fa fa-eye"
-                                   aria-hidden="true"
-                                />
-                            </button>
-                            :
-                            null;
-
                         return (
                             <tr key={object.id}>
                                 <td>{object.id}</td>
                                 <td>
                                     <p>{object.filepath}</p>
                                     <p>
-                                        {object.tags.map((tag, i) => {
-                                            return (
-                                                <span key={i} className="label label-primary tag">
-                                                {tag.type}:{tag.name} <i className="fa fa-times clickable" area-hidden="true" onClick={() => this.handleDeleteTag(tag)}/>
-                                                </span>
-                                            );
-                                        })}
-                                        <span className="label label-success clickable tag" onClick={() => this.handleAddTag(object.id)}>
+                                        {object.tags.map((tag, i) => <ObjectTag
+                                            key={i}
+                                            objectTag={tag}
+                                            onDelete={() => this.handleDeleteTag(tag)}
+                                        />)}
+                                        <span className="label label-success clickable tag"
+                                              onClick={() => this.handleAddTag(object.id)}>
                                             <i className="fa fa-plus fa-1x" aria-hidden="true"/> add tag
                                         </span>
                                     </p>
@@ -192,14 +176,15 @@ export default class Files extends React.Component {
                                 <td>{object.time_created.split('.')[0]}</td>
                                 <td>{object.user_id}</td>
                                 <td>
-                                    {view}
+                                    <button
+                                        data-tip="view file"
+                                        onClick={() => this.handleViewFileClick(object)}>
+                                        <i className="fa fa-eye" aria-hidden="true"/>
+                                    </button>
                                     <button
                                         data-tip="process file with a service"
-                                        onClick={() => this.handleProcessFileClick(object)}
-                                    >
-                                        <i className="fa fa-play"
-                                           aria-hidden="true"
-                                        />
+                                        onClick={() => this.handleProcessFileClick(object)}>
+                                        <i className="fa fa-play" aria-hidden="true"/>
                                     </button>
                                     <ReactTooltip/>
                                 </td>
