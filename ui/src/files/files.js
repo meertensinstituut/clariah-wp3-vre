@@ -9,6 +9,7 @@ import ErrorMsg from "../common/error-msg";
 import Tag from "../tag/tag";
 
 import './files.css';
+import TagResource from "../tag/tag-resource";
 
 const PAGE_SIZE = 6;
 
@@ -21,7 +22,7 @@ export default class Files extends React.Component {
             pageSize: PAGE_SIZE,
             pageCurrent: 0,
             pageTotal: null,
-            data: null,
+            objects: null,
             selectedObject: null,
             objectToTag: null,
         };
@@ -52,7 +53,7 @@ export default class Files extends React.Component {
         if (ids.length > 0) {
             await this.findTags(objects);
         }
-        this.setState({data: objects});
+        this.setState({objects});
     }
 
     async findTags(objects) {
@@ -94,14 +95,27 @@ export default class Files extends React.Component {
     }
 
     handleAddTag = (id) => {
-        this.setState({objectToTag:Number(id)});
+        this.setState({objectToTag: Number(id)});
     };
 
     handleStopTagging = async () => {
-        const data = this.state.data;
-        const object = data.find(o => {return Number(o.id) === this.state.objectToTag;});
+        const objects = this.state.objects;
+        const object = objects.find(o => {
+            return Number(o.id) === this.state.objectToTag;
+        });
         await this.findTags([object]);
-        this.setState({data, objectToTag:null});
+        this.setState({objects, objectToTag: null});
+    };
+
+    handleDeleteTag = async (objectTag) => {
+        await TagResource
+            .deleteObjectTag(objectTag.object, objectTag.tag)
+            .catch((e) => this.setState({error: e}));
+        const objects = this.state.objects;
+        const object = objects.find(object => object.id === objectTag.object);
+        const tagIndex = object.tags.findIndex(tag => tag.tag === objectTag.tag);
+        object.tags.splice(tagIndex, 1);
+        this.setState({objects});
     };
 
     deselectObject() {
@@ -117,13 +131,13 @@ export default class Files extends React.Component {
         if (this.state.error)
             return <ErrorMsg error={this.state.error}/>;
 
-        if (this.state.data === null)
+        if (this.state.objects === null)
             return <div className="main">Loading...</div>;
 
         if (this.state.redirect !== null)
             return <Redirect to={this.state.redirect}/>;
 
-        let objects = this.state.data;
+        let objects = this.state.objects;
 
         return (
             <div>
@@ -162,14 +176,20 @@ export default class Files extends React.Component {
                                     <p>{object.filepath}</p>
                                     <p>
                                         {object.tags.map((tag, i) => {
-                                            return <span key={i} className="label label-primary tag">{tag.type}:{tag.name}</span>;
+                                            return (
+                                                <span key={i} className="label label-primary tag">
+                                                {tag.type}:{tag.name} <i className="fa fa-times clickable" area-hidden="true" onClick={() => this.handleDeleteTag(tag)}/>
+                                                </span>
+                                            );
                                         })}
-                                        <span className="label label-success clickable tag" onClick={() => this.handleAddTag(object.id)}><i className="fa fa-plus fa-1x" aria-hidden="true"/> add tag</span>
+                                        <span className="label label-success clickable tag" onClick={() => this.handleAddTag(object.id)}>
+                                            <i className="fa fa-plus fa-1x" aria-hidden="true"/> add tag
+                                        </span>
                                     </p>
                                 </td>
                                 <td>{object.format}</td>
                                 <td>{object.mimetype}</td>
-                                <td>{object.time_created}</td>
+                                <td>{object.time_created.split('.')[0]}</td>
                                 <td>{object.user_id}</td>
                                 <td>
                                     {view}
