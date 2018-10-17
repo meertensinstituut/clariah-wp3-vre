@@ -34,15 +34,6 @@ export default class Tag extends React.Component {
     }
 
     handleSelectedTag = async (newTags) => {
-
-        // if new tag:
-        // - create tag
-        // - create object tag
-        // if removed object tag
-        // - delete object tag
-        // if new object tag
-        // - create object tag
-
         const oldTags = this.state.selectedTags;
         if(newTags.length > oldTags.length) {
             let newTag = this.findUnique(newTags, oldTags)[0];
@@ -52,11 +43,10 @@ export default class Tag extends React.Component {
             }
             await this.tagObject(this.state.object.id, newTag.id);
         } else if(newTags.length < oldTags.length) {
-            // tags were removed:
             const removedTag = this.findUnique(oldTags, newTags)[0];
             await this.untagObject(this.state.object.id, removedTag.id);
         } else {
-            throw new Error("could not determine if tag was added or removed");
+            this.setState({error: new Error("could not determine if tag was added or removed")});
         }
         this.setState({selectedTags: newTags});
     };
@@ -73,7 +63,6 @@ export default class Tag extends React.Component {
 
     async untagObject(objectId, tagId) {
         return await TagResource.deleteObjectTag(objectId, tagId)
-            .then((data) => {console.log("untagObject", data);})
             .catch((e) => this.setState({error: e}));
     }
 
@@ -88,6 +77,24 @@ export default class Tag extends React.Component {
             return foundIn2.length === 0;
         });
     }
+
+    handleSearchTags = async (query) => {
+        this.setState({isLoading: true});
+        const json = await Dreamfactory.searchTags(query);
+        // add current query string as optional new tag
+        if(!json.resource.find(t => t.name === query)) {
+            json.resource.unshift({label: query, name: query, type: 'user'});
+        }
+        // add label:
+        json.resource = json.resource.map(i => {
+            i.label = `${i.type}:${i.name}`;
+            return i;
+        });
+        this.setState({
+            isLoading: false,
+            options: json.resource,
+        });
+    };
 
     render() {
         if (!this.state.object)
@@ -107,23 +114,7 @@ export default class Tag extends React.Component {
                                 multiple
                                 isLoading={this.state.isLoading}
                                 onChange={this.handleSelectedTag}
-                                onSearch={async query => {
-                                    this.setState({isLoading: true});
-                                    const json = await Dreamfactory.searchTags(query);
-                                    // add current query string as optional new tag
-                                    if(undefined === json.resource.find(t => t.label === query)) {
-                                        json.resource.unshift({label: query, name: query, type: 'user'});
-                                    }
-                                    // add label:
-                                    json.resource = json.resource.map(i => {
-                                        i.label = `${i.type}:${i.name}`;
-                                        return i;
-                                    });
-                                    this.setState({
-                                        isLoading: false,
-                                        options: json.resource,
-                                    });
-                                }}
+                                onSearch={this.handleSearchTags}
                                 options={this.state.options}
                             />
                         </div>

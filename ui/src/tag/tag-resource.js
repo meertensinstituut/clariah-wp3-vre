@@ -30,10 +30,7 @@ export default class TagResource {
     static async deleteObjectTag(objectId, tagId) {
         let url = `${SWITCHBOARD_ENDPOINT}/tags/${tagId}/objects/${objectId}`;
         const response = await fetch(url, {
-            method: 'delete',
-            headers: {
-                "Content-Type": "application/json; charset=utf-8"
-            }
+            method: 'delete'
         });
         return Resource.validate(response);
     }

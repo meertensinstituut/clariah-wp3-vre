@@ -56,7 +56,7 @@ export default class Files extends React.Component {
     }
 
     async findTags(objects) {
-        const objectTags = await Dreamfactory.getObjectTags([15])
+        const objectTags = await Dreamfactory.getObjectTags(objects)
             .then(data => data.resource)
             .catch((e) => this.setState({error: e}));
         objects.forEach(o => {
@@ -97,8 +97,11 @@ export default class Files extends React.Component {
         this.setState({objectToTag:Number(id)});
     };
 
-    handleStopTagging = () => {
-        this.setState({objectToTag:null});
+    handleStopTagging = async () => {
+        const data = this.state.data;
+        const object = data.find(o => {return Number(o.id) === this.state.objectToTag;});
+        await this.findTags([object]);
+        this.setState({data, objectToTag:null});
     };
 
     deselectObject() {
@@ -161,7 +164,7 @@ export default class Files extends React.Component {
                                         {object.tags.map((tag, i) => {
                                             return <span key={i} className="label label-primary tag">{tag.type}:{tag.name}</span>;
                                         })}
-                                        <span className="label label-success clickable tag" onClick={() => this.handleAddTag(object.id)}><i className="fa fa-plus fa-1x" aria-hidden="true"/> Add tag</span>
+                                        <span className="label label-success clickable tag" onClick={() => this.handleAddTag(object.id)}><i className="fa fa-plus fa-1x" aria-hidden="true"/> add tag</span>
                                     </p>
                                 </td>
                                 <td>{object.format}</td>
