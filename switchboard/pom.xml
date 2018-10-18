@@ -10,15 +10,16 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.9</java.version>
-        <maven.compiler.source>1.9</maven.compiler.source>
-        <maven.compiler.target>1.9</maven.compiler.target>
+        <java.version>11</java.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
 
         <assertj-core.version>3.9.0</assertj-core.version>
         <commons-io.version>2.6</commons-io.version>
         <commons-lang.version>3.7</commons-lang.version>
         <jackson.version>2.8.4</jackson.version>
-        <jaxb-api.version>2.2.11</jaxb-api.version>
+        <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+        <jaxb-api.version>2.4.0-b180725.0427</jaxb-api.version>
         <jaxrs.version>2.1</jaxrs.version>
         <jersey.version>2.26</jersey.version>
         <json-path.version>2.3.0</json-path.version>
@@ -29,8 +30,11 @@
         <log4j.version>2.7</log4j.version>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <mavens-surefire-plugin.version>2.18.1</mavens-surefire-plugin.version>
-        <mockito.version>2.21.0</mockito.version>
+        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+        <mockito-core.version>2.21.0</mockito-core.version>
         <mockserver.version>5.3.0</mockserver.version>
+        <random-beans.version>3.7.0</random-beans.version>
+        <reflections.version>0.9.11</reflections.version>
         <restassured.version>2.9.0</restassured.version>
         <unirest-java.version>1.4.9</unirest-java.version>
     </properties>
@@ -157,7 +161,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
+            <version>${mockito-core.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -184,13 +188,13 @@
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>0.9.11</version>
+            <version>${reflections.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.github.benas</groupId>
             <artifactId>random-beans</artifactId>
-            <version>3.7.0</version>
+            <version>${random-beans.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -206,6 +210,18 @@
             <version>${mockserver.version}</version>
         </dependency>
 
+        <!-- add missing modules -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>${javax.annotation-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxb-api.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -215,15 +231,10 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.6.1</version>
+                    <version>${maven-compiler-plugin.version}</version>
                     <configuration>
-                        <source>1.9</source>
-                        <target>1.9</target>
-                        <!-- java 9 modules: -->
-                        <compilerArgs>
-                            <arg>--add-modules</arg>
-                            <arg>java.xml.bind,java.activation</arg>
-                        </compilerArgs>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                         <fork>true</fork>
                     </configuration>
                 </plugin>
@@ -234,15 +245,15 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${mavens-surefire-plugin.version}</version>
                     <configuration>
-                        <!-- java 9 modules -->
+                        <!-- java modules: -->
                         <argLine>
-                            --add-modules java.xml.bind
                             --add-opens java.base/java.lang=ALL-UNNAMED
+                            --illegal-access=permit
                         </argLine>
                         <forkMode>once</forkMode>
                     </configuration>
                     <dependencies>
-                        <!-- java 9 modules -->
+                        <!-- java modules: -->
                         <dependency>
                             <groupId>javax.xml.bind</groupId>
                             <artifactId>jaxb-api</artifactId>

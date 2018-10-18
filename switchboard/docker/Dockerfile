@@ -1,4 +1,4 @@
-FROM tomcat:jre10-slim
+FROM tomcat:jre11-slim
 
 ##
 # Add MAVEN, based on: https://github.com/carlossg/docker-maven/tree/master/jdk-9-slim
@@ -19,7 +19,7 @@ RUN apt-get update && \
 # Maven fails with 'Can't read cryptographic policy directory: unlimited'
 # because it looks for $JAVA_HOME/conf/security/policy/unlimited but it is in
 # /etc/java-9-openjdk/security/policy/unlimited
-RUN ln -s /etc/java-10-openjdk /usr/lib/jvm/java-10-openjdk-$(dpkg --print-architecture)/conf
+RUN ln -s /etc/java-11-openjdk /usr/lib/jvm/java-11-openjdk-$(dpkg --print-architecture)/conf
 
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
   && echo ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
@@ -50,7 +50,7 @@ RUN set -ex; \
 	\
 	apt-get update; \
 	apt-get install -y \
-		openjdk-10-jdk-headless \
+		openjdk-11-jdk-headless \
 	; \
 	rm -rf /var/lib/apt/lists/*; \
 	\
