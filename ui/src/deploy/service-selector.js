@@ -4,7 +4,7 @@ import DeployMsg from "./deploy-msg";
 import DreamFactory from '../common/dreamfactory';
 import PropTypes from 'prop-types';
 import ErrorMsg from "../common/error-msg";
-import Switchboard from "../common/switchboard";
+import DeployResource from "../common/deploy-resource";
 
 export default class ServiceSelector extends React.Component {
 
@@ -32,7 +32,7 @@ export default class ServiceSelector extends React.Component {
         if (!object) {
             return;
         }
-        const services = await Switchboard
+        const services = await DeployResource
             .getServices(object.id)
             .catch((e) => this.setState({error: e}));
 

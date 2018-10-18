@@ -1,7 +1,7 @@
 import React from "react";
 import {withRouter} from "react-router-dom";
 import PropTypes from 'prop-types';
-import Switchboard from "../common/switchboard";
+import DeployResource from "../common/deploy-resource";
 import Spinner from "../common/spinner";
 import ErrorMsg from "../common/error-msg";
 import {DeploymentStatus} from "../common/deployment-status";
@@ -32,7 +32,7 @@ class Viewer extends React.Component {
             }]
         };
         try {
-            const data = await Switchboard
+            const data = await DeployResource
                 .getViewers(this.state.objectId)
                 .catch((e) => this.setState({error: e}));
             const hasViewer = data.length > 0;
@@ -40,10 +40,10 @@ class Viewer extends React.Component {
                 this.setState({error: Error("No viewer found for " + this.state.objectName)});
             }
             const viewer = data[0].name;
-            const deployData = await Switchboard
+            const deployData = await DeployResource
                 .postDeployment(viewer, params)
                 .catch((e) => this.setState({error: e}));
-            const viewerData = await Switchboard
+            const viewerData = await DeployResource
                 .getDeploymentWhen(deployData.workDir, DeploymentStatus.FINISHED)
                 .catch((e) => this.setState({error: e}));
             this.setState({

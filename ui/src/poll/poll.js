@@ -1,5 +1,5 @@
 import React from "react";
-import Switchboard from "../common/switchboard";
+import DeployResource from "../common/deploy-resource";
 import Spinner from "../common/spinner";
 import {Alert, Panel} from "react-bootstrap";
 import PropTypes from 'prop-types';
@@ -28,7 +28,7 @@ export default class Poll extends React.Component {
         this.setState({polling: true});
         try {
 
-            const data = await Switchboard.getDeploymentStatusResult(this.state.workDir);
+            const data = await DeployResource.getDeploymentStatusResult(this.state.workDir);
 
             // TODO: use actual http status code:
             const httpStatus = 200;

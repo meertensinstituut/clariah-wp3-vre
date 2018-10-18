@@ -2,7 +2,7 @@ import React from "react";
 import {Redirect, withRouter} from 'react-router-dom';
 import ServiceSelector from "./service-selector";
 import Configurator from "./configurator";
-import Switchboard from "../common/switchboard";
+import DeployResource from "../common/deploy-resource";
 import DeployMsg from "./deploy-msg";
 import Steps from "./steps";
 import ErrorMsg from "../common/error-msg";
@@ -80,7 +80,7 @@ class Deploy extends React.Component {
     };
 
     async requestDeployment(service, config) {
-        const data = await Switchboard
+        const data = await DeployResource
             .postDeployment(service, config)
             .catch((e) => this.setState({error: e}));
         await this.setState({deployment: data});

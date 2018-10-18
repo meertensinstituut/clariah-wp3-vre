@@ -1,5 +1,5 @@
 import React from "react";
-import Switchboard from "../common/switchboard";
+import DeployResource from "../common/deploy-resource";
 import Form from "./form";
 import PropTypes from 'prop-types';
 import Dreamfactory from "../common/dreamfactory";
@@ -29,7 +29,7 @@ export default class Configurator extends React.Component {
     }
 
     async init() {
-        const data = await Switchboard
+        const data = await DeployResource
             .getParams(this.props.service)
             .catch((e) => this.setState({error: e}));
         if(!data) return;
@@ -65,6 +65,9 @@ export default class Configurator extends React.Component {
         let formParam = Object.assign({}, cmdiParam);
         parent.params.push(formParam);
         formParam.value = [""];
+        if(!formParam.label) {
+            formParam.label = formParam.name;
+        }
         return formParam;
     }
 

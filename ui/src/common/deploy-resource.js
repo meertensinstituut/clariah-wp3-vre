@@ -1,7 +1,7 @@
 import Resource from "./resource";
 import {SWITCHBOARD_ENDPOINT} from "../config";
 
-export default class Switchboard {
+export default class DeployResource {
 
     static async getServices(objectId) {
         let url = `${SWITCHBOARD_ENDPOINT}/object/${objectId}/services`;
