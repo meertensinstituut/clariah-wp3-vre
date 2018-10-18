@@ -34,23 +34,23 @@ public class DeploymentServiceImpl implements DeploymentService {
             DeploymentRequest request,
             FinishDeploymentConsumer<DeploymentStatusReport> deploymentConsumer
     ) {
-        DeploymentStatusReport report = requestDeployment(request);
+        var report = requestDeployment(request);
         requestRepositoryService.saveDeploymentRequest(report, deploymentConsumer);
         return report;
     }
 
     private DeploymentStatusReport requestDeployment(DeploymentRequest request) {
-        DeploymentStatusReport report = new DeploymentStatusReport();
+        var report = new DeploymentStatusReport();
         report.setUri(createDeployServiceUri(request));
         report.setService(request.getService());
         report.setFiles(new ArrayList<>(request.getFiles().values()));
         report.setWorkDir(request.getWorkDir());
 
-        HttpResponse<String> response = sendRequest(report.getUri());
+        var response = sendRequest(report.getUri());
         report.setMsg(response.getBody());
         int httpStatus = response.getStatus();
 
-        if(httpStatus == 200) {
+        if (httpStatus == 200) {
             report.setStatus(DEPLOYED);
         } else {
             report.setStatus(DeploymentStatus.getDeployStatus(httpStatus));
@@ -81,7 +81,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
     private HttpResponse<String> sendRequest(URI uri) {
         try {
-            HttpResponse<String> response = Unirest
+            var response = Unirest
                     .put(uri.toString())
                     .asString();
             logger.info(String.format("Started deployment of [%s]", uri.toString()));

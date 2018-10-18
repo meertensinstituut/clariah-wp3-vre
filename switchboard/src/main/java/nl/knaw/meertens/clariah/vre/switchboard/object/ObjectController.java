@@ -1,7 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.object;
 
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractController;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,8 +10,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-
-import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -29,7 +26,7 @@ public class ObjectController extends AbstractController {
     @Produces(APPLICATION_JSON)
     public Response getServicesFor(@PathParam("objectId") long objectId) {
         logger.info(String.format("Received request of available 'service' services for object [%s]", objectId));
-        List<ServiceRecord> services = objectService.getServiceServicesFor(objectId);
+        var services = objectService.getServiceServicesFor(objectId);
         return createResponse(services);
     }
 
@@ -38,7 +35,7 @@ public class ObjectController extends AbstractController {
     @Produces(APPLICATION_JSON)
     public Response getViewersFor(@PathParam("objectId") long objectId) {
         logger.info(String.format("Received request of available viewers for object [%s]", objectId));
-        List<ServiceRecord> services = objectService.getViewersFor(objectId);
+        var services = objectService.getViewersFor(objectId);
         return createResponse(services);
     }
 

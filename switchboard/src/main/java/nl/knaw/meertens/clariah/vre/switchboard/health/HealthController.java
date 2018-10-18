@@ -20,7 +20,9 @@ public class HealthController extends AbstractController {
     @Produces(APPLICATION_JSON)
     public Response getHealth() {
         logger.info("Health request; respond with 200 - OK");
-        return createResponse(new Object() {public String status = "OK";});
+        return createResponse(new Object() {
+            public String status = "OK";
+        });
     }
 
 }

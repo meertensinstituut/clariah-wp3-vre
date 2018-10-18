@@ -13,10 +13,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import static org.assertj.core.util.Lists.newArrayList;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-
 public abstract class AbstractControllerTest extends AbstractTest {
 
     private static Logger logger = LoggerFactory.getLogger(AbstractControllerTest.class);
@@ -55,7 +51,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /* Method signature prevents JerseyTest.setUp() from running. */
     @Before
-    public void setUp() {}
+    public void setUp() {
+    }
 
     /* Method signature prevents JerseyTest.tearDown() from running. */
     @After

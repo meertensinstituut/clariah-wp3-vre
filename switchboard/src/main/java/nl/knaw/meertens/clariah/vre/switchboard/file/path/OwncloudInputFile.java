@@ -1,11 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file.path;
 
-import nl.knaw.meertens.clariah.vre.switchboard.Config;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.*;
 
 /**
  * Path of a user file stored in nextcloud has the following structure:

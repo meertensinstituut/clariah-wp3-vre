@@ -4,8 +4,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.FILES_DIR;
-
 /**
  * Path of a output file stored in nextcloud has the following structure:
  * `/{nextcloud}/{user}/{files}/{outputResult}/{file}`

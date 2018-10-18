@@ -7,7 +7,6 @@ import org.mockserver.model.Header;
 import org.mockserver.model.Parameter;
 
 import javax.ws.rs.core.Response;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,7 +68,7 @@ public class ObjectControllerTest extends AbstractControllerTest {
                 .get();
 
         assertThat(response.getStatus()).isEqualTo(200);
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(JsonPath.parse(json).read("$.length()", Integer.class)).isEqualTo(2);
         assertThat(JsonPath.parse(json).read("$[0].id", Integer.class)).isEqualTo(1);
         assertThat(JsonPath.parse(json).read("$[0].name", String.class)).isEqualTo("TEST");
@@ -89,14 +88,14 @@ public class ObjectControllerTest extends AbstractControllerTest {
                 .get();
 
         assertThat(response.getStatus()).isEqualTo(200);
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(JsonPath.parse(json).read("$.length()", Integer.class)).isEqualTo(1);
         assertThat(JsonPath.parse(json).read("$[0].id", Integer.class)).isEqualTo(14);
         assertThat(JsonPath.parse(json).read("$[0].name", String.class)).isEqualTo("VIEWER");
     }
 
     private void startServicesRegistryMock(List<String> servicesList, String filter) {
-        String services = servicesList.stream().collect(Collectors.joining(", "));
+        var services = servicesList.stream().collect(Collectors.joining(", "));
 
         getMockServer()
                 .when(
@@ -105,15 +104,15 @@ public class ObjectControllerTest extends AbstractControllerTest {
                                 .withPath("/_table/service_with_mimetype")
                                 .withQueryStringParameter(new Parameter("filter", filter))
                 ).respond(
-                        response()
-                                .withStatusCode(200)
-                                .withHeaders(new Header("Content-Type", "application/json; charset=utf-8"))
-                                .withBody("{\n" +
-                                        "  \"resource\": [\n"
-                                        + services
-                                        + "  ]\n"
-                                        + "}")
-                );
+                response()
+                        .withStatusCode(200)
+                        .withHeaders(new Header("Content-Type", "application/json; charset=utf-8"))
+                        .withBody("{\n" +
+                                "  \"resource\": [\n"
+                                + services
+                                + "  ]\n"
+                                + "}")
+        );
     }
 
 }

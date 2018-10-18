@@ -34,6 +34,7 @@ public class DeploymentStatusReport implements Cloneable {
 
     /**
      * Make a copy
+     *
      * @param original
      */
     public DeploymentStatusReport(DeploymentStatusReport original) {

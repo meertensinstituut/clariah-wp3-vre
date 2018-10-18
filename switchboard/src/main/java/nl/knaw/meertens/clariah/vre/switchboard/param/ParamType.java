@@ -32,7 +32,7 @@ public enum ParamType {
 
     @JsonCreator
     public static ParamType fromString(String key) {
-        if(isBlank(key)) {
+        if (isBlank(key)) {
             throw new IllegalArgumentException("Cannot determine ParamType when key is blank");
         }
         return ParamType.valueOf(key.toUpperCase());

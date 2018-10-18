@@ -3,12 +3,8 @@ package nl.knaw.meertens.clariah.vre.switchboard.exec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
-import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil;
-import nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil;
 import nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -16,8 +12,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,7 +32,6 @@ import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.createTestF
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 public class ExecControllerTest extends AbstractControllerTest {
 
@@ -58,31 +51,31 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void getHelp() {
-        Response response = target("exec")
+        var response = target("exec")
                 .request()
                 .get();
 
         assertThat(response.getStatus()).isEqualTo(200);
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThatJson(json).node("msg").matches(containsString("readme"));
     }
 
     @Test
     public void postDeploymentRequest_shouldCreateSymbolicLinksToInputFiles() throws Exception {
-        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
-        String uniqueTestFile = object.filepath;
+        var object = createTestFileWithRegistryObject(resultSentence);
+        var uniqueTestFile = object.filepath;
 
-        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
-        String expectedService = "UCTO";
+        var deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
+        var expectedService = "UCTO";
 
-        Response deployed = deploy(expectedService, deploymentRequestDto);
+        var deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+        var request = target(String.format("exec/task/%s/", workDir)).request();
 
         MockServerUtil.startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
-        String response = DeployUtil.waitUntil(request, FINISHED);
+        var response = DeployUtil.waitUntil(request, FINISHED);
 
         assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
         createResultFile(workDir, resultFilename, resultSentence);
@@ -96,14 +89,14 @@ public class ExecControllerTest extends AbstractControllerTest {
     public void postDeploymentRequest_shouldOutputFolderWithTestResult() throws InterruptedException, IOException {
         MockServerUtil.startServicesRegistryMockServer(dummyUctoService);
 
-        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
-        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
-        String expectedService = "UCTO";
-        Response deployed = deploy(expectedService, deploymentRequestDto);
+        var object = createTestFileWithRegistryObject(resultSentence);
+        var deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
+        var expectedService = "UCTO";
+        var deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+        var request = target(String.format("exec/task/%s/", workDir)).request();
 
         MockServerUtil.startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
         DeployUtil.waitUntil(request, RUNNING);
@@ -111,33 +104,33 @@ public class ExecControllerTest extends AbstractControllerTest {
         MockServerUtil.startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
         MockServerUtil.startServicesRegistryMockServer(dummyUctoService);
         createResultFile(workDir, resultFilename, resultSentence);
-        String finishedJson = DeployUtil.waitUntil(request, FINISHED);
+        var finishedJson = DeployUtil.waitUntil(request, FINISHED);
 
         // Check output file is moved:
-        File outputFolder = findOutputFolder(finishedJson);
+        var outputFolder = findOutputFolder(finishedJson);
         assertThat(outputFolder).isNotNull();
         assertThat(outputFolder.toString()).startsWith("/usr/local/nextcloud/admin/files/output-20");
-        Path outputFile = Paths.get(outputFolder.getPath(), resultFilename);
+        var outputFile = Paths.get(outputFolder.getPath(), resultFilename);
         assertThat(outputFile.toFile()).exists();
         assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo(resultSentence);
     }
 
     @Test
     public void postDeploymentRequest_shouldCreateConfigFile() throws IOException {
-        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
-        String uniqueTestFile = object.filepath;
+        var object = createTestFileWithRegistryObject(resultSentence);
+        var uniqueTestFile = object.filepath;
 
-        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
-        String expectedService = "UCTO";
+        var deploymentRequestDto = DeployUtil.getDeploymentRequestDto("" + object.id, longName);
+        var expectedService = "UCTO";
 
-        Response deployed = deploy(expectedService, deploymentRequestDto);
+        var deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        Path configFile = Paths.get(DEPLOYMENT_VOLUME, workDir, CONFIG_FILE_NAME);
+        var configFile = Paths.get(DEPLOYMENT_VOLUME, workDir, CONFIG_FILE_NAME);
         assertThat(configFile.toFile()).exists();
-        String configJson = new String(Files.readAllBytes(configFile));
-        ConfigDto config = new ObjectMapper().readValue(configJson, ConfigDto.class);
+        var configJson = new String(Files.readAllBytes(configFile));
+        var config = new ObjectMapper().readValue(configJson, ConfigDto.class);
 
         assertThat(config.params.get(0).value).contains(uniqueTestFile);
         assertThat(config.params.get(0).name).isEqualTo("untokinput");
@@ -155,13 +148,13 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     @Test
     public void testFinishRequest_shouldIgnoreUnknownFields() throws InterruptedException, IOException {
-        DeploymentRequestDto deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
-        String expectedService = "UCTO";
-        Response deployed = deploy(expectedService, deploymentRequestDto);
+        var deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
+        var expectedService = "UCTO";
+        var deployed = deploy(expectedService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+        var request = target(String.format("exec/task/%s/", workDir)).request();
         createResultFile(workDir, resultFilename, resultSentence);
         MockServerUtil.startOrUpdateStatusMockServer(
                 FINISHED.getHttpStatus(),
@@ -181,40 +174,40 @@ public class ExecControllerTest extends AbstractControllerTest {
         MockServerUtil.startServicesRegistryMockServer(dummyViewerService);
 
         // create file and dummy registry object:
-        String viewerService = "VIEWER";
+        var viewerService = "VIEWER";
         MockServerUtil.startDeployMockServer(viewerService, 200);
-        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
-        Path inputPath = Paths.get(object.filepath);
-        String expectedOutputPath = "admin/files/.vre/VIEWER/" + inputPath.subpath(2, inputPath.getNameCount());
+        var object = createTestFileWithRegistryObject(resultSentence);
+        var inputPath = Paths.get(object.filepath);
+        var expectedOutputPath = "admin/files/.vre/VIEWER/" + inputPath.subpath(2, inputPath.getNameCount());
 
         // request deployment:
-        DeploymentRequestDto deploymentRequestDto = DeployUtil.getViewerDeploymentRequestDto("" + object.id);
-        Response deployed = deploy(viewerService, deploymentRequestDto);
+        var deploymentRequestDto = DeployUtil.getViewerDeploymentRequestDto("" + object.id);
+        var deployed = deploy(viewerService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
         // check output param in config:
         Path configFile = Paths.get(DEPLOYMENT_VOLUME, workDir, CONFIG_FILE_NAME);
         assertThat(configFile.toFile()).exists();
-        String configJson = new String(Files.readAllBytes(configFile));
-        ConfigDto config = new ObjectMapper().readValue(configJson, ConfigDto.class);
+        var configJson = new String(Files.readAllBytes(configFile));
+        var config = new ObjectMapper().readValue(configJson, ConfigDto.class);
         assertThat(config.params.get(1).name).isEqualTo("output");
         assertThat(config.params.get(1).value).contains(inputPath.toString());
 
         // finish deployment:
-        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+        var request = target(String.format("exec/task/%s/", workDir)).request();
         MockServerUtil.startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
         createResultFile(workDir, object.filepath, "<pre>" + resultSentence + "</pre>");
-        String finishedJson = DeployUtil.waitUntil(request, FINISHED);
+        var finishedJson = DeployUtil.waitUntil(request, FINISHED);
 
         // check output path:
         String viewerFile = JsonPath.parse(finishedJson).read("$.viewerFile");
         assertThat(viewerFile).isEqualTo(expectedOutputPath);
 
         // viewer file content:
-        Path viewerFilePath = Paths.get(NEXTCLOUD_VOLUME, viewerFile);
+        var viewerFilePath = Paths.get(NEXTCLOUD_VOLUME, viewerFile);
         assertThat(viewerFilePath.toFile()).exists();
-        String viewerFileContent = FileUtils.readFileToString(viewerFilePath.toFile(), UTF_8);
+        var viewerFileContent = FileUtils.readFileToString(viewerFilePath.toFile(), UTF_8);
         assertThat(viewerFileContent).contains("<pre>");
         assertThat(viewerFileContent).contains("Insanity");
         assertThat(viewerFileContent).contains("</pre>");
@@ -228,26 +221,26 @@ public class ExecControllerTest extends AbstractControllerTest {
         MockServerUtil.startServicesRegistryMockServer(dummyViewerService);
 
         // create file and dummy registry object:
-        String viewerService = "VIEWER";
+        var viewerService = "VIEWER";
         MockServerUtil.startDeployMockServer(viewerService, 200);
-        ObjectsRecordDTO object = createTestFileWithRegistryObject(resultSentence);
-        Path inputPath = Paths.get(object.filepath);
-        String expectedOutputPath = "admin/files/.vre/VIEWER/" + inputPath.subpath(2, inputPath.getNameCount());
+        var object = createTestFileWithRegistryObject(resultSentence);
+        var inputPath = Paths.get(object.filepath);
+        var expectedOutputPath = "admin/files/.vre/VIEWER/" + inputPath.subpath(2, inputPath.getNameCount());
 
         // request deployment:
-        DeploymentRequestDto deploymentRequestDto = DeployUtil.getViewerDeploymentRequestDto("" + object.id);
-        Response deployed = deploy(viewerService, deploymentRequestDto);
+        var deploymentRequestDto = DeployUtil.getViewerDeploymentRequestDto("" + object.id);
+        var deployed = deploy(viewerService, deploymentRequestDto);
         assertThat(deployed.getStatus()).isBetween(200, 203);
         String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
         // finish deployment:
-        Invocation.Builder request = target(String.format("exec/task/%s/", workDir)).request();
+        var request = target(String.format("exec/task/%s/", workDir)).request();
         MockServerUtil.startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
         createResultFile(workDir, object.filepath, "<pre>" + resultSentence + "</pre>");
-        String finishedJson = DeployUtil.waitUntil(request, FINISHED);
+        var finishedJson = DeployUtil.waitUntil(request, FINISHED);
 
         // verify:
-        KafkaProducerService kafkaOwncloudServiceMock = jerseyTest.getKafkaOwncloudServiceMock();
+        var kafkaOwncloudServiceMock = jerseyTest.getKafkaOwncloudServiceMock();
         Mockito.verify(
                 kafkaOwncloudServiceMock,
                 never())

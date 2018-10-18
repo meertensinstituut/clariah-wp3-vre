@@ -20,12 +20,12 @@ public class TagService {
 
     public Long tagObject(Long object, Long tag) {
         // TODO: use shibboleth user:
-        CreateObjectTagDto objectTag = new CreateObjectTagDto(TEST_USER, tag, object);
+        var objectTag = new CreateObjectTagDto(TEST_USER, tag, object);
         return objectTagRegistry.createObjectTag(objectTag);
     }
 
     public Long untagObject(Long object, Long tag) {
-        ObjectTagDto objectTag = new ObjectTagDto();
+        var objectTag = new ObjectTagDto();
         objectTag.object = object;
         objectTag.tag = tag;
         return objectTagRegistry.deleteObjectTag(objectTag);

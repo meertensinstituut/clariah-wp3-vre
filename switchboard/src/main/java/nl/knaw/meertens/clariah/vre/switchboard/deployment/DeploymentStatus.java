@@ -54,7 +54,7 @@ public enum DeploymentStatus {
      * Get deployment status corresponding to http status code
      */
     public static DeploymentStatus getDeployStatus(int httpStatus) {
-        for (DeploymentStatus deploymentStatus : values()) {
+        for (var deploymentStatus : values()) {
             if (deploymentStatus.httpStatus == httpStatus) {
                 return deploymentStatus;
             }

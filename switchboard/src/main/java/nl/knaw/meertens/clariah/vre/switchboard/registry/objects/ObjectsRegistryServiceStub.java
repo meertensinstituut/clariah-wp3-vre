@@ -27,7 +27,7 @@ public class ObjectsRegistryServiceStub implements ObjectsRegistryService {
     }
 
     public Long getMaxTestObject() {
-        if(testFileRecords.isEmpty()) {
+        if (testFileRecords.isEmpty()) {
             return 0L;
         }
         return Collections.max(testFileRecords.keySet());

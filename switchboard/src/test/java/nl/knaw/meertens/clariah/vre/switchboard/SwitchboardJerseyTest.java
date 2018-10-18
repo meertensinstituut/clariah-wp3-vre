@@ -56,7 +56,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
     protected Application configure() {
         setMocks();
 
-        if(resourceConfig != null) {
+        if (resourceConfig != null) {
             return resourceConfig;
         }
 
@@ -64,7 +64,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
                 SwitchboardDIBinder.getControllerClasses()
         );
 
-        SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
+        var diBinder = new SwitchboardDIBinder(
                 objectsRegistryServiceStub,
                 servicesRegistryService,
                 new DeploymentServiceImpl(

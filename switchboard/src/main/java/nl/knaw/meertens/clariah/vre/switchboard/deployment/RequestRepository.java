@@ -7,7 +7,6 @@ import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,7 +48,7 @@ public class RequestRepository {
     }
 
     public DeploymentStatusReport getStatusReport(String workDir) {
-        DeploymentStatusReport request = reports.get(workDir);
+        var request = reports.get(workDir);
         if (!isNull(request)) {
             return request;
         }
@@ -76,15 +75,15 @@ public class RequestRepository {
     /**
      * Status reports are saved in a hashmap and
      * in a json file in workDir.
-     *
+     * <p>
      * A report is removed from the hashmap when it has
      * finished longer than DEPLOYMENT_MEMORY_SPAN-seconds ago.
-     *
+     * <p>
      * When the status of a deployment is requested,
      * it is added to the hashmap again
      */
     public void saveStatusReport(DeploymentStatusReport report) {
-        String workDir = report.getWorkDir();
+        var workDir = report.getWorkDir();
         reports.put(workDir, report);
         saveToFile(report);
         if (report.getStatus() == FINISHED) {
@@ -93,8 +92,8 @@ public class RequestRepository {
     }
 
     private DeploymentStatusReport findReportInWorkDir(String workDir) {
-        File statusFile = getStatusFilePath(workDir).toFile();
-        String statusJson = "";
+        var statusFile = getStatusFilePath(workDir).toFile();
+        var statusJson = "";
         if (!statusFile.exists()) {
             throw new NoReportFileException(String.format("Status of [%s] could not be found", workDir));
         }
@@ -121,14 +120,14 @@ public class RequestRepository {
     }
 
     private void saveToFile(DeploymentStatusReport report) {
-        Path file = getStatusFilePath(report.getWorkDir());
+        var file = getStatusFilePath(report.getWorkDir());
         try {
-            String json = mapper
+            var json = mapper
                     .writerWithDefaultPrettyPrinter()
                     .writeValueAsString(report);
             FileUtils.write(file.toFile(), json, UTF_8);
         } catch (IOException e) {
-            throw new RuntimeIOException(String.format("Could create status report file [%s]", file.toString()),e );
+            throw new RuntimeIOException(String.format("Could create status report file [%s]", file.toString()), e);
         }
     }
 

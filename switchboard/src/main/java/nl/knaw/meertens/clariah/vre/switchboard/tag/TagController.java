@@ -29,8 +29,8 @@ public class TagController extends AbstractController {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public Response createTag(String body) throws IOException {
-        TagDto tag = mapper.readValue(body, TagDto.class);
-        TagDto result = new TagDto();
+        var tag = mapper.readValue(body, TagDto.class);
+        var result = new TagDto();
         result.id = tagService.createTag(tag);
         return createResponse(result);
     }
@@ -43,8 +43,8 @@ public class TagController extends AbstractController {
             @PathParam("tag") Long tag,
             String body
     ) {
-        Long object = JsonPath.parse(body).read("$.object", Long.class);
-        ObjectTagDto result = new ObjectTagDto();
+        var object = JsonPath.parse(body).read("$.object", Long.class);
+        var result = new ObjectTagDto();
         result.id = tagService.tagObject(object, tag);
         return createResponse(result);
     }
@@ -56,7 +56,7 @@ public class TagController extends AbstractController {
     public Response deleteTag(
             @PathParam("tag") Long tag
     ) {
-        TagDto result = new TagDto();
+        var result = new TagDto();
         result.id = tagService.deleteTag(tag);
         return createResponse(result);
     }
@@ -69,7 +69,7 @@ public class TagController extends AbstractController {
             @PathParam("tag") Long tag,
             @PathParam("object") Long object
     ) {
-        ObjectTagDto result = new ObjectTagDto();
+        var result = new ObjectTagDto();
         result.id = tagService.untagObject(object, tag);
         return createResponse(result);
     }

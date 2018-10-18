@@ -1,13 +1,10 @@
 package nl.knaw.meertens.clariah.vre.switchboard.poll;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusResponseDto;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
@@ -15,12 +12,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.*;
+import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
+import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.getDeployStatus;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class PollServiceImpl implements PollService {
@@ -77,7 +74,7 @@ public class PollServiceImpl implements PollService {
     }
 
     private void poll() {
-        for (DeploymentStatusReport report : requestRepositoryService.getAllStatusReports()) {
+        for (var report : requestRepositoryService.getAllStatusReports()) {
             if (shouldPoll(report)) {
                 String workDir = report.getWorkDir();
                 logger.info(String.format("Polling [%s]", workDir));
@@ -96,12 +93,12 @@ public class PollServiceImpl implements PollService {
     }
 
     private boolean shouldPoll(DeploymentStatusReport report) {
-        LocalDateTime lastPoll = report.getPolled();
-        if(isNull(lastPoll)) {
+        var lastPoll = report.getPolled();
+        if (isNull(lastPoll)) {
             return true;
         }
 
-        LocalDateTime nextPoll = lastPoll
+        var nextPoll = lastPoll
                 .plusSeconds(report.getInterval());
 
         return report.getStatus() != FINISHED
@@ -110,7 +107,7 @@ public class PollServiceImpl implements PollService {
     }
 
     private void runConsumer(DeploymentStatusReport report) {
-        FinishDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer =
+        var finishDeploymentConsumer =
                 requestRepositoryService.getConsumer(report.getWorkDir());
         try {
             finishDeploymentConsumer.accept(report);
@@ -120,10 +117,10 @@ public class PollServiceImpl implements PollService {
     }
 
     private DeploymentStatusReport getDeploymentStatus(DeploymentStatusReport report) {
-        DeploymentStatusReport result = new DeploymentStatusReport(report);
+        var result = new DeploymentStatusReport(report);
 
-        URI uri = createDeploymentStatusUri(report);
-        DeploymentStatusResponseDto response = requestDeploymentStatusReport(uri);
+        var uri = createDeploymentStatusUri(report);
+        var response = requestDeploymentStatusReport(uri);
         result.setStatus(getDeployStatus(response.httpStatus));
         result.setMsg(response.message);
         result.setPolled(now());
@@ -138,7 +135,7 @@ public class PollServiceImpl implements PollService {
     private DeploymentStatusResponseDto requestDeploymentStatusReport(URI uri) {
         try {
             DeploymentStatusResponseDto response;
-            HttpResponse<String> httpResponse = Unirest
+            var httpResponse = Unirest
                     .get(uri.toString())
                     .asString();
             if (isBlank(httpResponse.getBody())) {

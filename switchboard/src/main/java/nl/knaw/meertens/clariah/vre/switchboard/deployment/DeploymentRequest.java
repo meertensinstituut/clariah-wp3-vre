@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
-import static java.util.stream.Collectors.groupingBy;
 
 public class DeploymentRequest {
 
@@ -19,7 +18,7 @@ public class DeploymentRequest {
 
     private DeploymentStatusReport statusReport;
 
-    @JsonFormat(shape=STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS")
+    @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private final LocalDateTime dateTime;
 
     private final String service;

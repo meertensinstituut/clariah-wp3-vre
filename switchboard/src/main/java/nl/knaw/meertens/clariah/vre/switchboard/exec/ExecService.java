@@ -17,10 +17,8 @@ import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.param.Param;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamGroup;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamType;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDTO;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecord;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -100,12 +98,12 @@ public class ExecService {
             String serviceName,
             String body
     ) {
-        ServiceRecord service = serviceRegistryService.getServiceByName(serviceName);
-        ServiceKind kind = ServiceKind.fromKind(service.getKind());
-        DeploymentRequest request = prepareDeploymentRequest(serviceName, body, kind);
+        var service = serviceRegistryService.getServiceByName(serviceName);
+        var kind = ServiceKind.fromKind(service.getKind());
+        var request = prepareDeploymentRequest(serviceName, body, kind);
         List<String> files = new ArrayList<>(request.getFiles().values());
         nextcloudFileService.stageFiles(request.getWorkDir(), files);
-        DeploymentStatusReport statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
+        var statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
         request.setStatusReport(statusReport);
         return request;
     }
@@ -137,9 +135,9 @@ public class ExecService {
             String service,
             String body
     ) throws IOException {
-        DeploymentRequest request = prepareServiceDeployment(service, body);
-        List<Param> params = request.getParams();
-        Param outputParam = createViewerOutputParam(params);
+        var request = prepareServiceDeployment(service, body);
+        var params = request.getParams();
+        var outputParam = createViewerOutputParam(params);
         params.add(outputParam);
         createConfig(request);
         return request;
@@ -148,7 +146,7 @@ public class ExecService {
     private Param createViewerOutputParam(
             List<Param> params
     ) {
-        Param output = new Param();
+        var output = new Param();
         output.name = "output";
         output.type = STRING;
         output.value = params
@@ -175,9 +173,9 @@ public class ExecService {
             String service,
             String body
     ) throws IOException {
-        String workDir = createWorkDir();
-        DeploymentRequest request = mapServiceRequest(body, service, workDir);
-        HashMap<Long, String> paths = requestFilesFromRegistry(request);
+        var workDir = createWorkDir();
+        var request = mapServiceRequest(body, service, workDir);
+        var paths = requestFilesFromRegistry(request);
         replaceObjectIdsWithPaths(request.getParams(), paths);
         request.setFiles(paths);
         sendKafkaRequestMsg(request);
@@ -185,10 +183,10 @@ public class ExecService {
     }
 
     private String createWorkDir() {
-        String name = RandomStringUtils
+        var name = RandomStringUtils
                 .randomAlphabetic(WORK_DIR_LENGTH)
                 .toLowerCase();
-        Path path = Paths.get(DEPLOYMENT_VOLUME, name);
+        var path = Paths.get(DEPLOYMENT_VOLUME, name);
         assert (path.toFile().mkdirs());
         logger.info(String.format(
                 "Created workDir [%s]",
@@ -213,8 +211,8 @@ public class ExecService {
 
     private void completeDeployment(DeploymentStatusReport report) {
 
-        ServiceRecord service = serviceRegistryService.getServiceByName(report.getService());
-        ServiceKind serviceKind = fromKind(service.getKind());
+        var service = serviceRegistryService.getServiceByName(report.getService());
+        var serviceKind = fromKind(service.getKind());
 
         nextcloudFileService.unstage(report.getWorkDir(), report.getFiles());
 
@@ -241,7 +239,7 @@ public class ExecService {
     private void completeServiceDeployment(
             DeploymentStatusReport report
     ) {
-        List<Path> outputFiles = nextcloudFileService.unstageServiceOutputFiles(
+        var outputFiles = nextcloudFileService.unstageServiceOutputFiles(
                 report.getWorkDir(),
                 report.getFiles().get(0)
         );
@@ -257,7 +255,7 @@ public class ExecService {
     private void completeViewerDeployment(
             DeploymentStatusReport report
     ) {
-        Path viewerFile = nextcloudFileService.unstageViewerOutputFile(
+        var viewerFile = nextcloudFileService.unstageViewerOutputFile(
                 report.getWorkDir(),
                 report.getFiles().get(0),
                 report.getService()
@@ -270,14 +268,14 @@ public class ExecService {
     private void createConfig(
             DeploymentRequest serviceRequest
     ) {
-        ConfigDto config = mapRequestToConfig(serviceRequest);
-        Path configPath = Paths.get(
+        var config = mapRequestToConfig(serviceRequest);
+        var configPath = Paths.get(
                 DEPLOYMENT_VOLUME,
                 serviceRequest.getWorkDir(),
                 CONFIG_FILE_NAME
         );
         try {
-            String json = mapper.writeValueAsString(config);
+            var json = mapper.writeValueAsString(config);
             FileUtils.write(configPath.toFile(), json, UTF_8);
         } catch (IOException e) {
             throw new RuntimeIOException(String.format(
@@ -290,9 +288,9 @@ public class ExecService {
     private ConfigDto mapRequestToConfig(
             DeploymentRequest serviceRequest
     ) {
-        ConfigDto config = new ConfigDto();
+        var config = new ConfigDto();
         config.params = serviceRequest.getParams().stream().map(param -> {
-            ConfigParamDto fileDto = new ConfigParamDto();
+            var fileDto = new ConfigParamDto();
             fileDto.name = param.name;
             fileDto.type = param.type;
             fileDto.value = param.value;
@@ -311,7 +309,7 @@ public class ExecService {
     private void sendKafkaSwitchboardMsg(
             DeploymentStatusReport report
     ) {
-        KafkaDeploymentResultDto kafkaMsg = new KafkaDeploymentResultDto();
+        var kafkaMsg = new KafkaDeploymentResultDto();
         kafkaMsg.service = report.getService();
         kafkaMsg.dateTime = LocalDateTime.now();
         kafkaMsg.status = report.getStatus();
@@ -321,8 +319,8 @@ public class ExecService {
     private void sendKafkaOwncloudMsgs(
             List<Path> outputFiles
     ) {
-        for (Path file : outputFiles) {
-            KafkaOwncloudCreateFileDto msg = new KafkaOwncloudCreateFileDto();
+        for (var file : outputFiles) {
+            var msg = new KafkaOwncloudCreateFileDto();
             msg.action = "create";
             msg.path = file.toString();
             msg.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
@@ -336,7 +334,7 @@ public class ExecService {
             String service,
             String workDir
     ) throws IOException {
-        DeploymentRequestDto deploymentRequestDto = mapper.readValue(body, DeploymentRequestDto.class);
+        var deploymentRequestDto = mapper.readValue(body, DeploymentRequestDto.class);
         return new DeploymentRequest(
                 service,
                 workDir,
@@ -349,10 +347,10 @@ public class ExecService {
             DeploymentRequest serviceRequest
     ) {
         HashMap<Long, String> files = new HashMap<>();
-        for (Param param : serviceRequest.getParams()) {
+        for (var param : serviceRequest.getParams()) {
             if (param.type.equals(ParamType.FILE)) {
-                Long objectId = Long.valueOf(param.value);
-                ObjectsRecordDTO record = objectsRegistryService.getObjectById(objectId);
+                var objectId = Long.valueOf(param.value);
+                var record = objectsRegistryService.getObjectById(objectId);
                 files.put(objectId, record.filepath);
             }
         }
@@ -363,7 +361,7 @@ public class ExecService {
             List<Param> params,
             HashMap<Long, String> registryPaths
     ) {
-        for (Param param : params) {
+        for (var param : params) {
             if (param.type.equals(ParamType.FILE)) {
                 param.value = registryPaths.get(Long.valueOf(param.value));
             }
@@ -373,7 +371,7 @@ public class ExecService {
     private void sendKafkaRequestMsg(
             DeploymentRequest serviceRequest
     ) throws IOException {
-        KafkaDeploymentStartDto msg = new KafkaDeploymentStartDto();
+        var msg = new KafkaDeploymentStartDto();
         msg.dateTime = serviceRequest.getDateTime();
         msg.service = serviceRequest.getService();
         msg.workDir = serviceRequest.getWorkDir();

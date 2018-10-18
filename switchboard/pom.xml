@@ -247,8 +247,7 @@
                     <configuration>
                         <!-- java modules: -->
                         <argLine>
-                            --add-opens java.base/java.lang=ALL-UNNAMED
-                            --illegal-access=permit
+                            --add-opens java.base/java.lang=ALL-UNNAMED --illegal-access=permit
                         </argLine>
                         <forkMode>once</forkMode>
                     </configuration>

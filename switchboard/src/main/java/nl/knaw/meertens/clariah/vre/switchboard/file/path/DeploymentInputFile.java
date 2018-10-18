@@ -3,10 +3,6 @@ package nl.knaw.meertens.clariah.vre.switchboard.file.path;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.FILES_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
-
 /**
  * Temporary path of a file used as an object path for a deployed service
  * It has the following structure:

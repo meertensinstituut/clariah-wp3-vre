@@ -1,11 +1,9 @@
 package nl.knaw.meertens.clariah.vre.switchboard.param;
 
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecord;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -15,7 +13,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
@@ -38,7 +35,7 @@ public class ParamService {
     public ParamService(ServicesRegistryService servicesRegistryService) {
         currentLanguage = "en";
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        var factory = DocumentBuilderFactory.newInstance();
         try {
             builder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
@@ -48,13 +45,13 @@ public class ParamService {
     }
 
     public Cmdi getParams(long serviceId) {
-        ServiceRecord service = servicesRegistryService.getService(serviceId);
-        Cmdi params = new Cmdi();
+        var service = servicesRegistryService.getService(serviceId);
+        var params = new Cmdi();
         params.id = serviceId;
         params.name = service.getName();
         params.kind = ServiceKind.fromKind(service.getKind());
         params.params = convertCmdiXmlToParams(service.getSemantics());
-        if(params.kind.equals(ServiceKind.VIEWER)) {
+        if (params.kind.equals(ServiceKind.VIEWER)) {
             params.params = removeOutputParam(params.params);
         }
         return params;
@@ -71,23 +68,23 @@ public class ParamService {
 
     private List<Param> convertCmdiXmlToParams(String cmdi) {
 
-        List<Param> result = new ArrayList<>();
+        var result = new ArrayList<Param>();
 
         try {
-            InputSource inputSource = new InputSource(new StringReader(cmdi));
-            Document xml = builder.parse(inputSource);
+            var inputSource = new InputSource(new StringReader(cmdi));
+            var xml = builder.parse(inputSource);
 
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            String paramExpression = "//*[local-name() = 'Input'] / *[local-name() = 'Parameter']";
-            NodeList parameters = (NodeList) xPath.compile(paramExpression).evaluate(xml, XPathConstants.NODESET);
+            var xPath = XPathFactory.newInstance().newXPath();
+            var paramExpression = "//*[local-name() = 'Input'] / *[local-name() = 'Parameter']";
+            var parameters = (NodeList) xPath.compile(paramExpression).evaluate(xml, XPathConstants.NODESET);
             if (parameters == null || parameters.getLength() == 0) {
                 logger.warn(String.format("No parameters found in cmdi [%s]", cmdi));
             } else {
                 result.addAll(mapParameters(parameters));
             }
 
-            String groupExpression = "//*[local-name() = 'Input'] / *[local-name() = 'ParameterGroup']";
-            NodeList groups = (NodeList) xPath.compile(groupExpression).evaluate(xml, XPathConstants.NODESET);
+            var groupExpression = "//*[local-name() = 'Input'] / *[local-name() = 'ParameterGroup']";
+            var groups = (NodeList) xPath.compile(groupExpression).evaluate(xml, XPathConstants.NODESET);
             if (groups == null || groups.getLength() == 0) {
                 logger.warn(String.format("No parameter groups found in cmdi [%s]", cmdi));
             } else {
@@ -101,12 +98,12 @@ public class ParamService {
     }
 
     private List<ParamGroup> mapParameterGroups(NodeList groups) {
-        List<ParamGroup> result = new ArrayList<>();
-        for (int i = 0; i < groups.getLength(); i++) {
-            Node xmlGroup = groups.item(i);
-            ParamGroup paramGroup = new ParamGroup();
+        var result = new ArrayList<ParamGroup>();
+        for (var i = 0; i < groups.getLength(); i++) {
+            var xmlGroup = groups.item(i);
+            var paramGroup = new ParamGroup();
             mapParameter(xmlGroup, paramGroup);
-            NodeList parameters = ((Element) xmlGroup).getElementsByTagName("cmdp:Parameters").item(0).getChildNodes();
+            var parameters = ((Element) xmlGroup).getElementsByTagName("cmdp:Parameters").item(0).getChildNodes();
             paramGroup.params.addAll(mapParameters(parameters));
             result.add(paramGroup);
         }
@@ -114,13 +111,13 @@ public class ParamService {
     }
 
     private List<Param> mapParameters(NodeList parameters) {
-        List<Param> result = new ArrayList<>();
-        for (int i = 0; i < parameters.getLength(); i++) {
-            Node xmlParam = parameters.item(i);
-            if(!xmlParam.getNodeName().equals("cmdp:Parameter")) {
+        var result = new ArrayList<Param>();
+        for (var i = 0; i < parameters.getLength(); i++) {
+            var xmlParam = parameters.item(i);
+            if (!xmlParam.getNodeName().equals("cmdp:Parameter")) {
                 continue;
             }
-            Param param = new Param();
+            var param = new Param();
             mapParameter(xmlParam, param);
             result.add(param);
         }
@@ -128,20 +125,20 @@ public class ParamService {
     }
 
     private <T extends Param> void mapParameter(Node xmlParam, T result) {
-        NodeList xmlValues = xmlParam.getChildNodes();
-        for (int k = 0; k < xmlValues.getLength(); k++) {
-            Node node = xmlValues.item(k);
-            String fieldName = node.getNodeName();
+        var xmlValues = xmlParam.getChildNodes();
+        for (var k = 0; k < xmlValues.getLength(); k++) {
+            var node = xmlValues.item(k);
+            var fieldName = node.getNodeName();
             if (isNull(fieldName)) {
                 continue;
             }
-            String fieldValue = node.getTextContent();
+            var fieldValue = node.getTextContent();
             switch (fieldName) {
                 case "cmdp:Name":
                     result.name = fieldValue;
                     break;
                 case "cmdp:Label":
-                    String labelLanguage = node.getAttributes().getNamedItem("xml:lang").getNodeValue();
+                    var labelLanguage = node.getAttributes().getNamedItem("xml:lang").getNodeValue();
                     if (labelLanguage.equals(currentLanguage)) {
                         result.label = fieldValue;
                     }
@@ -177,8 +174,8 @@ public class ParamService {
 
     private List<ParamValueDto> mapParamValues(Node values) {
         List<ParamValueDto> result = new ArrayList<>();
-        for (int i = 0; i < values.getChildNodes().getLength(); i++) {
-            Node child = values.getChildNodes().item(i);
+        for (var i = 0; i < values.getChildNodes().getLength(); i++) {
+            var child = values.getChildNodes().item(i);
             if (child.getNodeName().equals("cmdp:ParameterValue")) {
                 result.add(mapParamValue(child));
             }
@@ -187,14 +184,14 @@ public class ParamService {
     }
 
     private ParamValueDto mapParamValue(Node paramValue) {
-        ParamValueDto result = new ParamValueDto();
-        for (int i = 0; i < paramValue.getChildNodes().getLength(); i++) {
-            Node value = paramValue.getChildNodes().item(i);
-            String name = value.getNodeName();
-            String textValue = value.getTextContent();
+        var result = new ParamValueDto();
+        for (var i = 0; i < paramValue.getChildNodes().getLength(); i++) {
+            var value = paramValue.getChildNodes().item(i);
+            var name = value.getNodeName();
+            var textValue = value.getTextContent();
             switch (name) {
                 case "cmdp:Label":
-                    String labelLanguage = value.getAttributes().getNamedItem("xml:lang").getNodeValue();
+                    var labelLanguage = value.getAttributes().getNamedItem("xml:lang").getNodeValue();
                     if (labelLanguage.equals(currentLanguage)) {
                         result.label = textValue;
                     }

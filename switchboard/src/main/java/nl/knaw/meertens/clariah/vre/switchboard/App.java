@@ -12,9 +12,9 @@ import javax.ws.rs.ApplicationPath;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_HOST_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.KAFKA_HOST_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.Config.NEXTCLOUD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OBJECTS_DB_KEY;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.OBJECTS_DB_URL;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.NEXTCLOUD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SERVICES_DB_KEY;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SERVICES_DB_URL;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
@@ -25,7 +25,8 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getRe
 @ApplicationPath("resources")
 public class App extends ResourceConfig {
 
-    public static void main(String[] args) {}
+    public static void main(String[] args) {
+    }
 
     public App() {
         super(SwitchboardDIBinder.getControllerClasses());

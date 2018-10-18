@@ -31,14 +31,14 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
     @Override
     public ObjectsRecordDTO getObjectById(Long id) {
         HttpResponse<String> response;
-        String url = objectsDbUrl + objectTable + "/" + id;
+        var url = objectsDbUrl + objectTable + "/" + id;
         try {
             response = Unirest
                     .get(url)
                     .header("Content-Type", "application/json")
                     .header("X-DreamFactory-Api-Key", objectsDbKey)
                     .asString();
-            ObjectsRecordDTO result = isBlank(response.getBody())
+            var result = isBlank(response.getBody())
                     ? new ObjectsRecordDTO()
                     : mapper.readValue(response.getBody(), ObjectsRecordDTO.class);
             logger.info(String.format("Requested [%d] from registry, received object of [%s]", id, result.filepath));

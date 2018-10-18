@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CreateObjectTagDto {
-    public List<NameValueDto> params = new ArrayList<>();
+    public List<NameValueDto> params = new ArrayList<NameValueDto>();
 
     public CreateObjectTagDto(String _owner, Long _tag, Long _object) {
         params.add(new NameValueDto("_tag", _tag));

@@ -7,11 +7,9 @@ import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
@@ -27,17 +25,17 @@ public class FileUtil {
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
     public static ObjectsRecordDTO createTestFileWithRegistryObject(String resultSentence) throws IOException {
-        String fileName = String.format("admin/files/testfile-switchboard-%s.txt", UUID.randomUUID());
+        var fileName = String.format("admin/files/testfile-switchboard-%s.txt", UUID.randomUUID());
         createFile(fileName, resultSentence);
-        Long maxId = SwitchboardJerseyTest.getObjectsRegistryServiceStub().getMaxTestObject();
+        var maxId = SwitchboardJerseyTest.getObjectsRegistryServiceStub().getMaxTestObject();
         Long newId = maxId + 1;
-        ObjectsRecordDTO newObject = createRegistryObject(fileName, newId);
+        var newObject = createRegistryObject(fileName, newId);
         SwitchboardJerseyTest.getObjectsRegistryServiceStub().addTestObject(newObject);
         return newObject;
     }
 
     public static void createResultFile(String workDir, String resultFilename, String content) {
-        Path path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, resultFilename);
+        var path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, resultFilename);
         assertThat((path.toFile().getParentFile().mkdirs())).isTrue();
         path.toFile().getParentFile().mkdirs();
         try {
@@ -48,14 +46,14 @@ public class FileUtil {
     }
 
     private static void createFile(String fileName, String resultSentence) throws IOException {
-        Path path = Paths.get(NEXTCLOUD_VOLUME + "/" + fileName);
-        File file = path.toFile();
+        var path = Paths.get(NEXTCLOUD_VOLUME + "/" + fileName);
+        var file = path.toFile();
         file.getParentFile().mkdirs();
         Files.write(path, newArrayList(resultSentence), Charset.forName("UTF-8"));
     }
 
     private static ObjectsRecordDTO createRegistryObject(String filePath, long id) {
-        ObjectsRecordDTO testFileRecord = new ObjectsRecordDTO();
+        var testFileRecord = new ObjectsRecordDTO();
         testFileRecord.id = id;
         testFileRecord.filepath = filePath;
         testFileRecord.mimetype = "text/plain";

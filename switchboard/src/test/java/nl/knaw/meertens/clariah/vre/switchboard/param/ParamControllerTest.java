@@ -5,10 +5,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.mockserver.model.Header;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 
@@ -22,13 +19,11 @@ import static org.mockserver.model.HttpResponse.response;
 
 public class ParamControllerTest extends AbstractControllerTest {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Test
     public void getParamsFor_whenService() throws IOException {
         startGetServiceByIdRegistryMock("service", "test.cmdi", "TEST");
 
-        Response response = jerseyTest.target("services/1/params")
+        var response = jerseyTest.target("services/1/params")
                 .request()
                 .get();
 
@@ -84,11 +79,11 @@ public class ParamControllerTest extends AbstractControllerTest {
     public void getParamsFor_whenViewer() throws IOException {
         startGetServiceByIdRegistryMock("viewer", "viewer.cmdi", "VIEWER");
 
-        Response response = jerseyTest.target("services/1/params")
+        var response = jerseyTest.target("services/1/params")
                 .request()
                 .get();
 
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
 
         assertThat(response.getStatus()).isEqualTo(200);
 
@@ -105,15 +100,15 @@ public class ParamControllerTest extends AbstractControllerTest {
     }
 
     private void startGetServiceByIdRegistryMock(String kind, String cmdiFileName, String name) throws IOException {
-        File cmdiFile = new File(getClass().getClassLoader().getResource(cmdiFileName).getFile());
-        String cmdi = FileUtils.readFileToString(cmdiFile, UTF_8);
+        var cmdiFile = new File(getClass().getClassLoader().getResource(cmdiFileName).getFile());
+        var cmdi = FileUtils.readFileToString(cmdiFile, UTF_8);
 
-        JSONObject obj = new JSONObject();
+        var obj = new JSONObject();
         obj.put("id", "1");
         obj.put("name", name);
         obj.put("kind", kind);
         obj.put("semantics", cmdi);
-        final String json = obj.toString();
+        final var json = obj.toString();
 
         getMockServer()
                 .when(

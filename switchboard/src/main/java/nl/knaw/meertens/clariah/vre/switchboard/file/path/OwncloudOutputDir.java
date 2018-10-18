@@ -63,7 +63,7 @@ public class OwncloudOutputDir extends AbstractPath {
 
     private static String generateOutputDir() {
         return OUTPUT_DIR
-        + "-"
-        + now().format(ofPattern("yyyy-MM-dd_HH-mm-ss-SSS"));
+                + "-"
+                + now().format(ofPattern("yyyy-MM-dd_HH-mm-ss-SSS"));
     }
 }

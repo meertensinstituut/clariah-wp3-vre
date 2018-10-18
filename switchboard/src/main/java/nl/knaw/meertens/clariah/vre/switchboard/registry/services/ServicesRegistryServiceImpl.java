@@ -1,9 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.registry.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -53,19 +51,20 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
 
     /**
      * Find service by name
+     *
      * @return ServiceRecord service
      * @throws IllegalStateException when no service is found
      */
     @Override
     public ServiceRecord getServiceByName(String name) {
-        String service = "_table/service";
-        String url = String.format(
+        var service = "_table/service";
+        var url = String.format(
                 "%s/%s/?filter=name%%20like%%20%s",
                 serviceDbUrl,
                 service,
                 name
         );
-        List<ServiceRecord> services = this.getServices(url);
+        var services = this.getServices(url);
         if (services.isEmpty()) {
             throw new IllegalStateException(String.format("No services found for service [%s]", name));
         }
@@ -74,8 +73,8 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
 
     @Override
     public List<ServiceRecord> getServicesByMimetype(String mimetype) {
-        String serviceWithMimetypeView = "_table/service_with_mimetype";
-        String url = String.format(
+        var serviceWithMimetypeView = "_table/service_with_mimetype";
+        var url = String.format(
                 "%s/%s?filter=mimetype%%20%%3D%%20%s",
                 serviceDbUrl,
                 serviceWithMimetypeView,
@@ -86,8 +85,8 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
 
     @Override
     public List<ServiceRecord> getServicesByMimetypeAndKind(String mimetype, ServiceKind kind) {
-        String serviceWithMimetypeView = "_table/service_with_mimetype";
-        String url = String.format(
+        var serviceWithMimetypeView = "_table/service_with_mimetype";
+        var url = String.format(
                 "%s/%s?filter=(mimetype%%20%%3D%%20%s)%%20and%%20(kind%%20like%%20%s)",
                 serviceDbUrl,
                 serviceWithMimetypeView,
@@ -99,9 +98,10 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
 
     private List<ServiceRecord> getServices(String url) {
         try {
-            HttpResponse<String> response = requestServiceDb(url);
-            JsonNode resource = mapper.readTree(response.getBody()).at("/resource");
-            ObjectReader reader = mapper.readerFor(new TypeReference<List<ServiceRecord>>() {});
+            var response = requestServiceDb(url);
+            var resource = mapper.readTree(response.getBody()).at("/resource");
+            var reader = mapper.readerFor(new TypeReference<List<ServiceRecord>>() {
+            });
             List<ServiceRecord> serviceRecords = reader.readValue(resource);
             logger.info(String.format(
                     "Url [%s] yielded services [%s]",

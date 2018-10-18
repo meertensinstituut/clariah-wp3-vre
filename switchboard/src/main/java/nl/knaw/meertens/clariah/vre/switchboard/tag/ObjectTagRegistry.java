@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map;
 
 public class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
 
@@ -25,7 +24,7 @@ public class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
         try {
             json = postProcedure(objectTag.params, insertObjectTagProcedure);
         } catch (SQLException e) {
-            String msg = "Could not create object tag.";
+            var msg = "Could not create object tag.";
             if (e.getSQLState().equals("23503")) {
                 msg += " Tag or object does not exist.";
             } else if (e.getSQLState().equals("23505")) {
@@ -45,12 +44,12 @@ public class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
     public Long deleteObjectTag(ObjectTagDto objectTag) {
         String json;
         try {
-            Map<String, String> filters = new HashMap<>();
+            var filters = new HashMap<String, String>();
             filters.put("object", "" + objectTag.object);
             filters.put("tag", "" + objectTag.tag);
             json = delete(filters, table);
         } catch (SQLException e) {
-            String msg = String.format(
+            var msg = String.format(
                     "Could not delete link between object [%d] and tag [%d].",
                     objectTag.object, objectTag.tag
             );

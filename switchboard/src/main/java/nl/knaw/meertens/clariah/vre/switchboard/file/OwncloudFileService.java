@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
-import nl.knaw.meertens.clariah.vre.switchboard.Config;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractPath;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentOutputDir;
@@ -15,31 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.Files.getFileAttributeView;
-import static java.nio.file.Files.setPosixFilePermissions;
-import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
-import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
-import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
-import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
-import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
@@ -58,11 +40,11 @@ public class OwncloudFileService implements FileService {
 
     @Override
     public void stageFiles(String workDir, List<String> objectPaths) {
-        List<OwncloudInputFile> inputPaths = objectPaths
+        var inputPaths = objectPaths
                 .stream()
                 .map(OwncloudInputFile::from)
                 .collect(toList());
-        for (OwncloudInputFile file : inputPaths) {
+        for (var file : inputPaths) {
             locker.lock(file);
             createSoftLink(workDir, file);
         }
@@ -81,9 +63,9 @@ public class OwncloudFileService implements FileService {
 
     @Override
     public List<Path> unstageServiceOutputFiles(String workDir, String objectPath) {
-        DeploymentInputFile inputFile = DeploymentInputFile.from(workDir, objectPath);
-        OwncloudOutputDir outputDir = moveOutputDir(inputFile);
-        List<OwncloudOutputFile> output = unlockOutputFiles(outputDir);
+        var inputFile = DeploymentInputFile.from(workDir, objectPath);
+        var outputDir = moveOutputDir(inputFile);
+        var output = unlockOutputFiles(outputDir);
         return output
                 .stream()
                 .map(f -> Paths.get(f.toObjectPath()))
@@ -101,7 +83,7 @@ public class OwncloudFileService implements FileService {
                     "Could not move output next to input: input file is unknown"
             );
         }
-        for (String file : objectPaths) {
+        for (var file : objectPaths) {
             unlock(file);
         }
     }
@@ -114,9 +96,9 @@ public class OwncloudFileService implements FileService {
      */
     @Override
     public Path unstageViewerOutputFile(String workDir, String objectPath, String service) {
-        DeploymentOutputFile deploymentView = DeploymentOutputFile
+        var deploymentView = DeploymentOutputFile
                 .from(workDir, objectPath);
-        OwncloudViewPath nextcloudView = OwncloudViewPath
+        var nextcloudView = OwncloudViewPath
                 .from(service, objectPath);
         moveFile(deploymentView, nextcloudView);
         locker.unlock(nextcloudView);
@@ -124,8 +106,8 @@ public class OwncloudFileService implements FileService {
     }
 
     private void moveFile(AbstractPath fromPath, AbstractPath toPath) {
-        File from = fromPath.toPath().toFile();
-        File to = toPath.toPath().toFile();
+        var from = fromPath.toPath().toFile();
+        var to = toPath.toPath().toFile();
         logger.info(String.format(
                 "Move [%s] to [%s]",
                 from, to
@@ -145,7 +127,7 @@ public class OwncloudFileService implements FileService {
 
     @Override
     public String getContent(String objectPath) {
-        File file = OwncloudInputFile
+        var file = OwncloudInputFile
                 .from(objectPath)
                 .toPath()
                 .toFile();
@@ -166,8 +148,8 @@ public class OwncloudFileService implements FileService {
      * @return output dir
      */
     private OwncloudOutputDir moveOutputDir(DeploymentInputFile inputFile) {
-        DeploymentOutputDir deployment = DeploymentOutputDir.from(inputFile);
-        OwncloudOutputDir nextcloud = OwncloudOutputDir.from(inputFile);
+        var deployment = DeploymentOutputDir.from(inputFile);
+        var nextcloud = OwncloudOutputDir.from(inputFile);
         if (!hasOutput(deployment)) {
             createEmptyOutputFolder(inputFile.getWorkDir(), nextcloud);
         } else {
@@ -188,7 +170,7 @@ public class OwncloudFileService implements FileService {
     }
 
     private boolean hasOutput(DeploymentOutputDir file) {
-        File outputDir = file.toPath().toFile();
+        var outputDir = file.toPath().toFile();
         return outputDir.exists()
                 &&
                 outputDir.listFiles().length > 0;
@@ -196,8 +178,8 @@ public class OwncloudFileService implements FileService {
 
 
     private void moveOutputDir(DeploymentOutputDir deploymentOutput, OwncloudOutputDir outputDir) {
-        Path deployment = deploymentOutput.toPath();
-        Path nextcloud = outputDir.toPath();
+        var deployment = deploymentOutput.toPath();
+        var nextcloud = outputDir.toPath();
         try {
             logger.info(String.format(
                     "Move output dir from [%s] to [%s]",
@@ -216,8 +198,8 @@ public class OwncloudFileService implements FileService {
     }
 
     private List<OwncloudOutputFile> unlockOutputFiles(OwncloudOutputDir outputDir) {
-        List<OwncloudOutputFile> outputFiles = getFilesFromOutputDir(outputDir);
-        for (OwncloudOutputFile file : outputFiles) {
+        var outputFiles = getFilesFromOutputDir(outputDir);
+        for (var file : outputFiles) {
             locker.unlockFileAndParents(file);
         }
         return outputFiles;
@@ -227,7 +209,7 @@ public class OwncloudFileService implements FileService {
      * Return files, and only files
      */
     private List<OwncloudOutputFile> getFilesFromOutputDir(OwncloudOutputDir outputDir) {
-        File[] outputFiles = outputDir
+        var outputFiles = outputDir
                 .toPath()
                 .toFile()
                 .listFiles(File::isFile);
@@ -243,8 +225,8 @@ public class OwncloudFileService implements FileService {
 
 
     private void createSoftLink(String workDir, OwncloudInputFile inputFile) {
-        Path nextcloud = inputFile.toPath();
-        Path deployment = DeploymentInputFile
+        var nextcloud = inputFile.toPath();
+        var deployment = DeploymentInputFile
                 .from(workDir, inputFile.toObjectPath())
                 .toPath();
         deployment

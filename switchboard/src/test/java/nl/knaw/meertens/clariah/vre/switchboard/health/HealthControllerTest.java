@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import javax.ws.rs.core.Response;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class HealthControllerTest extends AbstractControllerTest {
@@ -18,7 +17,7 @@ public class HealthControllerTest extends AbstractControllerTest {
                 .get();
 
         assertThat(response.getStatus()).isEqualTo(200);
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(JsonPath.parse(json).read("$.status", String.class)).isEqualTo("OK");
     }
 

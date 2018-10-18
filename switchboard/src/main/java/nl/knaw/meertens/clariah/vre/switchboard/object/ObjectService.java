@@ -23,7 +23,7 @@ public class ObjectService {
      * A service of kind viewer
      */
     public List<ServiceRecord> getViewersFor(long objectId) {
-        String mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
+        var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
         return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, VIEWER);
     }
 
@@ -31,7 +31,7 @@ public class ObjectService {
      * A service of kind service >:)
      */
     public List<ServiceRecord> getServiceServicesFor(Long objectId) {
-        String mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
+        var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
         return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, SERVICE);
     }
 }

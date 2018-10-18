@@ -8,7 +8,7 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 
 public abstract class KafkaDeploymentDto implements KafkaDto {
 
-    @JsonFormat(shape=STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS")
+    @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     public LocalDateTime dateTime;
 
     public String service;

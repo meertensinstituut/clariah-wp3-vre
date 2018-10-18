@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,7 +44,7 @@ public class LockService {
     private final String unlocker = Config.USER_TO_UNLOCK_WITH;
 
     void lock(AbstractPath path) {
-        Path file = path.toPath();
+        var file = path.toPath();
         logger.info(String.format("Locking [%s]", file));
         try {
             chown(file, locker);
@@ -56,7 +55,7 @@ public class LockService {
     }
 
     void unlock(AbstractPath abstractPath) {
-        Path path = abstractPath.toPath();
+        var path = abstractPath.toPath();
         unlock(path);
     }
 
@@ -66,7 +65,7 @@ public class LockService {
             logger.info(String.format(
                     "Unlocking parent dirs of [%s]", file.toPath()
             ));
-            Path path = file.toPath();
+            var path = file.toPath();
             String nextcloudDir = Paths
                     .get(Config.NEXTCLOUD_VOLUME)
                     .getFileName()
@@ -80,7 +79,7 @@ public class LockService {
     }
 
     private void unlockParents(Path path, String stopAt) throws IOException {
-        Path parent = path.getParent();
+        var parent = path.getParent();
         chown(parent, unlocker);
         setPosixFilePermissions(parent, get755());
         if (!parent.getFileName().toString().equals(stopAt)) {
@@ -95,7 +94,7 @@ public class LockService {
         try {
             chown(path, unlocker);
             setPosixFilePermissions(path, get644());
-            Path parent = path.getParent();
+            var parent = path.getParent();
             chown(parent, unlocker);
         } catch (IOException e) {
             logger.error(String.format("Could not unlock [%s]", path), e);
@@ -103,10 +102,10 @@ public class LockService {
     }
 
     private void chown(Path file, String user) throws IOException {
-        UserPrincipalLookupService lookupService = FileSystems
+        var lookupService = FileSystems
                 .getDefault()
                 .getUserPrincipalLookupService();
-        PosixFileAttributeView fileAttributeView = getFileAttributeView(
+        var fileAttributeView = getFileAttributeView(
                 file, PosixFileAttributeView.class, NOFOLLOW_LINKS
         );
         fileAttributeView.setGroup(
@@ -118,13 +117,13 @@ public class LockService {
     }
 
     private Set<PosixFilePermission> get644() {
-        Set<PosixFilePermission> permissions = get444();
+        var permissions = get444();
         permissions.add(OWNER_WRITE);
         return permissions;
     }
 
     private Set<PosixFilePermission> get755() {
-        Set<PosixFilePermission> permissions = get444();
+        var permissions = get444();
         permissions.add(OWNER_EXECUTE);
         permissions.add(OTHERS_EXECUTE);
         permissions.add(GROUP_EXECUTE);

@@ -72,6 +72,7 @@ public abstract class AbstractPath {
 
     /**
      * ObjectPath: path as found in object registry
+     *
      * @return relative path
      */
     public abstract String toObjectPath();
@@ -84,7 +85,7 @@ public abstract class AbstractPath {
      */
     static String getFileFrom(String objectPath) {
         assertIsObjectPath(objectPath);
-        Path inputPath = Paths.get(objectPath);
+        var inputPath = Paths.get(objectPath);
         return inputPath
                 .subpath(2, inputPath.getNameCount())
                 .toString();
@@ -93,11 +94,12 @@ public abstract class AbstractPath {
     /**
      * Object path constists of:
      * {user}/{files}/{file}
+     *
      * @return {user}
      */
     static String getUserFrom(String objectPath) {
         assertIsObjectPath(objectPath);
-        Path inputPath = Paths.get(objectPath);
+        var inputPath = Paths.get(objectPath);
         return inputPath.subpath(0, 1).toString();
     }
 
@@ -107,12 +109,12 @@ public abstract class AbstractPath {
      * Nb. Validity of user name is not checked
      */
     private static void assertIsObjectPath(String objectPath) {
-        String pattern = "(.*)/" + Config.FILES_DIR + "/(.*)";
-        boolean match = Pattern
+        var pattern = "(.*)/" + Config.FILES_DIR + "/(.*)";
+        var match = Pattern
                 .compile(pattern)
                 .matcher(objectPath)
                 .matches();
-        if(!match) {
+        if (!match) {
             throw new IllegalArgumentException(String.format(
                     "objectPath [%s] did not match pattern [%s]"
                     , objectPath, pattern

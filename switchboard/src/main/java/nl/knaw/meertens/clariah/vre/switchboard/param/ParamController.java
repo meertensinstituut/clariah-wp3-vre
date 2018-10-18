@@ -21,8 +21,8 @@ public class ParamController extends AbstractController {
     @Path("/{service}/params")
     @Produces(APPLICATION_JSON)
     public Response getParamsFor(@PathParam("service") Long service) {
-            Cmdi cmdi = paramService.getParams(service);
-            return createResponse(cmdi);
+        var cmdi = paramService.getParams(service);
+        return createResponse(cmdi);
     }
 
 

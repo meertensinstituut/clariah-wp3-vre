@@ -1,7 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.registry;
 
 import com.google.common.base.Joiner;
-import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -15,7 +14,6 @@ import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
@@ -46,13 +44,13 @@ public class AbstractDreamfactoryRegistry {
             List<NameValueDto> params,
             String endpoint
     ) throws SQLException {
-        String urlParams = Joiner.on("&").join(params.stream().map(p ->
+        var urlParams = Joiner.on("&").join(params.stream().map(p ->
                 encodeUriComponent(p.name)
-                + "="
-                + encodeUriComponent(p.value.toString())
+                        + "="
+                        + encodeUriComponent(p.value.toString())
         ).collect(toList()));
-        String body = "";
-        boolean isResource = false;
+        var body = "";
+        var isResource = false;
         return post(body, endpoint + "?" + urlParams, isResource);
     }
 
@@ -61,15 +59,15 @@ public class AbstractDreamfactoryRegistry {
             String endpoint,
             boolean isResource
     ) throws SQLException {
-        HttpRequest request = createPostRequest(endpoint, json, isResource);
-        HttpResponse<String> response = fireRequest(request);
+        var request = createPostRequest(endpoint, json, isResource);
+        var response = fireRequest(request);
         return handleResponse(response);
     }
 
     protected String delete(Map<String, String> filters, String endpoint) throws SQLException {
-        String urlFilters = convert(filters);
-        HttpRequest request = createDeleteRequest(endpoint, urlFilters);
-        HttpResponse<String> response = fireRequest(request);
+        var urlFilters = convert(filters);
+        var request = createDeleteRequest(endpoint, urlFilters);
+        var response = fireRequest(request);
         return handleResponse(response);
     }
 
@@ -108,23 +106,23 @@ public class AbstractDreamfactoryRegistry {
      * @throws SQLException e
      */
     private String handleFailure(HttpResponse<String> response) throws SQLException {
-        if(isBlank(response.getBody())) {
+        if (isBlank(response.getBody())) {
             throw new SQLException();
         }
 
-        DocumentContext parsed = JsonPath.parse(response.getBody());
+        var parsed = JsonPath.parse(response.getBody());
 
-        if(isNull(parsed.read("$.error"))) {
+        if (isNull(parsed.read("$.error"))) {
             throw new SQLException();
         }
 
-        String reason = "";
-        String sqlState = "";
+        var reason = "";
+        var sqlState = "";
 
-        if(!isNull(parsed.read("$.error.context"))) {
+        if (!isNull(parsed.read("$.error.context"))) {
             reason = parsed.read("$.error.context.resource[0].message", String.class);
             sqlState = parsed.read("$.error.context.resource[0].code", String.class);
-        } else if(!isNull(parsed.read("$.error.message"))) {
+        } else if (!isNull(parsed.read("$.error.message"))) {
             reason = parsed.read("$.error.message");
             sqlState = getSqlState(reason);
         }
@@ -132,11 +130,11 @@ public class AbstractDreamfactoryRegistry {
     }
 
     private String getSqlState(String msg) {
-        String pattern = ".*(SQLSTATE\\[(.*)\\]).*";
-        Matcher matcher = Pattern
+        var pattern = ".*(SQLSTATE\\[(.*)\\]).*";
+        var matcher = Pattern
                 .compile(pattern)
                 .matcher(msg);
-        if(matcher.find()) {
+        if (matcher.find()) {
             return matcher.group(2);
         }
         return "";
@@ -147,12 +145,12 @@ public class AbstractDreamfactoryRegistry {
      * that Dreamfactory understands
      */
     private String convert(Map<String, String> filters) {
-        List<String> filterParts = filters
+        var filterParts = filters
                 .entrySet()
                 .stream()
-                .map(entry -> "(" + entry.getKey() + " = "+ entry.getValue() + ")")
+                .map(entry -> "(" + entry.getKey() + " = " + entry.getValue() + ")")
                 .collect(toList());
-        String allFilters = Joiner
+        var allFilters = Joiner
                 .on(" AND ")
                 .join(filterParts);
         return encodeUriComponent(allFilters);
@@ -188,7 +186,7 @@ public class AbstractDreamfactoryRegistry {
         HttpRequestWithBody request;
         request = Unirest.post(objectsDbUrl + table);
         // wrap new entry in resource array:
-        if(isResource) {
+        if (isResource) {
             json = format("{\"resource\" : [%s]}", json);
         }
         return addHeaders(request)
@@ -200,7 +198,7 @@ public class AbstractDreamfactoryRegistry {
      * Create DELETE by filters request
      */
     private HttpRequest createDeleteRequest(String table, String filters) {
-        HttpRequestWithBody request = Unirest
+        var request = Unirest
                 .delete(objectsDbUrl + table + "?filter=" + filters);
         return addHeaders(request)
                 .getHttpRequest();

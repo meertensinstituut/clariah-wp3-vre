@@ -7,7 +7,6 @@ import org.mockserver.model.Header;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
@@ -21,44 +20,44 @@ public class TagControllerTest extends AbstractControllerTest {
 
     @Test
     public void createTag() {
-        TagDto tag = new TagDto();
+        var tag = new TagDto();
         tag.name = "2018";
         tag.type = "date";
 
         startPostTagMock();
 
-        Entity<TagDto> tagEntity = Entity.entity(tag, MediaType.APPLICATION_JSON_TYPE);
-        Response response = jerseyTest.target("tags")
+        var tagEntity = Entity.entity(tag, MediaType.APPLICATION_JSON_TYPE);
+        var response = jerseyTest.target("tags")
                 .request()
                 .post(tagEntity);
 
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(response.getStatus()).isEqualTo(200);
         assertThatJson(json).node("id").isEqualTo(5);
     }
 
     @Test
     public void tagObject_succeeds() throws JsonProcessingException {
-        ObjectTagDto objectTag = new ObjectTagDto();
+        var objectTag = new ObjectTagDto();
         objectTag.object = 2L;
 
         startTagObjectMock(200, "{\"id\": 6}");
 
-        String entity = getMapper().writeValueAsString(objectTag);
-        Entity<String> tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
+        var entity = getMapper().writeValueAsString(objectTag);
+        var tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        Response response = jerseyTest.target("tags/1/objects")
+        var response = jerseyTest.target("tags/1/objects")
                 .request()
                 .post(tagEntity);
 
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(response.getStatus()).isEqualTo(200);
         assertThatJson(json).node("id").isEqualTo(6);
     }
 
     @Test
     public void tagObject_fails_whenObjectDoesNotExist() throws JsonProcessingException {
-        ObjectTagDto objectTag = new ObjectTagDto();
+        var objectTag = new ObjectTagDto();
         objectTag.object = 2L;
 
         startTagObjectMock(
@@ -66,21 +65,21 @@ public class TagControllerTest extends AbstractControllerTest {
                 getTestFileContent("new-object-tag-response-when-object-does-not-exist.json")
         );
 
-        String entity = getMapper().writeValueAsString(objectTag);
-        Entity<String> tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
+        var entity = getMapper().writeValueAsString(objectTag);
+        var tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        Response response = jerseyTest.target("tags/1/objects")
+        var response = jerseyTest.target("tags/1/objects")
                 .request()
                 .post(tagEntity);
 
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(response.getStatus()).isEqualTo(500);
         assertThatJson(json).node("msg").isEqualTo("Could not create object tag. Tag or object does not exist.");
     }
 
     @Test
     public void tagObject_fails_whenObjectTagAlreadyExists() throws JsonProcessingException {
-        ObjectTagDto objectTag = new ObjectTagDto();
+        var objectTag = new ObjectTagDto();
         objectTag.object = 2L;
 
         startTagObjectMock(
@@ -88,14 +87,14 @@ public class TagControllerTest extends AbstractControllerTest {
                 getTestFileContent("new-object-tag-response-when-object-tag-already-exists.json")
         );
 
-        String entity = getMapper().writeValueAsString(objectTag);
-        Entity<String> tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
+        var entity = getMapper().writeValueAsString(objectTag);
+        var tagEntity = Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        Response response = jerseyTest.target("tags/1/objects")
+        var response = jerseyTest.target("tags/1/objects")
                 .request()
                 .post(tagEntity);
 
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(response.getStatus()).isEqualTo(500);
         assertThatJson(json).node("msg").isEqualTo("Could not create object tag. Object tag already exists.");
     }
@@ -104,11 +103,11 @@ public class TagControllerTest extends AbstractControllerTest {
     public void untagObject_succeeds() {
         startUntagObjectMock();
 
-        Response response = jerseyTest.target("tags/1/objects/2")
+        var response = jerseyTest.target("tags/1/objects/2")
                 .request()
                 .delete();
 
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(response.getStatus()).isEqualTo(200);
         assertThatJson(json).node("id").isEqualTo(3);
     }
@@ -117,11 +116,11 @@ public class TagControllerTest extends AbstractControllerTest {
     public void deleteTag_succeeds() {
         startDeleteTagMock(200, "{\"resource\": [{\"id\": 1}]}");
 
-        Response response = jerseyTest.target("tags/1")
+        var response = jerseyTest.target("tags/1")
                 .request()
                 .delete();
 
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(response.getStatus()).isEqualTo(200);
         assertThatJson(json).node("id").isEqualTo(1);
     }
@@ -130,11 +129,11 @@ public class TagControllerTest extends AbstractControllerTest {
     public void deleteTag_failsWhenStillLinkedToObject() {
         startDeleteTagMock(500, getTestFileContent("remove-tag.json"));
 
-        Response response = jerseyTest.target("tags/1")
+        var response = jerseyTest.target("tags/1")
                 .request()
                 .delete();
 
-        String json = response.readEntity(String.class);
+        var json = response.readEntity(String.class);
         assertThat(response.getStatus()).isEqualTo(500);
         assertThatJson(json).node("msg").isEqualTo("Could not delete tag [1]. " +
                 "Tag cannot be removed when it is still linked to an object.");

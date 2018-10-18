@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.exception;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractController;
 import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardMsg;
 import org.slf4j.Logger;
@@ -8,15 +7,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import java.util.UUID;
-
-import static javax.ws.rs.core.MediaType.*;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
  * Jersey Exception Mapper that catches all Throwables,
@@ -38,7 +33,7 @@ public class CommonExceptionMapper extends AbstractController implements Excepti
     }
 
     private Response createResponse(Throwable e, int httpStatus) {
-        SwitchboardMsg msg = new SwitchboardMsg(e.getMessage());
+        var msg = new SwitchboardMsg(e.getMessage());
         return createResponse(msg, httpStatus);
     }
 }

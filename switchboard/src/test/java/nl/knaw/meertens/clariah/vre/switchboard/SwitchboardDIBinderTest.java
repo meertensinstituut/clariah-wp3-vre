@@ -27,7 +27,7 @@ public class SwitchboardDIBinderTest extends AbstractTest {
      */
     @Test
     public void testAllControllersAreIncluded() {
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
+        var reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forPackage("nl.knaw.meertens.clariah.vre.switchboard"))
                 .setScanners(new SubTypesScanner(false), new TypeAnnotationsScanner())
         );
@@ -41,7 +41,7 @@ public class SwitchboardDIBinderTest extends AbstractTest {
         logger.info("Controllers defined in SwitchboardDIBinder: "
                 + Arrays.toString(SwitchboardDIBinder.getControllerClasses().toArray()));
 
-        boolean binderContainsAllControlles = SwitchboardDIBinder
+        var binderContainsAllControlles = SwitchboardDIBinder
                 .getControllerClasses()
                 .containsAll(magicalClasses);
         assertThat(SwitchboardDIBinder.getControllerClasses().size()).isEqualTo(magicalClasses.size());

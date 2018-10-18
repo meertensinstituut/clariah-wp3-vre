@@ -8,7 +8,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.AbstractDreamfactoryReg
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map;
 
 public class TagRegistry extends AbstractDreamfactoryRegistry {
 
@@ -26,13 +25,17 @@ public class TagRegistry extends AbstractDreamfactoryRegistry {
             try {
                 json = postResource(mapper.writeValueAsString(tag), table);
             } catch (SQLException e) {
-                String msg = "Could not create tag.";
-                if(e.getSQLState().equals("23505")) {
+                var msg = "Could not create tag.";
+                System.out.println(msg);
+                if (e.getSQLState().equals("23505")) {
+                    System.out.println(msg);
                     msg += " Tag already exists.";
                 }
+                System.out.println(msg);
                 throw new RuntimeException(msg, e);
 
             }
+            System.out.println("blarpio");
             return JsonPath.parse(json).read("$.resource[0].id", Long.class);
         } catch (IOException e) {
             throw new RuntimeException("Could not create tag", e);
@@ -42,11 +45,11 @@ public class TagRegistry extends AbstractDreamfactoryRegistry {
     public Long deleteTag(Long tag) {
         String json;
         try {
-            Map<String, String> filters = new HashMap<>();
+            var filters = new HashMap<String, String>();
             filters.put("id", "" + tag);
             json = delete(filters, table);
         } catch (SQLException e) {
-            String msg = String.format("Could not delete tag [%d].", tag);
+            var msg = String.format("Could not delete tag [%d].", tag);
             if (e.getSQLState().equals("23503")) {
                 msg += " Tag cannot be removed when it is still linked to an object.";
             }

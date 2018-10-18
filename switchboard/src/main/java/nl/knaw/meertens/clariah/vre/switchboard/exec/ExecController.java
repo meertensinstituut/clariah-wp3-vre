@@ -3,8 +3,6 @@ package nl.knaw.meertens.clariah.vre.switchboard.exec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractController;
 import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardMsg;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +31,7 @@ public class ExecController extends AbstractController {
     @GET
     @Produces(APPLICATION_JSON)
     public Response getHelp() {
-        SwitchboardMsg msg = new SwitchboardMsg("See readme for info on how to use exec api");
+        var msg = new SwitchboardMsg("See readme for info on how to use exec api");
         return createResponse(msg);
     }
 
@@ -46,8 +44,8 @@ public class ExecController extends AbstractController {
             String body
     ) {
         logger.info(String.format("Received request of service [%s] with body [%s]", service, body));
-        DeploymentRequest request = execService.deploy(service, body);
-        SwitchboardMsg msg = new SwitchboardMsg(String.format(
+        var request = execService.deploy(service, body);
+        var msg = new SwitchboardMsg(String.format(
                 "Deployment of service [%s] has been requested.", request.getService()
         ));
         msg.workDir = request.getWorkDir();
@@ -61,7 +59,7 @@ public class ExecController extends AbstractController {
     @Produces(APPLICATION_JSON)
     public Response getDeploymentStatus(@PathParam("workDir") String workDir) {
         logger.info(String.format("Status request of [%s]", workDir));
-        DeploymentStatusReport report = execService.getStatus(workDir);
+        var report = execService.getStatus(workDir);
         return createResponse(report, report.getStatus().getHttpStatus());
     }
 }
