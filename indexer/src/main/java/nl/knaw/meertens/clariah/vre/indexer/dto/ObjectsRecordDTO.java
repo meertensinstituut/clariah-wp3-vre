@@ -12,4 +12,5 @@ public class ObjectsRecordDTO {
     public Integer filesize = null;
     public String time_changed = null;
     public String time_created = null;
+    public Boolean deleted = null;
 }
