@@ -17,6 +17,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class FitsService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -61,8 +63,8 @@ public class FitsService {
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         if (!hasStatusSuccess(con)) {
             throw new RuntimeException(String.format(
-                    "Fits request [%s] resulted in http status [%s] and msg [%s]",
-                    url.toString(), con.getResponseCode(), con.getErrorStream()
+                    "Fits request [%s] error: [%s][%s]",
+                    url.toString(), con.getResponseCode(), IOUtils.toString(con.getErrorStream(), UTF_8)
             ));
         }
         result = IOUtils.toString(con.getInputStream(), con.getContentEncoding());

@@ -26,16 +26,12 @@ public class TagRegistry extends AbstractDreamfactoryRegistry {
                 json = postResource(mapper.writeValueAsString(tag), table);
             } catch (SQLException e) {
                 var msg = "Could not create tag.";
-                System.out.println(msg);
                 if (e.getSQLState().equals("23505")) {
-                    System.out.println(msg);
                     msg += " Tag already exists.";
                 }
-                System.out.println(msg);
                 throw new RuntimeException(msg, e);
 
             }
-            System.out.println("blarpio");
             return JsonPath.parse(json).read("$.resource[0].id", Long.class);
         } catch (IOException e) {
             throw new RuntimeException("Could not create tag", e);

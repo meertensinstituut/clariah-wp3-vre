@@ -269,8 +269,8 @@ public class ObjectsRepositoryService {
             request = Unirest.put(objectsDbUrl + objectTable + "/" + id);
         }
         logger.info(format(
-                "Create for [%d] uri [%s] method [%s] body [%s]",
-                id, request.getUrl(), request.getHttpMethod(), abbreviate(recordJson, 1000))
+                "Create request for object with id [%d]: [%s] [%s] [%s]",
+                id, request.getHttpMethod(), request.getUrl(), abbreviate(recordJson, 1000))
         );
         return request
                 .header("Content-Type", "application/json")
