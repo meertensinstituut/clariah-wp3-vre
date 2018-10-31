@@ -11,6 +11,7 @@ docker-compose \
   -f ./switchboard/docker-compose.yml \
   -f ./indexer/docker-compose.yml \
   -f ./deployment-service/docker-compose.yml \
+  -f ./tagger/docker-compose.yml \
   -f ./docker-compose.yml \
   -p vre up -d --build # replace with 'config' to see generated docker-compose-file
 

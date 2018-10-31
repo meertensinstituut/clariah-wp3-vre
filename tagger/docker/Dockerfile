@@ -64,15 +64,3 @@ RUN set -ex; \
 
 RUN apt-get update \
  && apt-get -y install jq
-
-##
-# Switchboard specific:
-##
-
-# Add tomcat filters to allow CORS:
-COPY web.xml /usr/local/tomcat/conf/web.xml
-
-# Create user for locking nextcloud files:
-RUN useradd --create-home --shell /bin/bash locker
-
-CMD ["catalina.sh", "run"]

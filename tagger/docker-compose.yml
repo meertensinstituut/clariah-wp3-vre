@@ -1,0 +1,36 @@
+version: '3.4'
+
+services:
+  tagger:
+    build: ./docker
+    tty: true
+    working_dir: /usr/local/tagger
+    command: ./docker/docker-run-tagger.sh
+    expose:
+      - 80
+    volumes:
+      - ./:/usr/local/tagger
+      # share maven repository of host:
+      - ${HOME}/.m2/repository:/root/.m2/repository
+    depends_on:
+      - kafka
+    extra_hosts:
+     - moby:127.0.0.1
+    links:
+      - kafka:kafka
+
+  kafka:
+    image: wurstmeister/kafka:1.0.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 1200000
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 1200000
+    extra_hosts:
+     - moby:127.0.0.1
+    ports:
+      - ${KAFKA_PORT}
+
+  zookeeper:
+    image: zookeeper:3.4

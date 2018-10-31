@@ -6,6 +6,22 @@ services:
     volumes:
       - ./integration:/usr/local/integration
 
+  tagger:
+    build: ./tagger/docker
+    command: ./docker/docker-run-tagger.sh
+    volumes:
+      - ./tagger:/usr/local/tagger
+    environment:
+      KAFKA_BROKER: localhost
+      KAFKA_PORT: ${KAFKA_PORT}
+      RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}
+      RECOGNIZER_GROUP_NAME: ${RECOGNIZER_GROUP_NAME}
+      TAGGER_TOPIC_NAME: ${TAGGER_TOPIC_NAME}
+      TAGGER_GROUP_NAME: ${TAGGER_TOPIC_NAME}
+      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
+      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
+      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+
   switchboard:
     build: ./switchboard/docker
     command: ./docker/docker-run-switchboard.sh

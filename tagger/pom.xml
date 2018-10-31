@@ -1,18 +1,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>nl.knaw.meertens.clariah.vre</groupId>
-    <artifactId>switchboard</artifactId>
-    <packaging>war</packaging>
+    <groupId>tagger</groupId>
+    <artifactId>tagger</artifactId>
+    <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>switchboard</name>
+    <name>tagger</name>
     <url>http://maven.apache.org</url>
 
     <properties>
+        <main-class>nl.knaw.meertens.clariah.vre.tagger.App</main-class>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
+        <mavens-surefire-plugin.version>2.18.1</mavens-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 
         <assertj-core.version>3.9.0</assertj-core.version>
         <commons-io.version>2.6</commons-io.version>
@@ -21,51 +27,17 @@
         <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
         <jaxb-api.version>2.4.0-b180725.0427</jaxb-api.version>
         <jaxrs.version>2.1</jaxrs.version>
-        <jersey.version>2.26</jersey.version>
         <json-path.version>2.3.0</json-path.version>
         <json-unit-fluent.version>1.28.1</json-unit-fluent.version>
         <junit.version>4.12</junit.version>
-        <kafka.version>2.0.0</kafka.version>
-        <kafka-clients.version>2.0.0</kafka-clients.version>
         <log4j.version>2.11.1</log4j.version>
-        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-        <mavens-surefire-plugin.version>2.18.1</mavens-surefire-plugin.version>
-        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <mockito-core.version>2.21.0</mockito-core.version>
         <mockserver.version>5.4.1</mockserver.version>
-        <random-beans.version>3.7.0</random-beans.version>
-        <reflections.version>0.9.11</reflections.version>
         <unirest-java.version>1.4.9</unirest-java.version>
+
     </properties>
 
     <dependencies>
-
-        <!-- rest api -->
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>${jaxrs.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
 
         <!-- util -->
         <dependency>
@@ -95,38 +67,6 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson-databind.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-
-        <!-- Kafka -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.12</artifactId>
-            <version>${kafka.version}</version>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>jmxri</artifactId>
-                    <groupId>com.sun.jmx</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jms</artifactId>
-                    <groupId>javax.jms</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jmxtools</artifactId>
-                    <groupId>com.sun.jdmk</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>${kafka-clients.version}</version>
-        </dependency>
 
         <!-- logging -->
         <dependency>
@@ -155,13 +95,11 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito-core.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
@@ -169,32 +107,9 @@
             <version>${assertj-core.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-            <artifactId>jersey-test-framework-provider-jdk-http</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <version>${json-path.version}</version>
-        </dependency>
-        <dependency>
             <groupId>net.javacrumbs.json-unit</groupId>
             <artifactId>json-unit-fluent</artifactId>
             <version>${json-unit-fluent.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>${reflections.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.benas</groupId>
-            <artifactId>random-beans</artifactId>
-            <version>${random-beans.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <!-- mock server -->
@@ -220,7 +135,6 @@
             <artifactId>jaxb-api</artifactId>
             <version>${jaxb-api.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -244,14 +158,12 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${mavens-surefire-plugin.version}</version>
                     <configuration>
-                        <!-- java modules: -->
-                        <argLine>
-                            --add-opens java.base/java.lang=ALL-UNNAMED --illegal-access=permit
-                        </argLine>
+                        <!-- java modules -->
+                        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --illegal-access=permit</argLine>
                         <forkMode>once</forkMode>
                     </configuration>
                     <dependencies>
-                        <!-- java modules: -->
+                        <!-- java modules -->
                         <dependency>
                             <groupId>javax.xml.bind</groupId>
                             <artifactId>jaxb-api</artifactId>
@@ -261,5 +173,42 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <!-- build executable jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>${main-class}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- copy dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                            <excludeScope>provided</excludeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
