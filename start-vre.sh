@@ -21,7 +21,6 @@ echo "wait 180 secs to make sure all services are running..."
 sleep 180
 
 echo "Run integration tests"
-docker exec vre_integration_1 /usr/local/integration/docker-run-integration-tests.sh
-
-echo "Succesfully build VRE"
+docker exec vre_integration_1 /usr/local/integration/docker-run-integration-tests.sh && \
+echo "Succesfully build VRE" && \
 echo "Start UI: cd ./ui && ./start-ui.sh"
