@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   tagger:
-    build: ./docker
+    image: maven:3.5.4-jdk-11-slim
     tty: true
     working_dir: /usr/local/tagger
     command: ./docker/docker-run-tagger.sh
