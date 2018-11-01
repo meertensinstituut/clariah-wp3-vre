@@ -11,6 +11,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -19,8 +20,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.isNull;
 
 public class FitsService {
 
@@ -49,19 +52,45 @@ public class FitsService {
     }
 
     public FitsResult checkFile(String path) throws IOException, JAXBException {
-        String fitsPath = Paths
-                .get(fitsFilesRoot, path)
-                .toString();
+        Path fitsPath = Paths
+                .get(fitsFilesRoot, path);
         logger.info(String.format("FitsService is checking file [%s]", fitsPath));
 
-        Path filePath = Paths.get(fitsPath);
-        ls("/"+filePath.subpath(0, filePath.getNameCount() - 1).toString());
+        // loop that checks file
+        if(!fitsPath.toFile().exists()) {
+            waitUntilFileIsUploaded(fitsPath);
+        }
 
-        String fitsXmlResult = askFits(fitsPath);
+        ls("/"+fitsPath.subpath(0, fitsPath.getNameCount() - 1).toString());
+
+        String fitsXmlResult = askFits(fitsPath.toString());
         FitsResult fitsResult = new FitsResult();
         fitsResult.setXml(fitsXmlResult);
         fitsResult.setFits(unmarshalFits(fitsXmlResult));
         return fitsResult;
+    }
+
+    private void waitUntilFileIsUploaded(Path fitsPath) {
+        File parentFolder = fitsPath.getParent().toFile();
+        while(true) {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Waiting for uploading was interrupted");
+            }
+            // check if temporary file still exists:
+            File[] tmpUploadFiles = parentFolder.listFiles((dir, name) ->
+                    name.contains(fitsPath.getFileName().toString() + ".ocTransferId")
+            );
+            if(!isNull(tmpUploadFiles) && tmpUploadFiles.length == 1) {
+                logger.info("Owncloud still uploading " + fitsPath);
+            } else if(fitsPath.toFile().exists()) {
+                logger.info("Owncloud finished uploading " + fitsPath + ". Resume recognizing...");
+                break;
+            } else {
+                throw new IllegalArgumentException("Could not find file " + fitsPath);
+            }
+        }
     }
 
     private void ls(String path) {
