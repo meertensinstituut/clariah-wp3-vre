@@ -1,11 +1,11 @@
-package nl.knaw.meertens.clariah.vre.recognizer.kafka;
+package nl.knaw.meertens.clariah.vre.tagger.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Properties;
 import java.util.function.Consumer;
 
@@ -23,7 +23,7 @@ public class KafkaConsumerService {
     }
 
     private KafkaConsumer<String, String> configureConsumer(String server, String groupName) {
-        Properties props = new Properties();
+        var props = new Properties();
         props.put("bootstrap.servers", server);
         props.put("advertised.host.name", "kafka");
         props.put("advertised.port", 9092);
@@ -47,8 +47,8 @@ public class KafkaConsumerService {
         logger.info(String.format("Subscribed to topic [%s]", topic));
         while (true) {
             logger.info(String.format("Polling topic [%s]", topic));
-            ConsumerRecords<String, String> records = consumer.poll(1000);
-            for (ConsumerRecord<String, String> record : records) {
+            var records = consumer.poll(Duration.ofSeconds(1));
+            for (var record : records) {
                 consumeRecordWith(record, consumerFunction);
             }
         }

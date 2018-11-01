@@ -37,10 +37,25 @@ public class RecognizerService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final KafkaConsumerService nextcloudConsumerService = new KafkaConsumerService(KAFKA_SERVER, NEXTCLOUD_TOPIC_NAME, NEXTCLOUD_GROUP_NAME);
-    private final KafkaProducerService kafkaProducer = new KafkaProducerService(new RecognizerKafkaProducer(KAFKA_SERVER), RECOGNIZER_TOPIC_NAME);
-    private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(OBJECTS_DB_URL, OBJECTS_DB_KEY, OBJECT_TABLE);
-    private final FitsService fitsService = new FitsService(FITS_URL, FITS_FILES_ROOT);
+
+    private final KafkaConsumerService nextcloudConsumerService = new KafkaConsumerService(
+            KAFKA_SERVER,
+            NEXTCLOUD_TOPIC_NAME,
+            NEXTCLOUD_GROUP_NAME
+    );
+    private final KafkaProducerService kafkaProducer = new KafkaProducerService(
+            new RecognizerKafkaProducer(KAFKA_SERVER),
+            RECOGNIZER_TOPIC_NAME
+    );
+    private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(
+            OBJECTS_DB_URL,
+            OBJECTS_DB_KEY,
+            OBJECT_TABLE
+    );
+    private final FitsService fitsService = new FitsService(
+            FITS_URL,
+            FITS_FILES_ROOT
+    );
 
     public void consumeOwncloud() {
         nextcloudConsumerService.consumeWith((String json) -> {

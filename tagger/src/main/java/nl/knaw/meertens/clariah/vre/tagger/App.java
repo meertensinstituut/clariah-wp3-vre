@@ -6,8 +6,10 @@ import org.slf4j.LoggerFactory;
 public class App {
     private static Logger logger = LoggerFactory.getLogger(App.class);
 
+    private static TaggerService taggerService = new TaggerService();
+
     public static void main(String[] args) {
-        logger.info("hello world");
+        taggerService.consumeRecognizer();
     }
 
 }
