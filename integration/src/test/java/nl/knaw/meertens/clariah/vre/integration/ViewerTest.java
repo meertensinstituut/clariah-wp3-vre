@@ -22,7 +22,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjec
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Ignore; @Ignore public class ViewerTest extends AbstractIntegrationTest {
+public class ViewerTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

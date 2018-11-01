@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
 
-import org.junit.Ignore; @Ignore public class KafkaConsumerService {
+public class KafkaConsumerService {
 
     private final String topic;
     private final KafkaConsumer<String, String> consumer;

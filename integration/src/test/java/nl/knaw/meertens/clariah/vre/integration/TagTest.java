@@ -16,7 +16,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTest
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 
-import org.junit.Ignore; @Ignore public class TagTest extends AbstractIntegrationTest {
+public class TagTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

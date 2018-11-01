@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.junit.Ignore; @Ignore public class ObjectsRepositoryService {
+public class ObjectsRepositoryService {
 
     private String user;
     private String password;

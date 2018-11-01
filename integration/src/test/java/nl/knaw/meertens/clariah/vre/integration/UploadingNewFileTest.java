@@ -22,7 +22,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 
-import org.junit.Ignore; @Ignore public class UploadingNewFileTest extends AbstractIntegrationTest {
+public class UploadingNewFileTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

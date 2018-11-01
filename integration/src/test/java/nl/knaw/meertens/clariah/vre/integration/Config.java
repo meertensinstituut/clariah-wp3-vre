@@ -1,6 +1,6 @@
 package nl.knaw.meertens.clariah.vre.integration;
 
-import org.junit.Ignore; @Ignore public class Config {
+public class Config {
     public final static String KAFKA_ENDPOINT = "kafka:" + System.getenv("KAFKA_PORT");
     public final static String NEXTCLOUD_ENDPOINT = "http://nextcloud:80/remote.php/webdav/";
     public final static String NEXTCLOUD_ADMIN_NAME = System.getenv("NEXTCLOUD_ADMIN_NAME");

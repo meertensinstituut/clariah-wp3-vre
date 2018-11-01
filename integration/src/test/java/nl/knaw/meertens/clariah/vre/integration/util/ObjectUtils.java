@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Ignore; @Ignore public class ObjectUtils {
+public class ObjectUtils {
 
     private static Logger logger = LoggerFactory.getLogger(ObjectUtils.class);
 

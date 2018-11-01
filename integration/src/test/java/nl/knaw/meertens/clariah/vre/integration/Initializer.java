@@ -25,7 +25,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  *  - wait for registry to have processed first file
  *  - wait for switchboard to have started
  */
-import org.junit.Ignore; @Ignore public class Initializer extends AbstractIntegrationTest {
+public class Initializer extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(UploadingNewFileTest.class);
 
