@@ -24,7 +24,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.putInputFi
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DeployUtils {
+import org.junit.Ignore; @Ignore public class DeployUtils {
 
     private static Logger logger = LoggerFactory.getLogger(DeployUtils.class);
 

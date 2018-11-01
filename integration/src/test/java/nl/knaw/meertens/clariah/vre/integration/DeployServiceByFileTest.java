@@ -2,6 +2,8 @@ package nl.knaw.meertens.clariah.vre.integration;
 
 import com.mashape.unirest.http.Unirest;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,13 +15,22 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTest
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 
+@RunWith(Parameterized.class)
 public class DeployServiceByFileTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Parameterized.Parameters
+    public static Object[][] data() {
+        return new Object[100][0];
+    }
+
     @Test
     public void testServiceIsFoundByFile_andServiceCanBeDeployed() throws Exception {
-        String someContent = "'t Is vreemd, in al die jaren heb ik niet geweten dat het op kantoor zo gezellig kan zijn. In die kaas moest ik stikken, terwijl ik hier, tussen twee briefjes in, even kan luisteren naar innerlijke stemmen.";
+        String someContent = "'t Is vreemd, in al die jaren heb ik niet geweten " +
+                "dat het op kantoor zo gezellig kan zijn. " +
+                "In die kaas moest ik stikken, terwijl ik hier, " +
+                "tussen twee briefjes in, even kan luisteren naar innerlijke stemmen.";
         String inputFile = uploadTestFile(someContent);
         pollAndAssert(() -> fileCanBeDownloaded(inputFile, someContent));
 

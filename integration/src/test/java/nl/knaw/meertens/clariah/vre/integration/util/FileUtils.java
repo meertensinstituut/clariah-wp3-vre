@@ -25,7 +25,7 @@ import static nl.knaw.meertens.clariah.vre.integration.Config.NEXTCLOUD_ADMIN_PA
 import static nl.knaw.meertens.clariah.vre.integration.Config.NEXTCLOUD_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FileUtils {
+import org.junit.Ignore; @Ignore public class FileUtils {
 
     private static Logger logger = LoggerFactory.getLogger(FileUtils.class);
 

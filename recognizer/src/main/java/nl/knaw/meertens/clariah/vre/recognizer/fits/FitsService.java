@@ -10,11 +10,14 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -50,11 +53,32 @@ public class FitsService {
                 .get(fitsFilesRoot, path)
                 .toString();
         logger.info(String.format("FitsService is checking file [%s]", fitsPath));
+
+        Path filePath = Paths.get(fitsPath);
+        ls("/"+filePath.subpath(0, filePath.getNameCount() - 1).toString());
+
         String fitsXmlResult = askFits(fitsPath);
         FitsResult fitsResult = new FitsResult();
         fitsResult.setXml(fitsXmlResult);
         fitsResult.setFits(unmarshalFits(fitsXmlResult));
         return fitsResult;
+    }
+
+    private void ls(String path) {
+        logger.info("$ ls -al " + path);
+        try {
+            StringBuilder output = new StringBuilder();
+            Process p = Runtime.getRuntime().exec("ls -al " + path);
+            p.waitFor();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = "";
+            while ((line = reader.readLine())!= null) {
+                output.append(line + "\n");
+            }
+            logger.info(output.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private String askFits(String path) throws IOException {
