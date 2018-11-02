@@ -19,37 +19,40 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class AbstractDreamfactoryRegistry {
+class AbstractDreamfactoryRegistry {
 
     private final String objectsDbUrl;
     private final String objectsDbKey;
 
 
-    public AbstractDreamfactoryRegistry(String objectsDbUrl, String objectsDbKey) {
+    AbstractDreamfactoryRegistry(String objectsDbUrl, String objectsDbKey) {
 
         this.objectsDbUrl = objectsDbUrl;
         this.objectsDbKey = objectsDbKey;
     }
 
-    protected String postResource(
+    String postResource(
             String json,
             String endpoint
     ) throws SQLException {
         return post(json, endpoint, true);
     }
 
-    protected String postProcedure(
+    String postProcedure(
             List<NameValueDto> params,
             String endpoint
     ) throws SQLException {
-        var urlParams = Joiner.on("&").join(params.stream().map(p ->
-                encodeUriComponent(p.name)
-                        + "="
-                        + encodeUriComponent(p.value.toString())
-        ).collect(toList()));
         var body = "";
         var isResource = false;
-        return post(body, endpoint + "?" + urlParams, isResource);
+        return post(body, endpoint + "?" + createUrlQueryParams(params), isResource);
+    }
+
+    private String createUrlQueryParams(List<NameValueDto> params) {
+        return Joiner.on("&").join(params.stream().map(p ->
+                    encodeUriComponent(p.name)
+                    + "="
+                    + encodeUriComponent(p.value.toString())
+            ).collect(toList()));
     }
 
     private String post(
@@ -150,6 +153,29 @@ public class AbstractDreamfactoryRegistry {
         }
     }
 
+    String get(String endpoint, List<NameValueDto> params) {
+        var request = createGetRequest(endpoint, params);
+        var response = fireRequest(request);
+        try {
+            return handleResponse(response);
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not process get request", e);
+        }
+    }
+
+    /**
+     * Create GET request
+     */
+    private HttpRequest createGetRequest(String table, List<NameValueDto> urlParams) {
+        HttpRequest request = Unirest.get(
+                objectsDbUrl
+                + table
+                + "?"
+                + createUrlQueryParams(urlParams)
+        );
+        return addHeaders(request);
+    }
+
     private boolean isSuccess(HttpResponse<String> response) {
         return response.getStatus() / 100 == 2;
     }
@@ -164,16 +190,15 @@ public class AbstractDreamfactoryRegistry {
         if (isResource) {
             json = format("{\"resource\" : [%s]}", json);
         }
-        return addHeaders(request)
-                .body(json)
-                .getHttpRequest();
+
+        request.body(json);
+        return addHeaders(request);
     }
 
-    private HttpRequestWithBody addHeaders(HttpRequestWithBody request) {
+    private HttpRequest addHeaders(HttpRequest request) {
         return request
                 .header("Content-Type", "application/json")
                 .header("X-DreamFactory-Api-Key", objectsDbKey);
     }
-
 
 }

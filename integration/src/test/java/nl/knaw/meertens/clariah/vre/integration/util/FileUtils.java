@@ -133,7 +133,7 @@ public class FileUtils {
     }
 
     /**
-     * Wait for occ cronjob to scan all files
+     * Wait for nextcouds occ cronjob to scan all files
      * Should happen every 5-6 seconds.
      * (see nextcloud/docker-scan-files.sh)
      */

@@ -7,7 +7,6 @@ services:
       - ./integration:/usr/local/integration
 
   tagger:
-    build: ./tagger/docker
     command: ./docker/docker-run-tagger.sh
     volumes:
       - ./tagger:/usr/local/tagger
@@ -21,6 +20,8 @@ services:
       USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
       USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
       APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+      TEST_USER: ${TEST_USER}
+      TEST_PASSWORD: ${TEST_PASSWORD}
 
   switchboard:
     build: ./switchboard/docker

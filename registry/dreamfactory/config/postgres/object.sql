@@ -87,7 +87,7 @@ CREATE OR REPLACE FUNCTION insert_object_tag(_tag BIGINT, _object BIGINT, _owner
 $BODY$
 BEGIN
   IF NOT EXISTS(SELECT * FROM tag WHERE tag.id = _tag AND tag.owner = _owner) THEN
-    RAISE EXCEPTION '_tag [%] is not owned by provided _owner [%]', _tag, _owner;
+    RAISE EXCEPTION 'tag [%] is not owned by [%]', _tag, _owner;
   END IF;
 
   INSERT INTO object_tag(tag, object, created)

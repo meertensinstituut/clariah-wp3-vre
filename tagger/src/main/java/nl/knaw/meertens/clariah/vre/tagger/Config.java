@@ -14,4 +14,7 @@ public class Config {
     public static final String OBJECTS_DB_KEY = System.getenv("APP_KEY_OBJECTS");
     public static final String OBJECT_TABLE = "/_table/object";
     public static final List<String> ACTIONS_TO_TAG = newArrayList(CREATE.msgValue());
+
+    // TODO: use shibboleth:
+    public static final String TEST_USER = System.getenv("TEST_USER");
 }
