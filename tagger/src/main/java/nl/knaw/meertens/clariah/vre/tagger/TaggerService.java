@@ -70,7 +70,7 @@ class TaggerService {
     }
 
     private void tagObjects(Long objectId) {
-        var tag = new TagDto();
+        var tag = new CreateTagDto();
         tag.type = "creation-time-ymdhm";
         tag.name = "2018-10-30 16:15";
         tag.owner = "system";
@@ -82,14 +82,14 @@ class TaggerService {
                 throw new RuntimeException(String.format("Could not create tag %s:%s:%s", tag.owner, tag.type, tag.name), e);
             }
         }
+        
         objectTagRegistry.createObjectTag(new ObjectTagDto(TEST_USER, tagId, objectId));
-        var kafkaMsg = new TaggerKafkaDto();
 
+        var kafkaMsg = new TaggerKafkaDto();
         kafkaMsg.msg = "Created new object tag";
         kafkaMsg.tag = tagId;
         kafkaMsg.object = objectId;
         kafkaMsg.owner = tag.owner;
-
         kafkaProducer.send(kafkaMsg);
     }
 }

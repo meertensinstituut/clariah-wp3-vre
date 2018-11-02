@@ -15,15 +15,9 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTest
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 
-@RunWith(Parameterized.class)
 public class DeployServiceByFileTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @Parameterized.Parameters
-    public static Object[][] data() {
-        return new Object[100][0];
-    }
 
     @Test
     public void testServiceIsFoundByFile_andServiceCanBeDeployed() throws Exception {

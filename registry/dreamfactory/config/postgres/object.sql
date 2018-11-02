@@ -86,8 +86,8 @@ CREATE INDEX INDEX_TAG_OBJECT_TAG
 CREATE OR REPLACE FUNCTION insert_object_tag(_tag BIGINT, _object BIGINT, _owner TEXT, OUT id BIGINT) AS
 $BODY$
 BEGIN
-  IF NOT EXISTS(SELECT * FROM tag WHERE tag.id = _tag AND tag.owner = _owner) THEN
-    RAISE EXCEPTION 'tag [%] is not owned by [%]', _tag, _owner;
+  IF NOT EXISTS(SELECT * FROM tag WHERE tag.id = _tag AND tag.owner IN (_owner, 'system')) THEN
+    RAISE EXCEPTION 'tag [%] is not owned by system or [%]', _tag, _owner;
   END IF;
 
   INSERT INTO object_tag(tag, object, created)

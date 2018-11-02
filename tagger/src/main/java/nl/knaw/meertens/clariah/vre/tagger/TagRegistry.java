@@ -33,7 +33,7 @@ class TagRegistry extends AbstractDreamfactoryRegistry {
      * @return Long id
      */
 
-    Long get(TagDto tag) {
+    Long get(CreateTagDto tag) {
         var params = new ArrayList<NameValueDto>();
         params.add(new NameValueDto("name", tag.name));
         params.add(new NameValueDto("owner", tag.owner));
@@ -42,7 +42,7 @@ class TagRegistry extends AbstractDreamfactoryRegistry {
         return jsonPath.parse(json).read("$.resource[0].id", Long.class);
     }
 
-    Long create(TagDto tag) throws SQLException {
+    Long create(CreateTagDto tag) throws SQLException {
         try {
             String json;
             json = postResource(mapper.writeValueAsString(tag), table);
