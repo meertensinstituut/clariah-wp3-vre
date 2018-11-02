@@ -48,6 +48,7 @@ services:
     build: ./recognizer/recognizer
     volumes:
       - ./recognizer:/usr/local/recognizer
+      - data-volume:/tmp/recognizer
     links:
       - dreamfactory:dreamfactory
     environment:

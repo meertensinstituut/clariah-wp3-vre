@@ -10,14 +10,20 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.isNull;
 
 public class FitsService {
 
@@ -46,15 +52,39 @@ public class FitsService {
     }
 
     public FitsResult checkFile(String path) throws IOException, JAXBException {
-        String fitsPath = Paths
-                .get(fitsFilesRoot, path)
-                .toString();
-        logger.info(String.format("FitsService is checking file [%s]", fitsPath));
-        String fitsXmlResult = askFits(fitsPath);
+        Path fitsPath = Paths.get(fitsFilesRoot, path);
+
+        if(!fitsPath.toFile().exists()) {
+            waitUntilFileIsUploaded(fitsPath);
+        }
+
+        String fitsXmlResult = askFits(fitsPath.toString());
         FitsResult fitsResult = new FitsResult();
         fitsResult.setXml(fitsXmlResult);
         fitsResult.setFits(unmarshalFits(fitsXmlResult));
         return fitsResult;
+    }
+
+    private void waitUntilFileIsUploaded(Path fitsPath) {
+        File parentFolder = fitsPath.getParent().toFile();
+        while(true) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(250);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Waiting for file upload was interrupted");
+            }
+            File[] tmpUploadFiles = parentFolder.listFiles((dir, name) ->
+                    name.contains(fitsPath.getFileName().toString() + ".ocTransferId")
+            );
+            if(!isNull(tmpUploadFiles) && tmpUploadFiles.length == 1) {
+                logger.info("Nextcloud is still uploading " + fitsPath);
+            } else if(fitsPath.toFile().exists()) {
+                logger.info("Nextcloud finished uploading " + fitsPath + ". Resume recognizing...");
+                break;
+            } else {
+                throw new IllegalArgumentException("Could not find file " + fitsPath);
+            }
+        }
     }
 
     private String askFits(String path) throws IOException {
