@@ -101,7 +101,7 @@ class AbstractDreamfactoryRegistry {
      */
     private String handleFailure(HttpResponse<String> response) throws SQLException {
         if (isBlank(response.getBody())) {
-            throw new SQLException();
+            throw new SQLException(String.format("http status [%d] - no response body", response.getStatus()));
         }
 
         var parsed = JsonPath.parse(response.getBody());

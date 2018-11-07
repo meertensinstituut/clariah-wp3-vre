@@ -9,10 +9,10 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 public class ObjectsRecordDTO {
 
     @JsonFormat(shape= STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS")
-    public LocalDateTime timechanged = LocalDateTime.MIN;
+    public LocalDateTime timeChanged = LocalDateTime.MIN;
 
     @JsonFormat(shape= STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS")
-    public LocalDateTime timecreated = LocalDateTime.MIN;
+    public LocalDateTime timeCreated = LocalDateTime.MIN;
 
     public String user_id = "";
     public String type = "";

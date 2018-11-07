@@ -15,6 +15,8 @@ public class Config {
     public static final String OBJECT_TABLE = "/_table/object";
     public static final List<String> ACTIONS_TO_TAG = newArrayList(CREATE.msgValue());
 
+    public static final String SYSTEM_TAG_OWNER = "system";
+
     // TODO: use shibboleth:
     public static final String TEST_USER = System.getenv("TEST_USER");
 }

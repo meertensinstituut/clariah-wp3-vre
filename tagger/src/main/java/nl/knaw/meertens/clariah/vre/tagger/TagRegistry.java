@@ -13,7 +13,7 @@ import java.util.ArrayList;
 class TagRegistry extends AbstractDreamfactoryRegistry {
 
     private final ObjectMapper mapper;
-    private final String table = "/_table/tag";
+    private final String table = "/_table/tag/";
 
     private final Configuration conf = Configuration
             .builder()

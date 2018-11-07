@@ -100,8 +100,7 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
         try {
             var response = requestServiceDb(url);
             var resource = mapper.readTree(response.getBody()).at("/resource");
-            var reader = mapper.readerFor(new TypeReference<List<ServiceRecord>>() {
-            });
+            var reader = mapper.readerFor(new TypeReference<List<ServiceRecord>>() {});
             List<ServiceRecord> serviceRecords = reader.readValue(resource);
             logger.info(String.format(
                     "Url [%s] yielded services [%s]",
