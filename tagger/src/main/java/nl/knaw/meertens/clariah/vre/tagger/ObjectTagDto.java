@@ -1,15 +1,14 @@
 package nl.knaw.meertens.clariah.vre.tagger;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class ObjectTagDto {
-    public List<NameValueDto> params = new ArrayList<>();
+    public HashMap<String, Object> params = new HashMap<>();
 
     public ObjectTagDto(String _owner, Long _tag, Long _object) {
-        params.add(new NameValueDto("_tag", _tag));
-        params.add(new NameValueDto("_object", _object));
-        params.add(new NameValueDto("_owner", _owner));
+        params.put("_tag", _tag);
+        params.put("_object", _object);
+        params.put("_owner", _owner);
     }
 
 }

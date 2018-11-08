@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.recognizer.object;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
 
@@ -8,11 +9,13 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 
 public class ObjectsRecordDTO {
 
-    @JsonFormat(shape= STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS")
-    public LocalDateTime timeChanged = LocalDateTime.MIN;
-
+    @JsonProperty("time_created")
     @JsonFormat(shape= STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS")
     public LocalDateTime timeCreated = LocalDateTime.MIN;
+
+    @JsonProperty("time_changed")
+    @JsonFormat(shape= STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS")
+    public LocalDateTime timeChanged = LocalDateTime.MIN;
 
     public String user_id = "";
     public String type = "";

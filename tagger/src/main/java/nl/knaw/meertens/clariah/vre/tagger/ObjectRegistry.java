@@ -4,9 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 public class ObjectRegistry extends AbstractDreamfactoryRegistry {
 
@@ -19,7 +18,9 @@ public class ObjectRegistry extends AbstractDreamfactoryRegistry {
     }
 
     public ObjectsDto getObjectById(Long id) {
-        var result = get(objectTable, newArrayList(new NameValueDto("id", id)));
+        var params = new HashMap<String, Object>();
+        params.put("id", id);
+        var result = get(objectTable, params);
         try {
             var resource = mapper.readTree(result).at("/resource");
             var reader = mapper.readerFor(new TypeReference<List<ObjectsDto>>() {});

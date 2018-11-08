@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +14,7 @@ import java.util.function.Consumer;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
 
 public class KafkaConsumerService {
 
@@ -38,21 +40,29 @@ public class KafkaConsumerService {
         return new KafkaConsumer<>(props);
     }
 
-    public void consumeAll(Consumer<ArrayList<ConsumerRecord<String, String>>> function) throws InterruptedException {
+    public void consumeAll(Consumer<ArrayList<ConsumerRecord<String, String>>> function) {
         logger.info("Start consuming all msgs from topic " + topic);
         ArrayList<ConsumerRecord<String, String>> list = newArrayList();
+        pollAndAssert(() -> findNewMessagesAndCheckIfAny(function, list));
+    }
 
-        int pollingPeriod = 5;
-        for(int i = 0; i < pollingPeriod; i++) {
-            TimeUnit.SECONDS.sleep(1);
-            ConsumerRecords<String, String> result = consumer.poll(100);
-            list.addAll(newArrayList(result));
-            logger.info("Found " + result.count() + " new msgs from " + topic);
-        }
-        logger.info("Finished consuming msgs from " + topic);
-        if(list.size() != 0) {
+    private void findNewMessagesAndCheckIfAny(
+            Consumer<ArrayList<ConsumerRecord<String, String>>> function,
+            ArrayList<ConsumerRecord<String, String>> list
+    ) {
+        findNewMessages(list);
+        logger.info(String.format("Finished consuming msgs from topic [%s]", topic));
+        if (list.size() > 0) {
             function.accept(list);
+        } else {
+            throw new AssertionError(String.format("No kafka msgs found in topic [%s]", topic));
         }
+    }
+
+    private void findNewMessages(ArrayList<ConsumerRecord<String, String>> list) {
+        ConsumerRecords<String, String> result = consumer.poll(Duration.ofSeconds(1));
+        list.addAll(newArrayList(result));
+        logger.info("Found " + result.count() + " new msgs from " + topic);
     }
 
     public void subscribe() {

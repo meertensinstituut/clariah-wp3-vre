@@ -11,7 +11,8 @@ import com.mashape.unirest.request.HttpRequestWithBody;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
@@ -39,7 +40,7 @@ class AbstractDreamfactoryRegistry {
     }
 
     String postProcedure(
-            List<NameValueDto> params,
+            HashMap<String, Object> params,
             String endpoint
     ) throws SQLException {
         var body = "";
@@ -47,12 +48,20 @@ class AbstractDreamfactoryRegistry {
         return post(body, endpoint + "?" + createUrlQueryParams(params), isResource);
     }
 
-    private String createUrlQueryParams(List<NameValueDto> params) {
-        return Joiner.on("&").join(params.stream().map(p ->
-                    encodeUriComponent(p.name)
+    private String createUrlQueryParams(Map<String, Object> params) {
+        return Joiner.on("&").join(params.entrySet().stream().map(p ->
+                    encodeUriComponent(p.getKey())
                     + "="
-                    + encodeUriComponent(p.value.toString())
+                    + encodeUriComponent(p.getValue().toString())
             ).collect(toList()));
+    }
+
+    private String createDreamfactoryParams(HashMap<String, Object> params) {
+        return "("+Joiner.on(")and(").join(params.entrySet().stream().map(p ->
+                    encodeUriComponent(p.getKey())
+                    + "="
+                    + encodeUriComponent(p.getValue().toString())
+            ).collect(toList()))+")";
     }
 
     private String post(
@@ -153,7 +162,7 @@ class AbstractDreamfactoryRegistry {
         }
     }
 
-    String get(String endpoint, List<NameValueDto> params) {
+    String get(String endpoint, HashMap<String, Object> params) {
         var request = createGetRequest(endpoint, params);
         var response = fireRequest(request);
         try {
@@ -166,12 +175,12 @@ class AbstractDreamfactoryRegistry {
     /**
      * Create GET request
      */
-    private HttpRequest createGetRequest(String table, List<NameValueDto> urlParams) {
+    private HttpRequest createGetRequest(String table, HashMap<String, Object> urlParams) {
         HttpRequest request = Unirest.get(
                 objectsDbUrl
                 + table
-                + "?"
-                + createUrlQueryParams(urlParams)
+                + "?filter="
+                + createDreamfactoryParams(urlParams)
         );
         return addHeaders(request);
     }

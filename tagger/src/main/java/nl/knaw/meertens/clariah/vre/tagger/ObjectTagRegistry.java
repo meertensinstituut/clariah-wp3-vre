@@ -21,7 +21,7 @@ class ObjectTagRegistry extends AbstractDreamfactoryRegistry {
         try {
             json = postProcedure(objectTag.params, insertObjectTagProcedure);
         } catch (SQLException e) {
-            var msg = "Could not create object tag.";
+            var msg = String.format("Could not create object tag with tag [%s], object [%s], owner [%s]", objectTag.params.get("_tag"), objectTag.params.get("_object"), objectTag.params.get("_owner"));
             if ("23503".equals(e.getSQLState())) {
                 msg += " Tag or object does not exist.";
             } else if ("23505".equals(e.getSQLState())) {

@@ -7,6 +7,7 @@ public class Config {
     public final static String NEXTCLOUD_ADMIN_PASSWORD = System.getenv("NEXTCLOUD_ADMIN_PASSWORD");
     public final static String NEXTCLOUD_TOPIC_NAME = System.getenv("NEXTCLOUD_TOPIC_NAME");
     public final static String RECOGNIZER_TOPIC_NAME = System.getenv("RECOGNIZER_TOPIC_NAME");
+    public final static String TAGGER_TOPIC_NAME = System.getenv("TAGGER_TOPIC_NAME");
     public final static String DB_OBJECTS_USER = System.getenv("DB_OBJECTS_USER");
     public final static String DB_OBJECTS_PASSWORD = System.getenv("DB_OBJECTS_PASSWORD");
     public final static String DB_OBJECTS_DATABASE = System.getenv("DB_OBJECTS_DATABASE");

@@ -5,12 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
-import static nl.knaw.meertens.clariah.vre.tagger.Config.OBJECTS_DB_KEY;
-import static nl.knaw.meertens.clariah.vre.tagger.Config.OBJECTS_DB_URL;
 import static nl.knaw.meertens.clariah.vre.tagger.Config.SYSTEM_TAG_OWNER;
 
 class AutomaticTagsService {
@@ -18,10 +17,10 @@ class AutomaticTagsService {
     private final ObjectRegistry objectRegistry;
     private String owner = SYSTEM_TAG_OWNER;
 
-    AutomaticTagsService(ObjectMapper objectMapper) {
+    AutomaticTagsService(ObjectMapper objectMapper, String objectsDbUrl, String objectsDbKey) {
         objectRegistry =  new ObjectRegistry(
-                OBJECTS_DB_URL,
-                OBJECTS_DB_KEY,
+                objectsDbUrl,
+                objectsDbKey,
                 objectMapper
         );
     }
@@ -29,10 +28,14 @@ class AutomaticTagsService {
     ArrayList<CreateTagDto> createTags(Long objectId) {
         var object = objectRegistry.getObjectById(objectId);
         var result = new ArrayList<CreateTagDto>();
-        result.add(createTagCreationTimeYmdhm(object.timeCreated));
-        result.add(createTagCreationTimeYmd(object.timeCreated));
-        result.add(createTagCreationTimeYm(object.timeCreated));
-        result.add(createTagCreationTimeY(object.timeCreated));
+        var timeCreated = LocalDateTime.parse(
+                object.timeCreated.substring(0, 16),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        );
+        result.add(createTagCreationTimeYmdhm(timeCreated));
+        result.add(createTagCreationTimeYmd(timeCreated));
+        result.add(createTagCreationTimeYm(timeCreated));
+        result.add(createTagCreationTimeY(timeCreated));
         result.add(createPath(object.filepath));
         result.addAll(createDirs(object.filepath));
         return result;
@@ -41,15 +44,19 @@ class AutomaticTagsService {
     private List<CreateTagDto> createDirs(String filepath) {
         List<CreateTagDto> result = new ArrayList<>();
         var path = Paths.get(filepath);
-        path.iterator().forEachRemaining(p -> {
-            result.add(createDir(p));
+        var iterator = path.iterator();
+        iterator.forEachRemaining(p -> {
+            // one underlying dirs get this tag:
+            if(iterator.hasNext()) {
+                result.add(createDir(p));
+            }
         });
         return result;
     }
 
     private CreateTagDto createDir(Path p) {
         var tag = new CreateTagDto();
-        tag.type = "path";
+        tag.type = "dir";
         tag.name = p.toString();
         tag.owner = owner;
         return tag;

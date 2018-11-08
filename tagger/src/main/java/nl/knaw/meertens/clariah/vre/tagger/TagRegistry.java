@@ -8,7 +8,7 @@ import com.jayway.jsonpath.ParseContext;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 class TagRegistry extends AbstractDreamfactoryRegistry {
 
@@ -34,18 +34,17 @@ class TagRegistry extends AbstractDreamfactoryRegistry {
      */
 
     Long get(CreateTagDto tag) {
-        var params = new ArrayList<NameValueDto>();
-        params.add(new NameValueDto("name", tag.name));
-        params.add(new NameValueDto("owner", tag.owner));
-        params.add(new NameValueDto("type", tag.type));
+        var params = new HashMap<String, Object>();
+        params.put("name", tag.name);
+        params.put("owner", tag.owner);
+        params.put("type", tag.type);
         var json = get(table, params);
         return jsonPath.parse(json).read("$.resource[0].id", Long.class);
     }
 
     Long create(CreateTagDto tag) throws SQLException {
         try {
-            String json;
-            json = postResource(mapper.writeValueAsString(tag), table);
+            var json = postResource(mapper.writeValueAsString(tag), table);
             return JsonPath.parse(json).read("$.resource[0].id", Long.class);
         } catch (IOException e) {
             throw new RuntimeException("Could not create tag", e);

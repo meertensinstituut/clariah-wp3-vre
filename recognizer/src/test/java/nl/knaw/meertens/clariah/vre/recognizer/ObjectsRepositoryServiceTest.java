@@ -47,9 +47,9 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
 
         String result = objectsRepositoryService.createObjectRecordJson(report);
 
-        assertThatJson(result).node("timecreated").matches(
+        assertThatJson(result).node("time_created").matches(
                 containsString(now().format(ofPattern("yyyy-MM-dd'T'HH"))));
-        assertThatJson(result).node("timechanged").matches(
+        assertThatJson(result).node("time_changed").matches(
                 containsString(now().format(ofPattern("yyyy-MM-dd'T'HH"))));
         assertThatJson(result).node("user_id").isEqualTo(expectedUser);
         assertThatJson(result).node("filepath").isEqualTo(expectedPath);

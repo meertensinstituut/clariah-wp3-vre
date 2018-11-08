@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.tagger;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaProducerService;
@@ -22,7 +23,7 @@ class TaggerService {
 
     private ObjectMapper objectMapper;
     private final KafkaConsumerService kafkaConsumerService;
-    private final KafkaProducerService kafkaProducer;
+    private final KafkaProducerService kafkaProducerService;
     private final TagRegistry tagRegistry;
     private final ObjectTagRegistry objectTagRegistry;
     private final AutomaticTagsService automaticTagsService;
@@ -30,16 +31,17 @@ class TaggerService {
     TaggerService(
             ObjectMapper objectMapper,
             KafkaConsumerService kafkaConsumerService,
-            KafkaProducerService kafkaProducer,
+            KafkaProducerService kafkaProducerService,
             TagRegistry tagRegistry,
-            ObjectTagRegistry objectTagRegistry
+            ObjectTagRegistry objectTagRegistry,
+            AutomaticTagsService automaticTagsService
     ) {
         this.objectMapper = objectMapper;
         this.kafkaConsumerService = kafkaConsumerService;
-        this.kafkaProducer = kafkaProducer;
+        this.kafkaProducerService = kafkaProducerService;
         this.tagRegistry = tagRegistry;
         this.objectTagRegistry = objectTagRegistry;
-        this.automaticTagsService = new AutomaticTagsService(objectMapper);
+        this.automaticTagsService = automaticTagsService;
     }
 
     void consumeRecognizer() {
@@ -67,10 +69,10 @@ class TaggerService {
 
     private void tagObjects(Long objectId) {
         var tags = automaticTagsService.createTags(objectId);
-        tags.forEach(t -> {
-            var tagId = createTag(t);
+        tags.forEach(tag -> {
+            var tagId = createTag(tag);
             createObjectTag(objectId, tagId);
-            createKafkaMsg(objectId, tagId, t);
+            createKafkaMsg(objectId, tagId, tag);
         });
     }
 
@@ -107,6 +109,11 @@ class TaggerService {
         kafkaMsg.tag = tagId;
         kafkaMsg.object = objectId;
         kafkaMsg.owner = tag.owner;
-        kafkaProducer.send(kafkaMsg);
+        try {
+            logger.info("createKafkaMsg: ", objectMapper.writeValueAsString(kafkaMsg));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        kafkaProducerService.send(kafkaMsg);
     }
 }

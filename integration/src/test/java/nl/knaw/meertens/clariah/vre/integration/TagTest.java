@@ -4,12 +4,10 @@ import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.maven.surefire.shade.org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
@@ -21,12 +19,13 @@ public class TagTest extends AbstractIntegrationTest {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Test
-    public void tagAndUntagObject() throws UnirestException, IOException, URISyntaxException {
+    public void tagAndUntagObject() throws UnirestException {
         // Create tag:
+        String randomTagName = "test-tag-" + RandomStringUtils.random(8);
         HttpResponse<String> responseCreatingTag = Unirest
                 .post(Config.SWITCHBOARD_ENDPOINT + "/tags")
                 .header("Content-Type", "application/json; charset=UTF-8")
-                .body("{\"name\": \"switchboard-tag\", \"type\": \"test\"}")
+                .body("{\"name\": \"" + randomTagName + "\", \"type\": \"test\"}")
                 .asString();
         logger.info("Response creating tag: " + responseCreatingTag.getBody());
         assertThatJson(responseCreatingTag.getBody()).node("id").isPresent();

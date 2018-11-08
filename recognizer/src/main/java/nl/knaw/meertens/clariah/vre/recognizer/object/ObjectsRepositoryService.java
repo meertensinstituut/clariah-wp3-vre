@@ -290,8 +290,8 @@ public class ObjectsRepositoryService {
         msg.mimetype = FitsService.getMimeType(report.getFits());
         msg.format = FitsService.getIdentity(report.getFits()).getFormat();
 
-        msg.timechanged = LocalDateTime.now();
-        msg.timecreated = LocalDateTime.now();
+        msg.timeChanged = LocalDateTime.now();
+        msg.timeCreated = LocalDateTime.now();
         msg.user_id = report.getUser();
         msg.type = "object";
         msg.deleted = false;

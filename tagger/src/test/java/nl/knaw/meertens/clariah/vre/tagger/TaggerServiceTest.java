@@ -10,8 +10,12 @@ import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.Header;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
+import static org.mockserver.model.Parameter.param;
 
 public class TaggerServiceTest {
 
@@ -20,18 +24,20 @@ public class TaggerServiceTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private KafkaConsumerService kafkaConsumerService = Mockito.mock(KafkaConsumerService.class);
-    private KafkaProducerService kafkaProducer = Mockito.mock(KafkaProducerService.class);
+    private KafkaProducerService kafkaProducerService = Mockito.mock(KafkaProducerService.class);
     private final TagRegistry tagRegistry = new TagRegistry(mockHostName, "foo", objectMapper);
     private final ObjectTagRegistry objectTagRegistry = new ObjectTagRegistry(mockHostName, "bar");
+    private final AutomaticTagsService automaticTagsService = new AutomaticTagsService(objectMapper, mockHostName, "baz");
 
     private static ClientAndServer mockServer;
 
     private final TaggerService taggerService = new TaggerService(
             objectMapper,
             kafkaConsumerService,
-            kafkaProducer,
+            kafkaProducerService,
             tagRegistry,
-            objectTagRegistry
+            objectTagRegistry,
+            automaticTagsService
     );
 
     @BeforeClass
@@ -41,22 +47,32 @@ public class TaggerServiceTest {
 
     @Test
     public void consumeRecognizer_withKafkaMsg() {
-        startObjectsRegistryMockServer(FileUtil.getTestFileContent("find-object.json"));
-        startTagRegistryMockServer(1L);
+        var id = 1L;
+        startObjectsRegistryMockServer(FileUtil.getTestFileContent("find-object.json"), id);
 
-        startObjectTagRegistryMockServer(1L);
+        startTagRegistryMockServer(id, "creation-time-ymdhm", 1);
+        startTagRegistryMockServer(id, "creation-time-ymd", 1);
+        startTagRegistryMockServer(id, "creation-time-ym", 1);
+        startTagRegistryMockServer(id, "creation-time-y", 1);
+        startTagRegistryMockServer(id, "path", 1);
+        // filepath `admin/files/test.txt` contains two directories:
+        startTagRegistryMockServer(id, "dir", 2);
 
-        // TODO: test that correct tags are generated
+        // for every tag call also a object tag call should be made:
+        startObjectTagRegistryMockServer(id, 7);
 
         taggerService.consumeKafkaMsg(FileUtil.getTestFileContent("kafka-recognizer-msg.json"));
+
+        verify(kafkaProducerService, times(7)).send(any());
     }
 
-    public void startObjectsRegistryMockServer(String objectJson) {
+    private void startObjectsRegistryMockServer(String objectJson, long id) {
         mockServer
                 .when(
                         request()
                                 .withMethod("GET")
-                                .withPath("/_table/object/"),
+                                .withPath("/_table/object")
+                                .withQueryStringParameter(param("filter", "(id="+id+")")),
                         Times.exactly(1)
                 )
                 .respond(
@@ -67,12 +83,15 @@ public class TaggerServiceTest {
                 );
     }
 
-    public void startTagRegistryMockServer(Long id) {
+    private void startTagRegistryMockServer(Long id, String type, int times) {
         mockServer
                 .when(
                         request()
                                 .withMethod("GET")
-                                .withPath("/_table/tag/"))
+                                .withPath("/_table/tag/")
+                                .withQueryStringParameter(param("filter", ".*type="+type+".*")),
+                        Times.exactly(times)
+                )
                 .respond(
                         response()
                                 .withStatusCode(200)
@@ -81,12 +100,13 @@ public class TaggerServiceTest {
                 );
     }
 
-    public void startObjectTagRegistryMockServer(Long tagId) {
+    private void startObjectTagRegistryMockServer(Long tagId, int times) {
         mockServer
                 .when(
                         request()
                                 .withMethod("POST")
-                                .withPath("/_proc/insert_object_tag")
+                                .withPath("/_proc/insert_object_tag"),
+                        Times.exactly(times)
                 )
                 .respond(
                         response()

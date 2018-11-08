@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DeployServiceTest extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private long id;
+
+    private KafkaConsumerService nextcloudKafkaConsumer;
+
     private String deploymentTestFile = "deployment-test.txt";
+    private long id;
+
+    @Before
+    public void setup() {
+        nextcloudKafkaConsumer = getNextcloudTopic();
+    }
 
     /**
      * Test switchboard and deployment-service before, during and after deployment of TEST-service.
@@ -74,7 +83,6 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     private void checkKafkaMsgsAreCreatedForOutputFiles(String outputFilename) throws InterruptedException {
         logger.info(String.format("check kafka message is created for output file [%s]", outputFilename));
-        KafkaConsumerService nextcloudKafkaConsumer = getOwncloudTopic();
         nextcloudKafkaConsumer.consumeAll(consumerRecords -> {
             assertThat(consumerRecords.size()).isGreaterThan(0);
             List<String> resultActions = new ArrayList<>();
@@ -89,7 +97,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         });
     }
 
-    private KafkaConsumerService getOwncloudTopic() {
+    private KafkaConsumerService getNextcloudTopic() {
         KafkaConsumerService recognizerKafkaConsumer = new KafkaConsumerService(
                 Config.KAFKA_ENDPOINT, Config.NEXTCLOUD_TOPIC_NAME, getRandomGroupName());
         recognizerKafkaConsumer.subscribe();

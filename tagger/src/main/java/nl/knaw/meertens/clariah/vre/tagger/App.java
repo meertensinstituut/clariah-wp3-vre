@@ -8,8 +8,6 @@ import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaProducerServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.TimeZone;
-
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static nl.knaw.meertens.clariah.vre.tagger.Config.KAFKA_SERVER;
@@ -47,19 +45,25 @@ public class App {
             OBJECTS_DB_KEY
     );
 
+    private final AutomaticTagsService automaticTagsService = new AutomaticTagsService(
+            objectMapper,
+            OBJECTS_DB_URL,
+            OBJECTS_DB_KEY
+    );
+
     private TaggerService taggerService = new TaggerService(
             objectMapper,
             kafkaConsumerService,
             kafkaProducer,
             tagRegistry,
-            objectTagRegistry
+            objectTagRegistry,
+            automaticTagsService
     );
 
     private App() {
 
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.setTimeZone(TimeZone.getTimeZone("GMT"));
         objectMapper.setSerializationInclusion(NON_NULL);
 
         taggerService.consumeRecognizer();
