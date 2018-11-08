@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.tagger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaProducerService;
@@ -109,11 +108,6 @@ class TaggerService {
         kafkaMsg.tag = tagId;
         kafkaMsg.object = objectId;
         kafkaMsg.owner = tag.owner;
-        try {
-            logger.info("createKafkaMsg: ", objectMapper.writeValueAsString(kafkaMsg));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
         kafkaProducerService.send(kafkaMsg);
     }
 }

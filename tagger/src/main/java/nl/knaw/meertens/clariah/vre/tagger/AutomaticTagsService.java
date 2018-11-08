@@ -65,7 +65,7 @@ class AutomaticTagsService {
     private CreateTagDto createPath(String filePath) {
         var tag = new CreateTagDto();
         tag.type = "path";
-        tag.name = filePath;
+        tag.name = filePath.substring(0, filePath.lastIndexOf('/'));
         tag.owner = owner;
         return tag;
     }
