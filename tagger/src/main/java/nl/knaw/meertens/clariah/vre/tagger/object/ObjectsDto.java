@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.tagger;
+package nl.knaw.meertens.clariah.vre.tagger.object;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

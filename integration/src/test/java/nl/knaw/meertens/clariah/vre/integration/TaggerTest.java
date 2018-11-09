@@ -3,23 +3,44 @@ package nl.knaw.meertens.clariah.vre.integration;
 import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
+import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
+import org.apache.http.HttpHeaders;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
-import static nl.knaw.meertens.clariah.vre.integration.AbstractIntegrationTest.getRandomGroupName;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomFilenameWithTime;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static org.apache.http.auth.AuthScope.ANY_HOST;
+import static org.apache.http.auth.AuthScope.ANY_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TaggerTest extends AbstractIntegrationTest {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private KafkaConsumerService taggerTopic;
+
+    private ObjectsRepositoryService objectsRepositoryService = new ObjectsRepositoryService(
+            Config.DB_OBJECTS_DATABASE, Config.DB_OBJECTS_USER, Config.DB_OBJECTS_PASSWORD
+    );
+
+    private long id;
 
     @Before
     public void setUp() {
@@ -27,13 +48,13 @@ public class TaggerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void generateSystemTags_afterUploadNewFile() throws UnirestException, InterruptedException {
+    public void generateSystemTags_afterUploadNewFile() throws UnirestException, IOException {
         // Create object:
         final String expectedFilename = uploadTestFile();
-        Long objectId = pollAndAssert(() -> getObjectIdFromRegistry(expectedFilename));
+        id = pollAndAssert(() -> getObjectIdFromRegistry(expectedFilename));
 
         taggerTopic.consumeAll(records -> {
-            assertThat(records.size()).isEqualTo(7);
+            assertThat(records.size()).isEqualTo(8);
             records.forEach(record -> {
                 String msg = JsonPath.parse(record.value()).read("$.msg");
                 assertThat(msg).isEqualTo("Created new object tag");
@@ -42,12 +63,54 @@ public class TaggerTest extends AbstractIntegrationTest {
                         .isEqualTo("system");
                 assertThatJson(record.value()).node("object")
                         .isPresent()
-                        .isEqualTo(objectId);
+                        .isEqualTo(id);
                 assertThatJson(record.value()).node("tag")
                         .isPresent();
             });
 
         });
+
+        updateTestFilePath(expectedFilename);
+
+        taggerTopic.consumeAll(records -> {
+            assertThat(records.size()).isEqualTo(6);
+            records.forEach(record -> {
+                assertThatJson(record.value()).node("owner")
+                        .isPresent()
+                        .isEqualTo("system");
+                assertThatJson(record.value()).node("object")
+                        .isPresent()
+                        .isEqualTo(id);
+                assertThatJson(record.value()).node("tag")
+                        .isPresent();
+            });
+
+        });
+
+    }
+
+    private String updateTestFilePath(String oldFilename) throws IOException {
+        String newFileName = "/new/location/" + getRandomFilenameWithTime().split("\\.")[0] + ".txt";
+
+        logger.info(String.format("Rename file [%s] to [%s]", oldFilename, newFileName));
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(
+                new AuthScope(ANY_HOST, ANY_PORT),
+                new UsernamePasswordCredentials(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
+        );
+        CloseableHttpClient httpclient = HttpClients.custom()
+                .setDefaultCredentialsProvider(credsProvider)
+                .build();
+        HttpUriRequest moveRequest = RequestBuilder
+                .create("MOVE")
+                .setUri(Config.NEXTCLOUD_ENDPOINT + oldFilename)
+                .addHeader(HttpHeaders.DESTINATION, Config.NEXTCLOUD_ENDPOINT + newFileName)
+                .build();
+
+        CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
+        int status = httpResponse.getStatusLine().getStatusCode();
+        assertThat(status).isEqualTo(201);
+        return newFileName;
     }
 
     private KafkaConsumerService getRecognizerTopic() {

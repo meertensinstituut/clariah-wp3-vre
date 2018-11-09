@@ -18,7 +18,7 @@ public enum FileAction {
     }
 
     public static FileAction from(String msgValue) {
-        for(FileAction fileAction : FileAction.values()) {
+        for(var fileAction : FileAction.values()) {
             if(fileAction.msgValue.equals(msgValue)) {
                 return fileAction;
             }

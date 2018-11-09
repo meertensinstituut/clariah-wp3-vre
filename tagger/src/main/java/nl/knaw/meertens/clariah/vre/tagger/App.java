@@ -5,6 +5,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaProducerServiceImpl;
+import nl.knaw.meertens.clariah.vre.tagger.object_tag.ObjectTagRegistry;
+import nl.knaw.meertens.clariah.vre.tagger.tag.AutomaticTagsService;
+import nl.knaw.meertens.clariah.vre.tagger.tag.TagRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
