@@ -1,16 +1,17 @@
-package nl.knaw.meertens.clariah.vre.tagger;
+package nl.knaw.meertens.clariah.vre.tagger.tag;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.ParseContext;
+import nl.knaw.meertens.clariah.vre.tagger.AbstractDreamfactoryRegistry;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-class TagRegistry extends AbstractDreamfactoryRegistry {
+public class TagRegistry extends AbstractDreamfactoryRegistry {
 
     private final ObjectMapper mapper;
     private final String table = "/_table/tag/";
@@ -23,7 +24,7 @@ class TagRegistry extends AbstractDreamfactoryRegistry {
     private final ParseContext jsonPath = JsonPath.using(conf);
 
 
-    TagRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper mapper) {
+    public TagRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper mapper) {
         super(objectsDbUrl, objectsDbKey);
         this.mapper = mapper;
     }
@@ -33,7 +34,7 @@ class TagRegistry extends AbstractDreamfactoryRegistry {
      * @return Long id
      */
 
-    Long get(CreateTagDto tag) {
+    public Long get(TagDto tag) {
         var params = new HashMap<String, Object>();
         params.put("name", tag.name);
         params.put("owner", tag.owner);
@@ -42,7 +43,7 @@ class TagRegistry extends AbstractDreamfactoryRegistry {
         return jsonPath.parse(json).read("$.resource[0].id", Long.class);
     }
 
-    Long create(CreateTagDto tag) throws SQLException {
+    public Long create(TagDto tag) throws SQLException {
         try {
             var json = postResource(mapper.writeValueAsString(tag), table);
             return JsonPath.parse(json).read("$.resource[0].id", Long.class);

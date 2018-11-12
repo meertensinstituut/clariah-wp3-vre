@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.tagger;
+package nl.knaw.meertens.clariah.vre.tagger.object_tag;
 
 import java.util.HashMap;
 

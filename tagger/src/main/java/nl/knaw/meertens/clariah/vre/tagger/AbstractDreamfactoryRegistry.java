@@ -20,26 +20,26 @@ import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-class AbstractDreamfactoryRegistry {
+public class AbstractDreamfactoryRegistry {
 
     private final String objectsDbUrl;
     private final String objectsDbKey;
 
 
-    AbstractDreamfactoryRegistry(String objectsDbUrl, String objectsDbKey) {
+    protected AbstractDreamfactoryRegistry(String objectsDbUrl, String objectsDbKey) {
 
         this.objectsDbUrl = objectsDbUrl;
         this.objectsDbKey = objectsDbKey;
     }
 
-    String postResource(
+    protected String postResource(
             String json,
             String endpoint
     ) throws SQLException {
         return post(json, endpoint, true);
     }
 
-    String postProcedure(
+    public String postProcedure(
             HashMap<String, Object> params,
             String endpoint
     ) throws SQLException {
@@ -162,7 +162,7 @@ class AbstractDreamfactoryRegistry {
         }
     }
 
-    String get(String endpoint, HashMap<String, Object> params) {
+    protected String get(String endpoint, HashMap<String, Object> params) {
         var request = createGetRequest(endpoint, params);
         var response = fireRequest(request);
         try {
@@ -175,12 +175,12 @@ class AbstractDreamfactoryRegistry {
     /**
      * Create GET request
      */
-    private HttpRequest createGetRequest(String table, HashMap<String, Object> urlParams) {
+    private HttpRequest createGetRequest(String table, HashMap<String, Object> filterParams) {
         HttpRequest request = Unirest.get(
                 objectsDbUrl
                 + table
                 + "?filter="
-                + createDreamfactoryParams(urlParams)
+                + createDreamfactoryParams(filterParams)
         );
         return addHeaders(request);
     }

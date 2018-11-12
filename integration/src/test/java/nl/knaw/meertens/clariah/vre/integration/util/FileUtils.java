@@ -7,13 +7,11 @@ import nl.knaw.meertens.clariah.vre.integration.AbstractIntegrationTest;
 import nl.knaw.meertens.clariah.vre.integration.Config;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.surefire.shade.org.apache.commons.lang.RandomStringUtils;
-import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.UUID;
@@ -104,14 +102,17 @@ public class FileUtils {
      */
     public static String uploadTestFile(String content) throws UnirestException {
         String expectedFilename = getRandomFilenameWithTime();
+        return uploadTestFile(expectedFilename, content);
+    }
 
-        Unirest.put(Config.NEXTCLOUD_ENDPOINT + expectedFilename)
+    public static String uploadTestFile(String path, String content) throws UnirestException {
+        Unirest.put(Config.NEXTCLOUD_ENDPOINT + path)
                 .header("Content-Type", "text/plain; charset=UTF-8")
                 .basicAuth(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
                 .body(content)
                 .asString();
-        logger.info("Uploaded file " + expectedFilename);
-        return expectedFilename;
+        logger.info("Uploaded file " + path);
+        return path;
     }
 
     public static String getTestFileContent() {

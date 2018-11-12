@@ -1,18 +1,21 @@
-package nl.knaw.meertens.clariah.vre.tagger;
+package nl.knaw.meertens.clariah.vre.tagger.object;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.meertens.clariah.vre.tagger.AbstractDreamfactoryRegistry;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+import static nl.knaw.meertens.clariah.vre.tagger.Config.OBJECT_TABLE;
+
 public class ObjectRegistry extends AbstractDreamfactoryRegistry {
 
-    private final String objectTable = "/_table/object";
+    private final String objectTable = OBJECT_TABLE;
     private final ObjectMapper mapper;
 
-    ObjectRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper objectMapper) {
+    public ObjectRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper objectMapper) {
         super(objectsDbUrl, objectsDbKey);
         this.mapper = objectMapper;
     }

@@ -97,6 +97,46 @@ END;
 $BODY$
 LANGUAGE plpgsql;
 
+-- update object tag; tag id found by:
+--  -object id,
+--  -old tag type,
+--  -and old tag owner
+CREATE OR REPLACE FUNCTION update_object_tag(
+  _object BIGINT, _new_tag BIGINT, _type TEXT, _owner TEXT, OUT id BIGINT
+) AS $BODY$
+DECLARE
+  tag_count     INT;
+  object_tag_id BIGINT;
+BEGIN
+  SELECT INTO tag_count COUNT(*)
+  FROM object_tag
+         LEFT JOIN tag ON object_tag.tag = tag.id
+  WHERE object_tag.object = _object
+    AND tag.type = _type
+    AND tag.owner = _owner;
+
+  IF tag_count < 1
+  THEN
+    RAISE EXCEPTION 'Could not update object tag: no tag found for object %, tag type % and owner %', _object, _type, _owner;
+  END IF;
+  IF tag_count > 1
+  THEN
+    RAISE EXCEPTION 'Could not update object tag: multiple tags found for object %, tag type % and owner %', _object, _type, _owner;
+  END IF;
+
+  SELECT INTO object_tag_id object_tag.id
+  FROM object_tag
+         LEFT JOIN tag ON object_tag.tag = tag.id
+  WHERE object_tag.object = _object
+    AND tag.type = _type;
+
+  UPDATE object_tag SET tag = _new_tag WHERE object_tag.id = object_tag_id;
+
+  id := object_tag_id;
+END;
+$BODY$
+LANGUAGE plpgsql;
+
 -- view object with full tags:
 CREATE VIEW object_full_tag AS
   SELECT
