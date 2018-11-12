@@ -5,7 +5,6 @@
  */
 package nl.knaw.meertens.deployment.lib;
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -97,7 +96,7 @@ public class FoliaEditor implements RecipePlugin {
     public Boolean finished() {
         return isFinished;
     }
-    
+
     @Override
     public String execute(String projectName, Logger logger) {
         logger.info("## Start plugin execution ##");
@@ -105,14 +104,16 @@ public class FoliaEditor implements RecipePlugin {
         JSONObject json = new JSONObject();
         json.put("key", projectName);
         json.put("status", 202);
-        JSONObject userConfig = new JSONObject(); 
+        JSONObject userConfig = new JSONObject();
+        JSONObject uri = new JSONObject();
+
         try {
             userConfig = this.parseUserConfig(projectName);
             logger.info("## userConfig:  ##");
             System.out.println(userConfig.toJSONString());
             
             logger.info("## Running project ##");
-            this.runProject(projectName);
+            uri = this.runProject(projectName);
             
             // keep polling project
             logger.info("## Polling the service ##");
@@ -139,7 +140,7 @@ public class FoliaEditor implements RecipePlugin {
         } catch (JDOMException ex) {
             Logger.getLogger(FoliaEditor.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+        json.putAll(uri);
         return json.toString();
     }
     
@@ -199,7 +200,7 @@ public class FoliaEditor implements RecipePlugin {
     public JSONObject runProject(String key) throws IOException, MalformedURLException, MalformedURLException, JDOMException, ParseException, ConfigurationException {
         final String outputPathConst = "output";
         final String inputPathConst = "input";
-        
+        String uri = "uri pass back";
         JSONObject json = new JSONObject();
         DeploymentLib dplib = new DeploymentLib();
         
@@ -245,14 +246,14 @@ public class FoliaEditor implements RecipePlugin {
         
         File file = new File(fullOutputPath);        
         convertXmlToHtml(xml, xslt, file);
-                        
+        json.put("uri", uri);
         return json;
         
     }
     
     /** 
      *
-     * @param key
+     * @param pid
      * @return
      */
     @Override
