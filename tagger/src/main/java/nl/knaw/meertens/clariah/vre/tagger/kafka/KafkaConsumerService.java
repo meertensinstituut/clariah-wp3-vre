@@ -44,7 +44,7 @@ public class KafkaConsumerService {
 
     public void consumeWith(Consumer<String> consumerFunction) {
         consumer.subscribe(singletonList(topic));
-        logger.info(String.format("Subscribed to topic [%s]", topic));
+        logger.info(String.format("Start polling kafka topic [%s]", topic));
         while (true) {
             var records = consumer.poll(Duration.ofSeconds(1));
             for (var record : records) {

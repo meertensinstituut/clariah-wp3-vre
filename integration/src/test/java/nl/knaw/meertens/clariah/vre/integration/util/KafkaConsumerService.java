@@ -59,10 +59,10 @@ public class KafkaConsumerService {
         }
     }
 
-    private void findNewMessages(ArrayList<ConsumerRecord<String, String>> list) {
+    public void findNewMessages(ArrayList<ConsumerRecord<String, String>> list) {
         ConsumerRecords<String, String> result = consumer.poll(Duration.ofSeconds(1));
         list.addAll(newArrayList(result));
-        logger.info("Found " + result.count() + " new msgs from " + topic);
+        logger.info("Add " + result.count() + " from " + topic + " to result list with " + list.size() + " new kafka msgs");
     }
 
     public void subscribe() {

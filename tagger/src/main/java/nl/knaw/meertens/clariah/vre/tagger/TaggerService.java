@@ -24,6 +24,7 @@ import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.tagger.Config.ACTIONS_TO_TAG;
 import static nl.knaw.meertens.clariah.vre.tagger.Config.TEST_USER;
 import static nl.knaw.meertens.clariah.vre.tagger.FileAction.CREATE;
+import static nl.knaw.meertens.clariah.vre.tagger.FileAction.RENAME;
 import static nl.knaw.meertens.clariah.vre.tagger.FileAction.UPDATE;
 
 class TaggerService {
@@ -70,7 +71,7 @@ class TaggerService {
             }
             if (action.equals(CREATE)) {
                 tagNewObject(msg.objectId);
-            } else if (action.equals(UPDATE)) {
+            } else if (action.equals(UPDATE) || action.equals(RENAME)) {
                 tagUpdatedObject(msg.objectId);
             }
         } catch (Exception e) {
