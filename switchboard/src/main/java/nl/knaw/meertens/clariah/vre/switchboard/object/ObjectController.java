@@ -39,4 +39,13 @@ public class ObjectController extends AbstractController {
         return createResponse(services);
     }
 
+    @GET
+    @Path("/{objectId}/editors")
+    @Produces(APPLICATION_JSON)
+    public Response getEditorsFor(@PathParam("objectId") long objectId) {
+        logger.info(String.format("Received request of available editors for object [%s]", objectId));
+        var services = objectService.getEditorsFor(objectId);
+        return createResponse(services);
+    }
+
 }

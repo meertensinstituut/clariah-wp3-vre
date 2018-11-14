@@ -43,6 +43,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
+import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.EDITOR;
 import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.SERVICE;
 import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.VIEWER;
 import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.fromKind;
@@ -103,10 +104,20 @@ public class ExecService {
         var request = prepareDeploymentRequest(serviceName, body, kind);
         List<String> files = new ArrayList<>(request.getFiles().values());
         nextcloudFileService.stageFiles(request.getWorkDir(), files);
-        var statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
+        var statusReport = deploymentService.deploy(request, pollDeploymentConsumer);
         request.setStatusReport(statusReport);
         return request;
     }
+
+    /**
+     * Consumer that finishes a deployment
+     */
+    public PollDeploymentConsumer<DeploymentStatusReport> pollDeploymentConsumer = (report) -> {
+        logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
+        if (isFinishedOrStopped(report)) {
+            completeDeployment(report);
+        }
+    };
 
     private DeploymentRequest prepareDeploymentRequest(
             String serviceName,
@@ -121,6 +132,9 @@ public class ExecService {
                     break;
                 case VIEWER:
                     request = prepareViewerDeployment(serviceName, body);
+                    break;
+                case EDITOR:
+                    request = prepareEditorDeployment(serviceName, body);
                     break;
                 default:
                     throw new UnsupportedOperationException(String.format("Unsupported deployment of service with kind [%s]", kind));
@@ -141,6 +155,13 @@ public class ExecService {
         params.add(outputParam);
         createConfig(request);
         return request;
+    }
+
+    private DeploymentRequest prepareEditorDeployment(
+            String service,
+            String body
+    ) throws IOException {
+        return prepareViewerDeployment(service, body);
     }
 
     private Param createViewerOutputParam(
@@ -216,15 +237,20 @@ public class ExecService {
 
         nextcloudFileService.unstage(report.getWorkDir(), report.getFiles());
 
-        if (serviceKind.equals(SERVICE)) {
-            completeServiceDeployment(report);
-        } else if (serviceKind.equals(VIEWER)) {
-            completeViewerDeployment(report);
-        } else {
-            throw new UnsupportedOperationException(String.format(
-                    "Could not complete deployment because service kind was not SERVICE or VIEWER but [%s]",
-                    serviceKind
-            ));
+        switch (serviceKind) {
+            case SERVICE:
+                completeServiceDeployment(report);
+                break;
+            case VIEWER:
+                completeViewerDeployment(report);
+                break;
+            case EDITOR:
+                completeEditorDeployment(report);
+                break;
+            default:
+                throw new UnsupportedOperationException(String.format(
+                        "Could not complete deployment: unknown kind [%s]", serviceKind
+                ));
         }
 
         sendKafkaSwitchboardMsg(report);
@@ -263,6 +289,12 @@ public class ExecService {
         report.setViewerFile(viewerFile.toString());
         report.setViewerFileContent(nextcloudFileService.getContent(viewerFile.toString()));
         report.setWorkDir(report.getWorkDir());
+    }
+
+    private void completeEditorDeployment(
+            DeploymentStatusReport report
+    ) {
+        completeViewerDeployment(report);
     }
 
     private void createConfig(

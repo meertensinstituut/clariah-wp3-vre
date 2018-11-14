@@ -79,11 +79,20 @@ export default class Files extends React.Component {
     }
 
     handleViewFileClick(object) {
-        const pathParts = object.filepath.split('/');
-        const filename = pathParts[pathParts.length - 1];
         this.setState({
-            redirect: `/view/${object.id}/${filename}`
+            redirect: `/view/${object.id}/${this.getFilename(object.filepath)}`
         });
+    }
+
+    handleEditFileClick(object) {
+        this.setState({
+            redirect: `/edit/${object.id}/${this.getFilename(object.filepath)}`
+        });
+    }
+
+    getFilename(path) {
+        const pathParts = path.split('/');
+        return pathParts[pathParts.length - 1];
     }
 
     handleProcessFileClick(object) {
@@ -185,6 +194,11 @@ export default class Files extends React.Component {
                                         data-tip="process file with a service"
                                         onClick={() => this.handleProcessFileClick(object)}>
                                         <i className="fa fa-play" aria-hidden="true"/>
+                                    </button>
+                                    <button
+                                        data-tip="edit file"
+                                        onClick={() => this.handleEditFileClick(object)}>
+                                        <i className="fa fa-pencil" aria-hidden="true"/>
                                     </button>
                                     <ReactTooltip/>
                                 </td>

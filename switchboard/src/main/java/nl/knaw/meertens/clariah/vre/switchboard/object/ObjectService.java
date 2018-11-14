@@ -6,6 +6,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegist
 
 import java.util.List;
 
+import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.EDITOR;
 import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.SERVICE;
 import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.VIEWER;
 
@@ -20,7 +21,7 @@ public class ObjectService {
     }
 
     /**
-     * A service of kind viewer
+     * Services of kind 'viewer'
      */
     public List<ServiceRecord> getViewersFor(long objectId) {
         var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
@@ -28,7 +29,15 @@ public class ObjectService {
     }
 
     /**
-     * A service of kind service >:)
+     * Services of kind 'editor'
+     */
+    public List<ServiceRecord> getEditorsFor(long objectId) {
+        var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
+        return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, EDITOR);
+    }
+
+    /**
+     * Services of kind 'service' >:)
      */
     public List<ServiceRecord> getServiceServicesFor(Long objectId) {
         var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;

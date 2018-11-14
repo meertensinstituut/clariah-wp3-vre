@@ -4,13 +4,19 @@ import {SWITCHBOARD_ENDPOINT} from "../config";
 export default class DeployResource {
 
     static async getServices(objectId) {
-        let url = `${SWITCHBOARD_ENDPOINT}/object/${objectId}/services`;
-        const response = await fetch(url);
-        return Resource.validate(response);
+        return await this.getServiceByKind(objectId, 'services');
     }
 
     static async getViewers(objectId) {
-        let url = `${SWITCHBOARD_ENDPOINT}/object/${objectId}/viewers`;
+        return await this.getServiceByKind(objectId, 'viewers');
+    }
+
+    static async getEditors(objectId) {
+        return await this.getServiceByKind(objectId, 'editors');
+    }
+
+    static async getServiceByKind(objectId, kind) {
+        let url = `${SWITCHBOARD_ENDPOINT}/object/${objectId}/${kind}`;
         const response = await fetch(url);
         return Resource.validate(response);
     }
