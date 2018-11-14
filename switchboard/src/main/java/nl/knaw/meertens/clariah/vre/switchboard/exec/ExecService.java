@@ -43,9 +43,6 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
-import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.EDITOR;
-import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.SERVICE;
-import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.VIEWER;
 import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.fromKind;
 
 /**

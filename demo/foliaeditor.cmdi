@@ -17,6 +17,7 @@
         <cmdp:Name>Folia editor</cmdp:Name>
         <cmdp:Description xml:lang="en">View and edit Folia file</cmdp:Description>
         <cmdp:ServiceDescriptionLocation>
+          <!--<cmdp:Location>https://flat.science.ru.nl</cmdp:Location>-->
           <cmdp:Location>http://lamachine/flat</cmdp:Location>
         </cmdp:ServiceDescriptionLocation>
         <cmdp:Operations>
