@@ -9,7 +9,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public enum ServiceKind {
     SERVICE("service"),
-    VIEWER("viewer");
+    VIEWER("viewer"),
+    EDITOR("editor");
 
     private final String kind;
 
