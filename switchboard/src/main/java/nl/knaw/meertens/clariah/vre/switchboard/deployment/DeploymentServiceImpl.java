@@ -32,7 +32,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     @Override
     public DeploymentStatusReport deploy(
             DeploymentRequest request,
-            FinishDeploymentConsumer<DeploymentStatusReport> deploymentConsumer
+            PollDeploymentConsumer<DeploymentStatusReport> deploymentConsumer
     ) {
         var report = requestDeployment(request);
         requestRepositoryService.saveDeploymentRequest(report, deploymentConsumer);

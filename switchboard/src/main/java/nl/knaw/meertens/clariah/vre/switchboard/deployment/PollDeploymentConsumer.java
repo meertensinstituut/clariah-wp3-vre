@@ -12,7 +12,7 @@ import java.util.function.Consumer;
  * @param <T>
  */
 @FunctionalInterface
-public interface FinishDeploymentConsumer<T> extends Consumer<T> {
+public interface PollDeploymentConsumer<T> extends Consumer<T> {
 
     @Override
     default void accept(final T elem) {

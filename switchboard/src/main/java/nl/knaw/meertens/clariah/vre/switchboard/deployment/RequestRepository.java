@@ -30,7 +30,7 @@ public class RequestRepository {
     private final ObjectMapper mapper;
 
     private final Map<String, DeploymentStatusReport> reports = new HashMap<>();
-    private final Map<String, FinishDeploymentConsumer<DeploymentStatusReport>> consumers = new HashMap<>();
+    private final Map<String, PollDeploymentConsumer<DeploymentStatusReport>> consumers = new HashMap<>();
     private final Map<String, LocalDateTime> finished = new HashMap<>();
 
     public RequestRepository(
@@ -43,7 +43,7 @@ public class RequestRepository {
         this.mapper = mapper;
     }
 
-    public FinishDeploymentConsumer<DeploymentStatusReport> getConsumer(String workDir) {
+    public PollDeploymentConsumer<DeploymentStatusReport> getConsumer(String workDir) {
         return consumers.get(workDir);
     }
 
@@ -58,7 +58,7 @@ public class RequestRepository {
 
     public void saveDeploymentRequest(
             DeploymentStatusReport report,
-            FinishDeploymentConsumer<DeploymentStatusReport> reportConsumer
+            PollDeploymentConsumer<DeploymentStatusReport> reportConsumer
     ) {
         saveStatusReport(report);
         consumers.put(report.getWorkDir(), reportConsumer);

@@ -5,7 +5,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.PollDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
@@ -198,7 +198,7 @@ public class ExecService {
     /**
      * Consumer that finishes a deployment
      */
-    public FinishDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
+    public PollDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
         logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
         if (isFinishedOrStopped(report)) {
             completeDeployment(report);

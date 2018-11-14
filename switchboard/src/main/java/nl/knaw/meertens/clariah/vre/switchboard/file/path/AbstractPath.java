@@ -14,19 +14,9 @@ public abstract class AbstractPath {
     final String tmp = Config.DEPLOYMENT_VOLUME;
 
     /**
-     * Owncloud root dir that contains users and their files
+     * Nextcloud root dir that contains users and their files
      */
     final String nextcloud = Config.NEXTCLOUD_VOLUME;
-
-    /**
-     * Hidden folder in user folder that contains vre specific files
-     */
-    final String vre = Config.VRE_DIR;
-
-    /**
-     * Folder of viewer service
-     */
-    String service;
 
     /**
      * Dir that contains all files of user
@@ -38,6 +28,16 @@ public abstract class AbstractPath {
      * Dir that contains files uploaded by user
      */
     final String files = Config.FILES_DIR;
+
+    /**
+     * Hidden folder in user folder that contains vre specific files
+     */
+    final String vre = Config.VRE_DIR;
+
+    /**
+     * Folder of viewer service
+     */
+    String service;
 
     /**
      * File and parent dirs as created by user
