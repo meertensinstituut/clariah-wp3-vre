@@ -6,6 +6,7 @@
 package nl.knaw.meertens.deployment.lib;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 //import java.util.concurrent.ExecutorService;
 //import java.util.concurrent.Executors;
@@ -39,19 +40,14 @@ public class Queue {
                 return size() > (queueLength!=null?Integer.parseInt(queueLength):100);
             }
         };
-    
+
     public JSONObject push(String key, RecipePlugin plugin, Logger logger) {
         JSONObject json = new JSONObject();
         json.put("id", key);
         
         if (!(key == null || plugin == null || executed == null) && !(executed.containsKey(key))) {
             executed.put(key, plugin);
-            new Thread() {
-                @Override
-                public void run() {
-                    plugin.execute(key, logger);
-                }
-            }.start();        
+            new Thread(() -> plugin.execute(key, logger)).start();
             json.put("status", 202);
             json.put("message", "running");
             return json;

@@ -15,6 +15,7 @@ docker kill vre_postgres_1
 docker kill vre_switchboard_1
 docker kill vre_indexer_1
 docker kill vre_lamachine_1
+docker kill vre_tagger_1
 
 docker container prune -f
 
