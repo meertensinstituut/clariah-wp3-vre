@@ -227,7 +227,7 @@ public class FoliaEditor implements RecipePlugin {
 
         File file = new File(fullOutputPath);
         System.out.println(String.format("### Generating output file: %s ###", fullOutputPath));
-        writeToHtml((String) urlJson.get("url"), file);
+        writeToHtml(String.format("<iframe src=\"%s\">Text to display when iframe is not supported</iframe>", (String) urlJson.get("url")), file);
         json.put("url", urlJson.get("url"));
         return json;
 
