@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.api;
 
+import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -80,11 +81,13 @@ public class WebExec {
      * @throws org.apache.commons.configuration.ConfigurationException
      * @throws org.json.simple.parser.ParseException
      * @throws org.jdom2.JDOMException
+     * @throws net.sf.saxon.s9api.SaxonApiException
+     * @throws com.mashape.unirest.http.exceptions.UnirestException
      */
     @GET
     @Path("/test")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response test() throws IOException, MalformedURLException, ConfigurationException, ParseException, JDOMException, SaxonApiException {
+    public Response test() throws IOException, MalformedURLException, ConfigurationException, ParseException, JDOMException, SaxonApiException, UnirestException {
         String projectName = "wd12345";
         String serviceId = "FOLIAEDITOR";
         DeploymentLib dplib = new DeploymentLib();
@@ -93,6 +96,7 @@ public class WebExec {
         JSONObject json = new JSONObject();
         FoliaEditor fe = new FoliaEditor();
         fe.init(projectName, service);
+        
         fe.uploadFile(projectName, "example.xml", "eng", "template", "author");
 //        clam.init(projectName, service);
 //        json = clam.downloadProject(projectName);
@@ -159,7 +163,6 @@ public class WebExec {
      * 
      * @param wd
      * @param service
-     * @param params
      * @return
      * @throws ConfigurationException
      * @throws ClassNotFoundException
