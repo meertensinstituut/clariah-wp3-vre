@@ -73,6 +73,12 @@ public class PollServiceImpl implements PollService {
         pollThread.start();
     }
 
+    /**
+     * Check deployment status:
+     * - poll deployment service
+     * - run deployment consumer function
+     * - save deployment status
+     */
     private void poll() {
         for (var report : requestRepositoryService.getAllStatusReports()) {
             if (shouldPoll(report)) {
@@ -107,10 +113,10 @@ public class PollServiceImpl implements PollService {
     }
 
     private void runConsumer(DeploymentStatusReport report) {
-        var finishDeploymentConsumer =
+        var deploymentConsumer =
                 requestRepositoryService.getConsumer(report.getWorkDir());
         try {
-            finishDeploymentConsumer.accept(report);
+            deploymentConsumer.accept(report);
         } catch (Exception e) {
             logger.error(String.format("Consumer of deployment [%s] threw exception", report.getWorkDir()), e);
         }

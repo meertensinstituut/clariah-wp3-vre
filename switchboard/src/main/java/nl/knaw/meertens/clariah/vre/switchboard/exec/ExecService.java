@@ -196,7 +196,7 @@ public class ExecService {
     }
 
     /**
-     * Consumer that is called when deployment is finished
+     * Consumer that finishes a deployment
      */
     public FinishDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
         logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));

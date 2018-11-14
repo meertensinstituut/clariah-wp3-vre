@@ -28,14 +28,12 @@ public class DeploymentStatusReport implements Cloneable {
     private String viewerFile;
     private String viewerFileContent;
 
-    public DeploymentStatusReport() {
+    DeploymentStatusReport() {
         super();
     }
 
     /**
-     * Make a copy
-     *
-     * @param original
+     * Make a shallow copy
      */
     public DeploymentStatusReport(DeploymentStatusReport original) {
         this.polled = original.polled;

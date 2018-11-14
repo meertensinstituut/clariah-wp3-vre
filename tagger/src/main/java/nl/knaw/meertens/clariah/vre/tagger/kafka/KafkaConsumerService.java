@@ -33,11 +33,11 @@ public class KafkaConsumerService {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
-        // ten minutes:
-        props.put("session.timeout.ms", "" + (10 * 60 * 1000));
+        var tenMinutes = 10 * 60 * 1000;
+        props.put("session.timeout.ms", "" + tenMinutes);
 
         // should be greater than session timeout:
-        props.put("request.timeout.ms", "" + (10 * 60 * 1000 + 1));
+        props.put("request.timeout.ms", "" + (tenMinutes + 1));
 
         return new KafkaConsumer<>(props);
     }
