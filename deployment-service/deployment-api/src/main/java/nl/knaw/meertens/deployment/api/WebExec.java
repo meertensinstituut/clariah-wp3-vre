@@ -97,7 +97,8 @@ public class WebExec {
         FoliaEditor fe = new FoliaEditor();
         fe.init(projectName, service);
         
-        fe.uploadFile(projectName, "example.xml", "eng", "template", "author");
+//        fe.uploadFile(projectName, "example.xml", "eng", "template", "author");
+        fe.runProject(projectName);
 //        clam.init(projectName, service);
 //        json = clam.downloadProject(projectName);
         json.put("test", "test");

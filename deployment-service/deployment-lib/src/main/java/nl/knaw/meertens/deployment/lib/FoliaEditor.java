@@ -202,7 +202,6 @@ public class FoliaEditor implements RecipePlugin {
         System.out.println(String.format("### inputPath: %s ###", inputPath));
         System.out.println(String.format("### Full Input Path: %s ###", fullInputPath));
 
-        // TODO: make output file from the return url from the upload file
         JSONObject urlJson = uploadFile(key, fullInputPath);
 
         JSONObject outputOjbect;
@@ -349,7 +348,7 @@ public class FoliaEditor implements RecipePlugin {
         JSONObject jsonResult = new JSONObject();
         DeploymentLib dplib = new DeploymentLib();
 
-        String path = Paths.get(dplib.getWd(), projectName, dplib.getInputDir(), filename).normalize().toString();
+        String path = filename;
         System.out.println("### File path to be uploaded:" + path + " ###");
 
         jsonResult.put("pathUploadFile", path);
