@@ -3,30 +3,26 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package nl.knaw.meertens.deployment.lib;
 
+import static java.nio.charset.Charset.forName;
 
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import java.io.StringReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-//import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -44,42 +40,19 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.JDOMException;
 import org.json.simple.JSONArray;
-import org.json.simple.parser.ParseException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.List;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-
-import static java.nio.charset.Charset.forName;
 
 /**
+ * This is the Folia editor recipe.
+ *
  * @author Vic
+ *
  */
 public class FoliaEditor implements RecipePlugin {
-    protected int counter = 0;
+   protected int counter = 0;
     protected Boolean isFinished = false;
     protected Boolean userConfigRemoteError = false;
 
@@ -87,6 +60,8 @@ public class FoliaEditor implements RecipePlugin {
     public URL serviceUrl;
 
     /**
+     * Initiate the recipe.
+     *
      * @param projectName
      * @param service
      * @throws JDOMException
@@ -94,12 +69,14 @@ public class FoliaEditor implements RecipePlugin {
      * @throws SaxonApiException
      */
     @Override
-    public void init(String projectName, Service service) throws JDOMException, IOException, SaxonApiException {
+    public void init(String projectName, Service service) throws
+            JDOMException,
+            IOException,
+            SaxonApiException {
         System.out.print("init Folia Editor plugin");
         JSONObject json = this.parseSymantics(service.getServiceSymantics());
         this.projectName = projectName;
         this.serviceUrl = new URL((String) json.get("serviceLocation"));
-        ;
         System.out.print("finish init Folia Editor plugin");
 
     }
@@ -163,7 +140,7 @@ public class FoliaEditor implements RecipePlugin {
      * @throws org.apache.commons.configuration.ConfigurationException
      */
     @Override
-    public JSONObject parseUserConfig(String key) throws ParseException, ConfigurationException {
+    public JSONObject parseUserConfig(String key) throws ConfigurationException {
         DeploymentLib dplib = new DeploymentLib();
 
         String workDir = dplib.getWd();
@@ -226,7 +203,7 @@ public class FoliaEditor implements RecipePlugin {
 
         File file = new File(fullOutputPath);
         System.out.println(String.format("### Generating output file: %s ###", fullOutputPath));
-        writeToHtml(String.format("<iframe src=\"%s\">Text to display when iframe is not supported</iframe>", (String) urlJson.get("url")), file);
+        writeToHtml(String.format("<iframe src=\"%s\" width=\"100%%\" height=\"800px\">Text to display when iframe is not supported</iframe>", (String) urlJson.get("url")), file);
         json.put("url", urlJson.get("url"));
         return json;
 
@@ -265,6 +242,15 @@ public class FoliaEditor implements RecipePlugin {
         }
     }
 
+    /**
+     * Get output file.
+     * @param projectName
+     * @return
+     * @throws MalformedURLException
+     * @throws IOException
+     * @throws JDOMException
+     * @throws SaxonApiException
+     */
     public JSONObject getOutputFiles(String projectName) throws MalformedURLException, IOException, JDOMException, SaxonApiException {
         JSONObject json = new JSONObject();
 
@@ -386,7 +372,12 @@ public class FoliaEditor implements RecipePlugin {
                 null
         );
         System.out.println(String.format("### returnUrl: %s ###", returnUrl.toString()));
-        jsonResult.put("url", returnUrl.toString());
+
+        URL devReturnUrl = new URL("http://localhost:9998" + returnUrlString);
+
+        System.out.println(String.format("### Hacking returnUrl for dev environment: %s ###", devReturnUrl.toString()));
+//        jsonResult.put("url", returnUrl.toString());
+        jsonResult.put("url", devReturnUrl.toString());
 
         return jsonResult;
     }
