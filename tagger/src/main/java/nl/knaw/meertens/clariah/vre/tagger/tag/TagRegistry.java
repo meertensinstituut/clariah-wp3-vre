@@ -13,43 +13,44 @@ import java.util.HashMap;
 
 public class TagRegistry extends AbstractDreamfactoryRegistry {
 
-    private final ObjectMapper mapper;
-    private final String table = "/_table/tag/";
+  private final ObjectMapper mapper;
+  private final String table = "/_table/tag/";
 
-    private final Configuration conf = Configuration
-            .builder()
-            .options(Option.DEFAULT_PATH_LEAF_TO_NULL)
-            .options(Option.SUPPRESS_EXCEPTIONS)
-            .build();
-    private final ParseContext jsonPath = JsonPath.using(conf);
+  private final Configuration conf = Configuration
+    .builder()
+    .options(Option.DEFAULT_PATH_LEAF_TO_NULL)
+    .options(Option.SUPPRESS_EXCEPTIONS)
+    .build();
+  private final ParseContext jsonPath = JsonPath.using(conf);
 
 
-    public TagRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper mapper) {
-        super(objectsDbUrl, objectsDbKey);
-        this.mapper = mapper;
+  public TagRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper mapper) {
+    super(objectsDbUrl, objectsDbKey);
+    this.mapper = mapper;
+  }
+
+  /**
+   * Get id by name, owner and type of tag
+   *
+   * @return Long id
+   */
+
+  public Long get(TagDto tag) {
+    var params = new HashMap<String, Object>();
+    params.put("name", tag.name);
+    params.put("owner", tag.owner);
+    params.put("type", tag.type);
+    var json = get(table, params);
+    return jsonPath.parse(json).read("$.resource[0].id", Long.class);
+  }
+
+  public Long create(TagDto tag) throws SQLException {
+    try {
+      var json = postResource(mapper.writeValueAsString(tag), table);
+      return JsonPath.parse(json).read("$.resource[0].id", Long.class);
+    } catch (IOException e) {
+      throw new RuntimeException("Could not create tag", e);
     }
-
-    /**
-     * Get id by name, owner and type of tag
-     * @return Long id
-     */
-
-    public Long get(TagDto tag) {
-        var params = new HashMap<String, Object>();
-        params.put("name", tag.name);
-        params.put("owner", tag.owner);
-        params.put("type", tag.type);
-        var json = get(table, params);
-        return jsonPath.parse(json).read("$.resource[0].id", Long.class);
-    }
-
-    public Long create(TagDto tag) throws SQLException {
-        try {
-            var json = postResource(mapper.writeValueAsString(tag), table);
-            return JsonPath.parse(json).read("$.resource[0].id", Long.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create tag", e);
-        }
-    }
+  }
 
 }

@@ -5,9 +5,9 @@ import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.RecognizerKafkaDto;
 import nl.knaw.meertens.clariah.vre.tagger.kafka.TaggerKafkaDto;
-import nl.knaw.meertens.clariah.vre.tagger.object_tag.ObjectTagDto;
-import nl.knaw.meertens.clariah.vre.tagger.object_tag.ObjectTagRegistry;
-import nl.knaw.meertens.clariah.vre.tagger.object_tag.UdateObjectTagDto;
+import nl.knaw.meertens.clariah.vre.tagger.objecttag.ObjectTagDto;
+import nl.knaw.meertens.clariah.vre.tagger.objecttag.ObjectTagRegistry;
+import nl.knaw.meertens.clariah.vre.tagger.objecttag.UdateObjectTagDto;
 import nl.knaw.meertens.clariah.vre.tagger.tag.AutomaticTagsService;
 import nl.knaw.meertens.clariah.vre.tagger.tag.CreateTagDto;
 import nl.knaw.meertens.clariah.vre.tagger.tag.TagDto;
@@ -29,117 +29,117 @@ import static nl.knaw.meertens.clariah.vre.tagger.FileAction.UPDATE;
 
 class TaggerService {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final KafkaConsumerService kafkaConsumerService;
+  private final KafkaProducerService kafkaProducerService;
+  private final TagRegistry tagRegistry;
+  private final ObjectTagRegistry objectTagRegistry;
+  private final AutomaticTagsService automaticTagsService;
+  private ObjectMapper objectMapper;
 
-    private ObjectMapper objectMapper;
-    private final KafkaConsumerService kafkaConsumerService;
-    private final KafkaProducerService kafkaProducerService;
-    private final TagRegistry tagRegistry;
-    private final ObjectTagRegistry objectTagRegistry;
-    private final AutomaticTagsService automaticTagsService;
+  TaggerService(
+    ObjectMapper objectMapper,
+    KafkaConsumerService kafkaConsumerService,
+    KafkaProducerService kafkaProducerService,
+    TagRegistry tagRegistry,
+    ObjectTagRegistry objectTagRegistry,
+    AutomaticTagsService automaticTagsService
+  ) {
+    this.objectMapper = objectMapper;
+    this.kafkaConsumerService = kafkaConsumerService;
+    this.kafkaProducerService = kafkaProducerService;
+    this.tagRegistry = tagRegistry;
+    this.objectTagRegistry = objectTagRegistry;
+    this.automaticTagsService = automaticTagsService;
+  }
 
-    TaggerService(
-            ObjectMapper objectMapper,
-            KafkaConsumerService kafkaConsumerService,
-            KafkaProducerService kafkaProducerService,
-            TagRegistry tagRegistry,
-            ObjectTagRegistry objectTagRegistry,
-            AutomaticTagsService automaticTagsService
-    ) {
-        this.objectMapper = objectMapper;
-        this.kafkaConsumerService = kafkaConsumerService;
-        this.kafkaProducerService = kafkaProducerService;
-        this.tagRegistry = tagRegistry;
-        this.objectTagRegistry = objectTagRegistry;
-        this.automaticTagsService = automaticTagsService;
+  void consumeRecognizer() {
+    kafkaConsumerService.consumeWith(this::consumeKafkaMsg);
+  }
+
+  void consumeKafkaMsg(String json) {
+    try {
+      var msg = objectMapper.readValue(json, RecognizerKafkaDto.class);
+      var action = FileAction.from(msg.action);
+      if (!ACTIONS_TO_TAG.contains(msg.action)) {
+        logger.info(format(
+          "Ignored message about file [%s] with action [%s]",
+          msg.path, msg.action
+        ));
+        return;
+      }
+      if (action.equals(CREATE)) {
+        tagNewObject(msg.objectId);
+      } else if (action.equals(UPDATE) || action.equals(RENAME)) {
+        tagUpdatedObject(msg.objectId);
+      }
+    } catch (Exception e) {
+      logger.error(String.format("Could not process kafka message [%s]", json), e);
     }
+  }
 
-    void consumeRecognizer() {
-        kafkaConsumerService.consumeWith(this::consumeKafkaMsg);
-    }
+  private void tagNewObject(Long objectId) {
+    var tags = automaticTagsService.createNewTags(objectId);
+    processTags(objectId, tags);
+  }
 
-    void consumeKafkaMsg(String json) {
-        try {
-            var msg = objectMapper.readValue(json, RecognizerKafkaDto.class);
-            var action = FileAction.from(msg.action);
-            if (!ACTIONS_TO_TAG.contains(msg.action)) {
-                logger.info(format(
-                        "Ignored message about file [%s] with action [%s]",
-                        msg.path, msg.action
-                ));
-                return;
-            }
-            if (action.equals(CREATE)) {
-                tagNewObject(msg.objectId);
-            } else if (action.equals(UPDATE) || action.equals(RENAME)) {
-                tagUpdatedObject(msg.objectId);
-            }
-        } catch (Exception e) {
-            logger.error(String.format("Could not process kafka message [%s]", json), e);
-        }
-    }
+  private void tagUpdatedObject(Long objectId) {
+    var tags = automaticTagsService.createUpdateTags(objectId);
+    processTags(objectId, tags);
+  }
 
-    private void tagNewObject(Long objectId) {
-        var tags = automaticTagsService.createNewTags(objectId);
-        processTags(objectId, tags);
-    }
+  private void processTags(Long objectId, List<TagDto> tags) {
+    tags.forEach(tag -> {
+      if (tag instanceof CreateTagDto) {
+        var tagId = createTag(tag);
+        createObjectTag(objectId, tagId);
+        createKafkaMsg(objectId, tagId, tag, "Created new object tag");
+      }
+      if (tag instanceof UpdateTagDto) {
+        var tagId = createTag(tag);
+        updateObjectTag(objectId, tagId, tag.type, tag.owner);
+        createKafkaMsg(objectId, tagId, tag, "Updated object tag");
+      }
+    });
+  }
 
-    private void tagUpdatedObject(Long objectId) {
-        var tags = automaticTagsService.createUpdateTags(objectId);
-        processTags(objectId, tags);
+  /**
+   * Create tag if it not already exists
+   *
+   * @return Long tagId of existing or new tag
+   */
+  private Long createTag(TagDto tag) {
+    var tagId = tagRegistry.get(tag);
+    if (isNull(tagId)) {
+      try {
+        tagId = tagRegistry.create(tag);
+      } catch (SQLException e) {
+        throw new RuntimeException(String.format("Could not create tag %s:%s:%s", tag.owner, tag.type, tag.name), e);
+      }
     }
+    return tagId;
+  }
 
-    private void processTags(Long objectId, List<TagDto> tags) {
-        tags.forEach(tag -> {
-            if(tag instanceof CreateTagDto) {
-                var tagId = createTag(tag);
-                createObjectTag(objectId, tagId);
-                createKafkaMsg(objectId, tagId, tag, "Created new object tag");
-            }
-            if(tag instanceof UpdateTagDto) {
-                var tagId = createTag(tag);
-                updateObjectTag(objectId, tagId, tag.type, tag.owner);
-                createKafkaMsg(objectId, tagId, tag, "Updated object tag");
-            }
-        });
-    }
+  private void createObjectTag(Long objectId, Long tagId) {
+    objectTagRegistry.createObjectTag(
+      new ObjectTagDto(
+        TEST_USER,
+        tagId,
+        objectId
+      )
+    );
+  }
 
-    /**
-     * Create tag if it not already exists
-     * @return Long tagId of existing or new tag
-     */
-    private Long createTag(TagDto tag) {
-        var tagId = tagRegistry.get(tag);
-        if (isNull(tagId)) {
-            try {
-                tagId = tagRegistry.create(tag);
-            } catch (SQLException e) {
-                throw new RuntimeException(String.format("Could not create tag %s:%s:%s", tag.owner, tag.type, tag.name), e);
-            }
-        }
-        return tagId;
-    }
+  private void updateObjectTag(Long objectId, Long newTagId, String type, String owner) {
+    objectTagRegistry.updateObjectTag(new UdateObjectTagDto(objectId, newTagId, type, owner));
+  }
 
-    private void createObjectTag(Long objectId, Long tagId) {
-        objectTagRegistry.createObjectTag(
-                new ObjectTagDto(
-                        TEST_USER,
-                        tagId,
-                        objectId
-                )
-        );
-    }
-
-    private void updateObjectTag(Long objectId, Long newTagId, String type, String owner) {
-        objectTagRegistry.updateObjectTag(new UdateObjectTagDto(objectId, newTagId, type, owner));
-    }
-
-    private void createKafkaMsg(Long objectId, Long tagId, TagDto tag, String msg) {
-        var kafkaMsg = new TaggerKafkaDto();
-        kafkaMsg.msg = msg;
-        kafkaMsg.tag = tagId;
-        kafkaMsg.object = objectId;
-        kafkaMsg.owner = tag.owner;
-        kafkaProducerService.send(kafkaMsg);
-    }
+  private void createKafkaMsg(Long objectId, Long tagId, TagDto tag, String msg) {
+    var kafkaMsg = new TaggerKafkaDto();
+    kafkaMsg.msg = msg;
+    kafkaMsg.tag = tagId;
+    kafkaMsg.object = objectId;
+    kafkaMsg.owner = tag.owner;
+    kafkaProducerService.send(kafkaMsg);
+  }
 }
