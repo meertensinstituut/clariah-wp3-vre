@@ -5,7 +5,7 @@ import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsResult;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaProducerService;
-import nl.knaw.meertens.clariah.vre.recognizer.kafka.OwncloudKafkaDTO;
+import nl.knaw.meertens.clariah.vre.recognizer.kafka.OwncloudKafkaDto;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.RecognizerKafkaProducer;
 import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
 import org.slf4j.Logger;
@@ -35,96 +35,95 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class RecognizerService {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final ObjectMapper objectMapper = new ObjectMapper();
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final KafkaConsumerService nextcloudConsumerService = new KafkaConsumerService(
-            KAFKA_SERVER,
-            NEXTCLOUD_TOPIC_NAME,
-            NEXTCLOUD_GROUP_NAME
-    );
-    private final KafkaProducerService kafkaProducer = new KafkaProducerService(
-            new RecognizerKafkaProducer(KAFKA_SERVER),
-            RECOGNIZER_TOPIC_NAME
-    );
-    private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(
-            OBJECTS_DB_URL,
-            OBJECTS_DB_KEY,
-            OBJECT_TABLE
-    );
-    private final FitsService fitsService = new FitsService(
-            FITS_URL,
-            FITS_FILES_ROOT
-    );
+  private final KafkaConsumerService nextcloudConsumerService = new KafkaConsumerService(
+    KAFKA_SERVER,
+    NEXTCLOUD_TOPIC_NAME,
+    NEXTCLOUD_GROUP_NAME
+  );
+  private final KafkaProducerService kafkaProducer = new KafkaProducerService(
+    new RecognizerKafkaProducer(KAFKA_SERVER),
+    RECOGNIZER_TOPIC_NAME
+  );
+  private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(
+    OBJECTS_DB_URL,
+    OBJECTS_DB_KEY,
+    OBJECT_TABLE
+  );
+  private final FitsService fitsService = new FitsService(
+    FITS_URL,
+    FITS_FILES_ROOT
+  );
 
-    public void consumeOwncloud() {
-        nextcloudConsumerService.consumeWith((String json) -> {
-            try {
-                OwncloudKafkaDTO msg = objectMapper.readValue(json, OwncloudKafkaDTO.class);
-                FileAction action = FileAction.from(msg.action);
-                if (!ACTIONS_TO_PERSIST.contains(msg.action)) {
-                    logger.info(format(
-                            "Ignored message about file [%s] with action [%s]",
-                            msg.path, msg.action
-                    ));
-                    return;
-                }
-                if (isBlank(msg.path)) {
-                    throw new IllegalArgumentException(String.format(
-                            "No field path in nextcloud msg [%s]", json
-                    ));
-                }
-                Report report = mapToReport(msg);
-                handleFileActions(action, report);
-                kafkaProducer.produceToRecognizerTopic(report);
-            } catch (Exception e) {
-                logger.error(String.format("Could not process kafka message [%s]", json), e);
-            }
-        });
-    }
-
-    private Report mapToReport(OwncloudKafkaDTO msg) {
-        Report report = new Report();
-        report.setAction(msg.action);
-        report.setUser(msg.user);
-        report.setPath(Paths.get(msg.path).normalize().toString());
-        report.setOldPath(isNull(msg.oldPath) ? null : Paths.get(msg.oldPath).normalize().toString());
-        return report;
-    }
-
-    private void handleFileActions(
-            FileAction action,
-            Report report
-    ) throws IOException, JAXBException {
-        if (action.equals(CREATE)) {
-            requestFileType(report);
-            checkFileType(report);
-            report.setObjectId(objectsRepository.create(report));
-        } else if (action.equals(UPDATE)) {
-            requestFileType(report);
-            checkFileType(report);
-            report.setObjectId(objectsRepository.update(report));
-        } else if (action.equals(RENAME)) {
-            report.setObjectId(objectsRepository.updatePath(report.getOldPath(), report.getPath()));
-        } else if (action.equals(DELETE)) {
-            report.setObjectId(objectsRepository.softDelete(report.getPath()));
+  public void consumeOwncloud() {
+    nextcloudConsumerService.consumeWith((String json) -> {
+      try {
+        OwncloudKafkaDto msg = objectMapper.readValue(json, OwncloudKafkaDto.class);
+        FileAction action = FileAction.from(msg.action);
+        if (!ACTIONS_TO_PERSIST.contains(msg.action)) {
+          logger.info(format(
+            "Ignored message about file [%s] with action [%s]",
+            msg.path, msg.action
+          ));
+          return;
         }
-    }
-
-    private void checkFileType(Report report) throws IllegalArgumentException {
-        // TODO: use rule lib of menzo
-        if (FitsService.getMimeType(report.getFits()).equals("inode/directory")) {
-            throw new IllegalArgumentException("File is a directory");
+        if (isBlank(msg.path)) {
+          throw new IllegalArgumentException(String.format(
+            "No field path in nextcloud msg [%s]", json
+          ));
         }
-    }
+        Report report = mapToReport(msg);
+        handleFileActions(action, report);
+        kafkaProducer.produceToRecognizerTopic(report);
+      } catch (Exception e) {
+        logger.error(String.format("Could not process kafka message [%s]", json), e);
+      }
+    });
+  }
 
-    private void requestFileType(
-            Report report
-    ) throws IOException, JAXBException {
-        FitsResult fitsResult = fitsService.checkFile(report.getPath());
-        report.setXml(fitsResult.getXml());
-        report.setFits(fitsResult.getFits());
-    }
+  private Report mapToReport(OwncloudKafkaDto msg) {
+    Report report = new Report();
+    report.setAction(msg.action);
+    report.setUser(msg.user);
+    report.setPath(Paths.get(msg.path).normalize().toString());
+    report.setOldPath(isNull(msg.oldPath) ? null : Paths.get(msg.oldPath).normalize().toString());
+    return report;
+  }
 
+  private void handleFileActions(
+    FileAction action,
+    Report report
+  ) throws IOException, JAXBException {
+    if (action.equals(CREATE)) {
+      requestFileType(report);
+      checkFileType(report);
+      report.setObjectId(objectsRepository.create(report));
+    } else if (action.equals(UPDATE)) {
+      requestFileType(report);
+      checkFileType(report);
+      report.setObjectId(objectsRepository.update(report));
+    } else if (action.equals(RENAME)) {
+      report.setObjectId(objectsRepository.updatePath(report.getOldPath(), report.getPath()));
+    } else if (action.equals(DELETE)) {
+      report.setObjectId(objectsRepository.softDelete(report.getPath()));
+    }
+  }
+
+  private void checkFileType(Report report) throws IllegalArgumentException {
+    // TODO: use rule lib of menzo
+    if (FitsService.getMimeType(report.getFits()).equals("inode/directory")) {
+      throw new IllegalArgumentException("File is a directory");
+    }
+  }
+
+  private void requestFileType(
+    Report report
+  ) throws IOException, JAXBException {
+    FitsResult fitsResult = fitsService.checkFile(report.getPath());
+    report.setXml(fitsResult.getXml());
+    report.setFits(fitsResult.getFits());
+  }
 
 }
