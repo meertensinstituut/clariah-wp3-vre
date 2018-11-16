@@ -4,6 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigDto {
-    public List<ConfigParamDto> params = new ArrayList<>();
+  public List<ConfigParamDto> params = new ArrayList<>();
 
 }

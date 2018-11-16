@@ -7,6 +7,6 @@ import java.util.List;
 
 public class DeploymentRequestDto {
 
-    public List<ParamGroup> params = new ArrayList<>();
+  public List<ParamGroup> params = new ArrayList<>();
 
 }

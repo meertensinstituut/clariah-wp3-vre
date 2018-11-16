@@ -9,20 +9,20 @@ import java.util.Properties;
  */
 class SwitchboardKafkaProducer {
 
-    private final KafkaProducer<String, String> kafkaProducer;
+  private final KafkaProducer<String, String> kafkaProducer;
 
-    public SwitchboardKafkaProducer(String server) {
-        Properties props = new Properties();
-        props.put("bootstrap.servers", server);
-        props.put("advertised.host.name", "kafka");
-        props.put("advertised.port", 9092);
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        kafkaProducer = new KafkaProducer<>(props);
-    }
+  public SwitchboardKafkaProducer(String server) {
+    Properties props = new Properties();
+    props.put("bootstrap.servers", server);
+    props.put("advertised.host.name", "kafka");
+    props.put("advertised.port", 9092);
+    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+    kafkaProducer = new KafkaProducer<>(props);
+  }
 
-    public KafkaProducer<String, String> getKafkaProducer() {
-        return kafkaProducer;
-    }
+  public KafkaProducer<String, String> getKafkaProducer() {
+    return kafkaProducer;
+  }
 
 }

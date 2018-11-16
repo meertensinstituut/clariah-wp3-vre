@@ -15,55 +15,55 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
  */
 public class OwncloudOutputDir extends AbstractPath {
 
-    private OwncloudOutputDir(String user, String outputResult) {
-        this.user = user;
-        this.outputResult = outputResult;
-    }
+  private OwncloudOutputDir(String user, String outputResult) {
+    this.user = user;
+    this.outputResult = outputResult;
+  }
 
-    @Override
-    public Path toPath() {
-        return Paths.get(nextcloud, user, files, outputResult);
-    }
+  public static OwncloudOutputDir from(DeploymentInputFile file) {
+    return new OwncloudOutputDir(
+      file.user,
+      generateOutputPath(file)
+    );
+  }
 
-    @Override
-    public String toObjectPath() {
-        throw new UnsupportedOperationException();
-    }
+  /**
+   * Put timestamped output dir next to input file
+   */
+  private static String generateOutputPath(DeploymentInputFile file) {
+    String parent = FilenameUtils.getPath(file.getFile());
+    return Paths.get(parent, generateOutputDir()).toString();
+  }
 
-    public static OwncloudOutputDir from(DeploymentInputFile file) {
-        return new OwncloudOutputDir(
-                file.user,
-                generateOutputPath(file)
-        );
-    }
+  private static String generateOutputDir() {
+    return OUTPUT_DIR +
+      "-" +
+      now().format(ofPattern("yyyy-MM-dd_HH-mm-ss-SSS"));
+  }
 
-    public String getOwncloud() {
-        return nextcloud;
-    }
+  @Override
+  public Path toPath() {
+    return Paths.get(nextcloud, user, files, outputResult);
+  }
 
-    public String getUser() {
-        return user;
-    }
+  @Override
+  public String toObjectPath() {
+    throw new UnsupportedOperationException();
+  }
 
-    public String getFiles() {
-        return files;
-    }
+  public String getOwncloud() {
+    return nextcloud;
+  }
 
-    public String getOutputResult() {
-        return outputResult;
-    }
+  public String getUser() {
+    return user;
+  }
 
-    /**
-     * Put timestamped output dir next to input file
-     */
-    private static String generateOutputPath(DeploymentInputFile file) {
-        String parent = FilenameUtils.getPath(file.getFile());
-        return Paths.get(parent, generateOutputDir()).toString();
-    }
+  public String getFiles() {
+    return files;
+  }
 
-    private static String generateOutputDir() {
-        return OUTPUT_DIR
-                + "-"
-                + now().format(ofPattern("yyyy-MM-dd_HH-mm-ss-SSS"));
-    }
+  public String getOutputResult() {
+    return outputResult;
+  }
 }

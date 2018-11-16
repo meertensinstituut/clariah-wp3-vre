@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigParamDto {
-    public String name;
-    public ParamType type;
-    public String value;
-    public List<Param> params = new ArrayList<>();
+  public String name;
+  public ParamType type;
+  public String value;
+  public List<Param> params = new ArrayList<>();
 }

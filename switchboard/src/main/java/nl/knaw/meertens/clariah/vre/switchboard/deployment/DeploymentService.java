@@ -8,19 +8,20 @@ package nl.knaw.meertens.clariah.vre.switchboard.deployment;
  */
 public interface DeploymentService {
 
-    /**
-     * Deploy requested service.
-     */
-    DeploymentStatusReport deploy(DeploymentRequest request, PollDeploymentConsumer<DeploymentStatusReport> deploymentConsumer);
+  /**
+   * Deploy requested service.
+   */
+  DeploymentStatusReport deploy(DeploymentRequest request,
+                                PollDeploymentConsumer<DeploymentStatusReport> deploymentConsumer);
 
-    /**
-     * Get status of deployed service
-     */
-    DeploymentStatusReport getStatus(String workDir);
+  /**
+   * Get status of deployed service
+   */
+  DeploymentStatusReport getStatus(String workDir);
 
-    /**
-     * Returns true when stop signal is send, false otherwise.
-     */
-    boolean stop(String workDir);
+  /**
+   * Returns true when stop signal is send, false otherwise.
+   */
+  boolean stop(String workDir);
 
 }

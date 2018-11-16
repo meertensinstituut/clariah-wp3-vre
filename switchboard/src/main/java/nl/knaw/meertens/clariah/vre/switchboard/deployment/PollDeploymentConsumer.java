@@ -5,24 +5,24 @@ import java.util.function.Consumer;
 /**
  * Consumer that should be run after a deployment
  * to unlock files, move results, etc.
- * <p>
- * Allows its accept-method to throw an exception,
+ *
+ * <p>Allows its accept-method to throw an exception,
  * which is converted to a RuntimeException.
  *
- * @param <T>
+ * @param <T> Type of consumption
  */
 @FunctionalInterface
 public interface PollDeploymentConsumer<T> extends Consumer<T> {
 
-    @Override
-    default void accept(final T elem) {
-        try {
-            acceptWithException(elem);
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
+  @Override
+  default void accept(final T elem) {
+    try {
+      acceptWithException(elem);
+    } catch (final Exception e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    void acceptWithException(T elem) throws Exception;
+  void acceptWithException(T elem) throws Exception;
 
 }

@@ -10,48 +10,48 @@ import java.nio.file.Paths;
  */
 public class DeploymentInputFile extends AbstractPath {
 
-    private DeploymentInputFile(String workDir, String user, String file) {
-        this.workDir = workDir;
-        this.user = user;
-        this.file = file;
-    }
+  private DeploymentInputFile(String workDir, String user, String file) {
+    this.workDir = workDir;
+    this.user = user;
+    this.file = file;
+  }
 
-    @Override
-    public Path toPath() {
-        return Paths.get(tmp, workDir, input, user, files, file);
-    }
+  public static DeploymentInputFile from(String workDir, String objectPath) {
+    return new DeploymentInputFile(
+      workDir,
+      getUserFrom(objectPath),
+      getFileFrom(objectPath)
+    );
+  }
 
-    @Override
-    public String toObjectPath() {
-        return Paths.get(user, files, file).toString();
-    }
+  @Override
+  public Path toPath() {
+    return Paths.get(tmp, workDir, input, user, files, file);
+  }
 
-    public static DeploymentInputFile from(String workDir, String objectPath) {
-        return new DeploymentInputFile(
-                workDir,
-                getUserFrom(objectPath),
-                getFileFrom(objectPath)
-        );
-    }
+  @Override
+  public String toObjectPath() {
+    return Paths.get(user, files, file).toString();
+  }
 
-    public String getTmp() {
-        return tmp;
-    }
+  public String getTmp() {
+    return tmp;
+  }
 
-    public String getWorkDir() {
-        return workDir;
-    }
+  public String getWorkDir() {
+    return workDir;
+  }
 
-    public String getUser() {
-        return user;
-    }
+  public String getUser() {
+    return user;
+  }
 
-    public String getFiles() {
-        return files;
-    }
+  public String getFiles() {
+    return files;
+  }
 
-    public String getFile() {
-        return file;
-    }
+  public String getFile() {
+    return file;
+  }
 
 }

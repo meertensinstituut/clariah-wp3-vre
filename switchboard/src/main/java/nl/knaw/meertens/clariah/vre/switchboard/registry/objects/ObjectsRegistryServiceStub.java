@@ -9,28 +9,28 @@ import java.util.HashMap;
 import static java.util.Objects.isNull;
 
 public class ObjectsRegistryServiceStub implements ObjectsRegistryService {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private HashMap<Long, ObjectsRecordDTO> testFileRecords = new HashMap<>();
+  private HashMap<Long, ObjectsRecordDto> testFileRecords = new HashMap<>();
 
-    @Override
-    public ObjectsRecordDTO getObjectById(Long id) {
-        logger.info("Using stub");
-        if (isNull(testFileRecords)) {
-            throw new RuntimeException("No test file set in ObjectsRegistryServiceStub");
-        }
-        return testFileRecords.get(id);
+  @Override
+  public ObjectsRecordDto getObjectById(Long id) {
+    logger.info("Using stub");
+    if (isNull(testFileRecords)) {
+      throw new RuntimeException("No test file set in ObjectsRegistryServiceStub");
     }
+    return testFileRecords.get(id);
+  }
 
-    public void addTestObject(ObjectsRecordDTO testFileRecords) {
-        this.testFileRecords.put(testFileRecords.id, testFileRecords);
-    }
+  public void addTestObject(ObjectsRecordDto testFileRecords) {
+    this.testFileRecords.put(testFileRecords.id, testFileRecords);
+  }
 
-    public Long getMaxTestObject() {
-        if (testFileRecords.isEmpty()) {
-            return 0L;
-        }
-        return Collections.max(testFileRecords.keySet());
+  public Long getMaxTestObject() {
+    if (testFileRecords.isEmpty()) {
+      return 0L;
     }
+    return Collections.max(testFileRecords.keySet());
+  }
 
 }

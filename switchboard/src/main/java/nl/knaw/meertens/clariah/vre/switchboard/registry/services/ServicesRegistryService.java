@@ -4,14 +4,14 @@ import java.util.List;
 
 public interface ServicesRegistryService {
 
-    /**
-     * String containing CMDI-xml of service
-     */
-    ServiceRecord getService(Long id);
+  /**
+   * String containing CMDI-xml of service
+   */
+  ServiceRecord getService(Long id);
 
-    ServiceRecord getServiceByName(String name);
+  ServiceRecord getServiceByName(String name);
 
-    List<ServiceRecord> getServicesByMimetype(String mimetype);
+  List<ServiceRecord> getServicesByMimetype(String mimetype);
 
-    List<ServiceRecord> getServicesByMimetypeAndKind(String mimetype, ServiceKind kind);
+  List<ServiceRecord> getServicesByMimetypeAndKind(String mimetype, ServiceKind kind);
 }

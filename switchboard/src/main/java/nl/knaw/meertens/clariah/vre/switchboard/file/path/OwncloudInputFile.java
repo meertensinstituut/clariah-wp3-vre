@@ -9,44 +9,44 @@ import java.nio.file.Paths;
  */
 public class OwncloudInputFile extends AbstractPath {
 
-    private OwncloudInputFile(String user, String file) {
-        this.user = user;
-        this.file = file;
-    }
+  private OwncloudInputFile(String user, String file) {
+    this.user = user;
+    this.file = file;
+  }
 
-    public String getOwncloud() {
-        return nextcloud;
-    }
+  public static OwncloudInputFile from(String objectPath) {
+    return new OwncloudInputFile(
+      getUserFrom(objectPath),
+      getFileFrom(objectPath)
+    );
+  }
 
-    public static OwncloudInputFile from(String objectPath) {
-        return new OwncloudInputFile(
-                getUserFrom(objectPath),
-                getFileFrom(objectPath)
-        );
-    }
+  public String getOwncloud() {
+    return nextcloud;
+  }
 
-    @Override
-    public Path toPath() {
-        return Paths.get(nextcloud, user, files, file);
-    }
+  @Override
+  public Path toPath() {
+    return Paths.get(nextcloud, user, files, file);
+  }
 
-    /**
-     * @return {user}/{files}/{file}
-     */
-    @Override
-    public String toObjectPath() {
-        return Paths.get(user, files, file).toString();
-    }
+  /**
+   * @return {user}/{files}/{file}
+   */
+  @Override
+  public String toObjectPath() {
+    return Paths.get(user, files, file).toString();
+  }
 
-    public String getUser() {
-        return user;
-    }
+  public String getUser() {
+    return user;
+  }
 
-    public String getFiles() {
-        return files;
-    }
+  public String getFiles() {
+    return files;
+  }
 
-    public String getFile() {
-        return file;
-    }
+  public String getFile() {
+    return file;
+  }
 }

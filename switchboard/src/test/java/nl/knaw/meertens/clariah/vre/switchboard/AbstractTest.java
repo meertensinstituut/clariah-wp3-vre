@@ -9,13 +9,13 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractTest {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            logger.info(String.format("Starting test [%s]", description.getMethodName()));
-        }
-    };
+  @Rule
+  public TestRule watcher = new TestWatcher() {
+    protected void starting(Description description) {
+      logger.info(String.format("Starting test [%s]", description.getMethodName()));
+    }
+  };
 
 }

@@ -10,15 +10,15 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class HealthControllerTest extends AbstractControllerTest {
 
-    @Test
-    public void getHealth() {
-        Response response = target("/health")
-                .request()
-                .get();
+  @Test
+  public void getHealth() {
+    Response response = target("/health")
+      .request()
+      .get();
 
-        assertThat(response.getStatus()).isEqualTo(200);
-        var json = response.readEntity(String.class);
-        assertThat(JsonPath.parse(json).read("$.status", String.class)).isEqualTo("OK");
-    }
+    assertThat(response.getStatus()).isEqualTo(200);
+    var json = response.readEntity(String.class);
+    assertThat(JsonPath.parse(json).read("$.status", String.class)).isEqualTo("OK");
+  }
 
 }

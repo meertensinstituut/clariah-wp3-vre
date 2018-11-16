@@ -10,33 +10,33 @@ import java.nio.file.Paths;
  */
 public class DeploymentOutputDir extends AbstractPath {
 
-    private DeploymentOutputDir(String workDir) {
-        this.workDir = workDir;
-    }
+  private DeploymentOutputDir(String workDir) {
+    this.workDir = workDir;
+  }
 
-    @Override
-    public Path toPath() {
-        return Paths.get(tmp, workDir, output);
-    }
+  public static DeploymentOutputDir from(DeploymentInputFile file) {
+    return new DeploymentOutputDir(file.getWorkDir());
+  }
 
-    @Override
-    public String toObjectPath() {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  public Path toPath() {
+    return Paths.get(tmp, workDir, output);
+  }
 
-    public static DeploymentOutputDir from(DeploymentInputFile file) {
-        return new DeploymentOutputDir(file.getWorkDir());
-    }
+  @Override
+  public String toObjectPath() {
+    throw new UnsupportedOperationException();
+  }
 
-    public String getTmp() {
-        return tmp;
-    }
+  public String getTmp() {
+    return tmp;
+  }
 
-    public String getOutput() {
-        return output;
-    }
+  public String getOutput() {
+    return output;
+  }
 
-    public String getWorkDir() {
-        return workDir;
-    }
+  public String getWorkDir() {
+    return workDir;
+  }
 }
