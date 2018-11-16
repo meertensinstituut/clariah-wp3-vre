@@ -7,9 +7,9 @@ import java.util.List;
 
 public class Cmdi {
 
-    public Long id;
-    public String name;
-    public ServiceKind kind;
-    public List<Param> params = new ArrayList<>();
+  public Long id;
+  public String name;
+  public ServiceKind kind;
+  public List<Param> params = new ArrayList<>();
 
 }

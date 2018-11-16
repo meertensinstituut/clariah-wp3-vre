@@ -8,16 +8,16 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class FileUtil {
 
-    public static String getTestFileContent(String fileName) {
-        try {
-            return FileUtils.readFileToString(FileUtils.toFile(
-                    Thread.currentThread()
-                            .getContextClassLoader()
-                            .getResource(fileName)
-            ), UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+  public static String getTestFileContent(String fileName) {
+    try {
+      return FileUtils.readFileToString(FileUtils.toFile(
+        Thread.currentThread()
+              .getContextClassLoader()
+              .getResource(fileName)
+      ), UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
 }

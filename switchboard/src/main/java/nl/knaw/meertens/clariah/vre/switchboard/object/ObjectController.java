@@ -16,36 +16,36 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Path("/object")
 public class ObjectController extends AbstractController {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Inject
-    ObjectService objectService;
+  @Inject
+  ObjectService objectService;
 
-    @GET
-    @Path("/{objectId}/services")
-    @Produces(APPLICATION_JSON)
-    public Response getServicesFor(@PathParam("objectId") long objectId) {
-        logger.info(String.format("Received request of available 'service' services for object [%s]", objectId));
-        var services = objectService.getServiceServicesFor(objectId);
-        return createResponse(services);
-    }
+  @GET
+  @Path("/{objectId}/services")
+  @Produces(APPLICATION_JSON)
+  public Response getServicesFor(@PathParam("objectId") long objectId) {
+    logger.info(String.format("Received request of available 'service' services for object [%s]", objectId));
+    var services = objectService.getServiceServicesFor(objectId);
+    return createResponse(services);
+  }
 
-    @GET
-    @Path("/{objectId}/viewers")
-    @Produces(APPLICATION_JSON)
-    public Response getViewersFor(@PathParam("objectId") long objectId) {
-        logger.info(String.format("Received request of available viewers for object [%s]", objectId));
-        var services = objectService.getViewersFor(objectId);
-        return createResponse(services);
-    }
+  @GET
+  @Path("/{objectId}/viewers")
+  @Produces(APPLICATION_JSON)
+  public Response getViewersFor(@PathParam("objectId") long objectId) {
+    logger.info(String.format("Received request of available viewers for object [%s]", objectId));
+    var services = objectService.getViewersFor(objectId);
+    return createResponse(services);
+  }
 
-    @GET
-    @Path("/{objectId}/editors")
-    @Produces(APPLICATION_JSON)
-    public Response getEditorsFor(@PathParam("objectId") long objectId) {
-        logger.info(String.format("Received request of available editors for object [%s]", objectId));
-        var services = objectService.getEditorsFor(objectId);
-        return createResponse(services);
-    }
+  @GET
+  @Path("/{objectId}/editors")
+  @Produces(APPLICATION_JSON)
+  public Response getEditorsFor(@PathParam("objectId") long objectId) {
+    logger.info(String.format("Received request of available editors for object [%s]", objectId));
+    var services = objectService.getEditorsFor(objectId);
+    return createResponse(services);
+  }
 
 }

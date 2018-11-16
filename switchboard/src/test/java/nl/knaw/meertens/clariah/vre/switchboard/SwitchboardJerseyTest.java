@@ -18,7 +18,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
 
 /**
  * Wrapper around JerseyTest which is used
@@ -26,97 +26,97 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMa
  */
 public class SwitchboardJerseyTest extends JerseyTest {
 
-    private static final String mockHostName = "http://localhost:1080";
-    private static final String mockRegistryKey = "abc";
+  private static final String mockHostName = "http://localhost:1080";
+  private static final String mockRegistryKey = "abc";
 
-    private static ResourceConfig resourceConfig;
+  private static ResourceConfig resourceConfig;
 
-    private static RequestRepository requestRepository = SwitchboardDIBinder.getRequestRepository();
+  private static RequestRepository requestRepository = SwitchboardDiBinder.getRequestRepository();
 
-    private static PollServiceImpl pollService = new PollServiceImpl(
-            requestRepository,
-            SwitchboardDIBinder.getMapper(),
-            mockHostName
+  private static PollServiceImpl pollService = new PollServiceImpl(
+    requestRepository,
+    SwitchboardDiBinder.getMapper(),
+    mockHostName
+  );
+
+  private static OwncloudFileService nextcloudFileService = new OwncloudFileService();
+
+  private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(
+    mockHostName,
+    mockRegistryKey,
+    SwitchboardDiBinder.getMapper()
+  );
+
+  private static ObjectsRegistryServiceStub objectsRegistryServiceStub = new ObjectsRegistryServiceStub();
+
+  private KafkaProducerService kafkaSwitchboardServiceMock;
+  private KafkaProducerService kafkaOwncloudServiceMock;
+
+  public static OwncloudFileService getOwncloudFileService() {
+    return nextcloudFileService;
+  }
+
+  public static RequestRepository getRequestRepository() {
+    return requestRepository;
+  }
+
+  public static ObjectsRegistryServiceStub getObjectsRegistryServiceStub() {
+    return objectsRegistryServiceStub;
+  }
+
+  @Override
+  protected Application configure() {
+    setMocks();
+
+    if (resourceConfig != null) {
+      return resourceConfig;
+    }
+
+    resourceConfig = new ResourceConfig(
+      SwitchboardDiBinder.getControllerClasses()
     );
 
-    private static OwncloudFileService nextcloudFileService = new OwncloudFileService();
-
-    private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(
-            mockHostName,
-            mockRegistryKey,
-            SwitchboardDIBinder.getMapper()
+    var diBinder = new SwitchboardDiBinder(
+      objectsRegistryServiceStub,
+      servicesRegistryService,
+      new DeploymentServiceImpl(
+        mockHostName,
+        requestRepository,
+        pollService
+      ),
+      kafkaSwitchboardServiceMock,
+      kafkaOwncloudServiceMock,
+      new TagRegistry(
+        mockHostName,
+        mockRegistryKey,
+        getMapper()
+      ),
+      new ObjectTagRegistry(
+        mockHostName,
+        mockRegistryKey
+      )
     );
+    resourceConfig.register(diBinder);
+    return resourceConfig;
+  }
 
-    private static ObjectsRegistryServiceStub objectsRegistryServiceStub = new ObjectsRegistryServiceStub();
+  private void setMocks() {
+    kafkaSwitchboardServiceMock = Mockito.mock(KafkaProducerService.class);
+    kafkaOwncloudServiceMock = Mockito.mock(KafkaProducerService.class);
+  }
 
-    private KafkaProducerService kafkaSwitchboardServiceMock;
-    private KafkaProducerService kafkaOwncloudServiceMock;
+  public Response deploy(String expectedService, DeploymentRequestDto deploymentRequestDto) {
+    return target(String.format("exec/%s", expectedService))
+      .request()
+      .post(Entity.json(deploymentRequestDto));
+  }
 
-    @Override
-    protected Application configure() {
-        setMocks();
+  public KafkaProducerService getKafkaSwitchboardServiceMock() {
+    return kafkaSwitchboardServiceMock;
+  }
 
-        if (resourceConfig != null) {
-            return resourceConfig;
-        }
-
-        resourceConfig = new ResourceConfig(
-                SwitchboardDIBinder.getControllerClasses()
-        );
-
-        var diBinder = new SwitchboardDIBinder(
-                objectsRegistryServiceStub,
-                servicesRegistryService,
-                new DeploymentServiceImpl(
-                        mockHostName,
-                        requestRepository,
-                        pollService
-                ),
-                kafkaSwitchboardServiceMock,
-                kafkaOwncloudServiceMock,
-                new TagRegistry(
-                        mockHostName,
-                        mockRegistryKey,
-                        getMapper()
-                ),
-                new ObjectTagRegistry(
-                        mockHostName,
-                        mockRegistryKey
-                )
-        );
-        resourceConfig.register(diBinder);
-        return resourceConfig;
-    }
-
-    private void setMocks() {
-        kafkaSwitchboardServiceMock = Mockito.mock(KafkaProducerService.class);
-        kafkaOwncloudServiceMock = Mockito.mock(KafkaProducerService.class);
-    }
-
-    public Response deploy(String expectedService, DeploymentRequestDto deploymentRequestDto) {
-        return target(String.format("exec/%s", expectedService))
-                .request()
-                .post(Entity.json(deploymentRequestDto));
-    }
-
-    public static OwncloudFileService getOwncloudFileService() {
-        return nextcloudFileService;
-    }
-
-    public static RequestRepository getRequestRepository() {
-        return requestRepository;
-    }
-
-    public static ObjectsRegistryServiceStub getObjectsRegistryServiceStub() {
-        return objectsRegistryServiceStub;
-    }
-
-    public KafkaProducerService getKafkaSwitchboardServiceMock() {
-        return kafkaSwitchboardServiceMock;
-    }
-
-    public KafkaProducerService getKafkaOwncloudServiceMock() {
-        return kafkaOwncloudServiceMock;
-    }
+  public KafkaProducerService getKafkaOwncloudServiceMock() {
+    return kafkaOwncloudServiceMock;
+  }
 
 }

@@ -31,114 +31,112 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
  */
 public class LockService {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+  /**
+   * Lock staged files
+   */
+  private final String locker = Config.USER_TO_LOCK_WITH;
+  /**
+   * Unlocks staged files
+   */
+  private final String unlocker = Config.USER_TO_UNLOCK_WITH;
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    /**
-     * Lock staged files
-     */
-    private final String locker = Config.USER_TO_LOCK_WITH;
-
-    /**
-     * Unlocks staged files
-     */
-    private final String unlocker = Config.USER_TO_UNLOCK_WITH;
-
-    void lock(AbstractPath path) {
-        var file = path.toPath();
-        logger.info(String.format("Locking [%s]", file));
-        try {
-            chown(file, locker);
-            setPosixFilePermissions(file, get444());
-        } catch (IOException e) {
-            logger.error(String.format("Could not lock [%s]", file), e);
-        }
+  void lock(AbstractPath path) {
+    var file = path.toPath();
+    logger.info(String.format("Locking [%s]", file));
+    try {
+      chown(file, locker);
+      setPosixFilePermissions(file, get444());
+    } catch (IOException e) {
+      logger.error(String.format("Could not lock [%s]", file), e);
     }
+  }
 
-    void unlock(AbstractPath abstractPath) {
-        var path = abstractPath.toPath();
-        unlock(path);
+  void unlockFileAndParents(AbstractPath file) {
+    unlock(file);
+    try {
+      logger.info(String.format(
+        "Unlocking parent dirs of [%s]", file.toPath()
+      ));
+      var path = file.toPath();
+      String nextcloudDir = Paths
+        .get(Config.NEXTCLOUD_VOLUME)
+        .getFileName()
+        .toString();
+      unlockParents(path, nextcloudDir);
+    } catch (IOException e) {
+      throw new RuntimeIOException(String.format(
+        "Could not unlock [%s]", file
+      ), e);
     }
+  }
 
-    void unlockFileAndParents(AbstractPath file) {
-        unlock(file);
-        try {
-            logger.info(String.format(
-                    "Unlocking parent dirs of [%s]", file.toPath()
-            ));
-            var path = file.toPath();
-            String nextcloudDir = Paths
-                    .get(Config.NEXTCLOUD_VOLUME)
-                    .getFileName()
-                    .toString();
-            unlockParents(path, nextcloudDir);
-        } catch (IOException e) {
-            throw new RuntimeIOException(String.format(
-                    "Could not unlock [%s]", file
-            ), e);
-        }
+  private void unlockParents(Path path, String stopAt) throws IOException {
+    var parent = path.getParent();
+    chown(parent, unlocker);
+    setPosixFilePermissions(parent, get755());
+    if (!parent.getFileName().toString().equals(stopAt)) {
+      unlockParents(parent, stopAt);
+    } else {
+      logger.info(String.format("Found [%s], stop unlocking", stopAt));
     }
+  }
 
-    private void unlockParents(Path path, String stopAt) throws IOException {
-        var parent = path.getParent();
-        chown(parent, unlocker);
-        setPosixFilePermissions(parent, get755());
-        if (!parent.getFileName().toString().equals(stopAt)) {
-            unlockParents(parent, stopAt);
-        } else {
-            logger.info(String.format("Found [%s], stop unlocking", stopAt));
-        }
+  void unlock(AbstractPath abstractPath) {
+    var path = abstractPath.toPath();
+    unlock(path);
+  }
+
+  private void unlock(Path path) {
+    logger.info(String.format("Unlocking [%s]", path));
+    try {
+      chown(path, unlocker);
+      setPosixFilePermissions(path, get644());
+      var parent = path.getParent();
+      chown(parent, unlocker);
+    } catch (IOException e) {
+      logger.error(String.format("Could not unlock [%s]", path), e);
     }
+  }
 
-    private void unlock(Path path) {
-        logger.info(String.format("Unlocking [%s]", path));
-        try {
-            chown(path, unlocker);
-            setPosixFilePermissions(path, get644());
-            var parent = path.getParent();
-            chown(parent, unlocker);
-        } catch (IOException e) {
-            logger.error(String.format("Could not unlock [%s]", path), e);
-        }
-    }
+  private void chown(Path file, String user) throws IOException {
+    var lookupService = FileSystems
+      .getDefault()
+      .getUserPrincipalLookupService();
+    var fileAttributeView = getFileAttributeView(
+      file, PosixFileAttributeView.class, NOFOLLOW_LINKS
+    );
+    fileAttributeView.setGroup(
+      lookupService.lookupPrincipalByGroupName(user)
+    );
+    fileAttributeView.setOwner(
+      lookupService.lookupPrincipalByName(user)
+    );
+  }
 
-    private void chown(Path file, String user) throws IOException {
-        var lookupService = FileSystems
-                .getDefault()
-                .getUserPrincipalLookupService();
-        var fileAttributeView = getFileAttributeView(
-                file, PosixFileAttributeView.class, NOFOLLOW_LINKS
-        );
-        fileAttributeView.setGroup(
-                lookupService.lookupPrincipalByGroupName(user)
-        );
-        fileAttributeView.setOwner(
-                lookupService.lookupPrincipalByName(user)
-        );
-    }
+  private Set<PosixFilePermission> get644() {
+    var permissions = get444();
+    permissions.add(OWNER_WRITE);
+    return permissions;
+  }
 
-    private Set<PosixFilePermission> get644() {
-        var permissions = get444();
-        permissions.add(OWNER_WRITE);
-        return permissions;
-    }
+  private Set<PosixFilePermission> get755() {
+    var permissions = get444();
+    permissions.add(OWNER_EXECUTE);
+    permissions.add(OTHERS_EXECUTE);
+    permissions.add(GROUP_EXECUTE);
 
-    private Set<PosixFilePermission> get755() {
-        var permissions = get444();
-        permissions.add(OWNER_EXECUTE);
-        permissions.add(OTHERS_EXECUTE);
-        permissions.add(GROUP_EXECUTE);
+    permissions.add(OWNER_WRITE);
 
-        permissions.add(OWNER_WRITE);
+    return permissions;
+  }
 
-        return permissions;
-    }
-
-    private Set<PosixFilePermission> get444() {
-        Set<PosixFilePermission> permissions = new HashSet<>();
-        permissions.add(OWNER_READ);
-        permissions.add(OTHERS_READ);
-        permissions.add(GROUP_READ);
-        return permissions;
-    }
+  private Set<PosixFilePermission> get444() {
+    Set<PosixFilePermission> permissions = new HashSet<>();
+    permissions.add(OWNER_READ);
+    permissions.add(OTHERS_READ);
+    permissions.add(GROUP_READ);
+    return permissions;
+  }
 
 }

@@ -18,74 +18,74 @@ import static org.mockserver.model.HttpRequest.request;
 
 public class DeploymentServiceImplTest extends AbstractControllerTest {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Test
-    public void postDeploymentRequest_shouldRequestsDeployment() throws IOException {
-        var expectedService = "UCTO";
-        var deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
+  @Test
+  public void postDeploymentRequest_shouldRequestsDeployment() throws IOException {
+    var expectedService = "UCTO";
+    var deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
 
-        var deployResponse = deploy(expectedService, deploymentRequestDto);
+    var deployResponse = deploy(expectedService, deploymentRequestDto);
 
-        var json = deployResponse.readEntity(String.class);
-        assertThat(deployResponse.getStatus()).isEqualTo(201);
-        assertThatJson(json).node("status").isEqualTo("DEPLOYED");
-    }
+    var json = deployResponse.readEntity(String.class);
+    assertThat(deployResponse.getStatus()).isEqualTo(201);
+    assertThatJson(json).node("status").isEqualTo("DEPLOYED");
+  }
 
-    @Test
-    public void postDeploymentRequest_shouldNotRequestsDeployment_whenAlreadyRunning() throws IOException {
-        var expectedService = "UCTO";
-        var deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
+  @Test
+  public void postDeploymentRequest_shouldNotRequestsDeployment_whenAlreadyRunning() throws IOException {
+    var expectedService = "UCTO";
+    var deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
 
-        deploy(expectedService, deploymentRequestDto);
+    deploy(expectedService, deploymentRequestDto);
 
-        MockServerUtil.getMockServer().clear(
-                request()
-                        .withMethod("PUT")
-                        .withPath("/deployment-service/a/exec/UCTO/.*")
-        );
-        MockServerUtil.startDeployMockServerWithUcto(403);
+    MockServerUtil.getMockServer().clear(
+      request()
+        .withMethod("PUT")
+        .withPath("/deployment-service/a/exec/UCTO/.*")
+    );
+    MockServerUtil.startDeployMockServerWithUcto(403);
 
-        var secondTimeResponse = deploy(expectedService, deploymentRequestDto);
+    var secondTimeResponse = deploy(expectedService, deploymentRequestDto);
 
-        var json = secondTimeResponse.readEntity(String.class);
-        assertThat(secondTimeResponse.getStatus()).isEqualTo(403);
-        assertThatJson(json).node("status").isEqualTo("ALREADY_RUNNING");
+    var json = secondTimeResponse.readEntity(String.class);
+    assertThat(secondTimeResponse.getStatus()).isEqualTo(403);
+    assertThatJson(json).node("status").isEqualTo("ALREADY_RUNNING");
 
-        setDeployBackTo200();
-    }
+    setDeployBackTo200();
+  }
 
-    @Test
-    public void getDeploymentStatus_whenRunning() throws InterruptedException {
-        var deployResponse = deploy("UCTO", DeployUtil.getDeploymentRequestDto("1", longName));
-        String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
+  @Test
+  public void getDeploymentStatus_whenRunning() throws InterruptedException {
+    var deployResponse = deploy("UCTO", DeployUtil.getDeploymentRequestDto("1", longName));
+    String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        MockServerUtil.startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
+    MockServerUtil.startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
 
-        var request = target(String.format("exec/task/%s", workDir)).request();
-        var json = DeployUtil.waitUntil(request, RUNNING);
-        assertThatJson(json).node("status").isEqualTo("RUNNING");
-    }
+    var request = target(String.format("exec/task/%s", workDir)).request();
+    var json = DeployUtil.waitUntil(request, RUNNING);
+    assertThatJson(json).node("status").isEqualTo("RUNNING");
+  }
 
-    @Test
-    public void getDeploymentStatus_whenNotFound() throws Exception {
-        var deployResponse = deploy("UCTO", DeployUtil.getDeploymentRequestDto("1", longName));
-        String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
+  @Test
+  public void getDeploymentStatus_whenNotFound() throws Exception {
+    var deployResponse = deploy("UCTO", DeployUtil.getDeploymentRequestDto("1", longName));
+    String workDir = JsonPath.parse(deployResponse.readEntity(String.class)).read("$.workDir");
 
-        MockServerUtil.startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}", "UCTO");
+    MockServerUtil.startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}", "UCTO");
 
-        var request = target(String.format("exec/task/%s", workDir)).request();
-        var json = DeployUtil.waitUntil(request, NOT_FOUND);
-        assertThatJson(json).node("status").isEqualTo("NOT_FOUND");
-    }
+    var request = target(String.format("exec/task/%s", workDir)).request();
+    var json = DeployUtil.waitUntil(request, NOT_FOUND);
+    assertThatJson(json).node("status").isEqualTo("NOT_FOUND");
+  }
 
 
-    private void setDeployBackTo200() {
-        MockServerUtil.getMockServer().clear(
-                request()
-                        .withMethod("PUT")
-                        .withPath("/deployment-service/a/exec/UCTO/.*")
-        );
-        MockServerUtil.startDeployMockServerWithUcto(200);
-    }
+  private void setDeployBackTo200() {
+    MockServerUtil.getMockServer().clear(
+      request()
+        .withMethod("PUT")
+        .withPath("/deployment-service/a/exec/UCTO/.*")
+    );
+    MockServerUtil.startDeployMockServerWithUcto(200);
+  }
 }

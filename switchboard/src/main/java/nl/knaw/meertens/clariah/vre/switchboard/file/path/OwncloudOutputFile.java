@@ -10,52 +10,52 @@ import java.nio.file.Paths;
  */
 public class OwncloudOutputFile extends AbstractPath {
 
-    private OwncloudOutputFile(String user, String outputResult, String file) {
-        this.outputResult = outputResult;
-        this.user = user;
-        this.file = file;
-    }
+  private OwncloudOutputFile(String user, String outputResult, String file) {
+    this.outputResult = outputResult;
+    this.user = user;
+    this.file = file;
+  }
 
-    @Override
-    public Path toPath() {
-        return Paths.get(nextcloud, user, files, outputResult, file);
-    }
+  public static OwncloudOutputFile from(OwncloudOutputDir dir, File file) {
+    return new OwncloudOutputFile(
+      dir.getUser(),
+      dir.getOutputResult(),
+      getRelativeFilePath(dir, file)
+    );
+  }
 
-    @Override
-    public String toObjectPath() {
-        return Paths.get(user, files, outputResult, file).toString();
-    }
+  private static String getRelativeFilePath(OwncloudOutputDir dir, File file) {
+    return dir.toPath().relativize(file.toPath()).toString();
+  }
 
-    public static OwncloudOutputFile from(OwncloudOutputDir dir, File file) {
-        return new OwncloudOutputFile(
-                dir.getUser(),
-                dir.getOutputResult(),
-                getRelativeFilePath(dir, file)
-        );
-    }
+  @Override
+  public Path toPath() {
+    return Paths.get(nextcloud, user, files, outputResult, file);
+  }
 
-    public String getOwncloud() {
-        return nextcloud;
-    }
+  @Override
+  public String toObjectPath() {
+    return Paths.get(user, files, outputResult, file).toString();
+  }
 
-    public String getUser() {
-        return user;
-    }
+  public String getOwncloud() {
+    return nextcloud;
+  }
 
-    public String getFiles() {
-        return files;
-    }
+  public String getUser() {
+    return user;
+  }
 
-    public String getOutputResult() {
-        return outputResult;
-    }
+  public String getFiles() {
+    return files;
+  }
 
-    public String getFile() {
-        return file;
-    }
+  public String getOutputResult() {
+    return outputResult;
+  }
 
-    private static String getRelativeFilePath(OwncloudOutputDir dir, File file) {
-        return dir.toPath().relativize(file.toPath()).toString();
-    }
+  public String getFile() {
+    return file;
+  }
 
 }

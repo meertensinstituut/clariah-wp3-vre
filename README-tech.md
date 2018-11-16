@@ -61,6 +61,10 @@ curl -v 'http://localhost:8082/remote.php/webdav/testfile.txt' \
   - Login to server `http://localhost:8082` (credentials, see e.g. `NEXTCLOUD_ADMIN_NAME` and `NEXTCLOUD_ADMIN_PASSWORD` in `.env`)
   - Add file.
 
+## Code style
+
+The [HuygensING checkstyle](https://github.com/HuygensING/checkstyle) configuration files are used.
+
 ## Ports
 
 Run: `docker ps` to see which ports are used

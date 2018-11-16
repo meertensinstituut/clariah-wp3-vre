@@ -12,35 +12,35 @@ import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.Service
 
 public class ObjectService {
 
-    private ObjectsRegistryService objectsRegistryService;
-    private ServicesRegistryService servicesRegistryService;
+  private ObjectsRegistryService objectsRegistryService;
+  private ServicesRegistryService servicesRegistryService;
 
-    public ObjectService(ObjectsRegistryService objectsRegistryService, ServicesRegistryService servicesRegistryService) {
-        this.objectsRegistryService = objectsRegistryService;
-        this.servicesRegistryService = servicesRegistryService;
-    }
+  public ObjectService(ObjectsRegistryService objectsRegistryService, ServicesRegistryService servicesRegistryService) {
+    this.objectsRegistryService = objectsRegistryService;
+    this.servicesRegistryService = servicesRegistryService;
+  }
 
-    /**
-     * Services of kind 'viewer'
-     */
-    public List<ServiceRecord> getViewersFor(long objectId) {
-        var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
-        return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, VIEWER);
-    }
+  /**
+   * Services of kind 'viewer'
+   */
+  public List<ServiceRecord> getViewersFor(long objectId) {
+    var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
+    return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, VIEWER);
+  }
 
-    /**
-     * Services of kind 'editor'
-     */
-    public List<ServiceRecord> getEditorsFor(long objectId) {
-        var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
-        return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, EDITOR);
-    }
+  /**
+   * Services of kind 'editor'
+   */
+  public List<ServiceRecord> getEditorsFor(long objectId) {
+    var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
+    return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, EDITOR);
+  }
 
-    /**
-     * Services of kind 'service' >:)
-     */
-    public List<ServiceRecord> getServiceServicesFor(Long objectId) {
-        var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
-        return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, SERVICE);
-    }
+  /**
+   * Services of kind 'service' >:)
+   */
+  public List<ServiceRecord> getServiceServicesFor(Long objectId) {
+    var mimetype = objectsRegistryService.getObjectById(objectId).mimetype;
+    return servicesRegistryService.getServicesByMimetypeAndKind(mimetype, SERVICE);
+  }
 }

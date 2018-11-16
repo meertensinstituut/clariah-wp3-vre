@@ -20,20 +20,20 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Provider
 public class CommonExceptionMapper extends AbstractController implements ExceptionMapper<Throwable> {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommonExceptionMapper.class);
+  private static final Logger logger = LoggerFactory.getLogger(CommonExceptionMapper.class);
 
-    @Produces({APPLICATION_JSON})
-    @Override
-    public Response toResponse(Throwable e) {
-        logger.error(e.getMessage(), e);
-        if (e instanceof NoReportFileException || e instanceof NotFoundException) {
-            return createResponse(e, 404);
-        }
-        return createResponse(e, 500);
+  @Produces({APPLICATION_JSON})
+  @Override
+  public Response toResponse(Throwable throwable) {
+    logger.error(throwable.getMessage(), throwable);
+    if (throwable instanceof NoReportFileException || throwable instanceof NotFoundException) {
+      return createResponse(throwable, 404);
     }
+    return createResponse(throwable, 500);
+  }
 
-    private Response createResponse(Throwable e, int httpStatus) {
-        var msg = new SwitchboardMsg(e.getMessage());
-        return createResponse(msg, httpStatus);
-    }
+  private Response createResponse(Throwable throwable, int httpStatus) {
+    var msg = new SwitchboardMsg(throwable.getMessage());
+    return createResponse(msg, httpStatus);
+  }
 }

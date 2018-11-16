@@ -4,6 +4,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 
 public class KafkaDeploymentResultDto extends KafkaDeploymentDto {
 
-    public DeploymentStatus status;
+  public DeploymentStatus status;
 
 }

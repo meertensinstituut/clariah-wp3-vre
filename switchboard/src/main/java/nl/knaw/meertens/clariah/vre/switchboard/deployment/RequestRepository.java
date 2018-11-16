@@ -24,125 +24,125 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 
 public class RequestRepository {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final String deploymentRoot;
-    private final String statusFileName;
-    private final ObjectMapper mapper;
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final String deploymentRoot;
+  private final String statusFileName;
+  private final ObjectMapper mapper;
 
-    private final Map<String, DeploymentStatusReport> reports = new HashMap<>();
-    private final Map<String, PollDeploymentConsumer<DeploymentStatusReport>> consumers = new HashMap<>();
-    private final Map<String, LocalDateTime> finished = new HashMap<>();
+  private final Map<String, DeploymentStatusReport> reports = new HashMap<>();
+  private final Map<String, PollDeploymentConsumer<DeploymentStatusReport>> consumers = new HashMap<>();
+  private final Map<String, LocalDateTime> finished = new HashMap<>();
 
-    public RequestRepository(
-            String deploymentRoot,
-            String statusFileName,
-            ObjectMapper mapper
-    ) {
-        this.deploymentRoot = deploymentRoot;
-        this.statusFileName = statusFileName;
-        this.mapper = mapper;
+  public RequestRepository(
+    String deploymentRoot,
+    String statusFileName,
+    ObjectMapper mapper
+  ) {
+    this.deploymentRoot = deploymentRoot;
+    this.statusFileName = statusFileName;
+    this.mapper = mapper;
+  }
+
+  public PollDeploymentConsumer<DeploymentStatusReport> getConsumer(String workDir) {
+    return consumers.get(workDir);
+  }
+
+  public DeploymentStatusReport getStatusReport(String workDir) {
+    var request = reports.get(workDir);
+    if (!isNull(request)) {
+      return request;
     }
+    logger.info(String.format("Report of [%s] not available in memory: checking work dir", workDir));
+    return findReportInWorkDir(workDir);
+  }
 
-    public PollDeploymentConsumer<DeploymentStatusReport> getConsumer(String workDir) {
-        return consumers.get(workDir);
-    }
+  public void saveDeploymentRequest(
+    DeploymentStatusReport report,
+    PollDeploymentConsumer<DeploymentStatusReport> reportConsumer
+  ) {
+    saveStatusReport(report);
+    consumers.put(report.getWorkDir(), reportConsumer);
+    logger.info(String.format(
+      "Persisted deployment request of workDir [%s]",
+      report.getWorkDir()
+    ));
+  }
 
-    public DeploymentStatusReport getStatusReport(String workDir) {
-        var request = reports.get(workDir);
-        if (!isNull(request)) {
-            return request;
-        }
-        logger.info(String.format("Report of [%s] not available in memory: checking work dir", workDir));
-        return findReportInWorkDir(workDir);
-    }
+  public List<DeploymentStatusReport> getAllStatusReports() {
+    return new ArrayList<>(reports.values());
+  }
 
-    public void saveDeploymentRequest(
-            DeploymentStatusReport report,
-            PollDeploymentConsumer<DeploymentStatusReport> reportConsumer
-    ) {
-        saveStatusReport(report);
-        consumers.put(report.getWorkDir(), reportConsumer);
-        logger.info(String.format(
-                "Persisted deployment request of workDir [%s]",
-                report.getWorkDir()
-        ));
+  /**
+   * Status reports are saved in a hashmap and
+   * in a json file in workDir.
+   *
+   * <p>A report is removed from the hashmap when it has
+   * finished longer than DEPLOYMENT_MEMORY_SPAN-seconds ago.
+   *
+   * <p>When the status of a deployment is requested,
+   * it is added to the hashmap again
+   */
+  public void saveStatusReport(DeploymentStatusReport report) {
+    var workDir = report.getWorkDir();
+    reports.put(workDir, report);
+    saveToFile(report);
+    if (report.getStatus() == FINISHED) {
+      handleFinishedRequest(workDir);
     }
+  }
 
-    public List<DeploymentStatusReport> getAllStatusReports() {
-        return new ArrayList<>(reports.values());
+  private DeploymentStatusReport findReportInWorkDir(String workDir) {
+    var statusFile = getStatusFilePath(workDir).toFile();
+    var statusJson = "";
+    if (!statusFile.exists()) {
+      throw new NoReportFileException(String.format("Status of [%s] could not be found", workDir));
     }
+    try {
+      statusJson = FileUtils.readFileToString(statusFile, UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeIOException(String.format("Could not read [%s]", statusFile.toString()), e);
+    }
+    try {
+      return mapper.readValue(statusJson, DeploymentStatusReport.class);
+    } catch (IOException e) {
+      throw new RuntimeIOException(String.format("Could not parse [%s] to DeploymentStatusReport", statusJson), e);
+    }
+  }
 
-    /**
-     * Status reports are saved in a hashmap and
-     * in a json file in workDir.
-     * <p>
-     * A report is removed from the hashmap when it has
-     * finished longer than DEPLOYMENT_MEMORY_SPAN-seconds ago.
-     * <p>
-     * When the status of a deployment is requested,
-     * it is added to the hashmap again
-     */
-    public void saveStatusReport(DeploymentStatusReport report) {
-        var workDir = report.getWorkDir();
-        reports.put(workDir, report);
-        saveToFile(report);
-        if (report.getStatus() == FINISHED) {
-            handleFinishedRequest(workDir);
-        }
+  private void handleFinishedRequest(String workDir) {
+    if (!finished.containsKey(workDir)) {
+      finished.put(workDir, now());
+    } else if (now().isAfter(finished.get(workDir).plusSeconds(DEPLOYMENT_MEMORY_SPAN))) {
+      reports.remove(workDir);
+      consumers.remove(workDir);
+      finished.remove(workDir);
     }
+  }
 
-    private DeploymentStatusReport findReportInWorkDir(String workDir) {
-        var statusFile = getStatusFilePath(workDir).toFile();
-        var statusJson = "";
-        if (!statusFile.exists()) {
-            throw new NoReportFileException(String.format("Status of [%s] could not be found", workDir));
-        }
-        try {
-            statusJson = FileUtils.readFileToString(statusFile, UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeIOException(String.format("Could not read [%s]", statusFile.toString()), e);
-        }
-        try {
-            return mapper.readValue(statusJson, DeploymentStatusReport.class);
-        } catch (IOException e) {
-            throw new RuntimeIOException(String.format("Could not parse [%s] to DeploymentStatusReport", statusJson), e);
-        }
+  private void saveToFile(DeploymentStatusReport report) {
+    var file = getStatusFilePath(report.getWorkDir());
+    try {
+      var json = mapper
+        .writerWithDefaultPrettyPrinter()
+        .writeValueAsString(report);
+      FileUtils.write(file.toFile(), json, UTF_8);
+    } catch (IOException e) {
+      throw new RuntimeIOException(String.format("Could create status report file [%s]", file.toString()), e);
     }
+  }
 
-    private void handleFinishedRequest(String workDir) {
-        if (!finished.containsKey(workDir)) {
-            finished.put(workDir, now());
-        } else if (now().isAfter(finished.get(workDir).plusSeconds(DEPLOYMENT_MEMORY_SPAN))) {
-            reports.remove(workDir);
-            consumers.remove(workDir);
-            finished.remove(workDir);
-        }
-    }
+  private Path getStatusFilePath(String workDir) {
+    return Paths.get(
+      deploymentRoot,
+      workDir,
+      statusFileName
+    );
+  }
 
-    private void saveToFile(DeploymentStatusReport report) {
-        var file = getStatusFilePath(report.getWorkDir());
-        try {
-            var json = mapper
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(report);
-            FileUtils.write(file.toFile(), json, UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeIOException(String.format("Could create status report file [%s]", file.toString()), e);
-        }
-    }
-
-    private Path getStatusFilePath(String workDir) {
-        return Paths.get(
-                deploymentRoot,
-                workDir,
-                statusFileName
-        );
-    }
-
-    public void clearAll() {
-        this.reports.clear();
-        this.consumers.clear();
-        this.finished.clear();
-    }
+  public void clearAll() {
+    this.reports.clear();
+    this.consumers.clear();
+    this.finished.clear();
+  }
 
 }

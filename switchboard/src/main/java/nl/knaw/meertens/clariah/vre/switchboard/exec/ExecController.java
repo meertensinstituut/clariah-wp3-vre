@@ -20,46 +20,46 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Path("/exec")
 public class ExecController extends AbstractController {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Inject
-    ExecService execService;
+  @Inject
+  ExecService execService;
 
-    @Inject
-    ObjectMapper mapper;
+  @Inject
+  ObjectMapper mapper;
 
-    @GET
-    @Produces(APPLICATION_JSON)
-    public Response getHelp() {
-        var msg = new SwitchboardMsg("See readme for info on how to use exec api");
-        return createResponse(msg);
-    }
+  @GET
+  @Produces(APPLICATION_JSON)
+  public Response getHelp() {
+    var msg = new SwitchboardMsg("See readme for info on how to use exec api");
+    return createResponse(msg);
+  }
 
-    @POST
-    @Path("/{service}")
-    @Consumes(APPLICATION_JSON)
-    @Produces(APPLICATION_JSON)
-    public Response postDeploymentRequest(
-            @PathParam("service") String service,
-            String body
-    ) {
-        logger.info(String.format("Received request of service [%s] with body [%s]", service, body));
-        var request = execService.deploy(service, body);
-        var msg = new SwitchboardMsg(String.format(
-                "Deployment of service [%s] has been requested.", request.getService()
-        ));
-        msg.workDir = request.getWorkDir();
-        msg.status = request.getStatusReport().getStatus();
-        return createResponse(msg, msg.status.getHttpStatus());
-    }
+  @POST
+  @Path("/{service}")
+  @Consumes(APPLICATION_JSON)
+  @Produces(APPLICATION_JSON)
+  public Response postDeploymentRequest(
+    @PathParam("service") String service,
+    String body
+  ) {
+    logger.info(String.format("Received request of service [%s] with body [%s]", service, body));
+    var request = execService.deploy(service, body);
+    var msg = new SwitchboardMsg(String.format(
+      "Deployment of service [%s] has been requested.", request.getService()
+    ));
+    msg.workDir = request.getWorkDir();
+    msg.status = request.getStatusReport().getStatus();
+    return createResponse(msg, msg.status.getHttpStatus());
+  }
 
-    @GET
-    @Path("/task/{workDir}")
-    @Consumes(APPLICATION_JSON)
-    @Produces(APPLICATION_JSON)
-    public Response getDeploymentStatus(@PathParam("workDir") String workDir) {
-        logger.info(String.format("Status request of [%s]", workDir));
-        var report = execService.getStatus(workDir);
-        return createResponse(report, report.getStatus().getHttpStatus());
-    }
+  @GET
+  @Path("/task/{workDir}")
+  @Consumes(APPLICATION_JSON)
+  @Produces(APPLICATION_JSON)
+  public Response getDeploymentStatus(@PathParam("workDir") String workDir) {
+    logger.info(String.format("Status request of [%s]", workDir));
+    var report = execService.getStatus(workDir);
+    return createResponse(report, report.getStatus().getHttpStatus());
+  }
 }

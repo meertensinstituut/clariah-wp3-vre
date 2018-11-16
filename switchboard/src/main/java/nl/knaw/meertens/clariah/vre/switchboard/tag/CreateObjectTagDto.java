@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CreateObjectTagDto {
-    public List<NameValueDto> params = new ArrayList<NameValueDto>();
+  public List<NameValueDto> params = new ArrayList<NameValueDto>();
 
-    public CreateObjectTagDto(String _owner, Long _tag, Long _object) {
-        params.add(new NameValueDto("_tag", _tag));
-        params.add(new NameValueDto("_object", _object));
-        params.add(new NameValueDto("_owner", _owner));
-    }
+  public CreateObjectTagDto(String owner, Long tag, Long object) {
+    params.add(new NameValueDto("_tag", tag));
+    params.add(new NameValueDto("_object", object));
+    params.add(new NameValueDto("_owner", owner));
+  }
 }

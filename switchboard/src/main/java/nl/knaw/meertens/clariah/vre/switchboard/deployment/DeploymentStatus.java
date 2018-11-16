@@ -8,67 +8,67 @@ import java.util.Arrays;
  */
 public enum DeploymentStatus {
 
-    /**
-     * 201 Created
-     * Status is DEPLOYED during deployment request, RUNNING afterwards
-     */
-    DEPLOYED(201),
+  /**
+   * 201 Created
+   * Status is DEPLOYED during deployment request, RUNNING afterwards
+   */
+  DEPLOYED(201),
 
-    /**
-     * 202 Accepted
-     */
-    RUNNING(202),
+  /**
+   * 202 Accepted
+   */
+  RUNNING(202),
 
-    /**
-     * 200 OK
-     */
-    FINISHED(200),
+  /**
+   * 200 OK
+   */
+  FINISHED(200),
 
-    /**
-     * 404 Not Found
-     */
-    NOT_FOUND(404),
+  /**
+   * 404 Not Found
+   */
+  NOT_FOUND(404),
 
-    /**
-     * Not implemented
-     */
-    STOPPED(0),
+  /**
+   * Not implemented
+   */
+  STOPPED(0),
 
-    /**
-     * 403 Forbidden
-     * Status is ALREADY_RUNNING when requesting existing deployment
-     */
-    ALREADY_RUNNING(403);
+  /**
+   * 403 Forbidden
+   * Status is ALREADY_RUNNING when requesting existing deployment
+   */
+  ALREADY_RUNNING(403);
 
-    private final int httpStatus;
+  private final int httpStatus;
 
-    DeploymentStatus(int httpStatus) {
-        this.httpStatus = httpStatus;
+  DeploymentStatus(int httpStatus) {
+    this.httpStatus = httpStatus;
+  }
+
+  /**
+   * Get deployment status corresponding to http status code
+   */
+  public static DeploymentStatus getDeployStatus(int httpStatus) {
+    for (var deploymentStatus : values()) {
+      if (deploymentStatus.httpStatus == httpStatus) {
+        return deploymentStatus;
+      }
     }
+    throw new IllegalArgumentException(String.format(
+      "Response of requested deployment is unexpected: was [%s] but should be in [%s]",
+      httpStatus, Arrays.toString(getAllDeployStatuses())
+    ));
+  }
 
-    public int getHttpStatus() {
-        return httpStatus;
-    }
+  private static DeploymentStatus[] getAllDeployStatuses() {
+    return (DeploymentStatus[]) Arrays
+      .stream(values())
+      .toArray();
+  }
 
-    /**
-     * Get deployment status corresponding to http status code
-     */
-    public static DeploymentStatus getDeployStatus(int httpStatus) {
-        for (var deploymentStatus : values()) {
-            if (deploymentStatus.httpStatus == httpStatus) {
-                return deploymentStatus;
-            }
-        }
-        throw new IllegalArgumentException(String.format(
-                "Response of requested deployment is unexpected: was [%s] but should be in [%s]",
-                httpStatus, Arrays.toString(getAllDeployStatuses())
-        ));
-    }
-
-    private static DeploymentStatus[] getAllDeployStatuses() {
-        return (DeploymentStatus[]) Arrays
-                .stream(values())
-                .toArray();
-    }
+  public int getHttpStatus() {
+    return httpStatus;
+  }
 
 }

@@ -11,57 +11,56 @@ import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 
 public class DeploymentRequest {
 
-    /**
-     * Map<Object ID, File path relative to data directory>
-     */
-    private HashMap<Long, String> files;
+  @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+  private final LocalDateTime dateTime;
+  private final String service;
+  private final String workDir;
+  private final List<Param> params;
+  /**
+   * Files used in deployment request
+   * Key: object id
+   * Value: dile path relative to data directory> files
+   */
+  private HashMap<Long, String> files;
+  private DeploymentStatusReport statusReport;
 
-    private DeploymentStatusReport statusReport;
+  public DeploymentRequest(String service, String workDir, LocalDateTime dateTime, List<Param> params) {
+    this.service = service;
+    this.workDir = workDir;
+    this.dateTime = dateTime;
+    this.params = params;
+    this.files = new HashMap<>();
+  }
 
-    @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-    private final LocalDateTime dateTime;
+  public DeploymentStatusReport getStatusReport() {
+    return statusReport;
+  }
 
-    private final String service;
-    private final String workDir;
-    private final List<Param> params;
+  public void setStatusReport(DeploymentStatusReport statusReport) {
+    this.statusReport = statusReport;
+  }
 
-    public DeploymentRequest(String service, String workDir, LocalDateTime dateTime, List<Param> params) {
-        this.service = service;
-        this.workDir = workDir;
-        this.dateTime = dateTime;
-        this.params = params;
-        this.files = new HashMap<>();
-    }
+  public LocalDateTime getDateTime() {
+    return dateTime;
+  }
 
-    public DeploymentStatusReport getStatusReport() {
-        return statusReport;
-    }
+  public List<Param> getParams() {
+    return params;
+  }
 
-    public LocalDateTime getDateTime() {
-        return dateTime;
-    }
+  public HashMap<Long, String> getFiles() {
+    return files;
+  }
 
-    public List<Param> getParams() {
-        return params;
-    }
+  public void setFiles(HashMap<Long, String> files) {
+    this.files = files;
+  }
 
-    public HashMap<Long, String> getFiles() {
-        return files;
-    }
+  public String getService() {
+    return service;
+  }
 
-    public void setFiles(HashMap<Long, String> files) {
-        this.files = files;
-    }
-
-    public String getService() {
-        return service;
-    }
-
-    public String getWorkDir() {
-        return workDir;
-    }
-
-    public void setStatusReport(DeploymentStatusReport statusReport) {
-        this.statusReport = statusReport;
-    }
+  public String getWorkDir() {
+    return workDir;
+  }
 }

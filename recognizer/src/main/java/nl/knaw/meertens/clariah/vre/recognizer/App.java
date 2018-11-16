@@ -5,17 +5,17 @@ import org.slf4j.LoggerFactory;
 
 public class App {
 
-    private static final Logger logger = LoggerFactory.getLogger(App.class);
+  private static final Logger logger = LoggerFactory.getLogger(App.class);
 
-    private static final RecognizerService recognizerService = new RecognizerService();
+  private static final RecognizerService recognizerService = new RecognizerService();
 
-    public static void main(String[] args) {
-        startConsuming();
-    }
+  public static void main(String[] args) {
+    startConsuming();
+  }
 
-    private static void startConsuming() {
-        logger.info("Start consuming nextcloud topic...");
-        recognizerService.consumeOwncloud();
-    }
+  private static void startConsuming() {
+    logger.info("Start consuming nextcloud topic...");
+    recognizerService.consumeOwncloud();
+  }
 
 }

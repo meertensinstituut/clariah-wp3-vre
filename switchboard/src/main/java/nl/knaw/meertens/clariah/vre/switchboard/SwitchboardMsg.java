@@ -4,14 +4,14 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 
 public class SwitchboardMsg {
 
-    public String msg;
+  public String msg;
 
-    public String workDir;
+  public String workDir;
 
-    public DeploymentStatus status;
+  public DeploymentStatus status;
 
-    public SwitchboardMsg(String msg) {
-        this.msg = msg;
-    }
+  public SwitchboardMsg(String msg) {
+    this.msg = msg;
+  }
 
 }

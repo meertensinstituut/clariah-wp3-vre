@@ -14,40 +14,40 @@ import static java.util.Objects.isNull;
 
 public class KafkaProducerService {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final String topic;
+  private final String topic;
 
-    private RecognizerKafkaProducer producer;
-    private ObjectMapper mapper;
+  private RecognizerKafkaProducer producer;
+  private ObjectMapper mapper;
 
-    public KafkaProducerService(RecognizerKafkaProducer recognizerKafkaProducer, String topic) {
-        this.topic = topic;
-        producer = recognizerKafkaProducer;
+  public KafkaProducerService(RecognizerKafkaProducer recognizerKafkaProducer, String topic) {
+    this.topic = topic;
+    producer = recognizerKafkaProducer;
 
-        mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    mapper = new ObjectMapper();
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+  }
+
+  public void produceToRecognizerTopic(Report report) throws IOException {
+    RecognizerKafkaDto kafkaMsg = createKafkaMsg(report);
+    producer.getKafkaProducer().send(new ProducerRecord<>(topic, "key", mapper.writeValueAsString(kafkaMsg)));
+    logger.info("Message sent successfully");
+  }
+
+  private RecognizerKafkaDto createKafkaMsg(Report report) {
+    RecognizerKafkaDto result = new RecognizerKafkaDto();
+    result.objectId = report.getObjectId();
+    result.path = report.getPath();
+    result.action = report.getAction();
+    result.oldPath = report.getOldPath();
+    if (!isNull(report.getXml())) {
+      result.fitsFullResult = report.getXml();
+      Identity identity = report.getFits().getIdentification().getIdentity().get(0);
+      result.fitsFormat = identity.getFormat();
+      result.fitsMimetype = identity.getMimetype();
     }
-
-    public void produceToRecognizerTopic(Report report) throws IOException {
-        RecognizerKafkaDTO kafkaMsg = createKafkaMsg(report);
-        producer.getKafkaProducer().send(new ProducerRecord<>(topic, "key", mapper.writeValueAsString(kafkaMsg)));
-        logger.info("Message sent successfully");
-    }
-
-    private RecognizerKafkaDTO createKafkaMsg(Report report) {
-        RecognizerKafkaDTO result = new RecognizerKafkaDTO();
-        result.objectId = report.getObjectId();
-        result.path = report.getPath();
-        result.action = report.getAction();
-        result.oldPath = report.getOldPath();
-        if(!isNull(report.getXml())) {
-            result.fitsFullResult = report.getXml();
-            Identity identity = report.getFits().getIdentification().getIdentity().get(0);
-            result.fitsFormat = identity.getFormat();
-            result.fitsMimetype = identity.getMimetype();
-        }
-        return result;
-    }
+    return result;
+  }
 
 }

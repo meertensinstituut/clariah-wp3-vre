@@ -7,19 +7,19 @@ services:
     working_dir: /usr/local/recognizer
     command: ./docker-run-recognizer.sh
     expose:
-      - 80
+    - 80
     volumes:
-      - ./:/usr/local/recognizer
-      # share maven repository of host:
-      - ${HOME}/.m2/repository:/root/.m2/repository
+    - ./:/usr/local/recognizer
+    # share maven repository of host:
+    - ${HOME}/.m2/repository:/root/.m2/repository
     depends_on:
-      - fits
-      - kafka
+    - fits
+    - kafka
     extra_hosts:
-     - moby:127.0.0.1
+    - moby:127.0.0.1
     links:
-      - fits:fits
-      - kafka:kafka
+    - fits:fits
+    - kafka:kafka
     environment:
       KAFKA_BROKER: localhost
       FITS_FILES_ROOT: ${FITS_FILES_ROOT}
@@ -32,22 +32,22 @@ services:
   fits:
     build: ./fits
     volumes:
-      - /tmp/recognizer:/tmp/recognizer
+    - /tmp/recognizer:/tmp/recognizer
     extra_hosts:
-      - moby:127.0.0.1
+    - moby:127.0.0.1
 
   kafka:
     image: wurstmeister/kafka:1.0.0
     depends_on:
-      - zookeeper
+    - zookeeper
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 1200000
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 1200000
     extra_hosts:
-     - moby:127.0.0.1
+    - moby:127.0.0.1
     ports:
-      - ${KAFKA_PORT}
+    - ${KAFKA_PORT}
 
   zookeeper:
     image: zookeeper:3.4

@@ -18,59 +18,59 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.OBJECTS_DB_URL;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SERVICES_DB_KEY;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SERVICES_DB_URL;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.SWITCHBOARD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getMapper;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getPollService;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDIBinder.getRequestRepository;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getPollService;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getRequestRepository;
 
 @ApplicationPath("resources")
 public class App extends ResourceConfig {
 
-    public static void main(String[] args) {
-    }
+  public App() {
+    super(SwitchboardDiBinder.getControllerClasses());
+    configureAppContext();
+  }
 
-    public App() {
-        super(SwitchboardDIBinder.getControllerClasses());
-        configureAppContext();
-    }
+  public static void main(String[] args) {
+  }
 
-    private void configureAppContext() {
-        SwitchboardDIBinder diBinder = new SwitchboardDIBinder(
-                new ObjectsRegistryServiceImpl(
-                        OBJECTS_DB_URL,
-                        OBJECTS_DB_KEY,
-                        getMapper()
-                ),
-                new ServicesRegistryServiceImpl(
-                        SERVICES_DB_URL,
-                        SERVICES_DB_KEY,
-                        getMapper()
-                ),
-                new DeploymentServiceImpl(
-                        DEPLOYMENT_HOST_NAME,
-                        getRequestRepository(),
-                        getPollService()
-                ),
-                new KafkaProducerServiceImpl(
-                        SWITCHBOARD_TOPIC_NAME,
-                        KAFKA_HOST_NAME,
-                        getMapper()
-                ),
-                new KafkaProducerServiceImpl(
-                        NEXTCLOUD_TOPIC_NAME,
-                        KAFKA_HOST_NAME,
-                        getMapper()
-                ),
-                new TagRegistry(
-                        OBJECTS_DB_URL,
-                        OBJECTS_DB_KEY,
-                        getMapper()
-                ),
-                new ObjectTagRegistry(
-                        OBJECTS_DB_URL,
-                        OBJECTS_DB_KEY
-                )
-        );
-        register(diBinder);
-    }
+  private void configureAppContext() {
+    SwitchboardDiBinder diBinder = new SwitchboardDiBinder(
+      new ObjectsRegistryServiceImpl(
+        OBJECTS_DB_URL,
+        OBJECTS_DB_KEY,
+        getMapper()
+      ),
+      new ServicesRegistryServiceImpl(
+        SERVICES_DB_URL,
+        SERVICES_DB_KEY,
+        getMapper()
+      ),
+      new DeploymentServiceImpl(
+        DEPLOYMENT_HOST_NAME,
+        getRequestRepository(),
+        getPollService()
+      ),
+      new KafkaProducerServiceImpl(
+        SWITCHBOARD_TOPIC_NAME,
+        KAFKA_HOST_NAME,
+        getMapper()
+      ),
+      new KafkaProducerServiceImpl(
+        NEXTCLOUD_TOPIC_NAME,
+        KAFKA_HOST_NAME,
+        getMapper()
+      ),
+      new TagRegistry(
+        OBJECTS_DB_URL,
+        OBJECTS_DB_KEY,
+        getMapper()
+      ),
+      new ObjectTagRegistry(
+        OBJECTS_DB_URL,
+        OBJECTS_DB_KEY
+      )
+    );
+    register(diBinder);
+  }
 
 }

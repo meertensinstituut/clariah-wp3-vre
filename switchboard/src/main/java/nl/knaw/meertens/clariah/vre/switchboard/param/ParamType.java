@@ -7,39 +7,39 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public enum ParamType {
 
-    FILE("file"),
+  FILE("file"),
 
-    DATE_TIME("date_time"),
+  DATE_TIME("date_time"),
 
-    INTEGER("integer"),
+  INTEGER("integer"),
 
-    FLOAT("float"),
+  FLOAT("float"),
 
-    BOOLEAN("boolean"),
+  BOOLEAN("boolean"),
 
-    STRING("string"),
+  STRING("string"),
 
-    /**
-     * When type is enumeration, a param should have values:
-     */
-    ENUMERATION("enumeration");
+  /**
+   * When type is enumeration, a param should have values:
+   */
+  ENUMERATION("enumeration");
 
-    private final String key;
+  private final String key;
 
-    ParamType(String key) {
-        this.key = key;
+  ParamType(String key) {
+    this.key = key;
+  }
+
+  @JsonCreator
+  public static ParamType fromString(String key) {
+    if (isBlank(key)) {
+      throw new IllegalArgumentException("Cannot determine ParamType when key is blank");
     }
+    return ParamType.valueOf(key.toUpperCase());
+  }
 
-    @JsonCreator
-    public static ParamType fromString(String key) {
-        if (isBlank(key)) {
-            throw new IllegalArgumentException("Cannot determine ParamType when key is blank");
-        }
-        return ParamType.valueOf(key.toUpperCase());
-    }
-
-    @JsonValue
-    public String getKey() {
-        return key;
-    }
+  @JsonValue
+  public String getKey() {
+    return key;
+  }
 }
