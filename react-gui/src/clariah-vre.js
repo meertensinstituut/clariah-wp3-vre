@@ -1,4 +1,5 @@
 import React from 'react';
+import './css/style.css';
 import './css/vre-top-bar.css';
 import './images/logo-clariah-vre.svg';
 const Fragment = React.Fragment;
