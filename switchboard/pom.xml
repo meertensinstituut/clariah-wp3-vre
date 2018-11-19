@@ -220,46 +220,66 @@
       <artifactId>jaxb-api</artifactId>
       <version>${jaxb-api.version}</version>
     </dependency>
-
   </dependencies>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <!-- compile -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>${maven-compiler-plugin.version}</version>
-          <configuration>
-            <source>${java.version}</source>
-            <target>${java.version}</target>
-            <fork>true</fork>
-          </configuration>
-        </plugin>
+    <plugins>
+      <!-- compile -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <fork>true</fork>
+        </configuration>
+      </plugin>
 
-        <!-- test -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${mavens-surefire-plugin.version}</version>
-          <configuration>
-            <!-- java modules: -->
-            <argLine>
-              --add-opens java.base/java.lang=ALL-UNNAMED --illegal-access=permit
-            </argLine>
-            <forkMode>once</forkMode>
-          </configuration>
-          <dependencies>
-            <!-- java modules: -->
-            <dependency>
-              <groupId>javax.xml.bind</groupId>
-              <artifactId>jaxb-api</artifactId>
-              <version>${jaxb-api.version}</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-      </plugins>
-    </pluginManagement>
+      <!-- checkstyle -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>checkstyle-compile</id>
+            <phase>compile</phase>
+            <configuration>
+              <configLocation>checkstyle_config.xml</configLocation>
+              <encoding>UTF-8</encoding>
+              <consoleOutput>true</consoleOutput>
+              <failsOnError>true</failsOnError>
+            </configuration>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- test -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${mavens-surefire-plugin.version}</version>
+        <configuration>
+          <!-- java modules: -->
+          <argLine>
+            --add-opens java.base/java.lang=ALL-UNNAMED --illegal-access=permit
+          </argLine>
+          <forkMode>once</forkMode>
+        </configuration>
+        <dependencies>
+          <!-- java modules: -->
+          <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxb-api.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+    </plugins>
   </build>
 </project>
