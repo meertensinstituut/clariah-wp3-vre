@@ -1,6 +1,6 @@
 package nl.knaw.meertens.clariah.vre.recognizer.fits;
 
-import nl.knaw.meertens.clariah.vre.recognizer.fits.output.Fits;
+import nl.knaw.meertens.clariah.vre.recognizer.generated.fits.output.Fits;
 
 public class FitsResult {
   private String xml;

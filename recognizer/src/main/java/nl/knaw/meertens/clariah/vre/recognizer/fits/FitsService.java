@@ -1,8 +1,8 @@
 package nl.knaw.meertens.clariah.vre.recognizer.fits;
 
-import nl.knaw.meertens.clariah.vre.recognizer.fits.output.Fits;
-import nl.knaw.meertens.clariah.vre.recognizer.fits.output.IdentificationType;
-import nl.knaw.meertens.clariah.vre.recognizer.fits.output.ObjectFactory;
+import nl.knaw.meertens.clariah.vre.recognizer.generated.fits.output.Fits;
+import nl.knaw.meertens.clariah.vre.recognizer.generated.fits.output.IdentificationType;
+import nl.knaw.meertens.clariah.vre.recognizer.generated.fits.output.ObjectFactory;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

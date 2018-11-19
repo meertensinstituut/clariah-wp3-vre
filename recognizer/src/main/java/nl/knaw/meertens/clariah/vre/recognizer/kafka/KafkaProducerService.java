@@ -3,7 +3,7 @@ package nl.knaw.meertens.clariah.vre.recognizer.kafka;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.recognizer.Report;
-import nl.knaw.meertens.clariah.vre.recognizer.fits.output.IdentificationType.Identity;
+import nl.knaw.meertens.clariah.vre.recognizer.generated.fits.output.IdentificationType.Identity;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
