@@ -16,6 +16,7 @@
 
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
     <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
     <mavens-surefire-plugin.version>2.18.1</mavens-surefire-plugin.version>
     <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
@@ -207,6 +208,28 @@
     </pluginManagement>
 
     <plugins>
+      <!-- checkstyle -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${maven-checkstyle-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>checkstyle-compile</id>
+            <phase>compile</phase>
+            <configuration>
+              <configLocation>https://raw.githubusercontent.com/HuygensING/checkstyle/master/checkstyle_config.xml</configLocation>
+              <encoding>UTF-8</encoding>
+              <consoleOutput>true</consoleOutput>
+              <failsOnError>true</failsOnError>
+            </configuration>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- build executable jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
