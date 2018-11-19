@@ -1,0 +1,180 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto:300,300i,700");
+body {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 150%;
+  font-style: normal;
+  color: #3e3e3e; }
+
+h1 {
+  font-size: 1.8rem;
+  line-height: 130%;
+  font-weight: 700; }
+
+h2 {
+  font-size: 1.3rem;
+  line-height: 130%;
+  font-weight: 700; }
+
+h3 {
+  font-size: 1rem;
+  line-height: 130%;
+  font-weight: 700; }
+
+h4 {
+  font-size: 1rem;
+  line-height: 130%;
+  font-weight: 700;
+  display: inline; }
+
+@media (min-width: 600px) {
+  body {
+    line-height: 150%; }
+  h1, h2, h3, h4 {
+    line-height: 150%; } }
+
+h1, h2, h3, h4 {
+  margin-top: 0;
+  margin-bottom: .3em; }
+
+p {
+  margin-top: 0;
+  margin-bottom: 1em; }
+
+strong {
+  font-weight: 700; }
+
+* {
+  box-sizing: border-box; }
+
+a {
+  color: #0087d4; }
+
+.smallGrey, .hc-label, .hc-message {
+  font-size: 0.9rem;
+  color: #999999; }
+
+.hc-label {
+  text-transform: uppercase;
+  font-size: .7rem; }
+
+.light-grey-bg {
+  background-color: #fafafa; }
+
+.hc-message {
+  font-style: italic; }
+
+button {
+  font-size: 0.9rem;
+  padding: .5rem;
+  border-radius: 3px;
+  background-color: #ccddea;
+  border: none;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer; }
+
+.hc-loud {
+  padding: .8rem;
+  font-size: 1rem;
+  background-color: #b4e76b;
+  font-weight: 700; }
+
+.hc-small {
+  padding: .5rem;
+  font-size: .8rem; }
+
+.hc-subtle {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: #0087d4; }
+
+.hc-tooltip {
+  visibility: hidden; }
+
+.hc-tooltip-show:hover .hc-tooltip {
+  visibility: visible; }
+
+.icon img {
+  height: 1em;
+  width: auto;
+  opacity: .2; }
+
+.hc-site {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  align-items: center; }
+
+.siteWrap {
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 1.5rem; }
+
+.textWrap {
+  width: 100%;
+  max-width: 600px;
+  padding: 0 1.5rem;
+  box-sizing: content-box; }
+
+.siteWrap .textWrap {
+  max-width: 600px;
+  box-sizing: border-box;
+  padding: 0; }
+
+.itemSpread {
+  display: flex;
+  justify-content: space-between; }
+
+.mt05 {
+  margin-top: .5rem; }
+
+.mt15 {
+  margin-top: 1.5rem; }
+
+.mt5 {
+  margin-top: 5rem; }
+
+.m1 {
+  margin-bottom: 1rem; }
+
+.m1-5 {
+  margin-bottom: 1.5rem; }
+
+.m3 {
+  margin-bottom: 3rem; }
+
+.m4 {
+  margin-bottom: 5rem; }
+
+.m5 {
+  margin-bottom: 5rem; }
+
+.hc-items-left {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start; }
+
+.hc-items-right {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end; }
+
+.hc-vreTopBar {
+  width: 100%;
+  padding: .75em;
+  background-color: #468dcb;
+  display: flex;
+  justify-content: center;
+  color: #fff; }
+
+.hc-vreTopBar-items {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; }
+
+.claria-logo {
+  width: 200px;
+  height: auto;
+  margin-bottom: -.7em; }
