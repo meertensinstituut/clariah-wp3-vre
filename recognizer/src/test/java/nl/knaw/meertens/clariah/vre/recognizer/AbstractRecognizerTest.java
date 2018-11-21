@@ -76,7 +76,6 @@ public abstract class AbstractRecognizerTest {
     "  </statistics>\n" +
     "</fits>\n";
 
-  @Before
   public void setupAbstract() {
     fitsService = new FitsService("http://someurl/", FITS_FILES_ROOT);
 

@@ -31,6 +31,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
 
   @Before
   public void setup() {
+    setupAbstract();
     objectsRepositoryService = new ObjectsRepositoryService(mockUrl, "", Config.OBJECT_TABLE);
   }
 

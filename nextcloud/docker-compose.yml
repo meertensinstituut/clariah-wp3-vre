@@ -8,8 +8,6 @@ services:
 #    restart: always
     ports:
       - "8082:80"
-    environment:
-      KAFKA_BROKER: localhost
     extra_hosts:
     - moby:127.0.0.1
     depends_on:

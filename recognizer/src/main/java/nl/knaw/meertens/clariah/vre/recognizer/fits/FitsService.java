@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBContextFactory;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
@@ -105,7 +106,10 @@ public class FitsService {
   }
 
   public Fits unmarshalFits(String fitsXmlResult) throws JAXBException {
-    return (Fits) unmarshaller.unmarshal(new StringReader(fitsXmlResult));
+    StringReader reader = new StringReader(fitsXmlResult);
+    System.out.print("unmarshaller:" + unmarshaller);
+    Object unmarshal = unmarshaller.unmarshal(reader);
+    return (Fits) unmarshal;
   }
 
 }

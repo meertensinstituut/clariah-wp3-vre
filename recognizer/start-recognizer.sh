@@ -4,4 +4,4 @@ cp ../.env ./.env
 
 mkdir -p /tmp/recognizer
 echo "test file" > /tmp/recognizer/test.txt
-docker-compose -p vre up
+docker-compose -p vre up -d

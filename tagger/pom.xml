@@ -9,10 +9,9 @@
   <url>http://maven.apache.org</url>
 
   <properties>
-    <main-class>nl.knaw.meertens.clariah.vre.tagger.App</main-class>
-
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>11</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <main-class>nl.knaw.meertens.clariah.vre.tagger.App</main-class>
 
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>

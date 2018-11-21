@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Properties;
 import java.util.function.Consumer;
 
@@ -47,7 +48,7 @@ public class KafkaConsumerService {
     logger.info(String.format("Subscribed to topic [%s]", topic));
     while (true) {
       logger.info(String.format("Polling topic [%s]", topic));
-      ConsumerRecords<String, String> records = consumer.poll(1000);
+      ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
       for (ConsumerRecord<String, String> record : records) {
         consumeRecordWith(record, consumerFunction);
       }

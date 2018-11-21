@@ -52,6 +52,7 @@ rm -rf data/$TEST_USER/files_versions/*
 rm -rf data/$TEST_USER/thumbnails/*
 
 # empty log files:
+> data/nextcloud.log
 > data/vrelog.txt
 > data/files-scan.log
 

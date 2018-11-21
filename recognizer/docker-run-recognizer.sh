@@ -1,5 +1,5 @@
 #!/bin/bash
 
-mvn install && \
+mvn clean install && \
 sleep 20  && \
-java -jar --add-modules java.xml.bind ./target/recognizer-0.1-SNAPSHOT.jar
+java -jar ./target/recognizer-0.1-SNAPSHOT.jar
