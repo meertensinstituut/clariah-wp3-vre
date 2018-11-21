@@ -19,10 +19,10 @@ integration/bin/*
 
 # Java
 **/target/*
-  
+
 # Owncloud
 nextcloud/vendor/*
-  
+
 # Recognizer
 fits-1.2.0.zip
 
@@ -39,6 +39,7 @@ deployment-service/deployment-api/bin/*
 
 # UI
 node_modules/
+react-gui/node_modules/
 
 # Switchboard
 switchboard/.factorypath

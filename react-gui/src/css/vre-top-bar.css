@@ -1,0 +1,17 @@
+.hc-vreTopBar {
+  width: 100%;
+  padding: .75em;
+  background-color: #468dcb;
+  display: flex;
+  justify-content: center;
+  color: #fff; }
+
+.hc-vreTopBar-items {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between; }
+
+.claria-logo {
+  width: 200px;
+  height: auto;
+  margin-bottom: -.7em; }

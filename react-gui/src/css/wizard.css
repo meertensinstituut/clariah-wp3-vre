@@ -1,0 +1,55 @@
+.wizard {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  padding-top: 27.5px; }
+
+.wizard__step {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  width: 100%;
+  max-width: 150px;
+  cursor: pointer; }
+
+.wizard__line {
+  background-color: #f26c50;
+  height: 5px;
+  width: 100%;
+  margin-bottom: -27.5px; }
+
+.wizard__step:first-child .wizard__line {
+  width: 50%;
+  margin-left: 50%; }
+
+.wizard__step:last-child .wizard__line {
+  width: 50%;
+  margin-right: 50%; }
+
+.wizard__step-number-dot {
+  border-radius: 50%;
+  border: 5px solid #f26c50;
+  background: #fff;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #f26c50; }
+
+.wizard__text {
+  width: 100%;
+  text-align: center;
+  font-size: 0.9rem; }
+
+.wizard__step--current .wizard__step-number-dot {
+  color: #3e3e3e;
+  font-weight: 700;
+  border-color: #3e3e3e; }
+
+.wizard__step--done .wizard__step-number-dot {
+  background-color: #f26c50;
+  color: rgba(255, 255, 255, 0.4); }
