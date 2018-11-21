@@ -5,8 +5,6 @@ import {Wizard} from './wizard';
 import {SearchAFile} from './search-a-file';
 import {VreLayout} from './clariah-vre';
 
-
-
 ReactDOM.render(
   <span>
     <StyleGuide>
@@ -37,10 +35,6 @@ ReactDOM.render(
 
 
         </DescribedMock>
-
-
-
-
 
     </StyleGuide>
     <VreLayout>

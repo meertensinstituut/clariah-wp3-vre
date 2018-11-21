@@ -370,7 +370,7 @@ function jsxToString(component, options) {
 
 export class DescribedMock extends React.Component {
     render() {
-        const children = asArray(this.props.children).map(function(child) {
+        const children = asArray(this.props.children).map(function(child, i) {
             if (typeof child === 'string') {
                 const lines = child.split('\n');
                 if (lines[0] === '') {
@@ -384,7 +384,7 @@ export class DescribedMock extends React.Component {
                     .map(x => x.replace(new RegExp('^ {0,' + indentation + '}'), ''))
                     .map(x => x.replace(new RegExp('^#'), '##'))
                     .join('\n');
-                return <div className="markdown-body" dangerouslySetInnerHTML={{ __html: md.render(unIndented) }} />;
+                return <div key={i} className="markdown-body" dangerouslySetInnerHTML={{ __html: md.render(unIndented) }} />;
             } else {
                 return child;
             }

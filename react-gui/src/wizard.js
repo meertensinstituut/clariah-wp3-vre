@@ -20,12 +20,14 @@ import './css/wizard.css';
     render() {
       return (
         <div className="wizard mt5 m5">
-          {this.props.wizardSteps.map((wizardSteps) => <WizardStep
-            stepLink={wizardSteps.stepLink}
-            stepState={wizardSteps.stepState}
-            stepNumber={wizardSteps.stepNumber}
-            stepText={wizardSteps.stepText}
-           />)}
+          {this.props.wizardSteps.map((wizardSteps, i) => {
+            return <WizardStep
+              key={i}
+              stepLink={wizardSteps.stepLink}
+              stepState={wizardSteps.stepState}
+              stepNumber={wizardSteps.stepNumber}
+              stepText={wizardSteps.stepText}
+             />})}
         </div>
       );
     }

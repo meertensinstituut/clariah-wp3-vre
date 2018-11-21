@@ -15,8 +15,8 @@ import './css/search-items.css';
             </div>
 
           </div>
-          <div className="hc-search-items-input m1-5"><input type="text" name="" value="" placeholder="type searchword or tag + <enter>" className="hc-input-big"/>
-            <span>or</span>
+          <div className="hc-search-items-input m1-5"><input type="text" name="" defaultValue="" placeholder="type searchword or tag + <enter>" className="hc-input-big"/>
+            <span> or </span>
             <button>Browse</button>
           </div>
           <div className="hc-search-items-selection" id="hc-search">
@@ -65,7 +65,8 @@ import './css/search-items.css';
               <div className="hc-label"> </div>
             </div>
             <ul className="hc-list">
-                {this.props.searchFileResults.map((searchFileResults) => <SearchResultsListItem
+                {this.props.searchFileResults.map((searchFileResults, i) => <SearchResultsListItem
+                  key={i}
                   fileName={searchFileResults.fileName}
                   filePath={searchFileResults.filePath}
                   fileType={searchFileResults.fileType}
@@ -89,7 +90,15 @@ import './css/search-items.css';
       return (
         <div>
           <SearchFileBox />
-          <SearchResultsList />
+          <SearchResultsList
+            searchFileResults={[{
+                fileName: 'test.txt',
+                filePath: 'foo/bar/',
+                fileType: 'text',
+                fileUser: 'JohnDoe',
+                fileDate: '2018-11-21'
+            }]}
+          />
         </div>
       );
     }

@@ -18,8 +18,8 @@ const Fragment = React.Fragment;
               <div className="hc-vreTopBar-brand"></div>
             </div>
           </div>
-          <div class="hc-site">
-            <div class="siteWrap hc-form">
+          <div className="hc-site">
+            <div className="siteWrap hc-form">
               {this.props.children}
             </div>
           </div>
