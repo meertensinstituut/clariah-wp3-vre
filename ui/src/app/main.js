@@ -6,6 +6,7 @@ import Viewer from "../viewer/viewer";
 import Editor from "../editor/editor";
 import Deploy from "../deploy/deploy";
 import Poll from "../poll/poll";
+import ReactGui from "../react-gui";
 
 class Main extends React.Component {
 
@@ -19,6 +20,7 @@ class Main extends React.Component {
                     <Route exact path='/edit/:objectId/:objectName' component={Editor}/>
                     <Route exact path='/deploy' component={Deploy}/>
                     <Route exact path='/poll/:workDir' component={Poll}/>
+                    <Route exact path='/react-gui/' component={ReactGui}/>
                 </Switch>
             </main>
         );

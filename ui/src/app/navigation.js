@@ -10,7 +10,8 @@ export default class Navigation extends React.Component {
         this.state = {
             links: [
                 {path: '/', name: 'Home'},
-                {path: '/files', name: 'Files'}
+                {path: '/files', name: 'Files'},
+                {path: '/react-gui', name: 'React GUI'}
             ]
         }
     }

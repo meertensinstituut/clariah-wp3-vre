@@ -1,11 +1,18 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {StyleGuide, DescribedMock, Embed} from './component-view';
 import {Wizard} from './wizard';
 import {SearchAFile} from './search-a-file';
 import {VreLayout} from './clariah-vre';
 
-ReactDOM.render(
+export default class ReactGui extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {}
+    }
+
+    render() {
+        return (
   <span>
     <StyleGuide>
       <DescribedMock title="Clariah WP3">
@@ -96,6 +103,7 @@ ReactDOM.render(
                             }
                           ]}/>
     </VreLayout>
-  </span>,
-  document.getElementById('container')
-);
+  </span>
+        );
+    }
+}
