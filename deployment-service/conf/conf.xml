@@ -1,7 +1,7 @@
 <deploymentService>
-    <workingFolder>/tmp/wd</workingFolder>
-    <userConfFile>config.json</userConfFile>
-    <inputDirectory>input</inputDirectory>
-    <outputDirectory>output</outputDirectory>
-    <queueLength>100</queueLength>
+  <workingFolder>/tmp/wd</workingFolder>
+  <userConfFile>config.json</userConfFile>
+  <inputDirectory>input</inputDirectory>
+  <outputDirectory>output</outputDirectory>
+  <queueLength>100</queueLength>
 </deploymentService>

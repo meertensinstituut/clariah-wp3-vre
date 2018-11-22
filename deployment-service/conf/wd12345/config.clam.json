@@ -4,7 +4,7 @@
       "name": "untokinput",
       "type": "file",
       "value": "/test.txt",
-      "params": [ 
+      "params": [
         {
           "language": "nld",
           "author": "blarp"

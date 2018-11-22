@@ -6,18 +6,27 @@
 
 package nl.knaw.meertens.deployment.lib;
 
-import static java.nio.charset.Charset.forName;
-
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XdmItem;
+import net.sf.saxon.s9api.XdmNode;
+import nl.mpi.tla.util.Saxon;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.io.FileUtils;
+import org.jdom2.JDOMException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
+import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,356 +38,367 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.transform.stream.StreamSource;
-
-import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.s9api.XdmItem;
-import net.sf.saxon.s9api.XdmNode;
-import nl.mpi.tla.util.Saxon;
-import org.apache.commons.configuration.ConfigurationException;
-
-import org.apache.commons.io.FileUtils;
-import org.jdom2.JDOMException;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import static java.nio.charset.Charset.forName;
 
 
 /**
  * This is the Folia editor recipe.
  *
  * @author Vic
- *
  */
 public class FoliaEditor implements RecipePlugin {
-   protected int counter = 0;
-    protected Boolean isFinished = false;
-    protected Boolean userConfigRemoteError = false;
+  public URL serviceUrl;
+  protected int counter = 0;
+  protected Boolean isFinished = false;
+  protected Boolean userConfigRemoteError = false;
+  protected String projectName;
 
-    protected String projectName;
-    public URL serviceUrl;
+  public static void writeToHtml(String content, File file) throws IOException {
+    FileUtils.writeStringToFile(new File(file.toString()), content, forName("UTF-8"));
+    System.out.println("### Generated successfully! ###");
+  }
 
-    /**
-     * Initiate the recipe.
-     *
-     * @param projectName
-     * @param service
-     * @throws JDOMException
-     * @throws IOException
-     * @throws SaxonApiException
-     */
-    @Override
-    public void init(String projectName, Service service) throws
-            JDOMException,
-            IOException,
-            SaxonApiException {
-        System.out.print("init Folia Editor plugin");
-        JSONObject json = this.parseSymantics(service.getServiceSymantics());
-        this.projectName = projectName;
-        this.serviceUrl = new URL((String) json.get("serviceLocation"));
-        System.out.print("finish init Folia Editor plugin");
+  // public static String readStringFromURL(URL requestURL) throws IOException {
+  //   try (Scanner scanner = new Scanner(requestURL.openStream(),
+  //     StandardCharsets.UTF_8.toString())) {
+  //     scanner.useDelimiter("\\A");
+  //     return scanner.hasNext() ? scanner.next() : "";
+  //   }
+  // }
 
+  /**
+   * Initiate the recipe.
+   *
+   * @param projectName
+   * Project also known as the folder name
+   * @param service
+   * The record in the service registry
+   * @throws JDOMException
+   * JDOM Exception
+   * @throws IOException
+   * IO Exception
+   * @throws SaxonApiException
+   * Exception
+   */
+  @Override
+  public void init(String projectName, Service service) throws JDOMException, IOException, SaxonApiException {
+    System.out.print("init Folia Editor plugin");
+    JSONObject json = this.parseSymantics(service.getServiceSymantics());
+    this.projectName = projectName;
+    this.serviceUrl = new URL((String) json.get("serviceLocation"));
+    System.out.print("finish init Folia Editor plugin");
+
+  }
+
+  @Override
+  public Boolean finished() {
+    return isFinished;
+  }
+
+  @Override
+  public String execute(String projectName, Logger logger) {
+    logger.info("## Start plugin execution ##");
+
+    JSONObject json = new JSONObject();
+    json.put("key", projectName);
+    json.put("status", 202);
+    JSONObject userConfig = new JSONObject();
+    try {
+      userConfig = this.parseUserConfig(projectName);
+      logger.info("## userConfig:  ##");
+      System.out.println(userConfig.toJSONString());
+
+      logger.info("## Running project ##");
+      this.runProject(projectName);
+
+      // keep polling project
+      logger.info("## Polling the service ##");
+      boolean ready = false;
+      int counter = 0;
+      while (!ready) {
+        logger.info(String.format("polling {%s}", counter));
+        counter++;
+        Thread.sleep(3000);
+
+        // TODO: check if output file exists, if so, ready = true, else false
+        ready = 1 == 1;
+      }
+
+      this.isFinished = true;
+
+    } catch (IOException | InterruptedException | UnirestException ex) {
+      logger.info(String.format("## Execution ERROR: {%s}", ex.getLocalizedMessage()));
+      Logger.getLogger(FoliaEditor.class.getName()).log(Level.SEVERE, null, ex);
+    } catch (ConfigurationException ex) {
+      Logger.getLogger(FoliaEditor.class.getName()).log(Level.SEVERE, null, ex);
     }
 
-    @Override
-    public Boolean finished() {
-        return isFinished;
+    return json.toString();
+  }
+
+  /**
+   * @param key
+   * Project name also knows as working directory
+   * @throws FileNotFoundException
+   * File not found
+   * @throws IOException
+   * IOException
+   * @throws org.json.simple.parser.ParseException
+   * Invalid json
+   * @throws org.apache.commons.configuration.ConfigurationException
+   * Invalid configuration
+   */
+  @Override
+  public JSONObject parseUserConfig(String key) throws ConfigurationException {
+    DeploymentLib dplib = new DeploymentLib();
+
+    String workDir = dplib.getWd();
+    String userConfFile = dplib.getConfFile();
+    JSONParser parser = new JSONParser();
+
+    try {
+      String path = Paths.get(workDir, key, userConfFile).normalize().toString();
+      JSONObject userConfig = (JSONObject) parser.parse(new FileReader(path));
+
+      return userConfig;
+    } catch (Exception ex) {
+      System.out.println(ex.getLocalizedMessage());
+    }
+    JSONObject userConfig = new JSONObject();
+    userConfig.put("parse user config", "failed");
+    return userConfig;
+  }
+
+  public JSONObject runProject(String key) throws IOException, ConfigurationException, UnirestException {
+    final String outputPathConst = "output";
+    final String inputPathConst = "input";
+
+    DeploymentLib dplib = new DeploymentLib();
+
+    String workDir = dplib.getWd();
+    // String userConfFile = dplib.getConfFile();
+    JSONObject userConfig = this.parseUserConfig(key);
+    JSONArray params = (JSONArray) userConfig.get("params");
+
+    JSONObject inputOjbect = (JSONObject) params.get(0);
+    String inputFile = (String) inputOjbect.get("value");
+    String fullInputPath = Paths.get(workDir, projectName, inputPathConst, inputFile).normalize().toString();
+    String inputPath = Paths.get(workDir, projectName, inputPathConst).normalize().toString();
+    System.out.println(String.format("### inputPath: %s ###", inputPath));
+    System.out.println(String.format("### Full Input Path: %s ###", fullInputPath));
+
+
+    JSONObject outputOjbect;
+    String outputFile;
+    if (params.size() > 1) {
+      outputOjbect = (JSONObject) params.get(1);
+      outputFile = (String) outputOjbect.get("value");
+    } else {
+      outputFile = inputFile;
     }
 
-    @Override
-    public String execute(String projectName, Logger logger) {
-        logger.info("## Start plugin execution ##");
+    String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
+    String fullOutputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
+    System.out.println(String.format("### outputPath: %s ###", outputPath));
+    System.out.println(String.format("### Full outputPath: %s ###", fullOutputPath));
 
-        JSONObject json = new JSONObject();
-        json.put("key", projectName);
-        json.put("status", 202);
-        JSONObject userConfig = new JSONObject();
-        try {
-            userConfig = this.parseUserConfig(projectName);
-            logger.info("## userConfig:  ##");
-            System.out.println(userConfig.toJSONString());
-
-            logger.info("## Running project ##");
-            this.runProject(projectName);
-
-            // keep polling project
-            logger.info("## Polling the service ##");
-            boolean ready = false;
-            int i = 0;
-            while (!ready) {
-                logger.info(String.format("polling {%s}", i));
-                i++;
-                Thread.sleep(3000);
-
-                // TODO: check if output file exists, if so, ready = true, else false
-                ready = 1 == 1;
-            }
-
-            this.isFinished = true;
-
-        } catch (IOException | InterruptedException | UnirestException ex) {
-            logger.info(String.format("## Execution ERROR: {%s}", ex.getLocalizedMessage()));
-            Logger.getLogger(FoliaEditor.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
-            Logger.getLogger(FoliaEditor.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ConfigurationException ex) {
-            Logger.getLogger(FoliaEditor.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (JDOMException ex) {
-            Logger.getLogger(FoliaEditor.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return json.toString();
+    File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
+    if (!outputPathAsFile.exists()) {
+      System.out.println(String.format("### Creating folder: %s ###", outputPathAsFile.toString()));
+      outputPathAsFile.mkdirs();
     }
 
-    /**
-     * @param key
-     * @return
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws org.json.simple.parser.ParseException
-     * @throws org.apache.commons.configuration.ConfigurationException
-     */
-    @Override
-    public JSONObject parseUserConfig(String key) throws ConfigurationException {
-        DeploymentLib dplib = new DeploymentLib();
+    JSONObject urlJson = uploadFile(key, fullInputPath);
+    JSONObject json = new JSONObject();
+    File file = new File(fullOutputPath);
+    System.out.println(String.format("### Generating output file: %s ###", fullOutputPath));
+    writeToHtml(String.format(
+      "<iframe src=\"%s\" width=\"100%%\" height=\"800px\">Text to display when iframe is not supported</iframe>",
+      (String) urlJson.get("url")), file);
+    json.put("url", urlJson.get("url"));
+    return json;
 
-        String workDir = dplib.getWd();
-        String userConfFile = dplib.getConfFile();
-        JSONParser parser = new JSONParser();
+  }
 
-        try {
-            String path = Paths.get(workDir, key, userConfFile).normalize().toString();
-            JSONObject userConfig = (JSONObject) parser.parse(new FileReader(path));
+  /**
+   * @param pid
+   * Project ID also known as key, working directory
+   */
+  @Override
+  public JSONObject getStatus(String pid) {
+    // JSONObject status to return
+    JSONObject status = new JSONObject();
+    if (this.isFinished) {
+      status.put("status", 200);
+      status.put("message", "Task finished");
+      status.put("finished", true);
+    } else {
+      status.put("status", 202);
+      status.put("message", "Task running");
+      status.put("finished", false);
+    }
+    return status;
+  }
 
-            return userConfig;
-        } catch (Exception ex) {
-            System.out.println(ex.getLocalizedMessage());
-        }
-        JSONObject userConfig = new JSONObject();
-        userConfig.put("parse user config", "failed");
-        return userConfig;
+  /**
+   * Get output file.
+   *
+   * @param projectName
+   * project name also knows as project ID, working directory and key
+   * @throws MalformedURLException
+   * Wrongly formed URL
+   * @throws IOException
+   * Disk read/write Exception
+   * @throws JDOMException
+   * Invalide JDOM
+   * @throws SaxonApiException
+   * Saxon Exception
+   */
+  public JSONObject getOutputFiles(String projectName) throws MalformedURLException, IOException, SaxonApiException {
+    JSONObject json = new JSONObject();
+
+    URL url = new URL(
+      this.serviceUrl.getProtocol(),
+      this.serviceUrl.getHost(),
+      this.serviceUrl.getPort(),
+      this.serviceUrl.getFile() + "/" + projectName,
+      null
+    );
+
+    String urlString = url.toString();
+
+    Map<String, String> nameSpace = new LinkedHashMap<>();
+    nameSpace.put("xlink", "http://www.w3.org/1999/xlink");
+    XdmNode doc = Saxon.buildDocument(new StreamSource(urlString));
+    for (XdmItem file : Saxon.xpath(doc, "/clam/output/file")) {
+      String href = Saxon.xpath2string(file, "@xlink:href", null, nameSpace);
+      String name = Saxon.xpath2string(file, "name");
+      json.put(name, href);
     }
 
-    public JSONObject runProject(String key) throws IOException, MalformedURLException, MalformedURLException, JDOMException, ParseException, ConfigurationException, UnirestException {
-        final String outputPathConst = "output";
-        final String inputPathConst = "input";
+    return json;
 
-        JSONObject json = new JSONObject();
-        DeploymentLib dplib = new DeploymentLib();
+  }
 
-        String workDir = dplib.getWd();
-//        String userConfFile = dplib.getConfFile();
-        JSONObject userConfig = this.parseUserConfig(key);
-        JSONArray params = (JSONArray) userConfig.get("params");
+  @Override
+  public JSONObject parseSymantics(String symantics) throws JDOMException, SaxonApiException {
+    System.out.println(String.format("### symantics in parseSymantics before parsing: %s ###", symantics));
+    JSONObject json = new JSONObject();
+    JSONObject parametersJson = new JSONObject();
 
-        JSONObject inputOjbect = (JSONObject) params.get(0);
-        String inputFile = (String) inputOjbect.get("value");
-        String fullInputPath = Paths.get(workDir, projectName, inputPathConst, inputFile).normalize().toString();
-        String inputPath = Paths.get(workDir, projectName, inputPathConst).normalize().toString();
-        System.out.println(String.format("### inputPath: %s ###", inputPath));
-        System.out.println(String.format("### Full Input Path: %s ###", fullInputPath));
+    Map<String, String> nameSpace = new LinkedHashMap<>();
+    nameSpace.put("cmd", "http://www.clarin.eu/cmd/1");
+    nameSpace.put("cmdp", "http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1527668176011");
 
-        JSONObject urlJson = uploadFile(key, fullInputPath);
+    StringReader reader = new StringReader(symantics);
+    XdmNode service = Saxon.buildDocument(new StreamSource(reader));
 
-        JSONObject outputOjbect;
-        String outputFile;
-        if (params.size() > 1) {
-            outputOjbect = (JSONObject) params.get(1);
-            outputFile = (String) outputOjbect.get("value");
-        } else {
-            outputFile = inputFile;
-        }
+    String serviceName = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Name", null, nameSpace);
+    String serviceDescription = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Description", null, nameSpace);
+    String serviceLocation = Saxon.xpath2string(
+      service, "//cmdp:ServiceDescriptionLocation/cmdp:Location", null, nameSpace);
 
-        String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
-        String fullOutputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
-        System.out.println(String.format("### outputPath: %s ###", outputPath));
-        System.out.println(String.format("### Full outputPath: %s ###", fullOutputPath));
+    String inputName = Saxon.xpath2string(
+      service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:Name", null, nameSpace);
+    String inputLabel = Saxon.xpath2string(
+      service,
+      "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:Label",
+      null,
+      nameSpace);
+    String inputType = Saxon
+      .xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MIMEType", null,
+        nameSpace);
+    String inputCardinalityMin = Saxon.xpath2string(service,
+      "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MinimumCardinality", null, nameSpace);
+    String inputCardinalityMax = Saxon.xpath2string(service,
+      "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MaximumCardinality", null, nameSpace);
 
-        File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
-        if (!outputPathAsFile.exists()) {
-            System.out.println(String.format("### Creating folder: %s ###", outputPathAsFile.toString()));
-            outputPathAsFile.mkdirs();
-        }
+    String outputName = Saxon.xpath2string(
+      service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:Name", null, nameSpace);
+    String outputType = Saxon.xpath2string(
+      service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MIMEType", null, nameSpace);
+    String outputCardinalityMin = Saxon
+      .xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MinimumCardinality",
+        null, nameSpace);
+    String outputCardinalityMax = Saxon
+      .xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MaximumCardinality",
+        null, nameSpace);
 
-        File file = new File(fullOutputPath);
-        System.out.println(String.format("### Generating output file: %s ###", fullOutputPath));
-        writeToHtml(String.format("<iframe src=\"%s\" width=\"100%%\" height=\"800px\">Text to display when iframe is not supported</iframe>", (String) urlJson.get("url")), file);
-        json.put("url", urlJson.get("url"));
-        return json;
+    json.put("serviceName", serviceName);
+    json.put("serviceDescription", serviceDescription);
+    json.put("serviceLocation", serviceLocation);
 
-    }
+    json.put("inputName", inputName);
+    json.put("inputLabel", inputLabel);
+    json.put("inputType", inputType);
+    json.put("inputCardinalityMin", inputCardinalityMin);
+    json.put("inputCardinalityMax", inputCardinalityMax);
 
-    public static void writeToHtml(String content, File file) throws IOException {
-        FileUtils.writeStringToFile(new File(file.toString()), content, forName("UTF-8"));
-        System.out.println("### Generated successfully! ###");
-    }
+    json.put("outputName", outputName);
+    // json.put("outputLabel", outputLabel);
+    json.put("outputType", outputType);
+    json.put("outputCardinalityMin", outputCardinalityMin);
+    json.put("outputCardinalityMax", outputCardinalityMax);
 
-    /**
-     * @param pid
-     * @return
-     */
-    @Override
-    public JSONObject getStatus(String pid) {
-        // JSONObject status to return
-        JSONObject status = new JSONObject();
-        if (this.isFinished) {
-            status.put("status", 200);
-            status.put("message", "Task finished");
-            status.put("finished", true);
-        } else {
-            status.put("status", 202);
-            status.put("message", "Task running");
-            status.put("finished", false);
-        }
-        return status;
-    }
+    return json;
 
-    public static String readStringFromURL(URL requestURL) throws IOException {
-        try (Scanner scanner = new Scanner(requestURL.openStream(),
-                StandardCharsets.UTF_8.toString())) {
-            scanner.useDelimiter("\\A");
-            return scanner.hasNext() ? scanner.next() : "";
-        }
-    }
+  }
 
-    /**
-     * Get output file.
-     * @param projectName
-     * @return
-     * @throws MalformedURLException
-     * @throws IOException
-     * @throws JDOMException
-     * @throws SaxonApiException
-     */
-    public JSONObject getOutputFiles(String projectName) throws MalformedURLException, IOException, JDOMException, SaxonApiException {
-        JSONObject json = new JSONObject();
+  public JSONObject uploadFile(String projectName, String filename, String language, String inputTemplate,
+                               String author) throws IOException, ConfigurationException, UnirestException {
+    return uploadFile(projectName, filename);
+  }
 
-        URL url = new URL(
-                this.serviceUrl.getProtocol(),
-                this.serviceUrl.getHost(),
-                this.serviceUrl.getPort(),
-                this.serviceUrl.getFile() + "/" + projectName,
-                null
-        );
+  public JSONObject uploadFile(String projectName, String filename)
+      throws IOException, ConfigurationException, UnirestException {
+    JSONObject jsonResult = new JSONObject();
+    DeploymentLib dplib = new DeploymentLib();
 
-        String urlString = url.toString();
+    String path = filename;
+    System.out.println("### File path to be uploaded:" + path + " ###");
 
-        Map<String, String> NS = new LinkedHashMap<>();
-        NS.put("xlink", "http://www.w3.org/1999/xlink");
-        XdmNode doc = Saxon.buildDocument(new StreamSource(urlString));
-        for (XdmItem file : Saxon.xpath(doc, "/clam/output/file")) {
-            String href = Saxon.xpath2string(file, "@xlink:href", null, NS);
-            String name = Saxon.xpath2string(file, "name");
-            json.put(name, href);
-        }
+    jsonResult.put("pathUploadFile", path);
+    File file = new File(path);
+    String filenameOnly = file.getName();
+    jsonResult.put("filenameOnly", filenameOnly);
 
-        return json;
+    URL url = new URL(
+      this.serviceUrl.getProtocol(),
+      this.serviceUrl.getHost(),
+      this.serviceUrl.getPort(),
+      this.serviceUrl.getFile() + "/pub/upload/",
+      null
+    );
+    System.out.println("### Upload URL:" + url.toString() + " ###");
 
-    }
+    com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest
+      .post(url.toString())
+      .header("accept", "application/json")
+      .header("file", file.toString())
+      .field("file", file)
+      .asJson();
 
-    @Override
-    public JSONObject parseSymantics(String symantics) throws JDOMException, SaxonApiException {
-        System.out.println(String.format("### symantics in parseSymantics before parsing: %s ###", symantics));
-        JSONObject json = new JSONObject();
-        JSONObject parametersJson = new JSONObject();
+    System.out.println(String.format("### Response code: %s ###", jsonResponse.getCode()));
+    Headers headers = jsonResponse.getHeaders();
+    String returnUrlString = headers.get("location").get(0);
+    System.out.println(String.format("### Response full headers: %s ###", headers.toString()));
+    System.out.println(String.format("### Response url: %s ###", returnUrlString));
 
-        Map<String, String> NS = new LinkedHashMap<>();
-        NS.put("cmd", "http://www.clarin.eu/cmd/1");
-        NS.put("cmdp", "http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1527668176011");
+    URL returnUrl = new URL(
+      this.serviceUrl.getProtocol(),
+      this.serviceUrl.getHost(),
+      this.serviceUrl.getPort(),
+      returnUrlString,
+      null
+    );
+    System.out.println(String.format("### returnUrl: %s ###", returnUrl.toString()));
 
-        StringReader reader = new StringReader(symantics);
-        XdmNode service = Saxon.buildDocument(new StreamSource(reader));
+    URL devReturnUrl = new URL("http://localhost:9998" + returnUrlString);
 
-        String serviceName = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Name", null, NS);
-        String serviceDescription = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Description", null, NS);
-        String serviceLocation = Saxon.xpath2string(service, "//cmdp:ServiceDescriptionLocation/cmdp:Location", null, NS);
+    System.out.println(String.format("### Hacking returnUrl for dev environment: %s ###", devReturnUrl.toString()));
+    // jsonResult.put("url", returnUrl.toString());
+    jsonResult.put("url", devReturnUrl.toString());
 
-        String inputName = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:Name", null, NS);
-        String inputLabel = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:Label", null, NS);
-        String inputType = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MIMEType", null, NS);
-        String inputCardinalityMin = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MinimumCardinality", null, NS);
-        String inputCardinalityMax = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MaximumCardinality", null, NS);
-
-        String outputName = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:Name", null, NS);
-//        String outputLabel = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:Label",null,NS);
-        String outputType = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MIMEType", null, NS);
-        String outputCardinalityMin = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MinimumCardinality", null, NS);
-        String outputCardinalityMax = Saxon.xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MaximumCardinality", null, NS);
-
-        json.put("serviceName", serviceName);
-        json.put("serviceDescription", serviceDescription);
-        json.put("serviceLocation", serviceLocation);
-
-        json.put("inputName", inputName);
-        json.put("inputLabel", inputLabel);
-        json.put("inputType", inputType);
-        json.put("inputCardinalityMin", inputCardinalityMin);
-        json.put("inputCardinalityMax", inputCardinalityMax);
-
-        json.put("outputName", outputName);
-//        json.put("outputLabel", outputLabel);
-        json.put("outputType", outputType);
-        json.put("outputCardinalityMin", outputCardinalityMin);
-        json.put("outputCardinalityMax", outputCardinalityMax);
-
-        return json;
-
-    }
-
-    public JSONObject uploadFile(String projectName, String filename, String language, String inputTemplate, String author) throws IOException, ConfigurationException, UnirestException {
-        return uploadFile(projectName, filename);
-    }
-
-    public JSONObject uploadFile(String projectName, String filename) throws IOException, ConfigurationException, UnirestException {
-        JSONObject jsonResult = new JSONObject();
-        DeploymentLib dplib = new DeploymentLib();
-
-        String path = filename;
-        System.out.println("### File path to be uploaded:" + path + " ###");
-
-        jsonResult.put("pathUploadFile", path);
-        File file = new File(path);
-        String filenameOnly = file.getName();
-        jsonResult.put("filenameOnly", filenameOnly);
-
-        URL url = new URL(
-                this.serviceUrl.getProtocol(),
-                this.serviceUrl.getHost(),
-                this.serviceUrl.getPort(),
-                this.serviceUrl.getFile() + "/pub/upload/",
-                null
-        );
-        System.out.println("### Upload URL:" + url.toString() + " ###");
-
-        com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest
-                .post(url.toString())
-                .header("accept", "application/json")
-                .header("file", file.toString())
-                .field("file", file)
-                .asJson();
-
-        System.out.println(String.format("### Response code: %s ###", jsonResponse.getCode()));
-        Headers headers = jsonResponse.getHeaders();
-        String returnUrlString = headers.get("location").get(0);
-        System.out.println(String.format("### Response full headers: %s ###", headers.toString()));
-        System.out.println(String.format("### Response url: %s ###", returnUrlString));
-
-        URL returnUrl = new URL(
-                this.serviceUrl.getProtocol(),
-                this.serviceUrl.getHost(),
-                this.serviceUrl.getPort(),
-                returnUrlString,
-                null
-        );
-        System.out.println(String.format("### returnUrl: %s ###", returnUrl.toString()));
-
-        URL devReturnUrl = new URL("http://localhost:9998" + returnUrlString);
-
-        System.out.println(String.format("### Hacking returnUrl for dev environment: %s ###", devReturnUrl.toString()));
-//        jsonResult.put("url", returnUrl.toString());
-        jsonResult.put("url", devReturnUrl.toString());
-
-        return jsonResult;
-    }
+    return jsonResult;
+  }
 }
