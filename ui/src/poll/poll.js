@@ -109,13 +109,13 @@ export default class Poll extends React.Component {
                 <Panel>
                     <Panel.Heading>
                         <Panel.Title>
-                            Deployment status of <code>{this.state.workDir}</code>
-                            <span className="pull-right">
+                            <span>
                             {deployStatus && deployStatus.status === 'RUNNING'
                                 ? <Spinner/>
                                 : <i className="fa fa-check-square-o" aria-hidden="true"/>
                             }
                             </span>
+                            &nbsp; Deployment status of <code>{this.state.workDir}</code>
                         </Panel.Title>
                     </Panel.Heading>
                     <Panel.Body>
@@ -129,11 +129,11 @@ export default class Poll extends React.Component {
                             className='clickable'
                             onClick={this.handlePanelClick}
                         >
-                            Details
-                            <span className="pull-right">
+                            <span>
                                 <i className={this.state.opened ? "fa fa-minus-square-o" : "fa fa-plus-square-o"}
                                    aria-hidden="true"/>
                             </span>
+                            &nbsp; Details
                         </Panel.Title>
                     </Panel.Heading>
                     <Panel.Body

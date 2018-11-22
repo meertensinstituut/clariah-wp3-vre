@@ -21,16 +21,22 @@ export default class ReactGui extends React.Component {
           <Embed caption="Wizard" description="Go through a proces in mutiple steps">
             <Wizard wizardSteps={[
                                 {
-                                  "stepLink": "1.html",
+                                  "onClick": () => document.location.href = "1.html",
                                   "stepState": "done",
                                   "stepNumber": "1",
                                   "stepText": "Upload"
                                 },
                                 {
-                                  "stepLink": "2.html",
-                                  "stepState": "done",
+                                  "onClick": () => document.location.href = "2.html",
+                                  "stepState": "current",
                                   "stepNumber": "2",
                                   "stepText": "Configure"
+                                },
+                                {
+                                  "onClick": () => document.location.href = "3.html",
+                                  "stepState": "",
+                                  "stepNumber": "3",
+                                  "stepText": "Deploy"
                                 }
                               ]} />
           </Embed>
