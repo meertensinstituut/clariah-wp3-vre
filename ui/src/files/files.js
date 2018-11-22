@@ -8,9 +8,10 @@ import ReactTooltip from 'react-tooltip'
 import ErrorMsg from "../common/error-msg";
 import Tag from "../tag/tag";
 
-import './files.css';
 import TagResource from "../tag/tag-resource";
 import ObjectTag from "../common/object-tag";
+
+import './files.css';
 
 const PAGE_SIZE = 6;
 

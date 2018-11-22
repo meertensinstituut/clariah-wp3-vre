@@ -9,6 +9,7 @@ import ErrorMsg from "../common/error-msg";
 
 import './deploy.css';
 import {Wizard} from "../react-gui/wizard";
+import IllegalActionError from "../common/illegal-action-error";
 
 class Deploy extends React.Component {
 
@@ -35,7 +36,7 @@ class Deploy extends React.Component {
 
     handleChangedSteps = (activeIndex, newIndex) => {
         if (newIndex > activeIndex && !this.state.completed) {
-            this.setState({error: new Error('Please complete current step first')});
+            this.setState({error: new IllegalActionError('Please complete the current step first')});
             return;
         }
 

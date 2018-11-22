@@ -1,5 +1,7 @@
 import React from "react";
 
+import './error-msg.css';
+
 /**
  * Expects error body with msg field containing error
  */
@@ -49,8 +51,7 @@ export default class ErrorMsg extends React.Component {
                 <button type="button" className="pull-right" onClick={() => this.handleDismiss()}>
                     <span aria-hidden="true">×</span>
                 </button>
-                <h4>{this.props.title}</h4>
-                <p>{msg}</p>
+                <p className="vre-error-msg">{this.props.title}: {msg}</p>
             </div>
         );
     }
