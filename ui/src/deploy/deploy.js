@@ -15,12 +15,14 @@ class Deploy extends React.Component {
     constructor(props) {
         super(props);
 
+        const fileId = queryString.parse(this.props.location.search).file;
+
         this.state = {
             service: null,
             serviceName: null,
             config: null,
             steps: [
-                {key: 'file', value: queryString.parse(this.props.location.search).file, label: '<< Select file'},
+                {key: 'file', value: fileId, label: '<< Select file'},
                 {key: 'service', value: null, label: 'Select service'},
                 {key: 'config', value: null, label: 'Configure service'},
                 {key: 'deploy', value: null, label: 'Deploy >>'}
@@ -32,7 +34,8 @@ class Deploy extends React.Component {
     }
 
     handleChangedSteps = (activeIndex, newIndex) => {
-        if(newIndex > activeIndex && !this.state.completed) {
+        if (newIndex > activeIndex && !this.state.completed) {
+            this.setState({error: new Error('Please complete current step first')});
             return;
         }
 
@@ -124,12 +127,15 @@ class Deploy extends React.Component {
                 stepText: s.label
             };
         });
-        return <Wizard wizardSteps={wizardSteps} />;
+        return <Wizard wizardSteps={wizardSteps}/>;
     }
 
     render() {
-        if (this.state.error)
-            return <ErrorMsg error={this.state.error}/>;
+        const error = this.state.error
+            ?
+            <ErrorMsg error={this.state.error}/>
+            :
+            null;
 
         if (this.state.goToFiles)
             return <Redirect to='/files'/>;
@@ -170,6 +176,7 @@ class Deploy extends React.Component {
         return (
             <div>
                 {steps}
+                {error}
                 {deploymentMsg}
                 {selectService}
                 <div className="clearfix"/>
