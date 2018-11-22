@@ -102,6 +102,7 @@
     </dependency>
   </dependencies>
   <properties>
+    <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
     <maven.compiler.source>10</maven.compiler.source>
     <maven.compiler.target>10</maven.compiler.target>
   </properties>
@@ -116,6 +117,27 @@
           <source>1.9</source>
           <target>1.9</target>
         </configuration>
+      </plugin>
+      <!-- checkstyle -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${maven-checkstyle-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>checkstyle-compile</id>
+            <phase>compile</phase>
+            <configuration>
+              <configLocation>https://raw.githubusercontent.com/HuygensING/checkstyle/master/checkstyle_config.xml</configLocation>
+              <encoding>UTF-8</encoding>
+              <consoleOutput>true</consoleOutput>
+              <failsOnError>true</failsOnError>
+            </configuration>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

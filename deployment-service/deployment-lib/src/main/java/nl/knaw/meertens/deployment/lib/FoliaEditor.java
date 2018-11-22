@@ -16,6 +16,7 @@ import net.sf.saxon.s9api.XdmNode;
 import nl.mpi.tla.util.Saxon;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jdom2.JDOMException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -52,6 +53,7 @@ public class FoliaEditor implements RecipePlugin {
   protected Boolean isFinished = false;
   protected Boolean userConfigRemoteError = false;
   protected String projectName;
+  protected String resultFileNameString = "";
 
   public static void writeToHtml(String content, File file) throws IOException {
     FileUtils.writeStringToFile(new File(file.toString()), content, forName("UTF-8"));
@@ -176,7 +178,6 @@ public class FoliaEditor implements RecipePlugin {
     DeploymentLib dplib = new DeploymentLib();
 
     String workDir = dplib.getWd();
-    // String userConfFile = dplib.getConfFile();
     JSONObject userConfig = this.parseUserConfig(key);
     JSONArray params = (JSONArray) userConfig.get("params");
 
@@ -344,6 +345,24 @@ public class FoliaEditor implements RecipePlugin {
 
   }
 
+  public static String[] explodeString(String stringToExplode, String separator) {
+    return  StringUtils.splitPreserveAllTokens(stringToExplode, separator);
+  }
+
+  public void downloadResultFile(String url) throws IOException {
+    downloadResultFile(new URL(url));
+  }
+
+  public void downloadResultFile(URL url) throws IOException {
+    System.out.println("### Download URL:" + url + " ###");
+    FileUtils.copyURLToFile(
+        url,
+        new File("resultFile.xml"),
+        60,
+        60);
+    System.out.println("### Download successful ###");
+  }
+
   public JSONObject uploadFile(String projectName, String filename, String language, String inputTemplate,
                                String author) throws IOException, ConfigurationException, UnirestException {
     return uploadFile(projectName, filename);
@@ -394,11 +413,12 @@ public class FoliaEditor implements RecipePlugin {
     System.out.println(String.format("### returnUrl: %s ###", returnUrl.toString()));
 
     URL devReturnUrl = new URL("http://localhost:9998" + returnUrlString);
+    resultFileNameString = returnUrlString;
 
     System.out.println(String.format("### Hacking returnUrl for dev environment: %s ###", devReturnUrl.toString()));
     // jsonResult.put("url", returnUrl.toString());
     jsonResult.put("url", devReturnUrl.toString());
-
+    Unirest.shutdown();
     return jsonResult;
   }
 }
