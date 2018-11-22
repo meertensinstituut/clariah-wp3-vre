@@ -2,6 +2,7 @@ import React from 'react';
 import {Col, Grid, Row} from 'react-bootstrap';
 import Main from './main';
 import Navigation from './navigation';
+import {VreLayout} from "../react-gui/clariah-vre";
 
 export default class Page extends React.Component {
 
@@ -15,7 +16,7 @@ export default class Page extends React.Component {
 
     render() {
         return (
-            <div>
+            <VreLayout>
                 <Grid>
                     <Row>
                         <Col xs={12} md={12} className='header'>
@@ -34,7 +35,7 @@ export default class Page extends React.Component {
                         </Col>
                     </Row>
                 </Grid>
-            </div>
+            </VreLayout>
         );
     }
 }
