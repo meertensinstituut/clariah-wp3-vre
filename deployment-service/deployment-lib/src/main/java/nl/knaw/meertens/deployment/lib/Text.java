@@ -208,7 +208,6 @@ public class Text implements RecipePlugin {
   /**
    * @param pid
    *
-   * @return
    */
   @Override
   public JSONObject getStatus(String pid) {

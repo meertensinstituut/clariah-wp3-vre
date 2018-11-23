@@ -2,6 +2,7 @@ version: '3.4'
 
 services:
   deployment:
+    container_name: vre_deployment_1
     build: ./
     tty: true
     working_dir: /conf

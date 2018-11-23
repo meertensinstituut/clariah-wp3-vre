@@ -2,6 +2,7 @@ version: '3.4'
 
 services:
   indexer:
+    container_name: vre_indexer_1
     build: ./indexer
     tty: true
     working_dir: /usr/local/indexer
