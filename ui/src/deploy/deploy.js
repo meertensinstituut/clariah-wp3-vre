@@ -131,6 +131,16 @@ class Deploy extends React.Component {
         return <Wizard wizardSteps={wizardSteps}/>;
     }
 
+    gotoNextStep = () => {
+        const currentIndex = this.state.steps.findIndex(
+            s => s.key === this.state.active
+        );
+        const nextIndex = currentIndex + 1;
+        if (nextIndex < this.state.steps.length) {
+            this.handleChangedSteps(currentIndex, nextIndex);
+        }
+    };
+
     render() {
         const error = this.state.error
             ?
@@ -171,8 +181,16 @@ class Deploy extends React.Component {
             null;
 
         const deploymentMsg = this.state.deployment !== null
-            ? <DeployMsg deployment={this.state.deployment}/>
-            : null;
+            ?
+            <DeployMsg deployment={this.state.deployment}/>
+            :
+            null;
+
+        const nextBtn = this.state.completed
+            ?
+            <button type="button" className="btn-success pull-right" onClick={() => this.gotoNextStep()}>Next>></button>
+            :
+            null;
 
         return (
             <div>
@@ -182,6 +200,7 @@ class Deploy extends React.Component {
                 {selectService}
                 <div className="clearfix"/>
                 {configureService}
+                {nextBtn}
             </div>
         );
     }

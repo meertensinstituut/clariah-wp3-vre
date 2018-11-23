@@ -150,9 +150,10 @@ export default class Files extends React.Component {
 
         const searchResults = objects.map((object, i) => {
             const path = object.filepath;
+            const lastSlash = path.lastIndexOf('/') + 1;
             return {
-                fileName: path.substring(path.lastIndexOf('/') + 1),
-                filePath: path,
+                filePath: path.substring(0, lastSlash),
+                fileName: path.substring(lastSlash),
                 fileType: object.format,
                 fileUser: object.user_id,
                 fileDate: object.time_created.substring(0, 10),
