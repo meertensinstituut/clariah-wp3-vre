@@ -1,5 +1,5 @@
 #!/bin/bash
-
+docker kill $(docker ps -q)
 # kill and prune VRE containers:
 docker kill vre_integration_1
 docker kill vre_recognizer_1

@@ -2,6 +2,7 @@ version: '3.4'
 
 services:
   recognizer:
+    container_name: vre_recognizer_1
     build: ./recognizer
     tty: true
     working_dir: /usr/local/recognizer

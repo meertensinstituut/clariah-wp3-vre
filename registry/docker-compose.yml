@@ -3,6 +3,7 @@ version: '3.4'
 services:
 
   dreamfactory:
+    container_name: vre_dreamfactory_1
     command: bash -c "/postgres/start.sh; /dreamfactory/start.sh; bash;"
     build: dreamfactory
     ports:

@@ -2,6 +2,7 @@ version: '3.4'
 
 services:
   switchboard:
+    container_name: vre_switchboard_1
     build: ./docker
     working_dir: /usr/local/switchboard
     command: ./docker/docker-run-switchboard.sh
