@@ -1,6 +1,8 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
+import nl.knaw.meertens.clariah.vre.switchboard.file.NextcloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryServiceImpl;
@@ -30,46 +32,68 @@ public class App extends ResourceConfig {
     configureAppContext();
   }
 
-  public static void main(String[] args) {
-  }
+  public static void main(String[] args) {}
 
   private void configureAppContext() {
-    SwitchboardDiBinder diBinder = new SwitchboardDiBinder(
-      new ObjectsRegistryServiceImpl(
-        OBJECTS_DB_URL,
-        OBJECTS_DB_KEY,
-        getMapper()
-      ),
-      new ServicesRegistryServiceImpl(
-        SERVICES_DB_URL,
-        SERVICES_DB_KEY,
-        getMapper()
-      ),
-      new DeploymentServiceImpl(
-        DEPLOYMENT_HOST_NAME,
-        getRequestRepository(),
-        getPollService()
-      ),
-      new KafkaProducerServiceImpl(
-        SWITCHBOARD_TOPIC_NAME,
-        KAFKA_HOST_NAME,
-        getMapper()
-      ),
-      new KafkaProducerServiceImpl(
-        NEXTCLOUD_TOPIC_NAME,
-        KAFKA_HOST_NAME,
-        getMapper()
-      ),
-      new TagRegistry(
-        OBJECTS_DB_URL,
-        OBJECTS_DB_KEY,
-        getMapper()
-      ),
-      new ObjectTagRegistry(
-        OBJECTS_DB_URL,
-        OBJECTS_DB_KEY
-      )
+
+    var servicesRegistryService = new ServicesRegistryServiceImpl(
+      SERVICES_DB_URL,
+      SERVICES_DB_KEY,
+      getMapper()
     );
+
+    var kafkaSwitchboardService = new KafkaProducerServiceImpl(
+      SWITCHBOARD_TOPIC_NAME,
+      KAFKA_HOST_NAME,
+      getMapper()
+    );
+
+    var kafkaNextcloudService = new KafkaProducerServiceImpl(
+      NEXTCLOUD_TOPIC_NAME,
+      KAFKA_HOST_NAME,
+      getMapper()
+    );
+
+    var deploymentService = new DeploymentServiceImpl(
+      DEPLOYMENT_HOST_NAME,
+      getRequestRepository(),
+      getPollService()
+    );
+
+    var objectsRegistryService = new ObjectsRegistryServiceImpl(
+      OBJECTS_DB_URL,
+      OBJECTS_DB_KEY,
+      getMapper()
+    );
+
+    var tagRegistry = new TagRegistry(
+      OBJECTS_DB_URL,
+      OBJECTS_DB_KEY,
+      getMapper()
+    );
+
+    var objectTagRegistry = new ObjectTagRegistry(
+      OBJECTS_DB_URL,
+      OBJECTS_DB_KEY
+    );
+
+    var finishDeploymentConsumer = new FinishDeploymentConsumer(
+      servicesRegistryService,
+      new NextcloudFileService(),
+      kafkaSwitchboardService,
+      kafkaNextcloudService
+    );
+
+    var diBinder = new SwitchboardDiBinder(
+      objectsRegistryService,
+      servicesRegistryService,
+      deploymentService,
+      kafkaSwitchboardService,
+      tagRegistry,
+      objectTagRegistry,
+      finishDeploymentConsumer
+    );
+
     register(diBinder);
   }
 

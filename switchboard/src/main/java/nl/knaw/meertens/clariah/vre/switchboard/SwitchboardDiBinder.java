@@ -3,6 +3,7 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.exception.CommonExceptionMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
@@ -57,25 +58,26 @@ public class SwitchboardDiBinder extends AbstractBinder {
   private DeploymentService deploymentService;
   private ServicesRegistryService serviceRegistryService;
   private KafkaProducerService kafkaSwitchboardService;
-  private KafkaProducerService kafkaOwncloudService;
   private TagRegistry tagRegistry;
   private ObjectTagRegistry objectTagRegistry;
+  private FinishDeploymentConsumer finishDeploymentConsumer;
 
   SwitchboardDiBinder(
     ObjectsRegistryService objectsRegistryService,
     ServicesRegistryService servicesRegistryService,
     DeploymentService deploymentService,
     KafkaProducerService kafkaSwitchboardService,
-    KafkaProducerService kafkaOwncloudService,
     TagRegistry tagRegistry,
-    ObjectTagRegistry objectTagRegistry) {
+    ObjectTagRegistry objectTagRegistry,
+    FinishDeploymentConsumer finishDeploymentConsumer
+  ) {
     this.objectsRegistryService = objectsRegistryService;
     this.deploymentService = deploymentService;
     this.serviceRegistryService = servicesRegistryService;
     this.kafkaSwitchboardService = kafkaSwitchboardService;
-    this.kafkaOwncloudService = kafkaOwncloudService;
     this.tagRegistry = tagRegistry;
     this.objectTagRegistry = objectTagRegistry;
+    this.finishDeploymentConsumer = finishDeploymentConsumer;
   }
 
   /**
@@ -136,7 +138,7 @@ public class SwitchboardDiBinder extends AbstractBinder {
       deploymentService,
       serviceRegistryService,
       kafkaSwitchboardService,
-      kafkaOwncloudService
+      finishDeploymentConsumer
     )).to(ExecService.class);
 
     bind(new ObjectService(

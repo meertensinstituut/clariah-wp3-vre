@@ -31,7 +31,7 @@ public class DeploymentServiceImpl implements DeploymentService {
   @Override
   public DeploymentStatusReport deploy(
     DeploymentRequest request,
-    PollDeploymentConsumer<DeploymentStatusReport> deploymentConsumer
+    PollDeploymentConsumer deploymentConsumer
   ) {
     var report = requestDeployment(request);
     requestRepositoryService.saveDeploymentRequest(report, deploymentConsumer);
@@ -46,8 +46,8 @@ public class DeploymentServiceImpl implements DeploymentService {
     report.setWorkDir(request.getWorkDir());
 
     var response = sendRequest(report.getUri());
+    var httpStatus = response.getStatus();
     report.setMsg(response.getBody());
-    int httpStatus = response.getStatus();
 
     if (httpStatus == 200) {
       report.setStatus(DEPLOYED);

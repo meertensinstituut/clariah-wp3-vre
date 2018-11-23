@@ -30,7 +30,7 @@ public class RequestRepository {
   private final ObjectMapper mapper;
 
   private final Map<String, DeploymentStatusReport> reports = new HashMap<>();
-  private final Map<String, PollDeploymentConsumer<DeploymentStatusReport>> consumers = new HashMap<>();
+  private final Map<String, PollDeploymentConsumer> consumers = new HashMap<>();
   private final Map<String, LocalDateTime> finished = new HashMap<>();
 
   public RequestRepository(
@@ -43,11 +43,11 @@ public class RequestRepository {
     this.mapper = mapper;
   }
 
-  public PollDeploymentConsumer<DeploymentStatusReport> getConsumer(String workDir) {
+  public PollDeploymentConsumer getConsumer(String workDir) {
     return consumers.get(workDir);
   }
 
-  public DeploymentStatusReport getStatusReport(String workDir) {
+  DeploymentStatusReport getStatusReport(String workDir) {
     var request = reports.get(workDir);
     if (!isNull(request)) {
       return request;
@@ -56,9 +56,9 @@ public class RequestRepository {
     return findReportInWorkDir(workDir);
   }
 
-  public void saveDeploymentRequest(
+  void saveDeploymentRequest(
     DeploymentStatusReport report,
-    PollDeploymentConsumer<DeploymentStatusReport> reportConsumer
+    PollDeploymentConsumer reportConsumer
   ) {
     saveStatusReport(report);
     consumers.put(report.getWorkDir(), reportConsumer);

@@ -3,26 +3,10 @@ package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 import java.util.function.Consumer;
 
 /**
- * Consumer that should be run after a deployment
- * to unlock files, move results, etc.
+ * Each time switchboard has polled deployment-service
+ * to check the status of a deployment
+ * a PollDeploymentConsumer is run.
  *
- * <p>Allows its accept-method to throw an exception,
- * which is converted to a RuntimeException.
- *
- * @param <T> Type of consumption
  */
 @FunctionalInterface
-public interface PollDeploymentConsumer<T> extends Consumer<T> {
-
-  @Override
-  default void accept(final T elem) {
-    try {
-      acceptWithException(elem);
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  void acceptWithException(T elem) throws Exception;
-
-}
+public interface PollDeploymentConsumer extends Consumer<DeploymentStatusReport> {}

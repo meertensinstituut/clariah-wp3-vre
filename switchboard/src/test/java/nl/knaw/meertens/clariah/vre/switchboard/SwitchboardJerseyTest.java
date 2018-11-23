@@ -2,8 +2,9 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
-import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
+import nl.knaw.meertens.clariah.vre.switchboard.file.NextcloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceStub;
@@ -39,8 +40,6 @@ public class SwitchboardJerseyTest extends JerseyTest {
     mockHostName
   );
 
-  private static OwncloudFileService nextcloudFileService = new OwncloudFileService();
-
   private static ServicesRegistryServiceImpl servicesRegistryService = new ServicesRegistryServiceImpl(
     mockHostName,
     mockRegistryKey,
@@ -52,11 +51,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
   private KafkaProducerService kafkaSwitchboardServiceMock;
   private KafkaProducerService kafkaOwncloudServiceMock;
 
-  public static OwncloudFileService getOwncloudFileService() {
-    return nextcloudFileService;
-  }
-
-  public static RequestRepository getRequestRepository() {
+  static RequestRepository getRequestRepository() {
     return requestRepository;
   }
 
@@ -76,6 +71,13 @@ public class SwitchboardJerseyTest extends JerseyTest {
       SwitchboardDiBinder.getControllerClasses()
     );
 
+    var finishDeploymentConsumer = new FinishDeploymentConsumer(
+      servicesRegistryService,
+      new NextcloudFileService(),
+      kafkaSwitchboardServiceMock,
+      kafkaOwncloudServiceMock
+    );
+
     var diBinder = new SwitchboardDiBinder(
       objectsRegistryServiceStub,
       servicesRegistryService,
@@ -85,7 +87,6 @@ public class SwitchboardJerseyTest extends JerseyTest {
         pollService
       ),
       kafkaSwitchboardServiceMock,
-      kafkaOwncloudServiceMock,
       new TagRegistry(
         mockHostName,
         mockRegistryKey,
@@ -94,7 +95,8 @@ public class SwitchboardJerseyTest extends JerseyTest {
       new ObjectTagRegistry(
         mockHostName,
         mockRegistryKey
-      )
+      ),
+      finishDeploymentConsumer
     );
     resourceConfig.register(diBinder);
     return resourceConfig;

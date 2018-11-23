@@ -25,9 +25,6 @@ public class ExecController extends AbstractController {
   @Inject
   ExecService execService;
 
-  @Inject
-  ObjectMapper mapper;
-
   @GET
   @Produces(APPLICATION_JSON)
   public Response getHelp() {

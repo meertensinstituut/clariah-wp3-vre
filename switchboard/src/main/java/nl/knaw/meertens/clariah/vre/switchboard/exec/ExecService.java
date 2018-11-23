@@ -5,14 +5,13 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.PollDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
-import nl.knaw.meertens.clariah.vre.switchboard.file.OwncloudFileService;
-import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentResultDto;
+import nl.knaw.meertens.clariah.vre.switchboard.file.NextcloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentStartDto;
-import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaOwncloudCreateFileDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.param.Param;
 import nl.knaw.meertens.clariah.vre.switchboard.param.ParamGroup;
@@ -27,9 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,10 +37,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
-import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
-import static nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind.fromKind;
 
 /**
  * ExecService:
@@ -66,32 +60,11 @@ public class ExecService {
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
   private final ObjectMapper mapper;
   private final KafkaProducerService kafkaSwitchboardService;
-  private final KafkaProducerService kafkaOwncloudService;
   private final FileService nextcloudFileService;
   private final DeploymentService deploymentService;
-
   private ObjectsRegistryService objectsRegistryService;
   private ServicesRegistryService serviceRegistryService;
-
-  /**
-   * Consumer that finishes a deployment
-   */
-  public PollDeploymentConsumer<DeploymentStatusReport> pollDeploymentConsumer = (report) -> {
-    logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
-    if (isFinishedOrStopped(report)) {
-      completeDeployment(report);
-    }
-  };
-
-  /**
-   * Consumer that finishes a deployment
-   */
-  public PollDeploymentConsumer<DeploymentStatusReport> finishDeploymentConsumer = (report) -> {
-    logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
-    if (isFinishedOrStopped(report)) {
-      completeDeployment(report);
-    }
-  };
+  private PollDeploymentConsumer finishDeploymentConsumer;
 
   public ExecService(
     ObjectMapper mapper,
@@ -99,14 +72,14 @@ public class ExecService {
     DeploymentService deploymentService,
     ServicesRegistryService serviceRegistryService,
     KafkaProducerService kafkaSwitchboardService,
-    KafkaProducerService kafkaOwncloudService
+    FinishDeploymentConsumer finishDeploymentConsumer
   ) {
     this.mapper = mapper;
     this.objectsRegistryService = objectsRegistryService;
     this.kafkaSwitchboardService = kafkaSwitchboardService;
-    this.kafkaOwncloudService = kafkaOwncloudService;
     this.serviceRegistryService = serviceRegistryService;
-    this.nextcloudFileService = new OwncloudFileService();
+    this.finishDeploymentConsumer = finishDeploymentConsumer;
+    this.nextcloudFileService = new NextcloudFileService();
     this.deploymentService = deploymentService;
   }
 
@@ -119,7 +92,7 @@ public class ExecService {
     var request = prepareDeploymentRequest(serviceName, body, kind);
     List<String> files = new ArrayList<>(request.getFiles().values());
     nextcloudFileService.stageFiles(request.getWorkDir(), files);
-    var statusReport = deploymentService.deploy(request, pollDeploymentConsumer);
+    var statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
     request.setStatusReport(statusReport);
     return request;
   }
@@ -191,7 +164,7 @@ public class ExecService {
     String service,
     String body
   ) throws IOException {
-    DeploymentRequest request = createDeploymentRequest(service, body);
+    var request = createDeploymentRequest(service, body);
     createConfig(request);
     return request;
   }
@@ -220,79 +193,6 @@ public class ExecService {
       path.toString()
     ));
     return name;
-  }
-
-  private boolean isFinishedOrStopped(DeploymentStatusReport report) {
-    return report.getStatus() == FINISHED || report.getStatus() == STOPPED;
-  }
-
-  private void completeDeployment(DeploymentStatusReport report) {
-
-    var service = serviceRegistryService.getServiceByName(report.getService());
-    var serviceKind = fromKind(service.getKind());
-
-    nextcloudFileService.unstage(report.getWorkDir(), report.getFiles());
-
-    switch (serviceKind) {
-      case SERVICE:
-        completeServiceDeployment(report);
-        break;
-      case VIEWER:
-        completeViewerDeployment(report);
-        break;
-      case EDITOR:
-        completeEditorDeployment(report);
-        break;
-      default:
-        throw new UnsupportedOperationException(String.format(
-          "Could not complete deployment: unknown kind [%s]", serviceKind
-        ));
-    }
-
-    sendKafkaSwitchboardMsg(report);
-
-    logger.info(String.format(
-      "Completed deployment of service [%s] with workdir [%s]",
-      report.getService(),
-      report.getWorkDir()
-    ));
-  }
-
-  private void completeServiceDeployment(
-    DeploymentStatusReport report
-  ) {
-    var outputFiles = nextcloudFileService.unstageServiceOutputFiles(
-      report.getWorkDir(),
-      report.getFiles().get(0)
-    );
-    if (outputFiles.isEmpty()) {
-      logger.warn(String
-        .format("Deployment [%s] with service [%s] did not produce any output files", report.getWorkDir(),
-          report.getService()));
-    } else {
-      report.setOutputDir(outputFiles.get(0).getParent().toString());
-    }
-    report.setWorkDir(report.getWorkDir());
-    sendKafkaOwncloudMsgs(outputFiles);
-  }
-
-  private void completeViewerDeployment(
-    DeploymentStatusReport report
-  ) {
-    var viewerFile = nextcloudFileService.unstageViewerOutputFile(
-      report.getWorkDir(),
-      report.getFiles().get(0),
-      report.getService()
-    );
-    report.setViewerFile(viewerFile.toString());
-    report.setViewerFileContent(nextcloudFileService.getContent(viewerFile.toString()));
-    report.setWorkDir(report.getWorkDir());
-  }
-
-  private void completeEditorDeployment(
-    DeploymentStatusReport report
-  ) {
-    completeViewerDeployment(report);
   }
 
   private void createConfig(
@@ -334,29 +234,6 @@ public class ExecService {
 
   public DeploymentStatusReport getStatus(String workDir) {
     return deploymentService.getStatus(workDir);
-  }
-
-  private void sendKafkaSwitchboardMsg(
-    DeploymentStatusReport report
-  ) {
-    var kafkaMsg = new KafkaDeploymentResultDto();
-    kafkaMsg.service = report.getService();
-    kafkaMsg.dateTime = LocalDateTime.now();
-    kafkaMsg.status = report.getStatus();
-    kafkaSwitchboardService.send(kafkaMsg);
-  }
-
-  private void sendKafkaOwncloudMsgs(
-    List<Path> outputFiles
-  ) {
-    for (var file : outputFiles) {
-      var msg = new KafkaOwncloudCreateFileDto();
-      msg.action = "create";
-      msg.path = file.toString();
-      msg.timestamp = new Timestamp(System.currentTimeMillis()).getTime();
-      msg.user = file.getName(0).toString();
-      kafkaOwncloudService.send(msg);
-    }
   }
 
   private DeploymentRequest mapServiceRequest(

@@ -29,12 +29,12 @@ import static java.util.stream.Collectors.toList;
 /**
  * Moves, locks and unlocks files in nextcloud.
  */
-public class OwncloudFileService implements FileService {
+public class NextcloudFileService implements FileService {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
   private final LockService locker;
 
-  public OwncloudFileService() {
+  public NextcloudFileService() {
     this.locker = new LockService();
   }
 
