@@ -3,7 +3,7 @@
 Prepare and coordinate service requests.
 
 Tools, languages and techniques:
- - Java 9
+ - Java 11
  - Tomcat
  - Jersey
 

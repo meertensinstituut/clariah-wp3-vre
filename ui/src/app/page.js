@@ -19,12 +19,6 @@ export default class Page extends React.Component {
             <VreLayout>
                 <Grid>
                     <Row>
-                        <Col xs={12} md={12} className='header'>
-                            <h1>{this.state.title}</h1>
-                            <p>{this.state.subtitle}</p>
-                        </Col>
-                    </Row>
-                    <Row>
                         <Col xs={12} md={12} className='content'>
                             <Navigation />
                         </Col>

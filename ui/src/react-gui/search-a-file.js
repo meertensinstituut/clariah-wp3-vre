@@ -40,11 +40,12 @@ import './css/search-items.css';
             </div>
 
             <div className="smallGrey">{this.props.filePath}{this.props.fileName}</div>
+            <div className="smallGrey">{this.props.fileTags}</div>
           </div>
           <div className="hc-list-item-secun hc-tooltip-show">{this.props.fileType}</div>
           <div className="hc-list-item-tertair hc-tooltip-show">{this.props.fileUser}</div>
           <div className="hc-list-item-tertair hc-tooltip-show">{this.props.fileDate}</div>
-          <div className="hc-list-item-tertair"><button>Connect</button></div>
+          <div className="hc-list-item-tertair">{this.props.fileBtns}</div>
         </li>
 
       );
@@ -72,6 +73,8 @@ import './css/search-items.css';
                   fileType={searchFileResults.fileType}
                   fileUser={searchFileResults.fileUser}
                   fileDate={searchFileResults.fileDate}
+                  fileBtns={searchFileResults.fileBtns}
+                  fileTags={searchFileResults.fileTags}
                  />)}
             </ul>
           </div>
@@ -96,7 +99,8 @@ import './css/search-items.css';
                 filePath: 'foo/bar/',
                 fileType: 'text',
                 fileUser: 'JohnDoe',
-                fileDate: '2018-11-21'
+                fileDate: '2018-11-21',
+                fileBtns: <button type="button">connect</button>
             }]}
           />
         </div>

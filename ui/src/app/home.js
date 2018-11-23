@@ -7,7 +7,7 @@ export default class Home extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            msg: "Welcome to Clariah's VRE",
+            msg: "Welcome to the Clariah WP3 VRE.",
         };
     }
 

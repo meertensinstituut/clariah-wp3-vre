@@ -2,13 +2,11 @@ import React from "react";
 import {Redirect} from 'react-router-dom';
 import PageNumbering from "./page-numbering";
 import Dreamfactory from "../common/dreamfactory";
-
-import {Table} from "react-bootstrap";
 import ReactTooltip from 'react-tooltip'
 import ErrorMsg from "../common/error-msg";
 import Tag from "../tag/tag";
-
 import TagResource from "../tag/tag-resource";
+import {SearchResultsList} from "../react-gui/search-a-file";
 import ObjectTag from "../common/object-tag";
 
 import './files.css';
@@ -27,6 +25,7 @@ export default class Files extends React.Component {
             objects: null,
             selectedObject: null,
             objectToTag: null,
+            filterTags: true,
         };
 
         this.goToPage = this.goToPage.bind(this);
@@ -148,66 +147,63 @@ export default class Files extends React.Component {
 
         let objects = this.state.objects;
 
+
+        const searchResults = objects.map((object, i) => {
+            const path = object.filepath;
+            return {
+                fileName: path.substring(path.lastIndexOf('/') + 1),
+                filePath: path,
+                fileType: object.format,
+                fileUser: object.user_id,
+                fileDate: object.time_created.substring(0, 10),
+                fileBtns: <span>
+                    <button
+                        data-tip="view file"
+                        onClick={() => this.handleViewFileClick(object)}>
+                    <i className="fa fa-eye" aria-hidden="true"/>
+                    </button>
+                    <button
+                        data-tip="process file with a service"
+                        onClick={() => this.handleProcessFileClick(object)}>
+                    <i className="fa fa-play" aria-hidden="true"/>
+                    </button>
+                    <button
+                        data-tip="edit file"
+                        onClick={() => this.handleEditFileClick(object)}>
+                    <i className="fa fa-pencil" aria-hidden="true"/>
+                    </button>
+                    <ReactTooltip/>
+                </span>,
+                fileTags: <span>
+                    {object.tags.map((tag, i) => {
+                        if(this.state.filterTags) {
+                            if(tag.owner === 'system') {
+                                return null;
+                            }
+                        }
+                        return <ObjectTag
+                        key={i}
+                        objectTag={tag}
+                        onDelete={() => this.handleDeleteTag(tag)}
+                    />})}
+                    <span className="label label-success clickable tag"
+                          onClick={() => this.handleAddTag(object.id)}>
+                    <i className="fa fa-plus fa-1x" aria-hidden="true"/> add tag
+                    </span>
+                </span>
+            };
+        });
+
         return (
             <div>
-                <Table striped bordered condensed hover>
-                    <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>File</th>
-                        <th>Format</th>
-                        <th>Mimetype</th>
-                        <th>Created</th>
-                        <th>User</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {objects.map((object, i) => {
-                        return (
-                            <tr key={object.id}>
-                                <td>{object.id}</td>
-                                <td>
-                                    <p>{object.filepath}</p>
-                                    <p>
-                                        {object.tags.map((tag, i) => <ObjectTag
-                                            key={i}
-                                            objectTag={tag}
-                                            onDelete={() => this.handleDeleteTag(tag)}
-                                        />)}
-                                        <span className="label label-success clickable tag"
-                                              onClick={() => this.handleAddTag(object.id)}>
-                                            <i className="fa fa-plus fa-1x" aria-hidden="true"/> add tag
-                                        </span>
-                                    </p>
-                                </td>
-                                <td>{object.format}</td>
-                                <td>{object.mimetype}</td>
-                                <td>{object.time_created.split('.')[0]}</td>
-                                <td>{object.user_id}</td>
-                                <td>
-                                    <button
-                                        data-tip="view file"
-                                        onClick={() => this.handleViewFileClick(object)}>
-                                        <i className="fa fa-eye" aria-hidden="true"/>
-                                    </button>
-                                    <button
-                                        data-tip="process file with a service"
-                                        onClick={() => this.handleProcessFileClick(object)}>
-                                        <i className="fa fa-play" aria-hidden="true"/>
-                                    </button>
-                                    <button
-                                        data-tip="edit file"
-                                        onClick={() => this.handleEditFileClick(object)}>
-                                        <i className="fa fa-pencil" aria-hidden="true"/>
-                                    </button>
-                                    <ReactTooltip/>
-                                </td>
-                            </tr>
-                        );
-                    }, this)}
-                    </tbody>
-                </Table>
+                <button
+                    className="filter-files-btn"
+                    onClick={() => this.setState({filterTags: !this.state.filterTags})}
+                >
+                    <i className={this.state.filterTags ? "fa fa-square-o": "fa fa-check-square-o"} aria-hidden="true"/> Show all tags
+                </button>
+
+                <SearchResultsList searchFileResults={searchResults} />
                 <PageNumbering
                     pageTotal={this.state.pageTotal}
                     pageCurrent={this.state.pageCurrent}
