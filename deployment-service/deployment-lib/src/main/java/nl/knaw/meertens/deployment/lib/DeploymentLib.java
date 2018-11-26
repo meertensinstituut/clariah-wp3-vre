@@ -6,29 +6,33 @@
 
 package nl.knaw.meertens.deployment.lib;
 
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XdmItem;
+import net.sf.saxon.s9api.XdmNode;
+import nl.mpi.tla.util.Saxon;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-//import java.io.OutputStreamWriter;
 
 /**
  * @author Vic
@@ -42,6 +46,7 @@ public class DeploymentLib {
   String inputDirectory;
   String outputDirectory;
   String queueLength;
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   public DeploymentLib() throws ConfigurationException {
 
@@ -163,21 +168,94 @@ public class DeploymentLib {
     return this.queueLength;
   }
 
-  public void logger(String text) {
-    DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
-    Date dateobj = new Date();
-    String currentTime = df.format(dateobj);
+  public JSONObject parseUserConfig(String key) {
+    DeploymentLib dplib = null;
+    try {
+      dplib = new DeploymentLib();
+    } catch (ConfigurationException e) {
+      throw new RuntimeException("Configuration file is invalid");
+    }
 
-    try (
-      FileWriter fw = new FileWriter("myfile.txt", true);
-      BufferedWriter bw = new BufferedWriter(fw);
-      PrintWriter out = new PrintWriter(bw)
-    ) {
-      out.println(currentTime + ": " + text);
-    } catch (IOException e) {
-      //exception handling left as an exercise for the reader
-      System.out.println(currentTime + ": cannot log, logger failed");
-      System.out.println(currentTime + ": " + e.getLocalizedMessage());
+    String workDir = dplib.getWd();
+    String userConfFile = dplib.getConfFile();
+    JSONParser parser = new JSONParser();
+
+    try {
+      String path = Paths.get(workDir, key, userConfFile).normalize().toString();
+      JSONObject userConfig = (JSONObject) parser.parse(new FileReader(path));
+
+      return userConfig;
+    } catch (Exception ex) {
+      logger.info(ex.getLocalizedMessage());
+    }
+    JSONObject userConfig = new JSONObject();
+    userConfig.put("parse user config", "failed");
+    return userConfig;
+  }
+
+
+  public static JSONObject parseSymantics(String symantics) throws RecipePluginException {
+    try {
+      JSONObject parametersJson = new JSONObject();
+
+      Map<String, String> nameSpace = new LinkedHashMap<>();
+      nameSpace.put("cmd", "http://www.clarin.eu/cmd/1");
+      nameSpace.put("cmdp", "http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1527668176011");
+
+      StringReader reader = new StringReader(symantics);
+      XdmNode service = Saxon.buildDocument(new StreamSource(reader));
+
+
+      int counter = 0;
+      for (XdmItem param : Saxon
+        .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter", null, nameSpace)) {
+
+        JSONObject parameterJson = new JSONObject();
+        String parameterName = Saxon.xpath2string(param, "cmdp:Name", null, nameSpace);
+        String parameterDescription = Saxon.xpath2string(param, "cmdp:Description", null, nameSpace);
+        String parameterType = Saxon.xpath2string(param, "cmdp:MIMEType", null, nameSpace);
+
+        parameterJson.put("parameterName", parameterName);
+        parameterJson.put("parameterDescription", parameterDescription);
+        parameterJson.put("parameterType", parameterType);
+
+        int valueCounter = 0;
+        for (XdmItem paramValue : Saxon
+          .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter/cmdp:ParameterValue",
+            null, nameSpace)) {
+
+          JSONObject parameterValueJson = new JSONObject();
+
+          String parameterValueValue = Saxon.xpath2string(paramValue, "cmdp:Value", null, nameSpace);
+          String parameterValueDescription = Saxon.xpath2string(paramValue, "cmdp:Description", null, nameSpace);
+
+          parameterValueJson.put("parameterValueValue", parameterValueValue);
+          parameterValueJson.put("parameterValueDescription", parameterValueDescription);
+
+          parameterJson.put("value" + Integer.toString(valueCounter), parameterValueJson);
+
+          valueCounter++;
+        }
+
+        parametersJson.put("parameter" + Integer.toString(counter), parameterJson);
+
+        counter++;
+      }
+
+      JSONObject json = new JSONObject();
+      String serviceName = Saxon.xpath2string(service, "cmdp:Name", null, nameSpace);
+      String serviceDescription = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Description", null, nameSpace);
+      String serviceLocation = Saxon.xpath2string(
+        service, "//cmdp:ServiceDescriptionLocation/cmdp:Location", null, nameSpace);
+
+      json.put("serviceName", serviceName);
+      json.put("serviceDescription", serviceDescription);
+      json.put("serviceLocation", serviceLocation);
+      json.put("counter", counter);
+      json.put("parameters", parametersJson);
+      return json;
+    } catch (SaxonApiException ex) {
+      throw new RecipePluginException("Invalid semantics xml");
     }
   }
 

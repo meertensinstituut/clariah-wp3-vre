@@ -7,19 +7,17 @@
 package nl.knaw.meertens.deployment.lib;
 
 import net.sf.saxon.s9api.SaxonApiException;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.JDOMException;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
 
 //import java.nio.charset.Charset;
 
@@ -30,14 +28,12 @@ public class Test implements RecipePlugin {
   protected int counter = 0;
   protected Boolean isFinished = false;
 
-  @Override
-  public Boolean finished() {
-    return isFinished;
-  }
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private String wd;
 
   @Override
-  public String execute(String key, Logger logger) {
-    logger.info(String.format("Create TEST deployment with workDir [%s]", key));
+  public JSONObject execute() throws RecipePluginException {
+    logger.info(String.format("Create TEST deployment with workDir [%s]", wd));
     try {
       logger.info("Start 15 second run...");
       Thread.sleep(15000);
@@ -45,7 +41,7 @@ public class Test implements RecipePlugin {
       logger.info("Test service was interrupted.");
       logger.info(e.getLocalizedMessage());
     }
-    Path outputFile = Paths.get("/tmp/wd/" + key + "/output/result.txt");
+    Path outputFile = Paths.get("/tmp/wd/" + wd + "/output/result.txt");
     outputFile.toFile().getParentFile().mkdirs();
     logger.info(String.format("Creating outputFile [%s]", outputFile.toString()));
     try {
@@ -53,27 +49,19 @@ public class Test implements RecipePlugin {
       FileUtils.write(outputFile.toFile(), sentence, Charsets.UTF_8);
       logger.info(String.format("Created outputFile [%s]", outputFile.toString()));
     } catch (IOException e) {
-      logger.info(String.format("Could not generate output for [%s]", key));
+      logger.info(String.format("Could not generate output for [%s]", wd));
       logger.info(e.getLocalizedMessage());
     }
     this.isFinished = true;
-    return "OK";
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("status", "OK");
+    return jsonObject;
   }
 
-  /**
-   * @param key
-   *
-   * @throws IOException
-   *
-   * @throws MalformedURLException
-   *
-   * @throws JDOMException
-   *
-   */
   @Override
-  public JSONObject getStatus(String key) throws IOException, MalformedURLException, JDOMException {
+  public JSONObject getStatus() throws RecipePluginException {
     JSONObject json = new JSONObject();
-    json.put("key", key);
+    json.put("key", wd);
     json.put("finished", isFinished);
     json.put("success", isFinished);
     if (isFinished) {
@@ -85,18 +73,9 @@ public class Test implements RecipePlugin {
   }
 
   @Override
-  public void init(String wd, Service serviceObj) throws JDOMException, IOException, SaxonApiException {
-    System.out.println("init plugin");
-  }
-
-  @Override
-  public JSONObject parseUserConfig(String key) {
-    return new JSONObject();
-  }
-
-  @Override
-  public JSONObject parseSymantics(String symantics) {
-    return new JSONObject();
+  public void init(String wd, Service serviceObj) throws RecipePluginException {
+    logger.info("init plugin");
+    this.wd = wd;
   }
 
 }

@@ -21,7 +21,8 @@ import org.jdom2.JDOMException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
@@ -31,13 +32,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static java.nio.charset.Charset.forName;
 
@@ -54,51 +51,37 @@ public class FoliaEditor implements RecipePlugin {
   protected Boolean userConfigRemoteError = false;
   protected String projectName;
   protected String resultFileNameString = "";
+  private static Logger logger = LoggerFactory.getLogger(RecipePlugin.class);
 
   public static void writeToHtml(String content, File file) throws IOException {
     FileUtils.writeStringToFile(new File(file.toString()), content, forName("UTF-8"));
-    System.out.println("### Generated successfully! ###");
+    logger.info("### Generated successfully! ###");
   }
-
-  // public static String readStringFromURL(URL requestURL) throws IOException {
-  //   try (Scanner scanner = new Scanner(requestURL.openStream(),
-  //     StandardCharsets.UTF_8.toString())) {
-  //     scanner.useDelimiter("\\A");
-  //     return scanner.hasNext() ? scanner.next() : "";
-  //   }
-  // }
 
   /**
    * Initiate the recipe.
-   *
-   * @param projectName
-   * Project also known as the folder name
-   * @param service
-   * The record in the service registry
-   * @throws JDOMException
-   * JDOM Exception
-   * @throws IOException
-   * IO Exception
-   * @throws SaxonApiException
-   * Exception
    */
   @Override
-  public void init(String projectName, Service service) throws JDOMException, IOException, SaxonApiException {
-    System.out.print("init Folia Editor plugin");
-    JSONObject json = this.parseSymantics(service.getServiceSymantics());
+  public void init(String projectName, Service service) throws RecipePluginException {
+    logger.info("init Folia Editor plugin");
+    JSONObject json = null;
+    try {
+      json = this.parseSemantics(service.getServiceSymantics());
+    } catch (JDOMException | SaxonApiException e) {
+      throw new RecipePluginException("Cannot parse semantics " + service.getServiceSymantics());
+    }
     this.projectName = projectName;
-    this.serviceUrl = new URL((String) json.get("serviceLocation"));
-    System.out.print("finish init Folia Editor plugin");
+    try {
+      this.serviceUrl = new URL((String) json.get("serviceLocation"));
+    } catch (MalformedURLException e) {
+      throw new RecipePluginException("Url is not correct: " + serviceUrl);
+    }
+    logger.info("finish init Folia Editor plugin");
 
   }
 
   @Override
-  public Boolean finished() {
-    return isFinished;
-  }
-
-  @Override
-  public String execute(String projectName, Logger logger) {
+  public JSONObject execute() throws RecipePluginException {
     logger.info("## Start plugin execution ##");
 
     JSONObject json = new JSONObject();
@@ -106,9 +89,10 @@ public class FoliaEditor implements RecipePlugin {
     json.put("status", 202);
     JSONObject userConfig = new JSONObject();
     try {
-      userConfig = this.parseUserConfig(projectName);
+      DeploymentLib dplib = new DeploymentLib();
+      userConfig = dplib.parseUserConfig(projectName);
       logger.info("## userConfig:  ##");
-      System.out.println(userConfig.toJSONString());
+      logger.info(userConfig.toJSONString());
 
       logger.info("## Running project ##");
       this.runProject(projectName);
@@ -123,52 +107,16 @@ public class FoliaEditor implements RecipePlugin {
         Thread.sleep(3000);
 
         // TODO: check if output file exists, if so, ready = true, else false
-        ready = 1 == 1;
+        ready = true;
       }
 
       this.isFinished = true;
 
-    } catch (IOException | InterruptedException | UnirestException ex) {
-      logger.info(String.format("## Execution ERROR: {%s}", ex.getLocalizedMessage()));
-      Logger.getLogger(FoliaEditor.class.getName()).log(Level.SEVERE, null, ex);
-    } catch (ConfigurationException ex) {
-      Logger.getLogger(FoliaEditor.class.getName()).log(Level.SEVERE, null, ex);
+    } catch (IOException | InterruptedException | UnirestException | ConfigurationException ex) {
+      logger.error(String.format("## Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
     }
 
-    return json.toString();
-  }
-
-  /**
-   * @param key
-   * Project name also knows as working directory
-   * @throws FileNotFoundException
-   * File not found
-   * @throws IOException
-   * IOException
-   * @throws org.json.simple.parser.ParseException
-   * Invalid json
-   * @throws org.apache.commons.configuration.ConfigurationException
-   * Invalid configuration
-   */
-  @Override
-  public JSONObject parseUserConfig(String key) throws ConfigurationException {
-    DeploymentLib dplib = new DeploymentLib();
-
-    String workDir = dplib.getWd();
-    String userConfFile = dplib.getConfFile();
-    JSONParser parser = new JSONParser();
-
-    try {
-      String path = Paths.get(workDir, key, userConfFile).normalize().toString();
-      JSONObject userConfig = (JSONObject) parser.parse(new FileReader(path));
-
-      return userConfig;
-    } catch (Exception ex) {
-      System.out.println(ex.getLocalizedMessage());
-    }
-    JSONObject userConfig = new JSONObject();
-    userConfig.put("parse user config", "failed");
-    return userConfig;
+    return json;
   }
 
   public JSONObject runProject(String key) throws IOException, ConfigurationException, UnirestException {
@@ -178,15 +126,16 @@ public class FoliaEditor implements RecipePlugin {
     DeploymentLib dplib = new DeploymentLib();
 
     String workDir = dplib.getWd();
-    JSONObject userConfig = this.parseUserConfig(key);
+    JSONObject userConfig = null;
+    userConfig = dplib.parseUserConfig(key);
     JSONArray params = (JSONArray) userConfig.get("params");
 
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
     String fullInputPath = Paths.get(workDir, projectName, inputPathConst, inputFile).normalize().toString();
     String inputPath = Paths.get(workDir, projectName, inputPathConst).normalize().toString();
-    System.out.println(String.format("### inputPath: %s ###", inputPath));
-    System.out.println(String.format("### Full Input Path: %s ###", fullInputPath));
+    logger.info(String.format("### inputPath: %s ###", inputPath));
+    logger.info(String.format("### Full Input Path: %s ###", fullInputPath));
 
 
     JSONObject outputOjbect;
@@ -200,19 +149,19 @@ public class FoliaEditor implements RecipePlugin {
 
     String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
     String fullOutputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
-    System.out.println(String.format("### outputPath: %s ###", outputPath));
-    System.out.println(String.format("### Full outputPath: %s ###", fullOutputPath));
+    logger.info(String.format("### outputPath: %s ###", outputPath));
+    logger.info(String.format("### Full outputPath: %s ###", fullOutputPath));
 
     File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
     if (!outputPathAsFile.exists()) {
-      System.out.println(String.format("### Creating folder: %s ###", outputPathAsFile.toString()));
+      logger.info(String.format("### Creating folder: %s ###", outputPathAsFile.toString()));
       outputPathAsFile.mkdirs();
     }
 
     JSONObject urlJson = uploadFile(key, fullInputPath);
     JSONObject json = new JSONObject();
     File file = new File(fullOutputPath);
-    System.out.println(String.format("### Generating output file: %s ###", fullOutputPath));
+    logger.info(String.format("### Generating output file: %s ###", fullOutputPath));
     writeToHtml(String.format(
       "<iframe src=\"%s\" width=\"100%%\" height=\"800px\">Text to display when iframe is not supported</iframe>",
       (String) urlJson.get("url")), file);
@@ -222,11 +171,10 @@ public class FoliaEditor implements RecipePlugin {
   }
 
   /**
-   * @param pid
    * Project ID also known as key, working directory
    */
   @Override
-  public JSONObject getStatus(String pid) {
+  public JSONObject getStatus() {
     // JSONObject status to return
     JSONObject status = new JSONObject();
     if (this.isFinished) {
@@ -281,9 +229,8 @@ public class FoliaEditor implements RecipePlugin {
 
   }
 
-  @Override
-  public JSONObject parseSymantics(String symantics) throws JDOMException, SaxonApiException {
-    System.out.println(String.format("### symantics in parseSymantics before parsing: %s ###", symantics));
+  public JSONObject parseSemantics(String symantics) throws JDOMException, SaxonApiException {
+    logger.info(String.format("### symantics in parseSemantics before parsing: %s ###", symantics));
     JSONObject json = new JSONObject();
     JSONObject parametersJson = new JSONObject();
 
@@ -354,13 +301,13 @@ public class FoliaEditor implements RecipePlugin {
   }
 
   public void downloadResultFile(URL url) throws IOException {
-    System.out.println("### Download URL:" + url + " ###");
+    logger.info("### Download URL:" + url + " ###");
     FileUtils.copyURLToFile(
         url,
         new File("resultFile.xml"),
         60,
         60);
-    System.out.println("### Download successful ###");
+    logger.info("### Download successful ###");
   }
 
   public JSONObject uploadFile(String projectName, String filename, String language, String inputTemplate,
@@ -374,7 +321,7 @@ public class FoliaEditor implements RecipePlugin {
     DeploymentLib dplib = new DeploymentLib();
 
     String path = filename;
-    System.out.println("### File path to be uploaded:" + path + " ###");
+    logger.info("### File path to be uploaded:" + path + " ###");
 
     jsonResult.put("pathUploadFile", path);
     File file = new File(path);
@@ -388,7 +335,7 @@ public class FoliaEditor implements RecipePlugin {
       this.serviceUrl.getFile() + "/pub/upload/",
       null
     );
-    System.out.println("### Upload URL:" + url.toString() + " ###");
+    logger.info("### Upload URL:" + url.toString() + " ###");
 
     com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest
       .post(url.toString())
@@ -397,11 +344,11 @@ public class FoliaEditor implements RecipePlugin {
       .field("file", file)
       .asJson();
 
-    System.out.println(String.format("### Response code: %s ###", jsonResponse.getCode()));
+    logger.info(String.format("### Response code: %s ###", jsonResponse.getCode()));
     Headers headers = jsonResponse.getHeaders();
     String returnUrlString = headers.get("location").get(0);
-    System.out.println(String.format("### Response full headers: %s ###", headers.toString()));
-    System.out.println(String.format("### Response url: %s ###", returnUrlString));
+    logger.info(String.format("### Response full headers: %s ###", headers.toString()));
+    logger.info(String.format("### Response url: %s ###", returnUrlString));
 
     URL returnUrl = new URL(
       this.serviceUrl.getProtocol(),
@@ -410,12 +357,12 @@ public class FoliaEditor implements RecipePlugin {
       returnUrlString,
       null
     );
-    System.out.println(String.format("### returnUrl: %s ###", returnUrl.toString()));
+    logger.info(String.format("### returnUrl: %s ###", returnUrl.toString()));
 
     URL devReturnUrl = new URL("http://localhost:9998" + returnUrlString);
     resultFileNameString = returnUrlString;
 
-    System.out.println(String.format("### Hacking returnUrl for dev environment: %s ###", devReturnUrl.toString()));
+    logger.info(String.format("### Hacking returnUrl for dev environment: %s ###", devReturnUrl.toString()));
     // jsonResult.put("url", returnUrl.toString());
     jsonResult.put("url", devReturnUrl.toString());
     Unirest.shutdown();
