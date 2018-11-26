@@ -194,7 +194,7 @@ public class DeploymentLib {
   }
 
 
-  public static JSONObject parseSymantics(String symantics) throws RecipePluginException {
+  public static JSONObject parseSemantics(String symantics) throws RecipePluginException {
     try {
       JSONObject parametersJson = new JSONObject();
 

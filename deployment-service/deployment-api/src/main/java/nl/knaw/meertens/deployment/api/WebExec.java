@@ -218,7 +218,7 @@ public class WebExec {
       logger.info(String.format("### dbConfig in xml as string: %s ###", serviceObj.getServiceSymantics()));
       String dbConfig = serviceObj.getServiceSymantics();
       boolean userConfigIsValid = this.checkUserConfig(
-        new DeploymentLib().parseSymantics(dbConfig),
+        DeploymentLib.parseSemantics(dbConfig),
         new DeploymentLib().parseUserConfig(wd)
       );
       if (!userConfigIsValid) {

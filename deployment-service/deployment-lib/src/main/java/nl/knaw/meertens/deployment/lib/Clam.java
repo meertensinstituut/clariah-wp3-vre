@@ -27,8 +27,6 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -45,7 +43,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.logging.Level;
 
 //import java.util.Iterator;
 //import sun.util.logging.PlatformLogger;
@@ -87,7 +84,7 @@ public class Clam implements RecipePlugin {
     logger.info("init CLAM plugin");
     JSONObject json = null;
     try {
-      json = new DeploymentLib().parseSymantics(service.getServiceSymantics());
+      json = new DeploymentLib().parseSemantics(service.getServiceSymantics());
     } catch (ConfigurationException e) {
       e.printStackTrace();
     }

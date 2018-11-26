@@ -64,12 +64,7 @@ public class FoliaEditor implements RecipePlugin {
   @Override
   public void init(String projectName, Service service) throws RecipePluginException {
     logger.info("init Folia Editor plugin");
-    JSONObject json = null;
-    try {
-      json = this.parseSemantics(service.getServiceSymantics());
-    } catch (JDOMException | SaxonApiException e) {
-      throw new RecipePluginException("Cannot parse semantics " + service.getServiceSymantics());
-    }
+    JSONObject json = DeploymentLib.parseSemantics(service.getServiceSymantics());
     this.projectName = projectName;
     try {
       this.serviceUrl = new URL((String) json.get("serviceLocation"));
@@ -224,69 +219,6 @@ public class FoliaEditor implements RecipePlugin {
       String name = Saxon.xpath2string(file, "name");
       json.put(name, href);
     }
-
-    return json;
-
-  }
-
-  public JSONObject parseSemantics(String symantics) throws JDOMException, SaxonApiException {
-    logger.info(String.format("### symantics in parseSemantics before parsing: %s ###", symantics));
-    JSONObject json = new JSONObject();
-    JSONObject parametersJson = new JSONObject();
-
-    Map<String, String> nameSpace = new LinkedHashMap<>();
-    nameSpace.put("cmd", "http://www.clarin.eu/cmd/1");
-    nameSpace.put("cmdp", "http://www.clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1527668176011");
-
-    StringReader reader = new StringReader(symantics);
-    XdmNode service = Saxon.buildDocument(new StreamSource(reader));
-
-    String serviceName = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Name", null, nameSpace);
-    String serviceDescription = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Description", null, nameSpace);
-    String serviceLocation = Saxon.xpath2string(
-      service, "//cmdp:ServiceDescriptionLocation/cmdp:Location", null, nameSpace);
-
-    String inputName = Saxon.xpath2string(
-      service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:Name", null, nameSpace);
-    String inputLabel = Saxon.xpath2string(
-      service,
-      "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:Label",
-      null,
-      nameSpace);
-    String inputType = Saxon
-      .xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MIMEType", null,
-        nameSpace);
-    String inputCardinalityMin = Saxon.xpath2string(service,
-      "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MinimumCardinality", null, nameSpace);
-    String inputCardinalityMax = Saxon.xpath2string(service,
-      "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:ParameterGroup/cmdp:MaximumCardinality", null, nameSpace);
-
-    String outputName = Saxon.xpath2string(
-      service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:Name", null, nameSpace);
-    String outputType = Saxon.xpath2string(
-      service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MIMEType", null, nameSpace);
-    String outputCardinalityMin = Saxon
-      .xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MinimumCardinality",
-        null, nameSpace);
-    String outputCardinalityMax = Saxon
-      .xpath2string(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Output/cmdp:Parameter/cmdp:MaximumCardinality",
-        null, nameSpace);
-
-    json.put("serviceName", serviceName);
-    json.put("serviceDescription", serviceDescription);
-    json.put("serviceLocation", serviceLocation);
-
-    json.put("inputName", inputName);
-    json.put("inputLabel", inputLabel);
-    json.put("inputType", inputType);
-    json.put("inputCardinalityMin", inputCardinalityMin);
-    json.put("inputCardinalityMax", inputCardinalityMax);
-
-    json.put("outputName", outputName);
-    // json.put("outputLabel", outputLabel);
-    json.put("outputType", outputType);
-    json.put("outputCardinalityMin", outputCardinalityMin);
-    json.put("outputCardinalityMax", outputCardinalityMax);
 
     return json;
 
