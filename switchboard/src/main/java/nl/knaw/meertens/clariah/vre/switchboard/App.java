@@ -1,7 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
+import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumerFactory;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.file.NextcloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerServiceImpl;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistryServiceImpl;
@@ -32,7 +32,8 @@ public class App extends ResourceConfig {
     configureAppContext();
   }
 
-  public static void main(String[] args) {}
+  public static void main(String[] args) {
+  }
 
   private void configureAppContext() {
 
@@ -77,8 +78,7 @@ public class App extends ResourceConfig {
       OBJECTS_DB_KEY
     );
 
-    var finishDeploymentConsumer = new FinishDeploymentConsumer(
-      servicesRegistryService,
+    var deploymentConsumerFactory = new DeploymentConsumerFactory(
       new NextcloudFileService(),
       kafkaSwitchboardService,
       kafkaNextcloudService
@@ -91,7 +91,7 @@ public class App extends ResourceConfig {
       kafkaSwitchboardService,
       tagRegistry,
       objectTagRegistry,
-      finishDeploymentConsumer
+      deploymentConsumerFactory
     );
 
     register(diBinder);

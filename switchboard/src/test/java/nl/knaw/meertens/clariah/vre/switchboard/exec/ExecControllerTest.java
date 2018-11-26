@@ -262,9 +262,9 @@ public class ExecControllerTest extends AbstractControllerTest {
     var finishedJson = DeployUtil.waitUntil(request, FINISHED);
 
     // verify:
-    var kafkaOwncloudServiceMock = jerseyTest.getKafkaOwncloudServiceMock();
+    var kafkaNextcloudServiceMock = jerseyTest.getKafkaNextcloudServiceMock();
     Mockito.verify(
-      kafkaOwncloudServiceMock,
+      kafkaNextcloudServiceMock,
       never())
            .send(Mockito.any());
   }

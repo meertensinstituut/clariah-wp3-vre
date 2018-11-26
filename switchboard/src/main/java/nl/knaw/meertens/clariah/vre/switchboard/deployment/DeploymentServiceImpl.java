@@ -3,6 +3,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class DeploymentServiceImpl implements DeploymentService {
   @Override
   public DeploymentStatusReport deploy(
     DeploymentRequest request,
-    PollDeploymentConsumer deploymentConsumer
+    DeploymentConsumer deploymentConsumer
   ) {
     var report = requestDeployment(request);
     requestRepositoryService.saveDeploymentRequest(report, deploymentConsumer);

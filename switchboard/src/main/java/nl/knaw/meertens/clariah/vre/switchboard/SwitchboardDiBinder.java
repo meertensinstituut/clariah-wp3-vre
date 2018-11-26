@@ -2,8 +2,8 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumerFactory;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.exception.CommonExceptionMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.exec.ExecController;
@@ -60,7 +60,7 @@ public class SwitchboardDiBinder extends AbstractBinder {
   private KafkaProducerService kafkaSwitchboardService;
   private TagRegistry tagRegistry;
   private ObjectTagRegistry objectTagRegistry;
-  private FinishDeploymentConsumer finishDeploymentConsumer;
+  private DeploymentConsumerFactory deploymentConsumerFactory;
 
   SwitchboardDiBinder(
     ObjectsRegistryService objectsRegistryService,
@@ -69,7 +69,7 @@ public class SwitchboardDiBinder extends AbstractBinder {
     KafkaProducerService kafkaSwitchboardService,
     TagRegistry tagRegistry,
     ObjectTagRegistry objectTagRegistry,
-    FinishDeploymentConsumer finishDeploymentConsumer
+    DeploymentConsumerFactory deploymentConsumerFactory
   ) {
     this.objectsRegistryService = objectsRegistryService;
     this.deploymentService = deploymentService;
@@ -77,7 +77,7 @@ public class SwitchboardDiBinder extends AbstractBinder {
     this.kafkaSwitchboardService = kafkaSwitchboardService;
     this.tagRegistry = tagRegistry;
     this.objectTagRegistry = objectTagRegistry;
-    this.finishDeploymentConsumer = finishDeploymentConsumer;
+    this.deploymentConsumerFactory = deploymentConsumerFactory;
   }
 
   /**
@@ -138,7 +138,7 @@ public class SwitchboardDiBinder extends AbstractBinder {
       deploymentService,
       serviceRegistryService,
       kafkaSwitchboardService,
-      finishDeploymentConsumer
+      deploymentConsumerFactory
     )).to(ExecService.class);
 
     bind(new ObjectService(

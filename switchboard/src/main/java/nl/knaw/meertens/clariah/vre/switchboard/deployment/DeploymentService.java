@@ -1,5 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
+import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumer;
+
 /**
  * Deployment service:
  * - starts requested service,
@@ -11,7 +13,7 @@ public interface DeploymentService {
   /**
    * Deploy requested service.
    */
-  DeploymentStatusReport deploy(DeploymentRequest request, PollDeploymentConsumer deploymentConsumer);
+  DeploymentStatusReport deploy(DeploymentRequest request, DeploymentConsumer deploymentConsumer);
 
   /**
    * Get status of deployed service

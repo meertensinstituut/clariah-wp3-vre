@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.exception.NoReportFileException;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.exception.RuntimeIOException;
@@ -30,7 +31,7 @@ public class RequestRepository {
   private final ObjectMapper mapper;
 
   private final Map<String, DeploymentStatusReport> reports = new HashMap<>();
-  private final Map<String, PollDeploymentConsumer> consumers = new HashMap<>();
+  private final Map<String, DeploymentConsumer> consumers = new HashMap<>();
   private final Map<String, LocalDateTime> finished = new HashMap<>();
 
   public RequestRepository(
@@ -43,7 +44,7 @@ public class RequestRepository {
     this.mapper = mapper;
   }
 
-  public PollDeploymentConsumer getConsumer(String workDir) {
+  public DeploymentConsumer getConsumer(String workDir) {
     return consumers.get(workDir);
   }
 
@@ -58,7 +59,7 @@ public class RequestRepository {
 
   void saveDeploymentRequest(
     DeploymentStatusReport report,
-    PollDeploymentConsumer reportConsumer
+    DeploymentConsumer reportConsumer
   ) {
     saveStatusReport(report);
     consumers.put(report.getWorkDir(), reportConsumer);

@@ -1,12 +1,13 @@
 package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumer;
+import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumerFactory;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.PollDeploymentConsumer;
+import nl.knaw.meertens.clariah.vre.switchboard.consumer.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
@@ -57,6 +58,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
 public class ExecService {
 
   private static final int WORK_DIR_LENGTH = 8;
+
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
   private final ObjectMapper mapper;
   private final KafkaProducerService kafkaSwitchboardService;
@@ -64,7 +66,7 @@ public class ExecService {
   private final DeploymentService deploymentService;
   private ObjectsRegistryService objectsRegistryService;
   private ServicesRegistryService serviceRegistryService;
-  private PollDeploymentConsumer finishDeploymentConsumer;
+  private DeploymentConsumerFactory finishDeploymentConsumer;
 
   public ExecService(
     ObjectMapper mapper,
@@ -72,13 +74,13 @@ public class ExecService {
     DeploymentService deploymentService,
     ServicesRegistryService serviceRegistryService,
     KafkaProducerService kafkaSwitchboardService,
-    FinishDeploymentConsumer finishDeploymentConsumer
+    DeploymentConsumerFactory deploymentConsumerFactory
   ) {
     this.mapper = mapper;
     this.objectsRegistryService = objectsRegistryService;
     this.kafkaSwitchboardService = kafkaSwitchboardService;
     this.serviceRegistryService = serviceRegistryService;
-    this.finishDeploymentConsumer = finishDeploymentConsumer;
+    this.finishDeploymentConsumer = deploymentConsumerFactory;
     this.nextcloudFileService = new NextcloudFileService();
     this.deploymentService = deploymentService;
   }
@@ -90,9 +92,10 @@ public class ExecService {
     var service = serviceRegistryService.getServiceByName(serviceName);
     var kind = ServiceKind.fromKind(service.getKind());
     var request = prepareDeploymentRequest(serviceName, body, kind);
+    var consumer = finishDeploymentConsumer.get(kind);
     List<String> files = new ArrayList<>(request.getFiles().values());
     nextcloudFileService.stageFiles(request.getWorkDir(), files);
-    var statusReport = deploymentService.deploy(request, finishDeploymentConsumer);
+    var statusReport = deploymentService.deploy(request, consumer);
     request.setStatusReport(statusReport);
     return request;
   }

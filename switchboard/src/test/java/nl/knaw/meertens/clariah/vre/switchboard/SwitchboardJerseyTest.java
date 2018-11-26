@@ -1,8 +1,8 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
+import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumerFactory;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.file.NextcloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
@@ -71,8 +71,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
       SwitchboardDiBinder.getControllerClasses()
     );
 
-    var finishDeploymentConsumer = new FinishDeploymentConsumer(
-      servicesRegistryService,
+    var finishDeploymentConsumer = new DeploymentConsumerFactory(
       new NextcloudFileService(),
       kafkaSwitchboardServiceMock,
       kafkaOwncloudServiceMock
@@ -117,7 +116,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
     return kafkaSwitchboardServiceMock;
   }
 
-  public KafkaProducerService getKafkaOwncloudServiceMock() {
+  public KafkaProducerService getKafkaNextcloudServiceMock() {
     return kafkaOwncloudServiceMock;
   }
 
