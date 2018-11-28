@@ -73,9 +73,9 @@ public class Test implements RecipePlugin {
   }
 
   @Override
-  public void init(String wd, Service serviceObj) throws RecipePluginException {
+  public void init(String workDir, Service service) throws RecipePluginException {
     logger.info("init plugin");
-    this.wd = wd;
+    this.wd = workDir;
   }
 
 }

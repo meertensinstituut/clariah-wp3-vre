@@ -33,25 +33,39 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static org.apache.commons.lang.StringUtils.isEmpty;
+
 
 /**
  * @author Vic
  */
 public class DeploymentLib {
 
-  private final String defaultConfiPath = "/conf/conf.xml";
-  String fullPath;
-  File config;
-  String userConfFile;
-  String inputDirectory;
-  String outputDirectory;
-  String queueLength;
+  private static final String defaultConfigPath = "/conf/conf.xml";
+
+  private static String systemWorkDir;
+  private static String userConfFile;
+  private static String outputDirectory;
+  private static String inputDirectory;
+
+  private File config;
+
+  private String queueLength;
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   public DeploymentLib() throws ConfigurationException {
-
-    this.config = new File(this.defaultConfiPath);
+    this.config = new File(this.defaultConfigPath);
     this.parseConfig(this.config);
+  }
+
+  /**
+   * @throws RecipePluginException when work dir does not exist
+   */
+  public static void workDirExists(String workDir) throws RecipePluginException {
+    File file = Paths.get(systemWorkDir, workDir).toFile();
+    if (!file.exists()) {
+      throw new RecipePluginException("work dir does not exist");
+    }
   }
 
   public File getConfigFile() {
@@ -107,9 +121,12 @@ public class DeploymentLib {
     return service instanceof Service;
   }
 
+  /**
+   * Parse system wide config of deployment service
+   */
   public void parseConfig(File config) throws ConfigurationException {
     XMLConfiguration xml = new XMLConfiguration(config);
-    this.fullPath = xml.getString("workingFolder");
+    this.systemWorkDir = xml.getString("workingFolder");
     this.userConfFile = xml.getString("userConfFile");
     this.inputDirectory = xml.getString("inputDirectory");
     this.outputDirectory = xml.getString("outputDirectory");
@@ -120,79 +137,6 @@ public class DeploymentLib {
     File configFile = new File(config);
     this.parseConfig(configFile);
   }
-
-  public String getWd() {
-    return this.fullPath;
-  }
-
-  public String getConfFile() {
-    return this.userConfFile;
-  }
-
-  public String getUrlBody(HttpURLConnection conn) throws IOException {
-
-    // handle error response code it occurs
-    int responseCode = conn.getResponseCode();
-    InputStream inputStream;
-    if (200 <= responseCode && responseCode <= 299) {
-      inputStream = conn.getInputStream();
-    } else {
-      inputStream = conn.getErrorStream();
-    }
-
-    BufferedReader in = new BufferedReader(
-      new InputStreamReader(
-        inputStream));
-
-    StringBuilder response = new StringBuilder();
-    String currentLine;
-
-    while ((currentLine = in.readLine()) != null) {
-      response.append(currentLine);
-    }
-
-    in.close();
-
-    return response.toString();
-  }
-
-  String getOutputDir() {
-    return this.outputDirectory;
-  }
-
-  String getInputDir() {
-    return this.inputDirectory;
-  }
-
-  String getQueueLength() {
-    return this.queueLength;
-  }
-
-  public JSONObject parseUserConfig(String key) {
-    DeploymentLib dplib = null;
-    try {
-      dplib = new DeploymentLib();
-    } catch (ConfigurationException e) {
-      throw new RuntimeException("Configuration file is invalid");
-    }
-
-    String workDir = dplib.getWd();
-    String userConfFile = dplib.getConfFile();
-    JSONParser parser = new JSONParser();
-
-    try {
-      String path = Paths.get(workDir, key, userConfFile).normalize().toString();
-      JSONObject userConfig = (JSONObject) parser.parse(new FileReader(path));
-
-      return userConfig;
-    } catch (Exception ex) {
-      logger.info(ex.getLocalizedMessage());
-    }
-    JSONObject userConfig = new JSONObject();
-    userConfig.put("parse user config", "failed");
-    return userConfig;
-  }
-
 
   public static JSONObject parseSemantics(String symantics) throws RecipePluginException {
     try {
@@ -258,5 +202,92 @@ public class DeploymentLib {
       throw new RecipePluginException("Invalid semantics xml");
     }
   }
+
+  public JSONObject parseUserConfig(String workDir) throws IOException {
+    DeploymentLib dplib;
+    try {
+      dplib = new DeploymentLib();
+    } catch (ConfigurationException e) {
+      throw new IOException("Configuration file is invalid");
+    }
+
+    String userConfFile = dplib.getConfFile();
+    JSONParser parser = new JSONParser();
+    if (isEmpty(workDir)) {
+      throw new RuntimeException("working directory is empty");
+    }
+    logger.info("systemWorkDir, workDir, userConfFile: " + systemWorkDir + workDir + userConfFile);
+    String path = Paths.get(
+      systemWorkDir,
+      workDir,
+      userConfFile
+    ).normalize().toString();
+
+    try {
+      return (JSONObject) parser.parse(new FileReader(path));
+    } catch (IOException | ParseException e) {
+      throw new IOException(String.format("could not read config path [%s]", path));
+    }
+  }
+
+  private String getConfFile() {
+    return this.userConfFile;
+  }
+
+  private String getUrlBody(HttpURLConnection conn) throws IOException {
+
+    // handle error response code it occurs
+    int responseCode = conn.getResponseCode();
+    InputStream inputStream;
+    if (200 <= responseCode && responseCode <= 299) {
+      inputStream = conn.getInputStream();
+    } else {
+      inputStream = conn.getErrorStream();
+    }
+
+    BufferedReader in = new BufferedReader(
+      new InputStreamReader(
+        inputStream));
+
+    StringBuilder response = new StringBuilder();
+    String currentLine;
+
+    while ((currentLine = in.readLine()) != null) {
+      response.append(currentLine);
+    }
+
+    in.close();
+
+    return response.toString();
+  }
+
+  String getOutputDir() {
+    return this.outputDirectory;
+  }
+
+  String getInputDir() {
+    return this.inputDirectory;
+  }
+
+  String getQueueLength() {
+    return this.queueLength;
+  }
+
+  static String getSystemWorkDir() {
+    return systemWorkDir;
+  }
+
+  static String getUserConfFile() {
+    return userConfFile;
+  }
+
+  static String getOutputDirectory() {
+    return outputDirectory;
+  }
+
+  static String getInputDirectory() {
+    return inputDirectory;
+  }
+
 
 }

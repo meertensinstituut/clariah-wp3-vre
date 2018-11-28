@@ -20,16 +20,12 @@ import org.apache.commons.lang.StringUtils;
 import org.jdom2.JDOMException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -62,10 +58,10 @@ public class FoliaEditor implements RecipePlugin {
    * Initiate the recipe.
    */
   @Override
-  public void init(String projectName, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service) throws RecipePluginException {
     logger.info("init Folia Editor plugin");
     JSONObject json = DeploymentLib.parseSemantics(service.getServiceSymantics());
-    this.projectName = projectName;
+    this.projectName = workDir;
     try {
       this.serviceUrl = new URL((String) json.get("serviceLocation"));
     } catch (MalformedURLException e) {
@@ -120,7 +116,7 @@ public class FoliaEditor implements RecipePlugin {
 
     DeploymentLib dplib = new DeploymentLib();
 
-    String workDir = dplib.getWd();
+    String workDir = dplib.getSystemWorkDir();
     JSONObject userConfig = null;
     userConfig = dplib.parseUserConfig(key);
     JSONArray params = (JSONArray) userConfig.get("params");

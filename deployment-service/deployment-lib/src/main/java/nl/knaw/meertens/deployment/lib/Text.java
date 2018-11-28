@@ -7,9 +7,7 @@
 package nl.knaw.meertens.deployment.lib;
 
 
-import net.sf.saxon.s9api.SaxonApiException;
 import org.apache.commons.configuration.ConfigurationException;
-import org.jdom2.JDOMException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -35,9 +33,9 @@ public class Text implements RecipePlugin {
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Override
-  public void init(String projectName, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service) throws RecipePluginException {
     logger.info("init Text plugin");
-    this.projectName = projectName;
+    this.projectName = workDir;
     this.serviceUrl = null;
     logger.info("finish init Text plugin");
   }
@@ -85,7 +83,7 @@ public class Text implements RecipePlugin {
     final String inputPathConst = "input";
     DeploymentLib dplib = new DeploymentLib();
 
-    String workDir = dplib.getWd();
+    String workDir = dplib.getSystemWorkDir();
     // String userConfFile = dplib.getConfFile();
     JSONObject userConfig = dplib.parseUserConfig(key);
     JSONArray params = (JSONArray) userConfig.get("params");

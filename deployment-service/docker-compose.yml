@@ -4,6 +4,10 @@ services:
   deployment:
     container_name: vre_deployment_1
     build: ./
+    volumes:
+      - ./:/tmp/deployment
+      # share maven repository of host:
+      - ${HOME}/.m2/repository:/root/.m2/repository
     tty: true
-    working_dir: /conf
+    working_dir: /tmp/deployment
     command: /tmp/deployment/docker/docker-run-deployment.sh

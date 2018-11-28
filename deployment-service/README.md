@@ -19,6 +19,10 @@ mvn install:install-file \
 - To build war-file, run `mvn clean install`
 - Run `cd ../ ; ./start-vre.sh`
 
+Tests
+===
+Run tests: `docker exec vre_deployment_1 bash -c "cd /tmp/deployment && mvn clean test"`
+
 Status codes
 ---
 ```

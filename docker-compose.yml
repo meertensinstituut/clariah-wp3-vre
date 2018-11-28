@@ -90,6 +90,7 @@ services:
     build: ./deployment-service
     volumes:
       - ./deployment-service/conf:/conf
+      - ./deployment-service/:/tmp/deployment
       - deployment-volume:/tmp/wd/
       - data-volume:/usr/local/nextcloud
       # share maven repository of host:

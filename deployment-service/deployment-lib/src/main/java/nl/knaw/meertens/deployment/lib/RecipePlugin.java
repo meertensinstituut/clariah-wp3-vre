@@ -5,9 +5,12 @@ import org.json.simple.JSONObject;
 public interface RecipePlugin {
 
   /**
+   * @param workDir Project name also known as key, project id and working directory
+   * @param service Service record in the service registry
+   *
    * @throws RecipePluginException exception
    */
-  void init(String wd, Service serviceObj) throws RecipePluginException;
+  void init(String workDir, Service service) throws RecipePluginException;
 
   /**
    * @return JSONObject result

@@ -1,6 +1,8 @@
 #!/bin/bash
+set -e
 
 cd /tmp/deployment
+
 mvn clean install
 cp deployment-api/target/deployment-api.war /usr/local/tomcat/webapps/deployment-service.war
 

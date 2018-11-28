@@ -69,7 +69,7 @@ public class Clam implements RecipePlugin {
   /**
    * Initiate the current plugin
    *
-   * @param projectName
+   * @param workDir
    * The 'project name' in the sense that Clam requires a project name to work with.
    *
    * @param service
@@ -80,7 +80,7 @@ public class Clam implements RecipePlugin {
    * XML related exception
    */
   @Override
-  public void init(String projectName, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service) throws RecipePluginException {
     logger.info("init CLAM plugin");
     JSONObject json = null;
     try {
@@ -88,7 +88,7 @@ public class Clam implements RecipePlugin {
     } catch (ConfigurationException e) {
       e.printStackTrace();
     }
-    this.projectName = projectName;
+    this.projectName = workDir;
     try {
       this.serviceUrl = new URL((String) json.get("serviceLocation"));
     } catch (MalformedURLException e) {
@@ -372,7 +372,12 @@ public class Clam implements RecipePlugin {
     json = this.getAccessToken(projectName);
     DeploymentLib dplib = new DeploymentLib();
 
-    String path = Paths.get(dplib.getWd(), projectName, dplib.getInputDir(), filename).normalize().toString();
+    String path = Paths.get(
+      dplib.getSystemWorkDir(),
+      projectName,
+      dplib.getInputDir(),
+      filename
+    ).normalize().toString();
     logger.info("### File path to be uploaded:" + path + " ###");
 
     jsonResult.put("pathUploadFile", path);
@@ -430,8 +435,7 @@ public class Clam implements RecipePlugin {
       writer.close();
 
       connection.disconnect();
-      System.out
-        .println("### File uplaoded! " + connection.getResponseCode() + connection.getResponseMessage() + " ###");
+      logger.info("### File uplaoded! " + connection.getResponseCode() + connection.getResponseMessage() + " ###");
 
     } catch (Exception e) {
       logger.info("### File upload failed ###");
@@ -471,7 +475,7 @@ public class Clam implements RecipePlugin {
     final String outputPathConst = "output";
 
     DeploymentLib dplib = new DeploymentLib();
-    String workDir = dplib.getWd();
+    String workDir = dplib.getSystemWorkDir();
     String outputDir = dplib.getOutputDir();
     logger.info(String.format("### current outputPath: %s ###", outputDir));
 

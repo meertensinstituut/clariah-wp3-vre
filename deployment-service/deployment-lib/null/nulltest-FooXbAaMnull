@@ -1,0 +1,14 @@
+{
+  "params": [
+    {
+      "name": "input",
+      "type": "file",
+      "value": "example.xml"
+    },
+    {
+      "name": "output",
+      "type": "file",
+      "value": "example.html"
+    }
+  ]
+}

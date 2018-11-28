@@ -7,10 +7,25 @@
     <artifactId>deployment-service</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <groupId>nl.knaw.meertens.deployment</groupId>
   <version>1.0-SNAPSHOT</version>
   <artifactId>deployment-lib</artifactId>
   <packaging>jar</packaging>
+
+  <properties>
+    <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
+    <maven.compiler.source>10</maven.compiler.source>
+    <maven.compiler.target>10</maven.compiler.target>
+    <mavens-surefire-plugin.version>2.18.1</mavens-surefire-plugin.version>
+
+    <assertj-core.version>3.9.0</assertj-core.version>
+    <jaxb-api.version>2.4.0-b180725.0427</jaxb-api.version>
+    <json-unit-fluent.version>1.28.1</json-unit-fluent.version>
+    <junit.version>4.12</junit.version>
+    <mockito-core.version>2.21.0</mockito-core.version>
+    <mockserver.version>5.4.1</mockserver.version>
+
+  </properties>
+
   <repositories>
     <repository>
       <id>CLARIN</id>
@@ -29,6 +44,7 @@
       </snapshots>
     </repository>
   </repositories>
+
   <dependencies>
     <dependency>
       <groupId>commons-configuration</groupId>
@@ -100,15 +116,35 @@
       <artifactId>jersey-container-servlet</artifactId>
       <version>2.26</version>
     </dependency>
+
+    <!-- testing -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.javacrumbs.json-unit</groupId>
+      <artifactId>json-unit-fluent</artifactId>
+      <version>${json-unit-fluent.version}</version>
+    </dependency>
+
   </dependencies>
-  <properties>
-    <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
-    <maven.compiler.source>10</maven.compiler.source>
-    <maven.compiler.target>10</maven.compiler.target>
-  </properties>
+
   <build>
     <finalName>deployment-lib</finalName>
     <plugins>
+
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.7.0</version>
@@ -118,6 +154,7 @@
           <target>1.9</target>
         </configuration>
       </plugin>
+
       <!-- checkstyle -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -139,6 +176,29 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- test -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${mavens-surefire-plugin.version}</version>
+        <configuration>
+          <!-- java modules: -->
+          <argLine>
+            --add-opens java.base/java.lang=ALL-UNNAMED --illegal-access=permit
+          </argLine>
+          <forkMode>once</forkMode>
+        </configuration>
+        <dependencies>
+          <!-- java modules: -->
+          <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxb-api.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
     </plugins>
   </build>
 </project>
