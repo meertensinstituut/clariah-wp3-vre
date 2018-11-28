@@ -31,7 +31,7 @@ public class Queue {
       try {
         logger.info("creating queue");
         DeploymentLib dplib = new DeploymentLib();
-        queueLength = dplib.getQueueLength();
+        queueLength = SystemConf.queueLength;
         logger.info("created queue");
       } catch (ConfigurationException ex) {
         logger.error("failure creating queue", ex);

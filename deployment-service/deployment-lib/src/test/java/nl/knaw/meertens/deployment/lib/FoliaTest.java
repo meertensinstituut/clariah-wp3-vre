@@ -73,20 +73,20 @@ public class FoliaTest {
     String outputFileName = "example.html";
     String workDir = "test-" + RandomStringUtils.randomAlphanumeric(8);
     FileUtil.createWorkDir(workDir);
-    Path configPath = Paths.get(getSystemWorkDir(), workDir, getUserConfFile());
+    Path configPath = Paths.get(SystemConf.systemWorkDir, workDir, SystemConf.userConfFile);
 
     logger.info("Created config: " + configPath.toString());
     createFile(configPath.toString(), FileUtil.getTestFileContent("config.json"));
 
     String inputFilename = "example.xml";
-    Path inputPath = Paths.get(getSystemWorkDir(), workDir, getInputDirectory(), inputFilename);
+    Path inputPath = Paths.get(SystemConf.systemWorkDir, workDir, SystemConf.inputDirectory, inputFilename);
     createFile(inputPath.toString(), FileUtil.getTestFileContent(inputFilename));
 
     Folia folia = new Folia();
     Service service = new Service();
     folia.init(workDir, service);
     folia.execute();
-    File outputFile = Paths.get(getSystemWorkDir(), workDir, getOutputDirectory(), outputFileName).toFile();
+    File outputFile = Paths.get(SystemConf.systemWorkDir, workDir, SystemConf.outputDirectory, outputFileName).toFile();
 
     assertThat(outputFile.exists()).isTrue();
     String outputContent = FileUtils.readFileToString(outputFile);

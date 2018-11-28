@@ -21,7 +21,7 @@ mvn install:install-file \
 
 Tests
 ===
-Run tests: `docker exec vre_deployment_1 bash -c "cd /tmp/deployment && mvn clean test"`
+Run tests: `docker exec vre_deployment_1 mvn clean test`
 
 Status codes
 ---

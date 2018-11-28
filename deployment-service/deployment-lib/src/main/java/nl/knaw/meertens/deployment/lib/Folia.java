@@ -139,7 +139,7 @@ public class Folia implements RecipePlugin {
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
 
-    String workDir = dplib.getSystemWorkDir();
+    String workDir = SystemConf.systemWorkDir;
     String fullInputPath = Paths.get(workDir, this.workDir, inputPathConst, inputFile).normalize().toString();
     String inputPath = Paths.get(workDir, this.workDir, inputPathConst).normalize().toString();
     logger.info(String.format("### inputPath: %s ###", inputPath));

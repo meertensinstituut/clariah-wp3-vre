@@ -83,7 +83,7 @@ public class Text implements RecipePlugin {
     final String inputPathConst = "input";
     DeploymentLib dplib = new DeploymentLib();
 
-    String workDir = dplib.getSystemWorkDir();
+    String workDir = SystemConf.systemWorkDir;
     // String userConfFile = dplib.getConfFile();
     JSONObject userConfig = dplib.parseUserConfig(key);
     JSONArray params = (JSONArray) userConfig.get("params");

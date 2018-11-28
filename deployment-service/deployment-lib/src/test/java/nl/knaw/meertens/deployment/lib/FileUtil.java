@@ -19,7 +19,7 @@ public class FileUtil {
   }
 
   public static void createWorkDir(String workDir) throws IOException {
-    Path path = Paths.get(DeploymentLib.getSystemWorkDir(), workDir);
+    Path path = Paths.get(SystemConf.systemWorkDir, workDir);
     path.toFile().mkdirs();
   }
 

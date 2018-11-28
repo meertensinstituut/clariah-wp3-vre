@@ -373,9 +373,9 @@ public class Clam implements RecipePlugin {
     DeploymentLib dplib = new DeploymentLib();
 
     String path = Paths.get(
-      dplib.getSystemWorkDir(),
+      SystemConf.systemWorkDir,
       projectName,
-      dplib.getInputDir(),
+      SystemConf.inputDirectory,
       filename
     ).normalize().toString();
     logger.info("### File path to be uploaded:" + path + " ###");
@@ -471,19 +471,17 @@ public class Clam implements RecipePlugin {
 
   }
 
-  public JSONObject downloadProject(String projectName) throws IOException, SaxonApiException, ConfigurationException {
+  public JSONObject downloadProject(String workDir) throws IOException, SaxonApiException, ConfigurationException {
     final String outputPathConst = "output";
 
-    DeploymentLib dplib = new DeploymentLib();
-    String workDir = dplib.getSystemWorkDir();
-    String outputDir = dplib.getOutputDir();
+    String outputDir = SystemConf.outputDirectory;
     logger.info(String.format("### current outputPath: %s ###", outputDir));
 
-    String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
+    String outputPath = Paths.get(SystemConf.systemWorkDir, workDir, outputPathConst).normalize().toString();
     logger.info(String.format("### outputPath: %s ###", outputPath));
-    String path = Paths.get(workDir, projectName, outputDir).normalize().toString();
+    String path = Paths.get(workDir, workDir, outputDir).normalize().toString();
 
-    JSONObject jsonFiles = this.getOutputFiles(projectName);
+    JSONObject jsonFiles = this.getOutputFiles(workDir);
     JSONObject json = new JSONObject();
     /* create output directory if not there */
     File theDir = new File(path);

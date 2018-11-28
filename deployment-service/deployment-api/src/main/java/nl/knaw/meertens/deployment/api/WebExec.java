@@ -189,8 +189,6 @@ public class WebExec {
     Response res;
     JSONObject json = new JSONObject();
     DeploymentLib dplib = new DeploymentLib();
-    File configFile = dplib.getConfigFile();
-    dplib.parseConfig(configFile);
 
     if (dplib.serviceExists(service)) {
 

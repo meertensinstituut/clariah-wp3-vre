@@ -11,7 +11,6 @@ import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import nl.mpi.tla.util.Saxon;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -41,35 +40,20 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
  */
 public class DeploymentLib {
 
-  private static final String defaultConfigPath = "/conf/conf.xml";
-
-  private static String systemWorkDir;
-  private static String userConfFile;
-  private static String outputDirectory;
-  private static String inputDirectory;
-
-  private File config;
-
-  private String queueLength;
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   public DeploymentLib() throws ConfigurationException {
-    this.config = new File(this.defaultConfigPath);
-    this.parseConfig(this.config);
+
   }
 
   /**
    * @throws RecipePluginException when work dir does not exist
    */
   public static void workDirExists(String workDir) throws RecipePluginException {
-    File file = Paths.get(systemWorkDir, workDir).toFile();
+    File file = Paths.get(SystemConf.systemWorkDir, workDir).toFile();
     if (!file.exists()) {
       throw new RecipePluginException("work dir does not exist");
     }
-  }
-
-  public File getConfigFile() {
-    return this.config;
   }
 
   public Service getServiceByName(String serviceName) throws IOException, ConfigurationException {
@@ -119,23 +103,6 @@ public class DeploymentLib {
   public Boolean serviceExists(String serviceName) throws ConfigurationException, IOException {
     Service service = this.getServiceByName(serviceName);
     return service instanceof Service;
-  }
-
-  /**
-   * Parse system wide config of deployment service
-   */
-  public void parseConfig(File config) throws ConfigurationException {
-    XMLConfiguration xml = new XMLConfiguration(config);
-    this.systemWorkDir = xml.getString("workingFolder");
-    this.userConfFile = xml.getString("userConfFile");
-    this.inputDirectory = xml.getString("inputDirectory");
-    this.outputDirectory = xml.getString("outputDirectory");
-    this.queueLength = xml.getString("configLength");
-  }
-
-  public void parseConfig(String config) throws ConfigurationException {
-    File configFile = new File(config);
-    this.parseConfig(configFile);
   }
 
   public static JSONObject parseSemantics(String symantics) throws RecipePluginException {
@@ -211,16 +178,14 @@ public class DeploymentLib {
       throw new IOException("Configuration file is invalid");
     }
 
-    String userConfFile = dplib.getConfFile();
     JSONParser parser = new JSONParser();
     if (isEmpty(workDir)) {
       throw new RuntimeException("working directory is empty");
     }
-    logger.info("systemWorkDir, workDir, userConfFile: " + systemWorkDir + workDir + userConfFile);
     String path = Paths.get(
-      systemWorkDir,
+      SystemConf.systemWorkDir,
       workDir,
-      userConfFile
+      SystemConf.userConfFile
     ).normalize().toString();
 
     try {
@@ -228,10 +193,6 @@ public class DeploymentLib {
     } catch (IOException | ParseException e) {
       throw new IOException(String.format("could not read config path [%s]", path));
     }
-  }
-
-  private String getConfFile() {
-    return this.userConfFile;
   }
 
   private String getUrlBody(HttpURLConnection conn) throws IOException {
@@ -259,34 +220,6 @@ public class DeploymentLib {
     in.close();
 
     return response.toString();
-  }
-
-  String getOutputDir() {
-    return this.outputDirectory;
-  }
-
-  String getInputDir() {
-    return this.inputDirectory;
-  }
-
-  String getQueueLength() {
-    return this.queueLength;
-  }
-
-  static String getSystemWorkDir() {
-    return systemWorkDir;
-  }
-
-  static String getUserConfFile() {
-    return userConfFile;
-  }
-
-  static String getOutputDirectory() {
-    return outputDirectory;
-  }
-
-  static String getInputDirectory() {
-    return inputDirectory;
   }
 
 

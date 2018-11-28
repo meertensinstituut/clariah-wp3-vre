@@ -116,15 +116,15 @@ public class FoliaEditor implements RecipePlugin {
 
     DeploymentLib dplib = new DeploymentLib();
 
-    String workDir = dplib.getSystemWorkDir();
     JSONObject userConfig = null;
     userConfig = dplib.parseUserConfig(key);
     JSONArray params = (JSONArray) userConfig.get("params");
 
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
-    String fullInputPath = Paths.get(workDir, projectName, inputPathConst, inputFile).normalize().toString();
-    String inputPath = Paths.get(workDir, projectName, inputPathConst).normalize().toString();
+    String fullInputPath =
+      Paths.get(SystemConf.systemWorkDir, projectName, inputPathConst, inputFile).normalize().toString();
+    String inputPath = Paths.get(SystemConf.systemWorkDir, projectName, inputPathConst).normalize().toString();
     logger.info(String.format("### inputPath: %s ###", inputPath));
     logger.info(String.format("### Full Input Path: %s ###", fullInputPath));
 
@@ -138,8 +138,9 @@ public class FoliaEditor implements RecipePlugin {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
-    String fullOutputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
+    String outputPath = Paths.get(SystemConf.systemWorkDir, projectName, outputPathConst).normalize().toString();
+    String fullOutputPath =
+      Paths.get(SystemConf.systemWorkDir, projectName, outputPathConst, outputFile).normalize().toString();
     logger.info(String.format("### outputPath: %s ###", outputPath));
     logger.info(String.format("### Full outputPath: %s ###", fullOutputPath));
 
@@ -183,16 +184,11 @@ public class FoliaEditor implements RecipePlugin {
   /**
    * Get output file.
    *
-   * @param projectName
-   * project name also knows as project ID, working directory and key
-   * @throws MalformedURLException
-   * Wrongly formed URL
-   * @throws IOException
-   * Disk read/write Exception
-   * @throws JDOMException
-   * Invalide JDOM
-   * @throws SaxonApiException
-   * Saxon Exception
+   * @param projectName project name also knows as project ID, working directory and key
+   * @throws MalformedURLException Wrongly formed URL
+   * @throws IOException           Disk read/write Exception
+   * @throws JDOMException         Invalide JDOM
+   * @throws SaxonApiException     Saxon Exception
    */
   public JSONObject getOutputFiles(String projectName) throws MalformedURLException, IOException, SaxonApiException {
     JSONObject json = new JSONObject();
@@ -221,7 +217,7 @@ public class FoliaEditor implements RecipePlugin {
   }
 
   public static String[] explodeString(String stringToExplode, String separator) {
-    return  StringUtils.splitPreserveAllTokens(stringToExplode, separator);
+    return StringUtils.splitPreserveAllTokens(stringToExplode, separator);
   }
 
   public void downloadResultFile(String url) throws IOException {
@@ -231,10 +227,10 @@ public class FoliaEditor implements RecipePlugin {
   public void downloadResultFile(URL url) throws IOException {
     logger.info("### Download URL:" + url + " ###");
     FileUtils.copyURLToFile(
-        url,
-        new File("resultFile.xml"),
-        60,
-        60);
+      url,
+      new File("resultFile.xml"),
+      60,
+      60);
     logger.info("### Download successful ###");
   }
 
@@ -244,7 +240,7 @@ public class FoliaEditor implements RecipePlugin {
   }
 
   public JSONObject uploadFile(String projectName, String filename)
-      throws IOException, ConfigurationException, UnirestException {
+    throws IOException, ConfigurationException, UnirestException {
     JSONObject jsonResult = new JSONObject();
     DeploymentLib dplib = new DeploymentLib();
 
