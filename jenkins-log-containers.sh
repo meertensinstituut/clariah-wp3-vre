@@ -15,3 +15,4 @@ docker logs vre_zookeeper_1 > logs/vre_zookeeper_1.log
 docker logs vre_postgres_1 > logs/vre_postgres_1.log
 docker logs vre_switchboard_1 > logs/vre_switchboard_1.log
 docker logs vre_indexer_1 > logs/vre_indexer_1.log
+docker logs vre_tagger_1 > logs/vre_tagger_1.log
