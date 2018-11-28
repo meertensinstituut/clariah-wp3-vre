@@ -31,7 +31,7 @@ public class Service {
     this.serviceTech = serviceTech;
   }
 
-  public String getServiceSymantics() {
+  public String getServiceSemantics() {
     return this.serviceSemantics;
   }
 

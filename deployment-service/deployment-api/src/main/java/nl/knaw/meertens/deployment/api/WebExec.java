@@ -215,8 +215,8 @@ public class WebExec {
       // Check user config against service record
       // This happens before plugin is pushed to the queue
       logger.info("Checking user config against service record!");
-      logger.info(String.format("### dbConfig in xml as string: %s ###", serviceObj.getServiceSymantics()));
-      String dbConfig = serviceObj.getServiceSymantics();
+      logger.info(String.format("### dbConfig in xml as string: %s ###", serviceObj.getServiceSemantics()));
+      String dbConfig = serviceObj.getServiceSemantics();
       boolean userConfigIsValid = this.checkUserConfig(
         DeploymentLib.parseSemantics(dbConfig),
         new DeploymentLib().parseUserConfig(wd)

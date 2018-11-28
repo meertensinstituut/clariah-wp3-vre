@@ -84,7 +84,7 @@ public class Clam implements RecipePlugin {
     logger.info("init CLAM plugin");
     JSONObject json = null;
     try {
-      json = new DeploymentLib().parseSemantics(service.getServiceSymantics());
+      json = new DeploymentLib().parseSemantics(service.getServiceSemantics());
     } catch (ConfigurationException e) {
       e.printStackTrace();
     }

@@ -20,16 +20,12 @@ import org.apache.commons.lang.StringUtils;
 import org.jdom2.JDOMException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -64,7 +60,7 @@ public class FoliaEditor implements RecipePlugin {
   @Override
   public void init(String projectName, Service service) throws RecipePluginException {
     logger.info("init Folia Editor plugin");
-    JSONObject json = DeploymentLib.parseSemantics(service.getServiceSymantics());
+    JSONObject json = DeploymentLib.parseSemantics(service.getServiceSemantics());
     this.projectName = projectName;
     try {
       this.serviceUrl = new URL((String) json.get("serviceLocation"));
