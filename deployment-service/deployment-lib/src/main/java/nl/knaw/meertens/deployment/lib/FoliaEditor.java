@@ -60,7 +60,7 @@ public class FoliaEditor implements RecipePlugin {
   @Override
   public void init(String workDir, Service service) throws RecipePluginException {
     logger.info("init Folia Editor plugin");
-    JSONObject json = DeploymentLib.parseSemantics(service.getServiceSymantics());
+    JSONObject json = DeploymentLib.parseSemantics(service.getServiceSemantics());
     this.projectName = workDir;
     try {
       this.serviceUrl = new URL((String) json.get("serviceLocation"));

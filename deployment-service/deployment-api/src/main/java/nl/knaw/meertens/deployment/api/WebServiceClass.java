@@ -5,7 +5,6 @@ import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.commons.configuration.ConfigurationException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,7 +12,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 /**
  * exposed at "service" path
@@ -48,7 +46,7 @@ public class WebServiceClass {
     JSONObject json = new JSONObject();
     json.put("serviceName", rp.getName());
     json.put("serviceId", rp.getServiceId());
-    json.put("serviceSymantics", rp.getServiceSymantics());
+    json.put("serviceSymantics", rp.getServiceSemantics());
     json.put("serviceTechInfo", rp.getServiceTechInfo());
     return json.toString();
   }
