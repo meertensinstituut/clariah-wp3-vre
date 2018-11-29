@@ -1,16 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package nl.knaw.meertens.deployment.lib;
 
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,19 +13,21 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+
 /**
  * @author Vic
  */
 public class Text implements RecipePlugin {
   public URL serviceUrl;
-  protected int counter = 0;
   protected Boolean isFinished = false;
-  protected Boolean userConfigRemoteError = false;
   protected String projectName;
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Override
-  public void init(String workDir, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service) {
     logger.info("init Text plugin");
     this.projectName = workDir;
     this.serviceUrl = null;
@@ -41,7 +35,7 @@ public class Text implements RecipePlugin {
   }
 
   @Override
-  public JSONObject execute() throws RecipePluginException {
+  public JSONObject execute() {
     logger.info("Start plugin execution");
 
     JSONObject json = new JSONObject();
@@ -49,7 +43,7 @@ public class Text implements RecipePlugin {
     json.put("status", 202);
     JSONObject userConfig = new JSONObject();
     try {
-      userConfig = new DeploymentLib().parseUserConfig(projectName);
+      userConfig = DeploymentLib.parseUserConfig(projectName);
       logger.info("userConfig: ");
       logger.info(userConfig.toJSONString());
 
@@ -64,34 +58,26 @@ public class Text implements RecipePlugin {
         logger.info(String.format("polling {%s}", counter));
         counter++;
         Thread.sleep(3000);
-
-        // TODO: check if output file exists, if so, ready = true, else false
         ready = true;
       }
 
       this.isFinished = true;
 
-    } catch (ConfigurationException | ParseException | IOException | InterruptedException ex) {
+    } catch (IOException | InterruptedException ex) {
       logger.error(String.format("Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
     }
 
     return json;
   }
 
-  public JSONObject runProject(String key) throws IOException, ParseException, ConfigurationException {
-    final String outputPathConst = "output";
-    final String inputPathConst = "input";
-    DeploymentLib dplib = new DeploymentLib();
-
-    String workDir = SystemConf.systemWorkDir;
-    // String userConfFile = dplib.getConfFile();
-    JSONObject userConfig = dplib.parseUserConfig(key);
+  private void runProject(String key) throws IOException {
+    JSONObject userConfig = DeploymentLib.parseUserConfig(key);
     JSONArray params = (JSONArray) userConfig.get("params");
 
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
-    String inputPath = Paths.get(workDir, projectName, inputPathConst).normalize().toString();
-    String fullInputPath = Paths.get(workDir, projectName, inputPathConst, inputFile).normalize().toString();
+    String inputPath = Paths.get(SYSTEM_DIR, projectName, INPUT_DIR).normalize().toString();
+    String fullInputPath = Paths.get(SYSTEM_DIR, projectName, INPUT_DIR, inputFile).normalize().toString();
     logger.info(String.format("Full inputPath: %s", fullInputPath));
     logger.info(String.format("inputPath: %s", inputPath));
 
@@ -106,18 +92,17 @@ public class Text implements RecipePlugin {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
-    String fullOutputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
-    logger.info(String.format("outputPath: %s", outputPath));
-    logger.info(String.format("Full outputPath: %s", fullOutputPath));
+    String outputPath = Paths.get(SYSTEM_DIR, projectName, OUTPUT_DIR, outputFile).normalize().toString();
 
-    File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
+    File outputPathAsFile = Paths
+      .get(outputPath).getParent()
+      .normalize().toFile();
     if (!outputPathAsFile.exists()) {
       logger.info(String.format("Creating folder: %s", outputPathAsFile.toString()));
       outputPathAsFile.mkdirs();
     }
 
-    File file = new File(fullOutputPath);
+    File file = new File(outputPath);
 
     try (FileWriter fileWriter = new FileWriter(file)) {
       fileWriter.write("<pre>");
@@ -126,26 +111,21 @@ public class Text implements RecipePlugin {
       fileWriter.flush();
     }
 
-
-    JSONObject json = new JSONObject();
-    return json;
-
   }
 
   @Override
   public JSONObject getStatus() {
-    // JSONObject status to return
-    JSONObject status = new JSONObject();
+    JSONObject result = new JSONObject();
     if (this.isFinished) {
-      status.put("status", 200);
-      status.put("message", "Task finished");
-      status.put("finished", true);
+      result.put("status", 200);
+      result.put("message", "Task finished");
+      result.put("finished", true);
     } else {
-      status.put("status", 202);
-      status.put("message", "Task running");
-      status.put("finished", false);
+      result.put("status", 202);
+      result.put("message", "Task running");
+      result.put("finished", false);
     }
-    return status;
+    return result;
   }
 
 }

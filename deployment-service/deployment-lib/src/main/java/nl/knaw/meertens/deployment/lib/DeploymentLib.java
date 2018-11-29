@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package nl.knaw.meertens.deployment.lib;
 
 import net.sf.saxon.s9api.SaxonApiException;
@@ -15,8 +9,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedReader;
@@ -32,25 +24,18 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
-
-/**
- * @author Vic
- */
 public class DeploymentLib {
 
-  private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-  public DeploymentLib() throws ConfigurationException {
-
-  }
 
   /**
    * @throws RecipePluginException when work dir does not exist
    */
-  public static void workDirExists(String workDir) throws RecipePluginException {
-    File file = Paths.get(SystemConf.systemWorkDir, workDir).toFile();
+  static void workDirExists(String workDir) throws RecipePluginException {
+    File file = Paths.get(SYSTEM_DIR, workDir).toFile();
     if (!file.exists()) {
       throw new RecipePluginException("work dir does not exist");
     }
@@ -84,7 +69,7 @@ public class DeploymentLib {
     }
 
     JSONArray resource = (JSONArray) json.get("resource");
-    if (resource instanceof JSONArray) {
+    if (resource != null) {
       if (resource.size() > 0) {
         JSONObject record = (JSONObject) resource.get(0);
         String serviceRecipe = (String) record.get("recipe");
@@ -100,7 +85,7 @@ public class DeploymentLib {
 
   public Boolean serviceExists(String serviceName) throws ConfigurationException, IOException {
     Service service = this.getServiceByName(serviceName);
-    return service instanceof Service;
+    return service != null;
   }
 
   public static JSONObject parseSemantics(String symantics) throws RecipePluginException {
@@ -168,23 +153,15 @@ public class DeploymentLib {
     }
   }
 
-  public JSONObject parseUserConfig(String workDir) throws IOException {
-    DeploymentLib dplib;
-    try {
-      dplib = new DeploymentLib();
-    } catch (ConfigurationException e) {
-      throw new IOException("Configuration file is invalid");
-    }
-
+  public static JSONObject parseUserConfig(String workDir) throws IOException {
     JSONParser parser = new JSONParser();
     if (isEmpty(workDir)) {
       throw new RuntimeException("working directory is empty");
     }
-    String path = Paths.get(
-      SystemConf.systemWorkDir,
-      workDir,
-      SystemConf.userConfFile
-    ).normalize().toString();
+
+    String path = Paths
+      .get(SYSTEM_DIR, workDir, USER_CONF_FILE)
+      .normalize().toString();
 
     try {
       return (JSONObject) parser.parse(new FileReader(path));

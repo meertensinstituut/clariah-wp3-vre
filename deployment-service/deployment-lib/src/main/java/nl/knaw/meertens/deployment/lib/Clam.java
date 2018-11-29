@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package nl.knaw.meertens.deployment.lib;
 
 import net.sf.saxon.s9api.SaxonApiException;
@@ -45,6 +39,9 @@ import java.util.Scanner;
 import java.util.Set;
 
 import static java.util.Objects.isNull;
+import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
 
 /**
  * @author vic
@@ -87,7 +84,7 @@ public class Clam implements RecipePlugin {
     json.put("status", 202);
     JSONObject userConfig;
     try {
-      userConfig = new DeploymentLib().parseUserConfig(projectName);
+      userConfig = DeploymentLib.parseUserConfig(projectName);
 
       // Check user config against remote service record
       logger.info("Checking user config against remote server");
@@ -181,7 +178,7 @@ public class Clam implements RecipePlugin {
     throws IOException, JDOMException, ConfigurationException {
     JSONObject jsonResult = new JSONObject();
     JSONObject json = new JSONObject();
-    json = new DeploymentLib().parseUserConfig(key);
+    json = DeploymentLib.parseUserConfig(key);
 
     JSONArray params = (JSONArray) json.get("params");
 
@@ -339,9 +336,9 @@ public class Clam implements RecipePlugin {
     JSONObject jsonResult = new JSONObject();
 
     String path = Paths.get(
-      SystemConf.systemWorkDir,
+      SYSTEM_DIR,
       projectName,
-      SystemConf.inputDirectory,
+      INPUT_DIR,
       filename
     ).normalize().toString();
     jsonResult.put("pathUploadFile", path);
@@ -427,12 +424,14 @@ public class Clam implements RecipePlugin {
       Map<String, String> nameSpace = new LinkedHashMap<>();
       nameSpace.put("xlink", "http://www.w3.org/1999/xlink");
       XdmNode doc = Saxon.buildDocument(new StreamSource(urlString));
+      logger.info("xml doc:" + doc.toString());
       for (XdmItem file : Saxon.xpath(doc, "/clam/output/file")) {
         String href = Saxon.xpath2string(file, "@xlink:href", null, nameSpace);
         String name = Saxon.xpath2string(file, "name");
         json.put(name, href);
       }
 
+      logger.info("received file list: " + json.toJSONString());
       return json;
     } catch (IOException | SaxonApiException e) {
       logger.error(String.format("Could not get output file list for [%s]", projectName));
@@ -442,41 +441,35 @@ public class Clam implements RecipePlugin {
   }
 
   private JSONObject downloadProject(String workDir) {
-    final String outputPathConst = "output";
-
-    String outputDir = SystemConf.outputDirectory;
-    logger.info(String.format("current outputPath: %s", outputDir));
-
-    String outputPath = Paths.get(SystemConf.systemWorkDir, workDir, outputPathConst).normalize().toString();
+    String outputPath = Paths.get(SYSTEM_DIR, workDir, OUTPUT_DIR)
+                             .normalize().toString();
     logger.info(String.format("outputPath: %s", outputPath));
-    String path = Paths.get(workDir, workDir, outputDir).normalize().toString();
 
     JSONObject jsonFiles = this.getOutputFiles(workDir);
-    File theDir = new File(path);
-    if (!theDir.exists()) {
+    File outputDir = new File(outputPath);
+    if (!outputDir.exists()) {
       try {
-        theDir.mkdir();
+        outputDir.mkdir();
       } catch (SecurityException se) {
         logger.error(se.getMessage(), se);
       }
     }
 
-    Set<String> keys = jsonFiles.keySet();
+    Set<String> files = jsonFiles.keySet();
     JSONObject json = jsonFiles;
 
-    keys.forEach((key) -> {
-      File file = new File(Paths.get(path, key).normalize().toString());
-      logger.info(Paths.get(path, key).normalize().toString());
+    files.forEach((outputFile) -> {
+      File file = new File(Paths.get(outputPath, outputFile).normalize().toString());
       URL url = null;
 
       try {
-        String urlString = (String) jsonFiles.get(key);
+        String urlString = (String) jsonFiles.get(outputFile);
         urlString = urlString.replace("127.0.0.1", this.serviceUrl.getHost());
-        logger.info(urlString);
         url = new URL(urlString);
         FileUtils.copyURLToFile(url, file, 10000, 10000);
+        logger.info(String.format("create file [%s] from url [%s]", file.toPath().toString(), url.toString()));
       } catch (IOException ex) {
-        logger.error(String.format("could not copy to file [%s]", url), ex);
+        logger.error(String.format("could not copy file from [%s]", url), ex);
       }
 
     });

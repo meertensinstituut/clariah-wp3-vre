@@ -1,25 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package nl.knaw.meertens.deployment.lib;
 
-import net.sf.saxon.s9api.SaxonApiException;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
-import org.jdom2.JDOMException;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-//import java.nio.charset.Charset;
 
 /**
  * @author vic

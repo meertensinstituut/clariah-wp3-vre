@@ -17,7 +17,7 @@
   <cmd:Components>
     <cmdp:CLARIAHWebService>
       <cmdp:Service CoreVersion="1.0">
-        <cmdp:Name>Ucto Tokeniser</cmdp:Name>
+        <cmdp:Name>clamFileList.xml - Ucto Tokeniser</cmdp:Name>
         <cmdp:Description
             xml:lang="en">Ucto is a unicode-compliant tokeniser. It takes input in the form of one or more untokenised texts, and subsequently tokenises them. Several languages are supported, but the software is extensible to other languages.
         </cmdp:Description>

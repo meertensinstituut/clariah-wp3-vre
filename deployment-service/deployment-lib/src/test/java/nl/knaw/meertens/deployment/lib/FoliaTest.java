@@ -1,9 +1,7 @@
 package nl.knaw.meertens.deployment.lib;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -15,16 +13,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static nl.knaw.meertens.deployment.lib.DeploymentLib.*;
 import static nl.knaw.meertens.deployment.lib.FileUtil.createFile;
+import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class FoliaTest {
-
-  @Before
-  public void setUp() throws ConfigurationException {
-    new DeploymentLib();
-  }
+public class FoliaTest extends AbstractDeploymentTest {
 
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
@@ -68,25 +64,25 @@ public class FoliaTest {
   }
 
   @Test
-  public void execute_shouldReadConfigFile() throws RecipePluginException, IOException {
+  public void execute_shouldCreateOutput() throws RecipePluginException, IOException {
 
     String outputFileName = "example.html";
     String workDir = "test-" + RandomStringUtils.randomAlphanumeric(8);
     FileUtil.createWorkDir(workDir);
-    Path configPath = Paths.get(SystemConf.systemWorkDir, workDir, SystemConf.userConfFile);
+    Path configPath = Paths.get(SYSTEM_DIR, workDir, USER_CONF_FILE);
 
     logger.info("Created config: " + configPath.toString());
     createFile(configPath.toString(), FileUtil.getTestFileContent("config.json"));
 
     String inputFilename = "example.xml";
-    Path inputPath = Paths.get(SystemConf.systemWorkDir, workDir, SystemConf.inputDirectory, inputFilename);
+    Path inputPath = Paths.get(SYSTEM_DIR, workDir, INPUT_DIR, inputFilename);
     createFile(inputPath.toString(), FileUtil.getTestFileContent(inputFilename));
 
     Folia folia = new Folia();
     Service service = new Service();
     folia.init(workDir, service);
     folia.execute();
-    File outputFile = Paths.get(SystemConf.systemWorkDir, workDir, SystemConf.outputDirectory, outputFileName).toFile();
+    File outputFile = Paths.get(SYSTEM_DIR, workDir, OUTPUT_DIR, outputFileName).toFile();
 
     assertThat(outputFile.exists()).isTrue();
     String outputContent = FileUtils.readFileToString(outputFile);

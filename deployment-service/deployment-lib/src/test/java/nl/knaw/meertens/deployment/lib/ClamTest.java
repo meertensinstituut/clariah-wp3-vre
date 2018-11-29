@@ -2,6 +2,7 @@ package nl.knaw.meertens.deployment.lib;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,21 +19,16 @@ import org.slf4j.LoggerFactory;
 
 import static nl.knaw.meertens.deployment.lib.FileUtil.createFile;
 import static nl.knaw.meertens.deployment.lib.FileUtil.getTestFileContent;
+import static nl.knaw.meertens.deployment.lib.SystemConf.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-public class ClamTest {
+@Ignore
+public class ClamTest extends AbstractDeploymentTest {
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
   private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-  private static final String mockHostName = "http://localhost:1080";
-  private static ClientAndServer mockServer;
-
-  @BeforeClass
-  public static void setUp() {
-    mockServer = ClientAndServer.startClientAndServer(1080);
-  }
 
   @Test
   public void init_shouldGetSemantics() throws RecipePluginException {
@@ -47,32 +43,45 @@ public class ClamTest {
 
   @Test
   public void execute_shouldExecute() throws RecipePluginException, IOException {
+    // create work dir:
     String workDir = "test-" + RandomStringUtils.randomAlphanumeric(8);
-
-    Clam clam = new Clam();
     FileUtil.createWorkDir(workDir);
-    Path configPath = Paths.get(SystemConf.systemWorkDir, workDir, SystemConf.userConfFile);
+    logger.info(String.format("create workdir [%s]", workDir));
 
-    logger.info("Created config: " + configPath.toString());
-    createFile(configPath.toString(), FileUtil.getTestFileContent("configUcto.json"));
+    // create config file:
+    Path configPath = Paths.get(SYSTEM_DIR, workDir, USER_CONF_FILE);
+    String testFileContent = FileUtil.getTestFileContent("configUcto.json");
+    createFile(configPath.toString(), testFileContent);
 
+    // create input file:
     String inputFilename = "ucto.txt";
-    Path inputPath = Paths.get(SystemConf.systemWorkDir, workDir, SystemConf.inputDirectory, inputFilename);
+    Path inputPath = Paths.get(SYSTEM_DIR, workDir, INPUT_DIR, inputFilename);
     createFile(inputPath.toString(), FileUtil.getTestFileContent(inputFilename));
 
+    // instantiate recipe:
     final String serviceSemantics = FileUtil.getTestFileContent("ucto.xml");
     Service service = new Service("0", "UCTO", "CLAM", serviceSemantics, "<xml></xml>", true);
-
+    Clam clam = new Clam();
     clam.init(workDir, service);
 
+    // mock service calls:
     createProjectMock(workDir, 1);
-    createAccessKeyMock(workDir);
+    getClamFilesAndAccessKeyMock(workDir);
     fileUploadMock(workDir, 1);
     runProjectMock(workDir, 1);
     pollProjectMock(workDir, 1);
-    fileDownloadMock(workDir, 1);
+    downloadFileMock(workDir, 1);
+    downloadLogMock(workDir, 1);
+    downloadErrorLogMock(workDir, 1);
 
     clam.execute();
+
+    // assert output file exists:
+    String outputFilename = "uctoOutput.xml";
+    Path outputFile = Paths.get(SYSTEM_DIR, workDir, OUTPUT_DIR, outputFilename);
+    logger.info("output path expected: " + outputFile.toString());
+    boolean outputExists = outputFile.toFile().exists();
+    assertThat(outputExists).isTrue();
   }
 
   private void createProjectMock(String workDir, int times) {
@@ -91,7 +100,10 @@ public class ClamTest {
         );
   }
 
-  private void createAccessKeyMock(String workDir) {
+  private void getClamFilesAndAccessKeyMock(String workDir) {
+    String testFileContent = getTestFileContent("clamFileList.xml")
+      .replace("testproject", workDir);
+
     mockServer
         .when(
             request()
@@ -102,7 +114,7 @@ public class ClamTest {
             response()
                 .withStatusCode(200)
                 .withHeaders(new Header("Content-Type", "application/xml; charset=utf-8"))
-                .withBody(getTestFileContent("uctoAccessToken.xml"))
+                .withBody(testFileContent)
         );
   }
 
@@ -154,20 +166,50 @@ public class ClamTest {
         );
   }
 
-  private void fileDownloadMock(String workDir, int times) {
+  private void downloadFileMock(String workDir, int times) {
     mockServer
-        .when(
-            request()
-                .withMethod("GET")
-                .withPath("/ucto/" + workDir),
-            Times.exactly(times)
-        )
-        .respond(
-            response()
-                .withStatusCode(200)
-                .withHeaders(new Header("Content-Type", "application/xml; charset=utf-8"))
-                .withBody(getTestFileContent("uctoResult.xml"))
-        );
+      .when(
+        request()
+          .withMethod("GET")
+          .withPath("/ucto/" + workDir + "/output/uctoOutput.xml"),
+        Times.exactly(times)
+      )
+      .respond(
+        response()
+          .withStatusCode(200)
+          .withHeaders(new Header("Content-Type", "application/xml; charset=utf-8"))
+          .withBody(getTestFileContent("uctoResult.xml"))
+      );
+  }
+  private void downloadLogMock(String workDir, int times) {
+    mockServer
+      .when(
+        request()
+          .withMethod("GET")
+          .withPath("/ucto/" + workDir + "/output/log"),
+        Times.exactly(times)
+      )
+      .respond(
+        response()
+          .withStatusCode(200)
+          .withHeaders(new Header("Content-Type", "application/xml; charset=utf-8"))
+          .withBody(getTestFileContent("log.txt"))
+      );
+  }
+  private void downloadErrorLogMock(String workDir, int times) {
+    mockServer
+      .when(
+        request()
+          .withMethod("GET")
+          .withPath("/ucto/" + workDir + "/output/error.log"),
+        Times.exactly(times)
+      )
+      .respond(
+        response()
+          .withStatusCode(200)
+          .withHeaders(new Header("Content-Type", "application/xml; charset=utf-8"))
+          .withBody(getTestFileContent("error.log"))
+      );
   }
 
 }

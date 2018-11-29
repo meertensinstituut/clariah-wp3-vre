@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package nl.knaw.meertens.deployment.lib;
 
 import com.mashape.unirest.http.Headers;
@@ -78,13 +72,8 @@ public class FoliaEditor implements RecipePlugin {
     JSONObject json = new JSONObject();
     json.put("key", projectName);
     json.put("status", 202);
-    JSONObject userConfig = new JSONObject();
+    JSONObject userConfig;
     try {
-      DeploymentLib dplib = new DeploymentLib();
-      userConfig = dplib.parseUserConfig(projectName);
-      logger.info("userConfig: ");
-      logger.info(userConfig.toJSONString());
-
       logger.info("Running project");
       this.runProject(projectName);
 
@@ -96,15 +85,14 @@ public class FoliaEditor implements RecipePlugin {
         logger.info(String.format("polling {%s}", counter));
         counter++;
         Thread.sleep(3000);
-
-        // TODO: check if output file exists, if so, ready = true, else false
+        // TODO: where does the polling happen?
         ready = true;
       }
 
       this.isFinished = true;
 
     } catch (IOException | InterruptedException | UnirestException | ConfigurationException ex) {
-      logger.error(String.format("Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
+      throw new RecipePluginException("Could not execute recipe", ex);
     }
 
     return json;
@@ -114,17 +102,15 @@ public class FoliaEditor implements RecipePlugin {
     final String outputPathConst = "output";
     final String inputPathConst = "input";
 
-    DeploymentLib dplib = new DeploymentLib();
-
     JSONObject userConfig = null;
-    userConfig = dplib.parseUserConfig(key);
+    userConfig = DeploymentLib.parseUserConfig(key);
     JSONArray params = (JSONArray) userConfig.get("params");
 
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
     String fullInputPath =
-      Paths.get(SystemConf.systemWorkDir, projectName, inputPathConst, inputFile).normalize().toString();
-    String inputPath = Paths.get(SystemConf.systemWorkDir, projectName, inputPathConst).normalize().toString();
+      Paths.get(SystemConf.SYSTEM_DIR, projectName, inputPathConst, inputFile).normalize().toString();
+    String inputPath = Paths.get(SystemConf.SYSTEM_DIR, projectName, inputPathConst).normalize().toString();
     logger.info(String.format("inputPath: %s", inputPath));
     logger.info(String.format("Full Input Path: %s", fullInputPath));
 
@@ -138,9 +124,9 @@ public class FoliaEditor implements RecipePlugin {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(SystemConf.systemWorkDir, projectName, outputPathConst).normalize().toString();
+    String outputPath = Paths.get(SystemConf.SYSTEM_DIR, projectName, outputPathConst).normalize().toString();
     String fullOutputPath =
-      Paths.get(SystemConf.systemWorkDir, projectName, outputPathConst, outputFile).normalize().toString();
+      Paths.get(SystemConf.SYSTEM_DIR, projectName, outputPathConst, outputFile).normalize().toString();
     logger.info(String.format("outputPath: %s", outputPath));
     logger.info(String.format("Full outputPath: %s", fullOutputPath));
 

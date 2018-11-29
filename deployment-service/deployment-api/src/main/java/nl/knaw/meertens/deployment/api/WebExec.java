@@ -217,7 +217,7 @@ public class WebExec {
       String dbConfig = serviceObj.getServiceSemantics();
       boolean userConfigIsValid = this.checkUserConfig(
         DeploymentLib.parseSemantics(dbConfig),
-        new DeploymentLib().parseUserConfig(wd)
+        DeploymentLib.parseUserConfig(wd)
       );
       if (!userConfigIsValid) {
         // config is not fine, throw exception

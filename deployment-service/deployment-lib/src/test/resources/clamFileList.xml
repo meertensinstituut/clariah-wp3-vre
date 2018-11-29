@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<?xml-stylesheet type="text/xsl" href="http://localhost:9998/ucto/static/interface.xsl"?>
-<clam xmlns:xlink="http://www.w3.org/1999/xlink" version="2.3.4" id="ucto" name="Ucto Tokeniser" project="testproject" user="anonymous" baseurl="http://localhost:9998/ucto" accesstoken="1c085cf1b6685e8db16ff67707c19144"  interfaceoptions="" oauth_access_token="" authentication="none">
-  <description>Ucto is a unicode-compliant tokeniser. It takes input in the form of one or more untokenised texts, and subsequently tokenises them. Several languages are supported, but the software is extensible to other languages.</description>
+<?xml-stylesheet type="text/xsl" href="http://localhost:1080/ucto/static/interface.xsl"?>
+<clam xmlns:xlink="http://www.w3.org/1999/xlink" version="2.3.4" id="ucto" name="Ucto Tokeniser" project="testproject" user="anonymous" baseurl="http://localhost:1080/ucto" accesstoken="1c085cf1b6685e8db16ff67707c19144" interfaceoptions="" oauth_access_token="" authentication="none">
+  <description>clamFileList.xml - Ucto is a unicode-compliant tokeniser. It takes input in the form of one or more untokenised texts, and subsequently tokenises them. Several languages are supported, but the software is extensible to other languages.</description>
   <version>0</version>
   <email>None</email>
-  <status code="0" message="Accepting new input files and selection of parameters" completion="0" errors="no" errormsg="">
+  <status code="2" message="Done" completion="100" errors="no" errormsg="">
+    <log time="28/Nov/2018 16:30:46" completion="100">Done</log>
+    <log time="28/Nov/2018 16:30:46" completion="50">Producing .xml...</log>
+    <log time="28/Nov/2018 16:30:46" completion="0">Producing ucto.xml...</log>
+    <log time="28/Nov/2018 16:30:46" completion="0">Starting...</log>
   </status>
   <profiles>
 
@@ -91,11 +95,11 @@
                     </then>
                   </parametercondition>
                 </OutputTemplate>
-              </else>         </parametercondition>
-          </else>    </parametercondition>
+              </else>     </parametercondition>
+          </else>  </parametercondition>
       </output>
     </profile>
-
+    ​
   </profiles>
   <parameters>
     <parametergroup name="Tokenisation options">
@@ -106,8 +110,33 @@
       <BooleanParameter id="uppercase" name="Uppercase" description="Convert text to uppercase" flag="-u" forbid="lowercase,xml" value="False" />
     </parametergroup>
   </parameters>
+  <program matchedprofiles="0">
+    <outputfile name=".xml" template="foliatokoutput" xlink:type="simple" xlink:href="http://localhost:1080/ucto/testproject/output/.xml">
+      <inputfile name=".txt" template="untokinput" xlink:type="simple" xlink:href="http://localhost:1080/ucto/testproject/input/.txt" />
+    </outputfile>
+    <outputfile name="ucto.xml" template="foliatokoutput" xlink:type="simple" xlink:href="http://localhost:1080/ucto/testproject/output/uctoOutput.xml">
+      <inputfile name="ucto.txt" template="untokinput" xlink:type="simple" xlink:href="http://localhost:1080/ucto/testproject/input/ucto.txt" />
+    </outputfile>
+  </program>
+  <output>
+    <file xlink:type="simple" xlink:href="http://localhost:1080/ucto/testproject/output/uctoOutput.xml" template="foliatokoutput">
+      <name>uctoOutput.xml</name>
+      <viewers>
+        <viewer xlink:type="simple" xlink:href="http://localhost:1080/ucto/testproject/output/ucto.xml/flatviewer">Open in FLAT</viewer>
+      </viewers>
+    </file>
+    <file xlink:type="simple" xlink:href="http://localhost:1080/ucto/testproject/output/error.log">
+      <name>error.log</name>
+    </file>
+    <file xlink:type="simple" xlink:href="http://localhost:1080/ucto/testproject/output/log">
+      <name>log</name>
+    </file>
+  </output>
   <inputsources>
   </inputsources>
   <input>
+    <file xlink:type="simple" xlink:href="http://localhost:1080/ucto/testproject/input/ucto.txt" template="untokinput">
+      <name>ucto.txt</name>
+    </file>
   </input>
 </clam>

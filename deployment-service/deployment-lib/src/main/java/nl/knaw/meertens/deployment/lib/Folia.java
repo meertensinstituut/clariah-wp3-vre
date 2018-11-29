@@ -23,6 +23,9 @@ import java.net.URL;
 import java.nio.file.Paths;
 
 import static java.util.Objects.isNull;
+import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 public class Folia implements RecipePlugin {
@@ -60,7 +63,7 @@ public class Folia implements RecipePlugin {
     try {
       DeploymentLib.workDirExists(workDir);
 
-      userConfig = new DeploymentLib().parseUserConfig(workDir);
+      userConfig = DeploymentLib.parseUserConfig(workDir);
       logger.info("userConfig: ");
       logger.info(userConfig.toJSONString());
 
@@ -76,13 +79,13 @@ public class Folia implements RecipePlugin {
         counter++;
         Thread.sleep(3000);
 
-        // TODO: check if output file exists, if so, ready = true, else false
+        // TODO: check if output file exists
         ready = true;
       }
 
       this.isFinished = true;
 
-    } catch (ConfigurationException | IOException | InterruptedException ex) {
+    } catch (IOException | InterruptedException ex) {
       throw new RecipePluginException(ex.getMessage(), ex);
     }
 
@@ -121,17 +124,11 @@ public class Folia implements RecipePlugin {
     }
   }
 
-  private JSONObject runProject(String key) throws IOException, ConfigurationException {
-    final String outputPathConst = "output";
-    final String inputPathConst = "input";
-
-    DeploymentLib dplib = new DeploymentLib();
-
-    JSONObject userConfig = dplib.parseUserConfig(key);
+  private void runProject(String key) throws IOException {
+    JSONObject userConfig = DeploymentLib.parseUserConfig(key);
     if (userConfig.isEmpty()) {
       throw new IOException("No config file");
     }
-    logger.info("userConfig: " + userConfig.toJSONString());
     JSONArray params = (JSONArray) userConfig.get("params");
     if (isNull(params)) {
       throw new IOException("No params");
@@ -139,40 +136,34 @@ public class Folia implements RecipePlugin {
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
 
-    String workDir = SystemConf.systemWorkDir;
-    String fullInputPath = Paths.get(workDir, this.workDir, inputPathConst, inputFile).normalize().toString();
-    String inputPath = Paths.get(workDir, this.workDir, inputPathConst).normalize().toString();
-    logger.info(String.format("inputPath: %s", inputPath));
-    logger.info(String.format("Full Input Path: %s", fullInputPath));
+    String inputPath = Paths
+      .get(SYSTEM_DIR, workDir, INPUT_DIR, inputFile)
+      .normalize().toString();
 
-    JSONObject outputOjbect;
     String outputFile;
     if (params.size() > 1) {
-      outputOjbect = (JSONObject) params.get(1);
-      outputFile = (String) outputOjbect.get("value");
+      outputFile = (String) ((JSONObject) params.get(1)).get("value");
     } else {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(workDir, this.workDir, outputPathConst).normalize().toString();
-    String fullOutputPath = Paths.get(workDir, this.workDir, outputPathConst, outputFile).normalize().toString();
-    logger.info(String.format("outputPath: %s", outputPath));
-    logger.info(String.format("Full outputPath: %s", fullOutputPath));
+    String fullOutputPath = Paths
+      .get(SYSTEM_DIR, workDir, OUTPUT_DIR, outputFile)
+      .normalize().toString();
 
-    File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
-    if (!outputPathAsFile.exists()) {
-      logger.info(String.format("Creating folder: %s", outputPathAsFile.toString()));
-      outputPathAsFile.mkdirs();
+    File outputPath = Paths
+      .get(fullOutputPath).getParent()
+      .normalize().toFile();
+
+    if (!outputPath.exists()) {
+      logger.info(String.format("creating folder [%s]", outputPath.toString()));
+      outputPath.mkdirs();
     }
 
     Source xslt = new StreamSource(url.openStream());
-    Source xml = new StreamSource(new File(fullInputPath));
+    Source xml = new StreamSource(new File(inputPath));
     File file = new File(fullOutputPath);
     convertXmlToHtml(xml, xslt, file);
-
-    JSONObject json = new JSONObject();
-    return json;
-
   }
 
 }

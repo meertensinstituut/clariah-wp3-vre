@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package nl.knaw.meertens.deployment.lib;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -13,8 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.logging.Level;
 
 /**
  * @author vic
@@ -28,14 +20,10 @@ public class Queue {
     @Override
     protected boolean removeEldestEntry(Map.Entry eldest) {
       String queueLength = null;
-      try {
-        logger.info("creating queue");
-        DeploymentLib dplib = new DeploymentLib();
-        queueLength = SystemConf.queueLength;
-        logger.info("created queue");
-      } catch (ConfigurationException ex) {
-        logger.error("failure creating queue", ex);
-      }
+      logger.info("creating queue");
+      DeploymentLib dplib = new DeploymentLib();
+      queueLength = SystemConf.QUEUE_LENGTH;
+      logger.info("created queue");
       return size() > (queueLength != null ? Integer.parseInt(queueLength) : 100);
     }
   };
