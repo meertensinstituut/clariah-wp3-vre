@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type="text/xsl" href="http://localhost:9998/ucto/static/interface.xsl"?>
+<clam xmlns:xlink="http://www.w3.org/1999/xlink" version="2.3.4" id="ucto" name="Ucto Tokeniser" project="testproject" user="anonymous" baseurl="http://localhost:9998/ucto" accesstoken="1c085cf1b6685e8db16ff67707c19144"  interfaceoptions="" oauth_access_token="" authentication="none">
+  <description>Ucto is a unicode-compliant tokeniser. It takes input in the form of one or more untokenised texts, and subsequently tokenises them. Several languages are supported, but the software is extensible to other languages.</description>
+  <version>0</version>
+  <email>None</email>
+  <status code="0" message="Accepting new input files and selection of parameters" completion="0" errors="no" errormsg="">
+  </status>
+  <profiles>
+
+    <profile>
+      <input>
+        <InputTemplate id="untokinput" format="PlainTextFormat" label="Text document" mimetype="text/plain" extension="txt" optional="no" unique="no" acceptarchive="no">
+          <StaticParameter id="encoding" name="Encoding" description="The character encoding of the file" value="utf-8" />
+          <ChoiceParameter id="language" name="Language" description="The language this text is in" required="1"> <choice id="eng">English</choice> <choice id="nld">Dutch</choice> <choice id="nld-twitter">Dutch on Twitter</choice> <choice id="fra">French</choice> <choice id="deu">German</choice> <choice id="ita">Italian</choice> <choice id="fry">Frisian</choice> <choice id="swe">Swedish</choice> <choice id="rus">Russian</choice> <choice id="spa">Spanish</choice> <choice id="por">Portuguese</choice> <choice id="tur">Turkish</choice></ChoiceParameter>
+          <StringParameter id="documentid" name="Document ID" description="Enter a unique identifier for this document (no spaces). Needed only for XML output, will be auto-generated if not specified." />
+          <StringParameter id="author" name="Author" description="The author of the document (optional)" />
+          <converter id="pdfconv">Convert from PDF Document</converter>
+          <converter id="mswordconv">Convert from MS Word Document</converter>
+          <converter id="latin1">Convert from Latin-1 (iso-8859-1)</converter>
+          <converter id="latin9">Convert from Latin-9 (iso-8859-15)</converter>
+        </InputTemplate>
+      </input>
+      <output>
+        <parametercondition>
+          <if>
+            <equals parameter="xml">True</equals>
+          </if>
+          <then>
+            <OutputTemplate id="foliatokoutput" format="FoLiAXMLFormat" label="Tokenised Text Document (FoLiA XML)" mimetype="text/xml" extension="xml" parent="untokinput" unique="no">
+              <meta id="tokenisation">ucto</meta>
+            </OutputTemplate>
+          </then>
+          <else>
+            <parametercondition>
+              <if>
+                <equals parameter="verbose">True</equals>
+              </if>
+              <then>
+                <OutputTemplate id="vtokoutput" format="PlainTextFormat" label="Verbosely Tokenised Text Document" mimetype="text/plain" extension="vtok" parent="untokinput" unique="no">
+                  <parametercondition>
+                    <if>
+                      <equals parameter="sentenceperline">True</equals>
+                    </if>
+                    <then>
+                      <meta id="sentenceperline">yes</meta>
+                    </then>
+                  </parametercondition>
+                  <parametercondition>
+                    <if>
+                      <equals parameter="lowercase">True</equals>
+                    </if>
+                    <then>
+                      <meta id="lowercase">yes</meta>
+                    </then>
+                  </parametercondition>
+                  <parametercondition>
+                    <if>
+                      <equals parameter="uppercase">True</equals>
+                    </if>
+                    <then>
+                      <meta id="uppercase">yes</meta>
+                    </then>
+                  </parametercondition>
+                </OutputTemplate>
+              </then>
+              <else>
+                <OutputTemplate id="tokoutput" format="PlainTextFormat" label="Tokenised Text Document" mimetype="text/plain" extension="tok" parent="untokinput" unique="no">
+                  <parametercondition>
+                    <if>
+                      <equals parameter="sentenceperline">True</equals>
+                    </if>
+                    <then>
+                      <meta id="sentenceperline">yes</meta>
+                    </then>
+                  </parametercondition>
+                  <parametercondition>
+                    <if>
+                      <equals parameter="lowercase">True</equals>
+                    </if>
+                    <then>
+                      <meta id="lowercase">yes</meta>
+                    </then>
+                  </parametercondition>
+                  <parametercondition>
+                    <if>
+                      <equals parameter="uppercase">True</equals>
+                    </if>
+                    <then>
+                      <meta id="uppercase">yes</meta>
+                    </then>
+                  </parametercondition>
+                </OutputTemplate>
+              </else>         </parametercondition>
+          </else>    </parametercondition>
+      </output>
+    </profile>
+
+  </profiles>
+  <parameters>
+    <parametergroup name="Tokenisation options">
+      <BooleanParameter id="xml" name="FoLiA XML Output" description="Output FoLiA XML" value="False" />
+      <BooleanParameter id="verbose" name="Verbose tokeniser output" description="Outputs token types per token, one token per line" flag="-V" forbid="sentenceperline,xml" value="False" />
+      <BooleanParameter id="sentenceperline" name="Sentence per line" description="Output each sentence on a single line. Does not work in verbose or XML mode." flag="-n" forbid="verbose,xml" value="False" />
+      <BooleanParameter id="lowercase" name="Lowercase" description="Convert text to lowercase" flag="-l" forbid="uppercase,xml" value="False" />
+      <BooleanParameter id="uppercase" name="Uppercase" description="Convert text to uppercase" flag="-u" forbid="lowercase,xml" value="False" />
+    </parametergroup>
+  </parameters>
+  <inputsources>
+  </inputsources>
+  <input>
+  </input>
+</clam>

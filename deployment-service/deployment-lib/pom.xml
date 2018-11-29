@@ -16,7 +16,7 @@
     <maven.compiler.source>10</maven.compiler.source>
     <maven.compiler.target>10</maven.compiler.target>
     <mavens-surefire-plugin.version>2.18.1</mavens-surefire-plugin.version>
-
+    <mockserver.version>5.4.1</mockserver.version>
     <assertj-core.version>3.9.0</assertj-core.version>
     <jaxb-api.version>2.4.0-b180725.0427</jaxb-api.version>
     <json-unit-fluent.version>1.28.1</json-unit-fluent.version>
@@ -139,6 +139,17 @@
       <version>${json-unit-fluent.version}</version>
     </dependency>
 
+    <!-- mock server -->
+    <dependency>
+      <groupId>org.mock-server</groupId>
+      <artifactId>mockserver-netty</artifactId>
+      <version>${mockserver.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mock-server</groupId>
+      <artifactId>mockserver-client-java</artifactId>
+      <version>${mockserver.version}</version>
+    </dependency>
   </dependencies>
 
   <build>

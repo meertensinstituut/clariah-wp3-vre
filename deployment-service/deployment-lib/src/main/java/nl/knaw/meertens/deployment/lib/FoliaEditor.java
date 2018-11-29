@@ -240,7 +240,7 @@ public class FoliaEditor implements RecipePlugin {
   }
 
   public JSONObject uploadFile(String projectName, String filename)
-    throws IOException, ConfigurationException, UnirestException {
+      throws IOException, ConfigurationException, UnirestException {
     JSONObject jsonResult = new JSONObject();
     DeploymentLib dplib = new DeploymentLib();
 

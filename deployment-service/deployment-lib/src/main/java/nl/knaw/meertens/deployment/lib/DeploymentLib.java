@@ -80,8 +80,7 @@ public class DeploymentLib {
     try {
       json = (JSONObject) parser.parse(rawString);
     } catch (ParseException ex) {
-      System.err.println(ex);
-      return null;
+      throw new IllegalStateException("Invalid json from service", ex);
     }
 
     JSONArray resource = (JSONArray) json.get("resource");
@@ -96,8 +95,7 @@ public class DeploymentLib {
       }
     }
 
-    return null;
-
+    throw new IllegalStateException("No such service");
   }
 
   public Boolean serviceExists(String serviceName) throws ConfigurationException, IOException {

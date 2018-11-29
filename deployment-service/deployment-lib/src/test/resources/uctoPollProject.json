@@ -1,0 +1,28 @@
+{
+  "statuscode": 2,
+  "completion": 100,
+  "statusmsg": "Done",
+  "statuslog": [
+    [
+      "Done",
+      "28/Nov/2018 16:30:46",
+      100
+    ],
+    [
+      "Producing .xml...",
+      "28/Nov/2018 16:30:46",
+      50
+    ],
+    [
+      "Producing ucto.xml...",
+      "28/Nov/2018 16:30:46",
+      0
+    ],
+    [
+      "Starting...",
+      "28/Nov/2018 16:30:46",
+      0
+    ]
+  ],
+  "success": true
+}

@@ -1,0 +1,16 @@
+{
+  "params": [
+    {
+      "name": "input",
+      "type": "file",
+      "value": "ucto.txt",
+      "params": []
+    },
+    {
+      "name": "output",
+      "type": "string",
+      "value": "uctoOutput.xml",
+      "params": []
+    }
+  ]
+}

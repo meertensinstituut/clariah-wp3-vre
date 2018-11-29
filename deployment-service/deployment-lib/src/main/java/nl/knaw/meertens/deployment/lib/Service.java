@@ -12,11 +12,24 @@ public class Service {
   private Boolean isValidService = false;
 
   public Service() {
-    this("0", "UCTO", "CLAM", "<cmdi></cmdi>", "<xml></xml>", false);
+
+    this(
+        "0",
+        "UCTO",
+        "CLAM",
+        "<cmdi></cmdi>",
+        "<xml></xml>",
+        false);
   }
 
-  public Service(String serviceId, String serviceName, String serviceRecipe, String serviceSemantics,
-                 String serviceTech, Boolean isValidService) {
+  public Service(
+      String serviceId,
+      String serviceName,
+      String serviceRecipe,
+      String serviceSemantics,
+      String serviceTech,
+      Boolean isValidService
+  ) {
     this.isValidService = isValidService;
     this.serviceName = serviceName;
     this.serviceRecipe = serviceRecipe;
