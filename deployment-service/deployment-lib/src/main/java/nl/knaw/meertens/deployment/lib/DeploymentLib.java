@@ -164,7 +164,7 @@ public class DeploymentLib {
       json.put("parameters", parametersJson);
       return json;
     } catch (SaxonApiException ex) {
-      throw new RecipePluginException("Invalid semantics xml");
+      throw new RecipePluginException("Invalid semantics xml", ex);
     }
   }
 

@@ -511,7 +511,7 @@
       </xsl:when>
       <xsl:otherwise>
         <!-- No child elements -->
-        <a href="#ref.{@id}">*</a>
+        <a href="ref.{@id}">*</a>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -987,7 +987,7 @@
     <table>
       <xsl:apply-templates select="folia:tablehead"/>
       <tbody>
-        <xsl:apply-templates select="*[name()!='tablehead']"/>
+        <xsl:apply-templates select="*[name()='tablehead']"/>
       </tbody>
     </table>
   </xsl:template>
@@ -1097,7 +1097,7 @@
             <xsl:attribute name="class">bigtree</xsl:attribute>
           </xsl:if>
           <g transform="scale({$rescale})">
-            <rect x="0" y="0" width="{$viewwidth}" height="{$viewheight+25}" style="fill: #b4d4d1;"/>
+            <rect x="0" y="0" width="{$viewwidth}" height="{$viewheight+25}" style="fill: b4d4d1;"/>
             <xsl:apply-templates select="$layout/folia:su" mode="layout2svg"/>
           </g>
         </svg>
@@ -1130,7 +1130,7 @@
 
     <!-- Draw label of su -->
     <text x="{$x  * $su.scale}" y="{($y - 0.5) * $su.scale}"
-          style="text-anchor: middle; font-size: 9px; font-weight: normal; fill: #000055;">
+          style="text-anchor: middle; font-size: 9px; font-weight: normal; fill: 000055;">
       <xsl:value-of select="@class"/>
     </text>
     <text x="{$x  * $su.scale}" y="{($y + 0.3) * $su.scale}"

@@ -51,7 +51,7 @@ public class FoliaEditor implements RecipePlugin {
 
   public static void writeToHtml(String content, File file) throws IOException {
     FileUtils.writeStringToFile(new File(file.toString()), content, forName("UTF-8"));
-    logger.info("### Generated successfully! ###");
+    logger.info("Generated successfully");
   }
 
   /**
@@ -73,7 +73,7 @@ public class FoliaEditor implements RecipePlugin {
 
   @Override
   public JSONObject execute() throws RecipePluginException {
-    logger.info("## Start plugin execution ##");
+    logger.info("Start plugin execution");
 
     JSONObject json = new JSONObject();
     json.put("key", projectName);
@@ -82,14 +82,14 @@ public class FoliaEditor implements RecipePlugin {
     try {
       DeploymentLib dplib = new DeploymentLib();
       userConfig = dplib.parseUserConfig(projectName);
-      logger.info("## userConfig:  ##");
+      logger.info("userConfig: ");
       logger.info(userConfig.toJSONString());
 
-      logger.info("## Running project ##");
+      logger.info("Running project");
       this.runProject(projectName);
 
       // keep polling project
-      logger.info("## Polling the service ##");
+      logger.info("Polling the service");
       boolean ready = false;
       int counter = 0;
       while (!ready) {
@@ -104,7 +104,7 @@ public class FoliaEditor implements RecipePlugin {
       this.isFinished = true;
 
     } catch (IOException | InterruptedException | UnirestException | ConfigurationException ex) {
-      logger.error(String.format("## Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
+      logger.error(String.format("Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
     }
 
     return json;
@@ -125,8 +125,8 @@ public class FoliaEditor implements RecipePlugin {
     String fullInputPath =
       Paths.get(SystemConf.systemWorkDir, projectName, inputPathConst, inputFile).normalize().toString();
     String inputPath = Paths.get(SystemConf.systemWorkDir, projectName, inputPathConst).normalize().toString();
-    logger.info(String.format("### inputPath: %s ###", inputPath));
-    logger.info(String.format("### Full Input Path: %s ###", fullInputPath));
+    logger.info(String.format("inputPath: %s", inputPath));
+    logger.info(String.format("Full Input Path: %s", fullInputPath));
 
 
     JSONObject outputOjbect;
@@ -141,19 +141,19 @@ public class FoliaEditor implements RecipePlugin {
     String outputPath = Paths.get(SystemConf.systemWorkDir, projectName, outputPathConst).normalize().toString();
     String fullOutputPath =
       Paths.get(SystemConf.systemWorkDir, projectName, outputPathConst, outputFile).normalize().toString();
-    logger.info(String.format("### outputPath: %s ###", outputPath));
-    logger.info(String.format("### Full outputPath: %s ###", fullOutputPath));
+    logger.info(String.format("outputPath: %s", outputPath));
+    logger.info(String.format("Full outputPath: %s", fullOutputPath));
 
     File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
     if (!outputPathAsFile.exists()) {
-      logger.info(String.format("### Creating folder: %s ###", outputPathAsFile.toString()));
+      logger.info(String.format("Creating folder: %s", outputPathAsFile.toString()));
       outputPathAsFile.mkdirs();
     }
 
     JSONObject urlJson = uploadFile(key, fullInputPath);
     JSONObject json = new JSONObject();
     File file = new File(fullOutputPath);
-    logger.info(String.format("### Generating output file: %s ###", fullOutputPath));
+    logger.info(String.format("Generating output file: %s", fullOutputPath));
     writeToHtml(String.format(
       "<iframe src=\"%s\" width=\"100%%\" height=\"800px\">Text to display when iframe is not supported</iframe>",
       (String) urlJson.get("url")), file);
@@ -225,13 +225,13 @@ public class FoliaEditor implements RecipePlugin {
   }
 
   public void downloadResultFile(URL url) throws IOException {
-    logger.info("### Download URL:" + url + " ###");
+    logger.info("Download URL:" + url + "");
     FileUtils.copyURLToFile(
       url,
       new File("resultFile.xml"),
       60,
       60);
-    logger.info("### Download successful ###");
+    logger.info("Download successful");
   }
 
   public JSONObject uploadFile(String projectName, String filename, String language, String inputTemplate,
@@ -245,7 +245,7 @@ public class FoliaEditor implements RecipePlugin {
     DeploymentLib dplib = new DeploymentLib();
 
     String path = filename;
-    logger.info("### File path to be uploaded:" + path + " ###");
+    logger.info("File path to be uploaded:" + path + "");
 
     jsonResult.put("pathUploadFile", path);
     File file = new File(path);
@@ -259,7 +259,7 @@ public class FoliaEditor implements RecipePlugin {
       this.serviceUrl.getFile() + "/pub/upload/",
       null
     );
-    logger.info("### Upload URL:" + url.toString() + " ###");
+    logger.info("Upload URL:" + url.toString() + "");
 
     com.mashape.unirest.http.HttpResponse<JsonNode> jsonResponse = Unirest
       .post(url.toString())
@@ -268,11 +268,11 @@ public class FoliaEditor implements RecipePlugin {
       .field("file", file)
       .asJson();
 
-    logger.info(String.format("### Response code: %s ###", jsonResponse.getCode()));
+    logger.info(String.format("Response code: %s", jsonResponse.getCode()));
     Headers headers = jsonResponse.getHeaders();
     String returnUrlString = headers.get("location").get(0);
-    logger.info(String.format("### Response full headers: %s ###", headers.toString()));
-    logger.info(String.format("### Response url: %s ###", returnUrlString));
+    logger.info(String.format("Response full headers: %s", headers.toString()));
+    logger.info(String.format("Response url: %s", returnUrlString));
 
     URL returnUrl = new URL(
       this.serviceUrl.getProtocol(),
@@ -281,12 +281,12 @@ public class FoliaEditor implements RecipePlugin {
       returnUrlString,
       null
     );
-    logger.info(String.format("### returnUrl: %s ###", returnUrl.toString()));
+    logger.info(String.format("returnUrl: %s", returnUrl.toString()));
 
     URL devReturnUrl = new URL("http://localhost:9998" + returnUrlString);
     resultFileNameString = returnUrlString;
 
-    logger.info(String.format("### Hacking returnUrl for dev environment: %s ###", devReturnUrl.toString()));
+    logger.info(String.format("Hacking returnUrl for dev environment: %s", devReturnUrl.toString()));
     // jsonResult.put("url", returnUrl.toString());
     jsonResult.put("url", devReturnUrl.toString());
     Unirest.shutdown();

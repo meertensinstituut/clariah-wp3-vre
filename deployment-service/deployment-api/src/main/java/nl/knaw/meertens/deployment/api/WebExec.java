@@ -192,28 +192,28 @@ public class WebExec {
 
     if (dplib.serviceExists(service)) {
 
-      logger.info("Service is valid!");
+      logger.info("Service is valid");
 
-      logger.info("Getting service from service registry!");
+      logger.info("Getting service from service registry");
       Service serviceObj = dplib.getServiceByName(service);
-      logger.info("Got service!");
+      logger.info("Got service");
 
-      logger.info("Getting recipe!");
+      logger.info("Getting recipe");
       RecipePlugin plugin;
       String className = serviceObj.getRecipe();
-      logger.info("Got recipe!");
+      logger.info("Got recipe");
 
-      logger.info("Loading plugin!");
+      logger.info("Loading plugin");
       Class<?> loadedClass = Class.forName(className);
       Class<? extends RecipePlugin> pluginClass = loadedClass.asSubclass(RecipePlugin.class);
       plugin = pluginClass.newInstance();
       plugin.init(wd, serviceObj);
-      logger.info("plugin loaded!");
+      logger.info("plugin loaded");
 
       // Check user config against service record
       // This happens before plugin is pushed to the queue
-      logger.info("Checking user config against service record!");
-      logger.info(String.format("### dbConfig in xml as string: %s ###", serviceObj.getServiceSemantics()));
+      logger.info("Checking user config against service record");
+      logger.info(String.format("dbConfig in xml as string: %s", serviceObj.getServiceSemantics()));
       String dbConfig = serviceObj.getServiceSemantics();
       boolean userConfigIsValid = this.checkUserConfig(
         DeploymentLib.parseSemantics(dbConfig),
@@ -223,17 +223,17 @@ public class WebExec {
         // config is not fine, throw exception
         JSONObject status = new JSONObject();
         status.put("status", 500);
-        status.put("message", "user config error according to registry!");
+        status.put("message", "user config error according to registry");
         status.put("finished", false);
         res = Response.status(500).entity(status.toString()).type(MediaType.APPLICATION_JSON).build();
-        logger.info("Invalid user config file checked against registry!");
+        logger.info("Invalid user config file checked against registry");
         return res;
       } else {
         // config is fine, push to queue
-        logger.info("Valid user config found, invoking plugin!");
+        logger.info("Valid user config found, invoking plugin");
         Queue queue = new Queue();
 
-        logger.info("Plugin invoked!");
+        logger.info("Plugin invoked");
         json = queue.push(wd, plugin);
 
         res = Response.ok(json.toString(), MediaType.APPLICATION_JSON).build();
@@ -243,7 +243,7 @@ public class WebExec {
 
 
     } else {
-      logger.info("Invalid service!");
+      logger.info("Invalid service");
       json.put("status", "invalid service");
       res = Response.status(500, "invalid service").build();
       return res;
@@ -269,8 +269,8 @@ public class WebExec {
    * TODO: it SHOULD check
    */
   private boolean checkUserConfig(JSONObject dbSymantics, JSONObject userSymantics) {
-    logger.info(String.format("### userConfig: %s ###", userSymantics.toJSONString()));
-    logger.info(String.format("### dbConfig: %s ###", dbSymantics.toJSONString()));
+    logger.info(String.format("userConfig: %s", userSymantics.toJSONString()));
+    logger.info(String.format("dbConfig: %s", dbSymantics.toJSONString()));
     return true;
   }
 }

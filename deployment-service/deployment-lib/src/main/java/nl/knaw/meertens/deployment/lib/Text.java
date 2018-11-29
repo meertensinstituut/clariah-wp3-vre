@@ -42,7 +42,7 @@ public class Text implements RecipePlugin {
 
   @Override
   public JSONObject execute() throws RecipePluginException {
-    logger.info("## Start plugin execution ##");
+    logger.info("Start plugin execution");
 
     JSONObject json = new JSONObject();
     json.put("key", projectName);
@@ -50,14 +50,14 @@ public class Text implements RecipePlugin {
     JSONObject userConfig = new JSONObject();
     try {
       userConfig = new DeploymentLib().parseUserConfig(projectName);
-      logger.info("## userConfig:  ##");
+      logger.info("userConfig: ");
       logger.info(userConfig.toJSONString());
 
-      logger.info("## Running project ##");
+      logger.info("Running project");
       this.runProject(projectName);
 
       // keep polling project
-      logger.info("## Polling the service ##");
+      logger.info("Polling the service");
       boolean ready = false;
       int counter = 0;
       while (!ready) {
@@ -72,7 +72,7 @@ public class Text implements RecipePlugin {
       this.isFinished = true;
 
     } catch (ConfigurationException | ParseException | IOException | InterruptedException ex) {
-      logger.error(String.format("## Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
+      logger.error(String.format("Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
     }
 
     return json;
@@ -92,8 +92,8 @@ public class Text implements RecipePlugin {
     String inputFile = (String) inputOjbect.get("value");
     String inputPath = Paths.get(workDir, projectName, inputPathConst).normalize().toString();
     String fullInputPath = Paths.get(workDir, projectName, inputPathConst, inputFile).normalize().toString();
-    logger.info(String.format("### Full inputPath: %s ###", fullInputPath));
-    logger.info(String.format("### inputPath: %s ###", inputPath));
+    logger.info(String.format("Full inputPath: %s", fullInputPath));
+    logger.info(String.format("inputPath: %s", inputPath));
 
     String content = new String(Files.readAllBytes(Paths.get(fullInputPath)));
 
@@ -108,12 +108,12 @@ public class Text implements RecipePlugin {
 
     String outputPath = Paths.get(workDir, projectName, outputPathConst).normalize().toString();
     String fullOutputPath = Paths.get(workDir, projectName, outputPathConst, outputFile).normalize().toString();
-    logger.info(String.format("### outputPath: %s ###", outputPath));
-    logger.info(String.format("### Full outputPath: %s ###", fullOutputPath));
+    logger.info(String.format("outputPath: %s", outputPath));
+    logger.info(String.format("Full outputPath: %s", fullOutputPath));
 
     File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
     if (!outputPathAsFile.exists()) {
-      logger.info(String.format("### Creating folder: %s ###", outputPathAsFile.toString()));
+      logger.info(String.format("Creating folder: %s", outputPathAsFile.toString()));
       outputPathAsFile.mkdirs();
     }
 

@@ -39,7 +39,7 @@ public class Folia implements RecipePlugin {
       url = new URL("https://raw.githubusercontent.com/" +
         "proycon/folia/master/foliatools/folia2html.xsl");
     } catch (MalformedURLException e) {
-      throw new RecipePluginException("Could not load xslt from url");
+      throw new RecipePluginException("Could not load xslt from url", e);
     }
 
     logger.info("init Folia plugin");
@@ -51,7 +51,7 @@ public class Folia implements RecipePlugin {
 
   @Override
   public JSONObject execute() throws RecipePluginException {
-    logger.info("## Start plugin execution ##");
+    logger.info("Start plugin execution");
 
     JSONObject json = new JSONObject();
     json.put("key", workDir);
@@ -61,14 +61,14 @@ public class Folia implements RecipePlugin {
       DeploymentLib.workDirExists(workDir);
 
       userConfig = new DeploymentLib().parseUserConfig(workDir);
-      logger.info("## userConfig:  ##");
+      logger.info("userConfig: ");
       logger.info(userConfig.toJSONString());
 
-      logger.info("## Running project ##");
+      logger.info("Running project");
       this.runProject(workDir);
 
       // keep polling project
-      logger.info("## Polling the service ##");
+      logger.info("Polling the service");
       boolean ready = false;
       int counter = 0;
       while (!ready) {
@@ -142,8 +142,8 @@ public class Folia implements RecipePlugin {
     String workDir = SystemConf.systemWorkDir;
     String fullInputPath = Paths.get(workDir, this.workDir, inputPathConst, inputFile).normalize().toString();
     String inputPath = Paths.get(workDir, this.workDir, inputPathConst).normalize().toString();
-    logger.info(String.format("### inputPath: %s ###", inputPath));
-    logger.info(String.format("### Full Input Path: %s ###", fullInputPath));
+    logger.info(String.format("inputPath: %s", inputPath));
+    logger.info(String.format("Full Input Path: %s", fullInputPath));
 
     JSONObject outputOjbect;
     String outputFile;
@@ -156,12 +156,12 @@ public class Folia implements RecipePlugin {
 
     String outputPath = Paths.get(workDir, this.workDir, outputPathConst).normalize().toString();
     String fullOutputPath = Paths.get(workDir, this.workDir, outputPathConst, outputFile).normalize().toString();
-    logger.info(String.format("### outputPath: %s ###", outputPath));
-    logger.info(String.format("### Full outputPath: %s ###", fullOutputPath));
+    logger.info(String.format("outputPath: %s", outputPath));
+    logger.info(String.format("Full outputPath: %s", fullOutputPath));
 
     File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
     if (!outputPathAsFile.exists()) {
-      logger.info(String.format("### Creating folder: %s ###", outputPathAsFile.toString()));
+      logger.info(String.format("Creating folder: %s", outputPathAsFile.toString()));
       outputPathAsFile.mkdirs();
     }
 

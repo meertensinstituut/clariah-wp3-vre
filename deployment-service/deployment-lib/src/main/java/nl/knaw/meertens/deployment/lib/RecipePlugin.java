@@ -5,22 +5,19 @@ import org.json.simple.JSONObject;
 public interface RecipePlugin {
 
   /**
-   * @param workDir Project name also known as key, project id and working directory
-   * @param service Service record in the service registry
-   *
-   * @throws RecipePluginException exception
+   * Configure workDir and service params of new deployment
    */
   void init(String workDir, Service service) throws RecipePluginException;
 
   /**
-   * @return JSONObject result
-   * @throws RecipePluginException exception
+   * Execute recipe and start deployment
+   * TODO: replace JSONObject with pojo
    */
   JSONObject execute() throws RecipePluginException;
 
   /**
-   * @return JSONObject result
-   * @throws RecipePluginException exception
+   * Get status of deployment
+   * TODO: replace JSONObject with pojo
    */
   JSONObject getStatus() throws RecipePluginException;
 
