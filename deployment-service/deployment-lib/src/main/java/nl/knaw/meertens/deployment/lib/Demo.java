@@ -74,9 +74,11 @@ public class Demo implements RecipePlugin {
     String content = new String(Files.readAllBytes(Paths.get(fullInputPath)));
     HttpResponse<String> responseString = Unirest
         .post(serviceUrl.toString())
-        .header("accept", "application/json")
-        .header("MIME Type", "application/x-www-form-urlencoded")
-        .body(content)
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .header("Cookie",
+            "PHPSESSID=jfb3qohjnta6bf0ahvrl0qqb8m; " +
+                "gcosvcauth=7618a31a24bc8c281071f157c8e311592e9ab718efbc640893b49b5d6206c9cb")
+        .body("text=" + content)
         .asString();
 
 
@@ -112,6 +114,9 @@ public class Demo implements RecipePlugin {
 
   @Override
   public JSONObject getStatus() throws RecipePluginException {
-    return null;
+    JSONObject resultJson = new JSONObject();
+    resultJson.put("test", "test");
+    resultJson.put("finished", true);
+    return resultJson;
   }
 }
