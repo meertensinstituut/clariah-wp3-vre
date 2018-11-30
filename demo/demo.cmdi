@@ -15,7 +15,7 @@
         <cmdp:CLARINWebService>
             <cmdp:Service CoreVersion="1.0">
                 <cmdp:Name>Test</cmdp:Name>
-                <cmdp:Description>Service to test deployment mechanism of VRE</cmdp:Description>
+                <cmdp:Description>Demo recipe</cmdp:Description> <!-- rename -->
                 <cmdp:ServiceDescriptionLocation/> <!-- test doesn't really run remote -->
                 <cmdp:Operations>
                     <cmdp:Operation>
@@ -39,7 +39,7 @@
                         <cmdp:Output>
                             <cmdp:Parameter>
                                 <cmdp:Name>output</cmdp:Name>
-                                <cmdp:Description>Result</cmdp:Description>
+                                <cmdp:Description>Surprise</cmdp:Description>
                                 <cmdp:MIMEType>text/plain</cmdp:MIMEType>
                             </cmdp:Parameter>
                         </cmdp:Output>

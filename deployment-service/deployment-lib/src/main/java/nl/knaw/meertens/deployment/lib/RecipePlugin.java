@@ -11,13 +11,11 @@ public interface RecipePlugin {
 
   /**
    * Execute recipe and start deployment
-   * TODO: replace JSONObject with pojo
    */
   JSONObject execute() throws RecipePluginException;
 
   /**
    * Get status of deployment
-   * TODO: replace JSONObject with pojo
    */
   JSONObject getStatus() throws RecipePluginException;
 
