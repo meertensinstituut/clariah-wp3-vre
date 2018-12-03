@@ -7,6 +7,9 @@
 # IDE
 .project
 .classpath
+.factorypath
+**/*.factorypath
+**/*.classpath
 .vscode/
 nb-configuration.xml
 /lib
