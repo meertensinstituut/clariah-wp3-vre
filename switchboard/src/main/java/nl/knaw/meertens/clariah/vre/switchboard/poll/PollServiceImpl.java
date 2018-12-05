@@ -96,11 +96,7 @@ public class PollServiceImpl implements PollService {
           report.getWorkDir(), report.getStatus()
         ));
       } else {
-        try {
-          logger.debug("Skipping report " + mapper.writeValueAsString(report));
-        } catch (JsonProcessingException e) {
-          logger.error("could not map report");
-        }
+        logger.debug(String.format("Skipping [%s]", report.getWorkDir()));
       }
     }
   }
