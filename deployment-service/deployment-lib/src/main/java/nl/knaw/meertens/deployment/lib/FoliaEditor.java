@@ -98,7 +98,8 @@ public class FoliaEditor implements RecipePlugin {
     return json;
   }
 
-  public JSONObject runProject(String key) throws IOException, ConfigurationException, UnirestException {
+  public JSONObject runProject(String key)
+    throws IOException, ConfigurationException, UnirestException, RecipePluginException {
     final String outputPathConst = "output";
     final String inputPathConst = "input";
 
@@ -109,8 +110,8 @@ public class FoliaEditor implements RecipePlugin {
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
     String fullInputPath =
-      Paths.get(SystemConf.SYSTEM_DIR, projectName, inputPathConst, inputFile).normalize().toString();
-    String inputPath = Paths.get(SystemConf.SYSTEM_DIR, projectName, inputPathConst).normalize().toString();
+      Paths.get(SystemConf.WORK_DIR, projectName, inputPathConst, inputFile).normalize().toString();
+    String inputPath = Paths.get(SystemConf.WORK_DIR, projectName, inputPathConst).normalize().toString();
     logger.info(String.format("inputPath: %s", inputPath));
     logger.info(String.format("Full Input Path: %s", fullInputPath));
 
@@ -124,9 +125,9 @@ public class FoliaEditor implements RecipePlugin {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(SystemConf.SYSTEM_DIR, projectName, outputPathConst).normalize().toString();
+    String outputPath = Paths.get(SystemConf.WORK_DIR, projectName, outputPathConst).normalize().toString();
     String fullOutputPath =
-      Paths.get(SystemConf.SYSTEM_DIR, projectName, outputPathConst, outputFile).normalize().toString();
+      Paths.get(SystemConf.WORK_DIR, projectName, outputPathConst, outputFile).normalize().toString();
     logger.info(String.format("outputPath: %s", outputPath));
     logger.info(String.format("Full outputPath: %s", fullOutputPath));
 

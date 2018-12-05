@@ -1,8 +1,6 @@
 package nl.knaw.meertens.deployment.lib;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -11,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.Header;
 import org.slf4j.Logger;
@@ -24,8 +21,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-@Ignore
 public class ClamTest extends AbstractDeploymentTest {
+
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
   private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -49,13 +46,13 @@ public class ClamTest extends AbstractDeploymentTest {
     logger.info(String.format("create workdir [%s]", workDir));
 
     // create config file:
-    Path configPath = Paths.get(SYSTEM_DIR, workDir, USER_CONF_FILE);
+    Path configPath = Paths.get(WORK_DIR, workDir, USER_CONF_FILE);
     String testFileContent = FileUtil.getTestFileContent("configUcto.json");
     createFile(configPath.toString(), testFileContent);
 
     // create input file:
     String inputFilename = "ucto.txt";
-    Path inputPath = Paths.get(SYSTEM_DIR, workDir, INPUT_DIR, inputFilename);
+    Path inputPath = Paths.get(WORK_DIR, workDir, INPUT_DIR, inputFilename);
     createFile(inputPath.toString(), FileUtil.getTestFileContent(inputFilename));
 
     // instantiate recipe:
@@ -78,7 +75,7 @@ public class ClamTest extends AbstractDeploymentTest {
 
     // assert output file exists:
     String outputFilename = "uctoOutput.xml";
-    Path outputFile = Paths.get(SYSTEM_DIR, workDir, OUTPUT_DIR, outputFilename);
+    Path outputFile = Paths.get(WORK_DIR, workDir, OUTPUT_DIR, outputFilename);
     logger.info("output path expected: " + outputFile.toString());
     boolean outputExists = outputFile.toFile().exists();
     assertThat(outputExists).isTrue();

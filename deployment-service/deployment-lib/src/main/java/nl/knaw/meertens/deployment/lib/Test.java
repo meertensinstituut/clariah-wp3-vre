@@ -26,9 +26,8 @@ public class Test implements RecipePlugin {
     try {
       logger.info("Start 15 second run...");
       Thread.sleep(15000);
-    } catch (InterruptedException e) {
-      logger.info("Test service was interrupted.");
-      logger.info(e.getLocalizedMessage());
+    } catch (InterruptedException ex) {
+      logger.info("Test service was interrupted.", ex);
     }
     Path outputFile = Paths.get("/tmp/wd/" + wd + "/output/result.txt");
     outputFile.toFile().getParentFile().mkdirs();

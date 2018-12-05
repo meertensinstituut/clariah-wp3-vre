@@ -26,10 +26,10 @@ Run tests: `docker exec vre_deployment_1 mvn clean test`
 Status codes
 ---
 ```
-prefix: <protocol>://<host>:<port>/deployment-service/a
+url: {protocol}://{host}:{port}/deployment-service/a
 
-PUT /exec/<service>/<workdir>   200    created
-PUT /exec/<service>/<workdir>   403    already running
-GET /exec/<service>/<workdir>   200    finished
-GET /exec/<service>/<workdir>   202    continue
+PUT {url}/exec/{service}/{workdir}   200    created
+PUT {url}/exec/{service}/{workdir}   403    already running
+GET {url}/exec/{service}/{workdir}   200    finished
+GET {url}/exec/{service}/{workdir}   202    continue
 ```

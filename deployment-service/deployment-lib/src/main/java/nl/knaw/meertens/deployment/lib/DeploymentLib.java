@@ -24,7 +24,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
@@ -35,7 +35,7 @@ public class DeploymentLib {
    * @throws RecipePluginException when work dir does not exist
    */
   static void workDirExists(String workDir) throws RecipePluginException {
-    File file = Paths.get(SYSTEM_DIR, workDir).toFile();
+    File file = Paths.get(WORK_DIR, workDir).toFile();
     if (!file.exists()) {
       throw new RecipePluginException("work dir does not exist");
     }
@@ -153,20 +153,20 @@ public class DeploymentLib {
     }
   }
 
-  public static JSONObject parseUserConfig(String workDir) throws IOException {
+  public static JSONObject parseUserConfig(String workDir) throws RecipePluginException {
     JSONParser parser = new JSONParser();
     if (isEmpty(workDir)) {
       throw new RuntimeException("working directory is empty");
     }
 
     String path = Paths
-      .get(SYSTEM_DIR, workDir, USER_CONF_FILE)
+      .get(WORK_DIR, workDir, USER_CONF_FILE)
       .normalize().toString();
 
     try {
       return (JSONObject) parser.parse(new FileReader(path));
     } catch (IOException | ParseException e) {
-      throw new IOException(String.format("could not read config path [%s]", path));
+      throw new RecipePluginException(String.format("could not read config file [%s]", path), e);
     }
   }
 

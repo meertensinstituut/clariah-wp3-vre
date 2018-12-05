@@ -1,7 +1,6 @@
 package nl.knaw.meertens.deployment.lib;
 
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -25,7 +24,7 @@ import java.nio.file.Paths;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 public class Folia implements RecipePlugin {
@@ -45,7 +44,7 @@ public class Folia implements RecipePlugin {
       throw new RecipePluginException("Could not load xslt from url", e);
     }
 
-    logger.info("init Folia plugin");
+    logger.info(String.format("init folia plugin in workDir [%s]", workDir));
     if (isEmpty(workDir)) {
       throw new RecipePluginException("work dir should not be empty");
     }
@@ -124,7 +123,7 @@ public class Folia implements RecipePlugin {
     }
   }
 
-  private void runProject(String key) throws IOException {
+  private void runProject(String key) throws IOException, RecipePluginException {
     JSONObject userConfig = DeploymentLib.parseUserConfig(key);
     if (userConfig.isEmpty()) {
       throw new IOException("No config file");
@@ -137,7 +136,7 @@ public class Folia implements RecipePlugin {
     String inputFile = (String) inputOjbect.get("value");
 
     String inputPath = Paths
-      .get(SYSTEM_DIR, workDir, INPUT_DIR, inputFile)
+      .get(WORK_DIR, workDir, INPUT_DIR, inputFile)
       .normalize().toString();
 
     String outputFile;
@@ -148,7 +147,7 @@ public class Folia implements RecipePlugin {
     }
 
     String fullOutputPath = Paths
-      .get(SYSTEM_DIR, workDir, OUTPUT_DIR, outputFile)
+      .get(WORK_DIR, workDir, OUTPUT_DIR, outputFile)
       .normalize().toString();
 
     File outputPath = Paths

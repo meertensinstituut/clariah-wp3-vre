@@ -42,7 +42,8 @@ class Deploy extends React.Component {
 
         const steps = this.state.steps;
         const activeKey = steps[newIndex].key;
-        const completed = !!steps[newIndex].value;
+        const value = steps[newIndex].value;
+        const completed = !!value;
         const goToFiles = steps[newIndex].key === 'file';
 
         this.setState({steps, active: activeKey, completed, goToFiles}, () => {
@@ -53,17 +54,25 @@ class Deploy extends React.Component {
     };
 
     handleSelectService = (selected) => {
-        this.setStepValue('service', (selected ? selected : null));
+        this.getStep('service').value = selected ? selected : null;
         const completed = selected !== null;
         const steps = this.state.steps;
         this.setState({completed, steps});
     };
 
-    handleValidConfig = (serviceName, config) => {
+    handleConfigChange = (serviceName, config) => {
+        console.log("config", config);
+        if(config.valid) {
+            this.handleValidConfig(serviceName, config);
+        } else {
+            this.handleInvalidConfig();
+        }
+    };
+
+    handleValidConfig(serviceName, config) {
         const completed = true;
         const steps = this.state.steps;
-
-        this.setStepValue('config', true);
+        this.getStep('config').value = true;
 
         this.setState({
             serviceName,
@@ -71,10 +80,11 @@ class Deploy extends React.Component {
             completed,
             steps
         });
-    };
+    }
 
     handleInvalidConfig = () => {
-        this.setStepValue('config', false);
+        console.log("config is invalid");
+        this.setStep('config').value = false;
         this.setState({
             config: null,
             steps: this.state.steps
@@ -104,16 +114,8 @@ class Deploy extends React.Component {
         return data;
     }
 
-    setStepValue(key, value) {
-        this.state.steps
-            .find(s => s.key === key)
-            .value = value;
-    }
-
-    getStepValue(key) {
-        return this.state.steps
-            .find(s => s.key === key)
-            .value;
+    getStep(key) {
+        return this.state.steps.find(s => s.key === key)
     }
 
     renderSteps() {
@@ -158,8 +160,8 @@ class Deploy extends React.Component {
             <div>
                 <h2>1. Select service</h2>
                 <ServiceSelector
-                    file={this.getStepValue('file')}
-                    selected={this.getStepValue('service')}
+                    file={this.getStep('file').value}
+                    selected={this.getStep('service').value}
                     onSelect={this.handleSelectService}
                 />
             </div>
@@ -171,10 +173,9 @@ class Deploy extends React.Component {
             <div>
                 <h2>2. Configure service</h2>
                 <Configurator
-                    service={Number(this.getStepValue('service'))}
-                    file={Number(this.getStepValue('file'))}
-                    onValid={this.handleValidConfig}
-                    onInvalid={this.handleInvalidConfig}
+                    service={Number(this.getStep('service').value)}
+                    file={Number(this.getStep('file').value)}
+                    onChange={this.handleConfigChange}
                 />
             </div>
             :
@@ -198,7 +199,6 @@ class Deploy extends React.Component {
                 {error}
                 {deploymentMsg}
                 {selectService}
-                <div className="clearfix"/>
                 {configureService}
                 {nextBtn}
             </div>

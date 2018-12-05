@@ -24,8 +24,6 @@ export default class Configurator extends React.Component {
             this.init();
         }
 
-        this.change = this.change.bind(this);
-
     }
 
     async init() {
@@ -43,7 +41,7 @@ export default class Configurator extends React.Component {
             serviceParams: data,
             form: form
         };
-        this.setState(newState);
+        this.setState(newState, () => this.signalUpdate());
     }
 
     createForm(serviceParams) {
@@ -82,24 +80,19 @@ export default class Configurator extends React.Component {
         params.unshift(fileField);
     }
 
-    change(form) {
-        this.setState({form}, () => {
-            if (form.valid) {
-                this.onValidForm();
-            } else {
-                this.props.onInvalid();
-            }
-        });
-    }
+    handleUpdate = (form) => {
+        this.setState({form}, this.signalUpdate);
+    };
 
-    onValidForm = () => {
+    signalUpdate = () => {
         let config = this.convertToConfig(this.state.form);
-        this.props.onValid(this.state.serviceName, config);
+        this.props.onChange(this.state.serviceName, config);
     };
 
     convertToConfig(form) {
         let config = {};
         config.params = this.convertParams(form.params);
+        config.valid = form.valid;
         return config;
     }
 
@@ -137,7 +130,7 @@ export default class Configurator extends React.Component {
 
         return (
             <div>
-                <Form form={form} onChange={this.change}/>
+                <Form form={form} onChange={this.handleUpdate}/>
             </div>
         );
     }
@@ -146,6 +139,5 @@ export default class Configurator extends React.Component {
 Configurator.propTypes = {
     service: PropTypes.number.isRequired,
     file: PropTypes.number.isRequired,
-    onValid: PropTypes.func.isRequired,
-    onInvalid: PropTypes.func.isRequired,
+    onChange: PropTypes.func.isRequired,
 };

@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.poll;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -82,7 +83,7 @@ public class PollServiceImpl implements PollService {
   private void poll() {
     for (var report : requestRepositoryService.getAllStatusReports()) {
       if (shouldPoll(report)) {
-        String workDir = report.getWorkDir();
+        var workDir = report.getWorkDir();
         logger.info(String.format("Polling [%s]", workDir));
         report.setPolled(now());
 
@@ -94,6 +95,12 @@ public class PollServiceImpl implements PollService {
           "Polled deployment [%s]; received status [%s]",
           report.getWorkDir(), report.getStatus()
         ));
+      } else {
+        try {
+          logger.debug("Skipping report " + mapper.writeValueAsString(report));
+        } catch (JsonProcessingException e) {
+          logger.error("could not map report");
+        }
       }
     }
   }

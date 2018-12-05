@@ -4,7 +4,6 @@ import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import nl.mpi.tla.util.Saxon;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -41,7 +40,7 @@ import java.util.Set;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
 
 /**
  * @author vic
@@ -124,7 +123,7 @@ public class Clam implements RecipePlugin {
 
       this.isFinished = true;
 
-    } catch (IOException | InterruptedException | ConfigurationException | JDOMException ex) {
+    } catch (IOException | InterruptedException | JDOMException ex) {
       logger.error(String.format("Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
     }
 
@@ -174,11 +173,10 @@ public class Clam implements RecipePlugin {
 
   }
 
-  private JSONObject prepareProject(String key)
-    throws IOException, JDOMException, ConfigurationException {
+  private void prepareProject(String key)
+    throws IOException, RecipePluginException {
     JSONObject jsonResult = new JSONObject();
-    JSONObject json = new JSONObject();
-    json = DeploymentLib.parseUserConfig(key);
+    JSONObject json = DeploymentLib.parseUserConfig(key);
 
     JSONArray params = (JSONArray) json.get("params");
 
@@ -222,7 +220,6 @@ public class Clam implements RecipePlugin {
         jsonResult.put("author", author);
       }
     }
-    return jsonResult;
   }
 
   /**
@@ -336,7 +333,7 @@ public class Clam implements RecipePlugin {
     JSONObject jsonResult = new JSONObject();
 
     String path = Paths.get(
-      SYSTEM_DIR,
+      WORK_DIR,
       projectName,
       INPUT_DIR,
       filename
@@ -441,7 +438,7 @@ public class Clam implements RecipePlugin {
   }
 
   private JSONObject downloadProject(String workDir) {
-    String outputPath = Paths.get(SYSTEM_DIR, workDir, OUTPUT_DIR)
+    String outputPath = Paths.get(WORK_DIR, workDir, OUTPUT_DIR)
                              .normalize().toString();
     logger.info(String.format("outputPath: %s", outputPath));
 
