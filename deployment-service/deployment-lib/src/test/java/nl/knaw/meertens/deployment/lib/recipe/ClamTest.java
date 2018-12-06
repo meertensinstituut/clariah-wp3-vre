@@ -1,5 +1,9 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.AbstractDeploymentTest;
+import nl.knaw.meertens.deployment.lib.FileUtil;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +37,7 @@ public class ClamTest extends AbstractDeploymentTest {
     String workDir = "test-" + RandomStringUtils.randomAlphanumeric(8);
 
     final String serviceSemantics = FileUtil.getTestFileContent("ucto.xml");
-    Service service = new Service("0", "UCTO", "CLAM", serviceSemantics, "<xml></xml>", true);
+    Service service = new Service("0", "UCTO", "CLAM", serviceSemantics, "<xml></xml>");
 
     clam.init(workDir, service);
   }
@@ -57,7 +61,7 @@ public class ClamTest extends AbstractDeploymentTest {
 
     // instantiate recipe:
     final String serviceSemantics = FileUtil.getTestFileContent("ucto.xml");
-    Service service = new Service("0", "UCTO", "CLAM", serviceSemantics, "<xml></xml>", true);
+    Service service = new Service("0", "UCTO", "CLAM", serviceSemantics, "<xml></xml>");
     Clam clam = new Clam();
     clam.init(workDir, service);
 
@@ -82,7 +86,7 @@ public class ClamTest extends AbstractDeploymentTest {
   }
 
   private void createProjectMock(String workDir, int times) {
-    mockServer
+    getMockServer()
         .when(
             request()
                 .withMethod("PUT")
@@ -101,7 +105,7 @@ public class ClamTest extends AbstractDeploymentTest {
     String testFileContent = getTestFileContent("clamFileList.xml")
       .replace("testproject", workDir);
 
-    mockServer
+    getMockServer()
         .when(
             request()
                 .withMethod("GET")
@@ -116,7 +120,7 @@ public class ClamTest extends AbstractDeploymentTest {
   }
 
   private void fileUploadMock(String workDir, int times) {
-    mockServer
+    getMockServer()
         .when(
             request()
                 .withMethod("POST")
@@ -132,7 +136,7 @@ public class ClamTest extends AbstractDeploymentTest {
   }
 
   private void runProjectMock(String workDir, int times) {
-    mockServer
+    getMockServer()
         .when(
             request()
                 .withMethod("POST")
@@ -148,7 +152,7 @@ public class ClamTest extends AbstractDeploymentTest {
   }
 
   private void pollProjectMock(String workDir, int times) {
-    mockServer
+    getMockServer()
         .when(
             request()
                 .withMethod("GET")
@@ -164,7 +168,7 @@ public class ClamTest extends AbstractDeploymentTest {
   }
 
   private void downloadFileMock(String workDir, int times) {
-    mockServer
+    getMockServer()
       .when(
         request()
           .withMethod("GET")
@@ -179,7 +183,7 @@ public class ClamTest extends AbstractDeploymentTest {
       );
   }
   private void downloadLogMock(String workDir, int times) {
-    mockServer
+    getMockServer()
       .when(
         request()
           .withMethod("GET")
@@ -194,7 +198,7 @@ public class ClamTest extends AbstractDeploymentTest {
       );
   }
   private void downloadErrorLogMock(String workDir, int times) {
-    mockServer
+    getMockServer()
       .when(
         request()
           .withMethod("GET")

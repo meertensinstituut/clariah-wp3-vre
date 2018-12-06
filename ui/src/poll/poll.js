@@ -110,7 +110,7 @@ export default class Poll extends React.Component {
                     <Panel.Heading>
                         <Panel.Title>
                             <span>
-                            {deployStatus && deployStatus.status === 'RUNNING'
+                            {deployStatus && ['RUNNING', 'DEPLOYED'].includes(deployStatus.status)
                                 ? <Spinner/>
                                 : <i className="fa fa-check-square-o" aria-hidden="true"/>
                             }

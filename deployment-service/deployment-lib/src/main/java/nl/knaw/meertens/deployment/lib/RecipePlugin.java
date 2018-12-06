@@ -5,7 +5,7 @@ import org.json.simple.JSONObject;
 public interface RecipePlugin {
 
   /**
-   * Configure workDir and service params of new deployment
+   * Set working directory and service
    */
   void init(String workDir, Service service) throws RecipePluginException;
 

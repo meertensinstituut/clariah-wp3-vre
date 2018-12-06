@@ -11,10 +11,11 @@ public class AbstractDeploymentTest {
   private static Logger logger = LoggerFactory.getLogger(AbstractDeploymentTest.class);
 
   private static boolean isSetUp;
-  static ClientAndServer mockServer;
+
+  private static ClientAndServer mockServer;
+
   static Integer mockPort = 1080;
   static final String mockHostName = "http://localhost:" + mockPort;
-
   @BeforeClass
   public static void setUpClass() {
     if (isSetUp) {
@@ -29,5 +30,9 @@ public class AbstractDeploymentTest {
   public void tearDown() {
     logger.info("reset abstract controller test setup");
     mockServer.reset();
+  }
+
+  public static ClientAndServer getMockServer() {
+    return mockServer;
   }
 }

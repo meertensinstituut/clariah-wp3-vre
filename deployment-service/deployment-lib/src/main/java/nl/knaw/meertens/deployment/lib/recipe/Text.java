@@ -1,6 +1,10 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
 
+import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.RecipePlugin;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -13,6 +17,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static java.lang.String.format;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
@@ -28,7 +34,7 @@ public class Text implements RecipePlugin {
 
   @Override
   public void init(String workDir, Service service) {
-    logger.info("init Text plugin");
+    logger.info(format("init [%s]", workDir));
     this.projectName = workDir;
     this.serviceUrl = null;
     logger.info("finish init Text plugin");
@@ -68,6 +74,11 @@ public class Text implements RecipePlugin {
     }
 
     return json;
+  }
+
+  @Override
+  public JSONObject getStatus() {
+    return createDefaultStatus(isFinished);
   }
 
   private void runProject(String key) throws IOException, RecipePluginException {
@@ -111,21 +122,6 @@ public class Text implements RecipePlugin {
       fileWriter.flush();
     }
 
-  }
-
-  @Override
-  public JSONObject getStatus() {
-    JSONObject result = new JSONObject();
-    if (this.isFinished) {
-      result.put("status", 200);
-      result.put("message", "Task finished");
-      result.put("finished", true);
-    } else {
-      result.put("status", 202);
-      result.put("message", "Task running");
-      result.put("finished", false);
-    }
-    return result;
   }
 
 }

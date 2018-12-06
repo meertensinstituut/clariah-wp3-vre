@@ -1,5 +1,5 @@
 <deploymentService>
-  <workingFolder>/tmp/wd</workingFolder>
+  <workingDirectory>/tmp/wd</workingDirectory>
   <userConfFile>config.json</userConfFile>
   <inputDirectory>input</inputDirectory>
   <outputDirectory>output</outputDirectory>

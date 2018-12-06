@@ -1,5 +1,7 @@
 package nl.knaw.meertens.deployment.lib;
 
+import com.google.common.base.MoreObjects;
+
 /**
  * @author vic
  */
@@ -9,34 +11,22 @@ public class Service {
   private String serviceRecipe;
   private String serviceSemantics;
   private String serviceTech;
-  private Boolean isValidService = false;
-
-  public Service() {
-
-    this(
-        "0",
-        "UCTO",
-        "CLAM",
-        "<cmdi></cmdi>",
-        "<xml></xml>",
-        false);
-  }
 
   public Service(
-      String serviceId,
-      String serviceName,
-      String serviceRecipe,
-      String serviceSemantics,
-      String serviceTech,
-      Boolean isValidService
+    String serviceId,
+    String serviceName,
+    String serviceRecipe,
+    String serviceSemantics,
+    String serviceTech
   ) {
-    this.isValidService = isValidService;
     this.serviceName = serviceName;
     this.serviceRecipe = serviceRecipe;
     this.serviceId = serviceId;
     this.serviceSemantics = serviceSemantics;
     this.serviceTech = serviceTech;
   }
+
+  public Service() {}
 
   public String getServiceSemantics() {
     return this.serviceSemantics;
@@ -58,12 +48,15 @@ public class Service {
     return this.serviceId;
   }
 
-  public Boolean isValid() {
-    return this.isValidService;
-  }
-
   @Override
   public String toString() {
-    return this.getName();
+    return MoreObjects
+      .toStringHelper(this)
+      .add("serviceId", serviceId)
+      .add("serviceName", serviceName)
+      .add("serviceRecipe", serviceRecipe)
+      .add("serviceSemantics", serviceSemantics)
+      .add("serviceTech", serviceTech)
+      .toString();
   }
 }

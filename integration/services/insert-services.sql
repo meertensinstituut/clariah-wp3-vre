@@ -3,7 +3,7 @@
 INSERT INTO service
   ("name","recipe","semantics","kind")
 SELECT
-  'TEST', 'nl.knaw.meertens.deployment.lib.Test', :'test', 'service'
+  'TEST', 'nl.knaw.meertens.deployment.lib.recipe.Test', :'test', 'service'
 WHERE NOT EXISTS (
   SELECT "name" FROM service WHERE "name" = 'TEST'
 );
@@ -13,7 +13,7 @@ WHERE NOT EXISTS (
 INSERT INTO service
   ("name", "recipe", "semantics", "kind")
 SELECT
-  'VIEWER', 'nl.knaw.meertens.deployment.lib.Text', :'viewer', 'viewer'
+  'VIEWER', 'nl.knaw.meertens.deployment.lib.recipe.Text', :'viewer', 'viewer'
 WHERE NOT EXISTS (
   SELECT "name" FROM service WHERE "name" = 'VIEWER'
 );

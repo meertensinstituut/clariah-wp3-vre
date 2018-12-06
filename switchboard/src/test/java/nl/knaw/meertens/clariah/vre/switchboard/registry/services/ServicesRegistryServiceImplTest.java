@@ -18,7 +18,7 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
     "    {\n" +
       "      \"id\": \"1\",\n" +
       "      \"name\": \"TEST\",\n" +
-      "      \"recipe\": \"nl.knaw.meertens.deployment.lib.Test\",\n" +
+      "      \"recipe\": \"nl.knaw.meertens.deployment.lib.recipe.Test\",\n" +
       "      \"semantics\": \"<cmd:CMD xmlns:cmd=\\\"http://www.clarin.eu/cmd/1\\\" xmlns:cmdp=\\\"http://www.clarin" +
       ".eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795\\\" xmlns:xs=\\\"http://www.w3.org/2001/XMLSchema\\\" " +
       "xmlns:xsi=\\\"http://www.w3.org/2001/XMLSchema-instance\\\" xsi:schemaLocation=\\\"\\n  http://www.clarin" +
@@ -88,7 +88,7 @@ public class ServicesRegistryServiceImplTest extends AbstractControllerTest {
             "    {\n" +
             "      \"id\": \"13\",\n" +
             "      \"name\": \"NANDOE\",\n" +
-            "      \"recipe\": \"nl.knaw.meertens.deployment.lib.Nandoe\",\n" +
+            "      \"recipe\": \"nl.knaw.meertens.deployment.lib.recipe.Nandoe\",\n" +
             "      \"semantics\": \"<cmd:CMD xmlns:cmd=\\\"http://www.clarin.eu/cmd/1\\\" xmlns:cmdp=\\\"http://www" +
             ".clarin.eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795\\\" xmlns:xs=\\\"http://www.w3" +
             ".org/2001/XMLSchema\\\" xmlns:xsi=\\\"http://www.w3.org/2001/XMLSchema-instance\\\" " +

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.ArrayList;
 
+import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.DEPLOYED;
 
 public class DeploymentServiceImpl implements DeploymentService {
@@ -50,6 +51,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     var httpStatus = response.getStatus();
     report.setMsg(response.getBody());
 
+    // 200 means successful deployment here (and not finished):
     if (httpStatus == 200) {
       report.setStatus(DEPLOYED);
     } else {
@@ -60,7 +62,7 @@ public class DeploymentServiceImpl implements DeploymentService {
   }
 
   private URI createDeployServiceUri(DeploymentRequest request) {
-    return URI.create(String.format(
+    return URI.create(format(
       "%s/%s/%s/%s/",
       hostName,
       "deployment-service/a/exec",
@@ -84,10 +86,10 @@ public class DeploymentServiceImpl implements DeploymentService {
       var response = Unirest
         .put(uri.toString())
         .asString();
-      logger.info(String.format("Started deployment of [%s]", uri.toString()));
+      logger.info(format("Requested deployment of [%s]", uri.toString()));
       return response;
     } catch (UnirestException e) {
-      throw new RuntimeException(String.format("Could not start deployment of [%s]", uri.toString()), e);
+      throw new RuntimeException(format("Deployment request of [%s] failed", uri.toString()), e);
     }
   }
 

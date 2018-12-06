@@ -1,6 +1,8 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
-
+import nl.knaw.meertens.deployment.lib.RecipePlugin;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -22,6 +24,9 @@ import java.net.URL;
 import java.nio.file.Paths;
 
 import static java.util.Objects.isNull;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.parseUserConfig;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.workDirExists;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
@@ -60,9 +65,9 @@ public class Folia implements RecipePlugin {
     json.put("status", 202);
     JSONObject userConfig;
     try {
-      DeploymentLib.workDirExists(workDir);
+      workDirExists(workDir);
 
-      userConfig = DeploymentLib.parseUserConfig(workDir);
+      userConfig = parseUserConfig(workDir);
       logger.info("userConfig: ");
       logger.info(userConfig.toJSONString());
 
@@ -93,18 +98,7 @@ public class Folia implements RecipePlugin {
 
   @Override
   public JSONObject getStatus() {
-    // JSONObject status to return
-    JSONObject status = new JSONObject();
-    if (this.isFinished) {
-      status.put("status", 200);
-      status.put("message", "Task finished");
-      status.put("finished", true);
-    } else {
-      status.put("status", 202);
-      status.put("message", "Task running");
-      status.put("finished", false);
-    }
-    return status;
+    return createDefaultStatus(isFinished);
   }
 
   private static void convertXmlToHtml(Source xml, Source xslt, File file) {
@@ -124,7 +118,7 @@ public class Folia implements RecipePlugin {
   }
 
   private void runProject(String key) throws IOException, RecipePluginException {
-    JSONObject userConfig = DeploymentLib.parseUserConfig(key);
+    JSONObject userConfig = parseUserConfig(key);
     if (userConfig.isEmpty()) {
       throw new IOException("No config file");
     }

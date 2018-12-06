@@ -48,8 +48,9 @@ public class Queue {
       json.put("message", "Put to queue failed. Task is still running.");
     } else {
       json.put("status", 500);
-      json.put("message", "Put to queue failed. Key or plugin or queue is null");
-
+      String msg = "Put to queue failed. Key or plugin or queue is null";
+      json.put("message", msg);
+      logger.error(msg);
     }
     return json;
   }

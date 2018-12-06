@@ -3,52 +3,45 @@ package nl.knaw.meertens.deployment.api;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.commons.configuration.ConfigurationException;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 
-/**
- * exposed at "service" path
- */
+import static java.lang.String.format;
+
 @Path("/service")
-public class WebServiceClass {
+public class WebServiceClass extends AbstractController {
 
-
-  /**
-   * Method handling HTTP GET requests. The returned object will be sent
-   * to the client as "json" media type.
-   *
-   * @return String that will be returned as a json response.
-   */
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public String getAllServices() {
-    JSONArray json = new JSONArray();
-    json.add("1. List all available services: \n");
-    json.add("http://localhost/deployment-service/a/service/");
-    json.add("2. get service by ID");
-    json.add("http://localhost/deployment-service/a/service/<CLAM>");
-    return json.toString();
-  }
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @GET
   @Path("/{service}")
   @Produces(MediaType.APPLICATION_JSON)
-  public String getService(@PathParam("service") String service) throws ConfigurationException, IOException {
+  public Response getService(@PathParam("service") String serviceName) {
     DeploymentLib dplib = new DeploymentLib();
-    Service rp = dplib.getServiceByName(service);
-    JSONObject json = new JSONObject();
-    json.put("serviceName", rp.getName());
-    json.put("serviceId", rp.getServiceId());
-    json.put("serviceSymantics", rp.getServiceSemantics());
-    json.put("serviceTechInfo", rp.getServiceTechInfo());
-    return json.toString();
+    try {
+      Service service = dplib.getServiceByName(serviceName);
+      JSONObject json = new JSONObject();
+      json.put("serviceName", service.getName());
+      json.put("serviceId", service.getServiceId());
+      json.put("serviceSymantics", service.getServiceSemantics());
+      json.put("serviceTechInfo", service.getServiceTechInfo());
+      return Response
+        .status(200)
+        .entity(json.toJSONString())
+        .build();
+    } catch (IOException | ConfigurationException ex) {
+      String msg = format("Failed to get service by name [%s]", serviceName);
+      return handleException(msg, ex);
+    }
   }
 
 }

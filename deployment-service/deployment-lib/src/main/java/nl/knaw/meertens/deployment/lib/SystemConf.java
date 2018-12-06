@@ -23,7 +23,7 @@ public class SystemConf {
         SystemConf.defaultConfigPath
       ));
     }
-    WORK_DIR = xml.getString("workingFolder");
+    WORK_DIR = xml.getString("workingDirectory");
     USER_CONF_FILE = xml.getString("userConfFile");
     INPUT_DIR = xml.getString("inputDirectory");
     OUTPUT_DIR = xml.getString("outputDirectory");

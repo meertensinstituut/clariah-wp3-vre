@@ -1,5 +1,10 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.AbstractDeploymentTest;
+import nl.knaw.meertens.deployment.lib.FileUtil;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
+import nl.knaw.meertens.deployment.lib.recipe.Folia;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;

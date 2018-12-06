@@ -1,6 +1,8 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
-import java.util.Arrays;
+import static java.lang.String.format;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Valid http responses during deployment of
@@ -10,7 +12,7 @@ public enum DeploymentStatus {
 
   /**
    * 201 Created
-   * Status is DEPLOYED during deployment request, RUNNING afterwards
+   * Status is DEPLOYED on deployment request, RUNNING afterwards
    */
   DEPLOYED(201),
 
@@ -55,17 +57,12 @@ public enum DeploymentStatus {
         return deploymentStatus;
       }
     }
-    throw new IllegalArgumentException(String.format(
-      "Response of requested deployment is unexpected: was [%s] but should be in [%s]",
-      httpStatus, Arrays.toString(getAllDeployStatuses())
-    ));
+    throw new IllegalArgumentException(format(
+      "Deployment response unexpected: got [%s] but should be in [%s]",
+      httpStatus, stream(values()).map(v -> "" + v.getHttpStatus()).collect(joining(", ")))
+    );
   }
 
-  private static DeploymentStatus[] getAllDeployStatuses() {
-    return (DeploymentStatus[]) Arrays
-      .stream(values())
-      .toArray();
-  }
 
   public int getHttpStatus() {
     return httpStatus;

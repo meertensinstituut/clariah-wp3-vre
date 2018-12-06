@@ -1,12 +1,18 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import java.time.LocalDateTime;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class DemoTest {
+
+  @Rule
+  public ExpectedException expectedEx = ExpectedException.none();
 
   @Test
   public void getResultString_multiline() {
@@ -75,6 +81,14 @@ public class DemoTest {
     String headerCookie = Demo.createRequestCookie(setCookieValue);
 
     assertThat(headerCookie).isEqualTo(expectedCookie);
+  }
+
+  @Test
+  public void testRetrieveHeaderCookie() throws RecipePluginException {
+    for (int i = 0; i < 10; i++) {
+      String result = Demo.retrieveHeaderCookie();
+      assertThat(result).matches(Pattern.compile("PHPSESSID=.+; gcosvcauth=.+"));
+    }
   }
 
 }
