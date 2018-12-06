@@ -20,7 +20,7 @@ public class FileUtil {
   }
 
   public static void createWorkDir(String workDir) throws IOException {
-    Path path = Paths.get(SYSTEM_DIR, workDir);
+    Path path = Paths.get(WORK_DIR, workDir);
     path.toFile().mkdirs();
   }
 

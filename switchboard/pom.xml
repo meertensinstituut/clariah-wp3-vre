@@ -222,7 +222,26 @@
       <artifactId>jaxb-api</artifactId>
       <version>${jaxb-api.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>eu.clarin.cmdi</groupId>
+      <artifactId>cmdi-validator-core</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
   </dependencies>
+
+  <!-- Needed for cmdi-validator-core -->
+  <repositories>
+    <repository>
+      <id>CLARIN</id>
+      <name>CLARIN Repository</name>
+      <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <build>
     <plugins>

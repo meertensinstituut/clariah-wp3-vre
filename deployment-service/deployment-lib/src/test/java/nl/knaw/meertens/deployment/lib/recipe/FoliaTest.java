@@ -1,5 +1,10 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.AbstractDeploymentTest;
+import nl.knaw.meertens.deployment.lib.FileUtil;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
+import nl.knaw.meertens.deployment.lib.recipe.Folia;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;
@@ -16,7 +21,7 @@ import java.nio.file.Paths;
 import static nl.knaw.meertens.deployment.lib.FileUtil.createFile;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -53,7 +58,7 @@ public class FoliaTest extends AbstractDeploymentTest {
   public void execute_shouldCheckConfigFile() throws RecipePluginException, IOException {
     String workDir = "test-" + RandomStringUtils.randomAlphanumeric(8);
     expectedEx.expect(RecipePluginException.class);
-    expectedEx.expectMessage("could not read config path [/tmp/wd/" + workDir + "/config.json]");
+    expectedEx.expectMessage("could not read config file [/tmp/wd/" + workDir + "/config.json]");
 
     FileUtil.createWorkDir(workDir);
 
@@ -69,20 +74,20 @@ public class FoliaTest extends AbstractDeploymentTest {
     String outputFileName = "example.html";
     String workDir = "test-" + RandomStringUtils.randomAlphanumeric(8);
     FileUtil.createWorkDir(workDir);
-    Path configPath = Paths.get(SYSTEM_DIR, workDir, USER_CONF_FILE);
+    Path configPath = Paths.get(WORK_DIR, workDir, USER_CONF_FILE);
 
     logger.info("Created config: " + configPath.toString());
     createFile(configPath.toString(), FileUtil.getTestFileContent("config.json"));
 
     String inputFilename = "example.xml";
-    Path inputPath = Paths.get(SYSTEM_DIR, workDir, INPUT_DIR, inputFilename);
+    Path inputPath = Paths.get(WORK_DIR, workDir, INPUT_DIR, inputFilename);
     createFile(inputPath.toString(), FileUtil.getTestFileContent(inputFilename));
 
     Folia folia = new Folia();
     Service service = new Service();
     folia.init(workDir, service);
     folia.execute();
-    File outputFile = Paths.get(SYSTEM_DIR, workDir, OUTPUT_DIR, outputFileName).toFile();
+    File outputFile = Paths.get(WORK_DIR, workDir, OUTPUT_DIR, outputFileName).toFile();
 
     assertThat(outputFile.exists()).isTrue();
     String outputContent = FileUtils.readFileToString(outputFile);

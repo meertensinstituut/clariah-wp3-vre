@@ -39,7 +39,7 @@
                         <cmdp:Output>
                             <cmdp:Parameter>
                                 <cmdp:Name>output</cmdp:Name>
-                                <cmdp:Description>Surprise</cmdp:Description>
+                                <cmdp:Description>Result</cmdp:Description>
                                 <cmdp:MIMEType>text/plain</cmdp:MIMEType>
                             </cmdp:Parameter>
                         </cmdp:Output>

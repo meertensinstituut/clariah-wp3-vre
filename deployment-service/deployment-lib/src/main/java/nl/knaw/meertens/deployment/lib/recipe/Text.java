@@ -1,6 +1,10 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
 
+import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.RecipePlugin;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -13,9 +17,11 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static java.lang.String.format;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
 
 /**
  * @author Vic
@@ -28,20 +34,20 @@ public class Text implements RecipePlugin {
 
   @Override
   public void init(String workDir, Service service) {
-    logger.info("init Text plugin");
+    logger.info(format("init [%s]", workDir));
     this.projectName = workDir;
     this.serviceUrl = null;
     logger.info("finish init Text plugin");
   }
 
   @Override
-  public JSONObject execute() {
+  public JSONObject execute() throws RecipePluginException {
     logger.info("Start plugin execution");
 
     JSONObject json = new JSONObject();
     json.put("key", projectName);
     json.put("status", 202);
-    JSONObject userConfig = new JSONObject();
+    JSONObject userConfig;
     try {
       userConfig = DeploymentLib.parseUserConfig(projectName);
       logger.info("userConfig: ");
@@ -70,14 +76,19 @@ public class Text implements RecipePlugin {
     return json;
   }
 
-  private void runProject(String key) throws IOException {
+  @Override
+  public JSONObject getStatus() {
+    return createDefaultStatus(isFinished);
+  }
+
+  private void runProject(String key) throws IOException, RecipePluginException {
     JSONObject userConfig = DeploymentLib.parseUserConfig(key);
     JSONArray params = (JSONArray) userConfig.get("params");
 
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
-    String inputPath = Paths.get(SYSTEM_DIR, projectName, INPUT_DIR).normalize().toString();
-    String fullInputPath = Paths.get(SYSTEM_DIR, projectName, INPUT_DIR, inputFile).normalize().toString();
+    String inputPath = Paths.get(WORK_DIR, projectName, INPUT_DIR).normalize().toString();
+    String fullInputPath = Paths.get(WORK_DIR, projectName, INPUT_DIR, inputFile).normalize().toString();
     logger.info(String.format("Full inputPath: %s", fullInputPath));
     logger.info(String.format("inputPath: %s", inputPath));
 
@@ -92,7 +103,7 @@ public class Text implements RecipePlugin {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(SYSTEM_DIR, projectName, OUTPUT_DIR, outputFile).normalize().toString();
+    String outputPath = Paths.get(WORK_DIR, projectName, OUTPUT_DIR, outputFile).normalize().toString();
 
     File outputPathAsFile = Paths
       .get(outputPath).getParent()
@@ -111,21 +122,6 @@ public class Text implements RecipePlugin {
       fileWriter.flush();
     }
 
-  }
-
-  @Override
-  public JSONObject getStatus() {
-    JSONObject result = new JSONObject();
-    if (this.isFinished) {
-      result.put("status", 200);
-      result.put("message", "Task finished");
-      result.put("finished", true);
-    } else {
-      result.put("status", 202);
-      result.put("message", "Task running");
-      result.put("finished", false);
-    }
-    return result;
   }
 
 }

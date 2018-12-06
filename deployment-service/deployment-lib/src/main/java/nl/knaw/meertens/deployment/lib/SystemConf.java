@@ -7,7 +7,7 @@ public class SystemConf {
 
   private static final String defaultConfigPath = "/conf/conf.xml";
 
-  public static final String SYSTEM_DIR;
+  public static final String WORK_DIR;
   public static final String OUTPUT_DIR;
   public static final String INPUT_DIR;
   public static final String USER_CONF_FILE;
@@ -23,7 +23,7 @@ public class SystemConf {
         SystemConf.defaultConfigPath
       ));
     }
-    SYSTEM_DIR = xml.getString("workingFolder");
+    WORK_DIR = xml.getString("workingDirectory");
     USER_CONF_FILE = xml.getString("userConfFile");
     INPUT_DIR = xml.getString("inputDirectory");
     OUTPUT_DIR = xml.getString("outputDirectory");

@@ -19,9 +19,8 @@ public class Queue {
 
     @Override
     protected boolean removeEldestEntry(Map.Entry eldest) {
-      String queueLength = null;
+      String queueLength;
       logger.info("creating queue");
-      DeploymentLib dplib = new DeploymentLib();
       queueLength = SystemConf.QUEUE_LENGTH;
       logger.info("created queue");
       return size() > (queueLength != null ? Integer.parseInt(queueLength) : 100);
@@ -37,8 +36,8 @@ public class Queue {
       new Thread(() -> {
         try {
           plugin.execute();
-        } catch (RecipePluginException e) {
-          logger.error("Could not execute plugin " + plugin);
+        } catch (RecipePluginException ex) {
+          logger.error(String.format("Could not execute plugin [%s]", plugin), ex);
         }
       }).start();
       json.put("status", 202);
@@ -49,8 +48,9 @@ public class Queue {
       json.put("message", "Put to queue failed. Task is still running.");
     } else {
       json.put("status", 500);
-      json.put("message", "Put to queue failed. Key or plugin or queue is null");
-
+      String msg = "Put to queue failed. Key or plugin or queue is null";
+      json.put("message", msg);
+      logger.error(msg);
     }
     return json;
   }

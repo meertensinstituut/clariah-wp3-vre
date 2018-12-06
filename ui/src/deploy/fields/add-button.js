@@ -5,12 +5,14 @@ import PropTypes from 'prop-types';
 export default class AddButton extends React.Component {
 
     render() {
+        if(!this.props.canAdd) {
+            return null;
+        }
         return (
             <Button
                 bsSize="xsmall"
                 bsStyle="success"
                 type="button"
-                disabled={this.props.canAdd === false}
                 className="pull-right add-btn"
                 onClick={this.props.onAdd()}
             >

@@ -1,4 +1,4 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.JsonNode;
@@ -7,6 +7,11 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
+import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.RecipePlugin;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
+import nl.knaw.meertens.deployment.lib.SystemConf;
 import nl.mpi.tla.util.Saxon;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
@@ -26,7 +31,9 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static java.lang.String.format;
 import static java.nio.charset.Charset.forName;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
 
 
 /**
@@ -53,7 +60,7 @@ public class FoliaEditor implements RecipePlugin {
    */
   @Override
   public void init(String workDir, Service service) throws RecipePluginException {
-    logger.info("init Folia Editor plugin");
+    logger.info(format("init [%s]", workDir));
     JSONObject json = DeploymentLib.parseSemantics(service.getServiceSemantics());
     this.projectName = workDir;
     try {
@@ -61,8 +68,6 @@ public class FoliaEditor implements RecipePlugin {
     } catch (MalformedURLException e) {
       throw new RecipePluginException("Url is not correct: " + serviceUrl);
     }
-    logger.info("finish init Folia Editor plugin");
-
   }
 
   @Override
@@ -82,7 +87,7 @@ public class FoliaEditor implements RecipePlugin {
       boolean ready = false;
       int counter = 0;
       while (!ready) {
-        logger.info(String.format("polling {%s}", counter));
+        logger.info(format("polling {%s}", counter));
         counter++;
         Thread.sleep(3000);
         // TODO: where does the polling happen?
@@ -98,7 +103,8 @@ public class FoliaEditor implements RecipePlugin {
     return json;
   }
 
-  public JSONObject runProject(String key) throws IOException, ConfigurationException, UnirestException {
+  public JSONObject runProject(String key)
+    throws IOException, ConfigurationException, UnirestException, RecipePluginException {
     final String outputPathConst = "output";
     final String inputPathConst = "input";
 
@@ -109,10 +115,10 @@ public class FoliaEditor implements RecipePlugin {
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
     String fullInputPath =
-      Paths.get(SystemConf.SYSTEM_DIR, projectName, inputPathConst, inputFile).normalize().toString();
-    String inputPath = Paths.get(SystemConf.SYSTEM_DIR, projectName, inputPathConst).normalize().toString();
-    logger.info(String.format("inputPath: %s", inputPath));
-    logger.info(String.format("Full Input Path: %s", fullInputPath));
+      Paths.get(SystemConf.WORK_DIR, projectName, inputPathConst, inputFile).normalize().toString();
+    String inputPath = Paths.get(SystemConf.WORK_DIR, projectName, inputPathConst).normalize().toString();
+    logger.info(format("inputPath: %s", inputPath));
+    logger.info(format("Full Input Path: %s", fullInputPath));
 
 
     JSONObject outputOjbect;
@@ -124,23 +130,23 @@ public class FoliaEditor implements RecipePlugin {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(SystemConf.SYSTEM_DIR, projectName, outputPathConst).normalize().toString();
+    String outputPath = Paths.get(SystemConf.WORK_DIR, projectName, outputPathConst).normalize().toString();
     String fullOutputPath =
-      Paths.get(SystemConf.SYSTEM_DIR, projectName, outputPathConst, outputFile).normalize().toString();
-    logger.info(String.format("outputPath: %s", outputPath));
-    logger.info(String.format("Full outputPath: %s", fullOutputPath));
+      Paths.get(SystemConf.WORK_DIR, projectName, outputPathConst, outputFile).normalize().toString();
+    logger.info(format("outputPath: %s", outputPath));
+    logger.info(format("Full outputPath: %s", fullOutputPath));
 
     File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
     if (!outputPathAsFile.exists()) {
-      logger.info(String.format("Creating folder: %s", outputPathAsFile.toString()));
+      logger.info(format("Creating folder: %s", outputPathAsFile.toString()));
       outputPathAsFile.mkdirs();
     }
 
     JSONObject urlJson = uploadFile(key, fullInputPath);
     JSONObject json = new JSONObject();
     File file = new File(fullOutputPath);
-    logger.info(String.format("Generating output file: %s", fullOutputPath));
-    writeToHtml(String.format(
+    logger.info(format("Generating output file: %s", fullOutputPath));
+    writeToHtml(format(
       "<iframe src=\"%s\" width=\"100%%\" height=\"800px\">Text to display when iframe is not supported</iframe>",
       (String) urlJson.get("url")), file);
     json.put("url", urlJson.get("url"));
@@ -148,23 +154,9 @@ public class FoliaEditor implements RecipePlugin {
 
   }
 
-  /**
-   * Project ID also known as key, working directory
-   */
   @Override
   public JSONObject getStatus() {
-    // JSONObject status to return
-    JSONObject status = new JSONObject();
-    if (this.isFinished) {
-      status.put("status", 200);
-      status.put("message", "Task finished");
-      status.put("finished", true);
-    } else {
-      status.put("status", 202);
-      status.put("message", "Task running");
-      status.put("finished", false);
-    }
-    return status;
+    return createDefaultStatus(this.isFinished);
   }
 
   /**
@@ -254,11 +246,11 @@ public class FoliaEditor implements RecipePlugin {
       .field("file", file)
       .asJson();
 
-    logger.info(String.format("Response code: %s", jsonResponse.getCode()));
+    logger.info(format("Response code: %s", jsonResponse.getCode()));
     Headers headers = jsonResponse.getHeaders();
     String returnUrlString = headers.get("location").get(0);
-    logger.info(String.format("Response full headers: %s", headers.toString()));
-    logger.info(String.format("Response url: %s", returnUrlString));
+    logger.info(format("Response full headers: %s", headers.toString()));
+    logger.info(format("Response url: %s", returnUrlString));
 
     URL returnUrl = new URL(
       this.serviceUrl.getProtocol(),
@@ -267,12 +259,12 @@ public class FoliaEditor implements RecipePlugin {
       returnUrlString,
       null
     );
-    logger.info(String.format("returnUrl: %s", returnUrl.toString()));
+    logger.info(format("returnUrl: %s", returnUrl.toString()));
 
     URL devReturnUrl = new URL("http://localhost:9998" + returnUrlString);
     resultFileNameString = returnUrlString;
 
-    logger.info(String.format("Hacking returnUrl for dev environment: %s", devReturnUrl.toString()));
+    logger.info(format("Hacking returnUrl for dev environment: %s", devReturnUrl.toString()));
     // jsonResult.put("url", returnUrl.toString());
     jsonResult.put("url", devReturnUrl.toString());
     Unirest.shutdown();

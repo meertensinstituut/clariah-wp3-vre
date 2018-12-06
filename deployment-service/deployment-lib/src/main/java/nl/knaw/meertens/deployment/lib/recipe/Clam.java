@@ -1,10 +1,13 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
+import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.RecipePlugin;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
 import nl.mpi.tla.util.Saxon;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -22,7 +25,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -38,10 +40,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import static java.lang.String.format;
+import static java.time.Duration.ofSeconds;
 import static java.util.Objects.isNull;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
 
 /**
  * @author vic
@@ -50,7 +55,7 @@ public class Clam implements RecipePlugin {
   private URL serviceUrl;
   protected int counter = 0;
   private Boolean isFinished = false;
-  private String projectName;
+  private String workDir;
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   /**
@@ -61,12 +66,12 @@ public class Clam implements RecipePlugin {
    */
   @Override
   public void init(String workDir, Service service) throws RecipePluginException {
-    logger.info("init CLAM plugin");
+    logger.info(format("init [%s]", workDir));
     final String serviceSemantics = service.getServiceSemantics();
 
     JSONObject semantics = DeploymentLib.parseSemantics(serviceSemantics);
 
-    this.projectName = workDir;
+    this.workDir = workDir;
     try {
       this.serviceUrl = new URL((String) semantics.get("serviceLocation"));
     } catch (MalformedURLException e) {
@@ -77,58 +82,58 @@ public class Clam implements RecipePlugin {
 
   @Override
   public JSONObject execute() throws RecipePluginException {
-    logger.info("Start plugin execution");
+    logger.info("start plugin execution");
 
     JSONObject json = new JSONObject();
-    json.put("key", projectName);
+    json.put("key", workDir);
     json.put("status", 202);
     JSONObject userConfig;
     try {
-      userConfig = DeploymentLib.parseUserConfig(projectName);
+      userConfig = DeploymentLib.parseUserConfig(workDir);
 
-      // Check user config against remote service record
-      logger.info("Checking user config against remote server");
       if (!this.checkUserConfigOnRemoteServer(this.getSymanticsFromRemote(), userConfig)) {
-        logger.info("bad user config according to remote server");
-        Boolean userConfigRemoteError = true;
         json.put("status", 500);
+        logger.error("bad user config according to remote server");
         return json;
       }
 
-      logger.info("Creating project");
-      this.createProject(projectName);
+      logger.info(format("creating project [%s]", workDir));
+      this.createProject(workDir);
 
-      logger.info("upload files");
-      this.prepareProject(projectName);
+      logger.info(format("upload files of [%s]", workDir));
+      this.prepareProject(workDir);
 
-      logger.info("Running project");
-      this.runProject(projectName);
+      logger.info(format("running [%s]", workDir));
+      this.runProject(workDir);
 
-      // keep polling project
-      logger.info("Polling the service");
-      boolean ready = false;
-      int looper = 0;
-      while (!ready) {
-        logger.info(String.format("polling {%s}", looper));
-        looper++;
-        Thread.sleep(3000);
-        JSONObject projectStatus = this.getProjectStatus(projectName);
-        Long completionCode = (Long) projectStatus.get("completion");
-        Long statusCode = (Long) projectStatus.get("statuscode");
-        Boolean successCode = (Boolean) projectStatus.get("success");
-        ready = (completionCode == 100L && statusCode == 2L && successCode);
-      }
+      logger.info(format("polling [%s]", workDir));
+      pollDeployment();
 
-      logger.info("Download result");
-      this.downloadProject(projectName);
+      logger.info("download result");
+      this.downloadProject(workDir);
 
       this.isFinished = true;
 
-    } catch (IOException | InterruptedException | ConfigurationException | JDOMException ex) {
-      logger.error(String.format("Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
+    } catch (IOException | InterruptedException | JDOMException ex) {
+      logger.error(format("execution of [%s] failed", workDir), ex);
     }
 
     return json;
+  }
+
+  private void pollDeployment() throws InterruptedException, RecipePluginException {
+    boolean ready = false;
+    int looper = 0;
+    while (!ready) {
+      logger.info(format("polling [%s]", looper));
+      looper++;
+      Thread.sleep(ofSeconds(3).toMillis());
+      JSONObject projectStatus = this.getProjectStatus(workDir);
+      Long completionCode = (Long) projectStatus.get("completion");
+      Long statusCode = (Long) projectStatus.get("statuscode");
+      Boolean successCode = (Boolean) projectStatus.get("success");
+      ready = (completionCode == 100L && statusCode == 2L && successCode);
+    }
   }
 
   private JSONObject runProject(String key) throws IOException, JDOMException {
@@ -174,11 +179,10 @@ public class Clam implements RecipePlugin {
 
   }
 
-  private JSONObject prepareProject(String key)
-    throws IOException, JDOMException, ConfigurationException {
+  private void prepareProject(String key)
+    throws IOException, RecipePluginException {
     JSONObject jsonResult = new JSONObject();
-    JSONObject json = new JSONObject();
-    json = DeploymentLib.parseUserConfig(key);
+    JSONObject json = DeploymentLib.parseUserConfig(key);
 
     JSONArray params = (JSONArray) json.get("params");
 
@@ -222,38 +226,19 @@ public class Clam implements RecipePlugin {
         jsonResult.put("author", author);
       }
     }
-    return jsonResult;
   }
 
-  /**
-   * Description.
-   *
-   * <p>project id also known as project name, key and working directory
-   *
-   * @return status
-   */
   @Override
   public JSONObject getStatus() {
-    // JSONObject status to return
-    JSONObject status = new JSONObject();
-    if (this.isFinished) {
-      status.put("status", 200);
-      status.put("message", "Task finished");
-      status.put("finished", true);
-    } else {
-      status.put("status", 202);
-      status.put("message", "Task running");
-      status.put("finished", false);
-    }
-    return status;
+    return createDefaultStatus(isFinished);
   }
 
   /**
-   * @param key The project name, known as well as the folder
+   * @param workDir The project name, known as well as the folder
    * @throws RecipePluginException RecipePluginException
    */
-  private JSONObject getProjectStatus(String key) throws RecipePluginException {
-    return this.pollProject(key);
+  private JSONObject getProjectStatus(String workDir) throws RecipePluginException {
+    return this.pollProject(workDir);
   }
 
   private JSONObject pollProject(String projectName) throws RecipePluginException {
@@ -279,7 +264,7 @@ public class Clam implements RecipePlugin {
       httpCon.setRequestMethod("GET");
 
       JSONParser parser = new JSONParser();
-      json = (JSONObject) parser.parse(this.getResponseBody(httpCon));
+      json = (JSONObject) parser.parse(DeploymentLib.getResponseBody(httpCon));
 
       json.put("status", httpCon.getResponseCode());
       json.put("message", httpCon.getResponseMessage());
@@ -336,7 +321,7 @@ public class Clam implements RecipePlugin {
     JSONObject jsonResult = new JSONObject();
 
     String path = Paths.get(
-      SYSTEM_DIR,
+      WORK_DIR,
       projectName,
       INPUT_DIR,
       filename
@@ -357,7 +342,7 @@ public class Clam implements RecipePlugin {
       null
     );
 
-    logger.info(String.format("upload [%s]", url.toString()));
+    logger.info(format("upload [%s]", url.toString()));
 
     try {
       String boundary = Long.toHexString(System.currentTimeMillis());
@@ -394,7 +379,7 @@ public class Clam implements RecipePlugin {
       writer.close();
 
       connection.disconnect();
-      logger.info(String.format(
+      logger.info(format(
         "File uploaded; response: [%d][%s]",
         connection.getResponseCode(), connection.getResponseMessage()
       ));
@@ -434,16 +419,16 @@ public class Clam implements RecipePlugin {
       logger.info("received file list: " + json.toJSONString());
       return json;
     } catch (IOException | SaxonApiException e) {
-      logger.error(String.format("Could not get output file list for [%s]", projectName));
+      logger.error(format("Could not get output file list for [%s]", projectName));
       return new JSONObject();
     }
 
   }
 
   private JSONObject downloadProject(String workDir) {
-    String outputPath = Paths.get(SYSTEM_DIR, workDir, OUTPUT_DIR)
+    String outputPath = Paths.get(WORK_DIR, workDir, OUTPUT_DIR)
                              .normalize().toString();
-    logger.info(String.format("outputPath: %s", outputPath));
+    logger.info(format("outputPath: %s", outputPath));
 
     JSONObject jsonFiles = this.getOutputFiles(workDir);
     File outputDir = new File(outputPath);
@@ -467,9 +452,9 @@ public class Clam implements RecipePlugin {
         urlString = urlString.replace("127.0.0.1", this.serviceUrl.getHost());
         url = new URL(urlString);
         FileUtils.copyURLToFile(url, file, 10000, 10000);
-        logger.info(String.format("create file [%s] from url [%s]", file.toPath().toString(), url.toString()));
+        logger.info(format("create file [%s] from url [%s]", file.toPath().toString(), url.toString()));
       } catch (IOException ex) {
-        logger.error(String.format("could not copy file from [%s]", url), ex);
+        logger.error(format("could not copy file from [%s]", url), ex);
       }
 
     });
@@ -502,36 +487,13 @@ public class Clam implements RecipePlugin {
       json.put("message", responseMessage);
       httpCon.disconnect();
       if (responseCode / 100 != 2 ) {
-        throw new RecipePluginException(String.format(
+        throw new RecipePluginException(format(
           "%s: [%d][%s]", errorMsg, responseCode, responseMessage
         ));
       }
     } catch (IOException ex) {
       throw new RecipePluginException(errorMsg, ex);
     }
-  }
-
-  public String getResponseBody(HttpURLConnection conn) throws IOException {
-    int responseCode = conn.getResponseCode();
-    InputStream inputStream;
-    if (200 <= responseCode && responseCode <= 299) {
-      inputStream = conn.getInputStream();
-    } else {
-      inputStream = conn.getErrorStream();
-    }
-
-    BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-
-    StringBuilder response = new StringBuilder();
-    String currentLine;
-
-    while ((currentLine = in.readLine()) != null) {
-      response.append(currentLine);
-    }
-
-    in.close();
-
-    return response.toString();
   }
 
   // TODO: get semantics from remove service in case of Clam

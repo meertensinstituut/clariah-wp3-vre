@@ -26,6 +26,7 @@ export default class Form extends React.Component {
             valid = this.validateParam(p);
         });
         form.valid = valid;
+
     }
 
     validateParam(p) {

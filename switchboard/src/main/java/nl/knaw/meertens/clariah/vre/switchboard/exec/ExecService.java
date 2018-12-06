@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -186,9 +187,7 @@ public class ExecService {
   }
 
   private String createWorkDir() {
-    var name = RandomStringUtils
-      .randomAlphabetic(WORK_DIR_LENGTH)
-      .toLowerCase();
+    var name = UUID.randomUUID().toString();
     var path = Paths.get(DEPLOYMENT_VOLUME, name);
     assert (path.toFile().mkdirs());
     logger.info(String.format(

@@ -24,7 +24,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     "      \"id\": \"1\",\n" +
     "      \"name\": \"UCTO\",\n" +
     "      \"kind\": \"service\",\n" +
-    "      \"recipe\": \"nl.knaw.meertens.deployment.lib.Test\",\n" +
+    "      \"recipe\": \"nl.knaw.meertens.deployment.lib.recipe.Test\",\n" +
     "      \"semantics\": \"<cmd:CMD xmlns:cmd=\\\"http://www.clarin.eu/cmd/1\\\" xmlns:cmdp=\\\"http://www.clarin" +
     ".eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795\\\" xmlns:xs=\\\"http://www.w3.org/2001/XMLSchema\\\" " +
     "xmlns:xsi=\\\"http://www.w3.org/2001/XMLSchema-instance\\\" xsi:schemaLocation=\\\"\\n  http://www.clarin" +

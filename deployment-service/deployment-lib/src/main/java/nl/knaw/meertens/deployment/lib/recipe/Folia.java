@@ -1,7 +1,8 @@
-package nl.knaw.meertens.deployment.lib;
+package nl.knaw.meertens.deployment.lib.recipe;
 
-
-import org.apache.commons.configuration.ConfigurationException;
+import nl.knaw.meertens.deployment.lib.RecipePlugin;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -23,9 +24,12 @@ import java.net.URL;
 import java.nio.file.Paths;
 
 import static java.util.Objects.isNull;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.parseUserConfig;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.workDirExists;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 public class Folia implements RecipePlugin {
@@ -45,7 +49,7 @@ public class Folia implements RecipePlugin {
       throw new RecipePluginException("Could not load xslt from url", e);
     }
 
-    logger.info("init Folia plugin");
+    logger.info(String.format("init folia plugin in workDir [%s]", workDir));
     if (isEmpty(workDir)) {
       throw new RecipePluginException("work dir should not be empty");
     }
@@ -61,9 +65,9 @@ public class Folia implements RecipePlugin {
     json.put("status", 202);
     JSONObject userConfig;
     try {
-      DeploymentLib.workDirExists(workDir);
+      workDirExists(workDir);
 
-      userConfig = DeploymentLib.parseUserConfig(workDir);
+      userConfig = parseUserConfig(workDir);
       logger.info("userConfig: ");
       logger.info(userConfig.toJSONString());
 
@@ -94,18 +98,7 @@ public class Folia implements RecipePlugin {
 
   @Override
   public JSONObject getStatus() {
-    // JSONObject status to return
-    JSONObject status = new JSONObject();
-    if (this.isFinished) {
-      status.put("status", 200);
-      status.put("message", "Task finished");
-      status.put("finished", true);
-    } else {
-      status.put("status", 202);
-      status.put("message", "Task running");
-      status.put("finished", false);
-    }
-    return status;
+    return createDefaultStatus(isFinished);
   }
 
   private static void convertXmlToHtml(Source xml, Source xslt, File file) {
@@ -124,8 +117,8 @@ public class Folia implements RecipePlugin {
     }
   }
 
-  private void runProject(String key) throws IOException {
-    JSONObject userConfig = DeploymentLib.parseUserConfig(key);
+  private void runProject(String key) throws IOException, RecipePluginException {
+    JSONObject userConfig = parseUserConfig(key);
     if (userConfig.isEmpty()) {
       throw new IOException("No config file");
     }
@@ -137,7 +130,7 @@ public class Folia implements RecipePlugin {
     String inputFile = (String) inputOjbect.get("value");
 
     String inputPath = Paths
-      .get(SYSTEM_DIR, workDir, INPUT_DIR, inputFile)
+      .get(WORK_DIR, workDir, INPUT_DIR, inputFile)
       .normalize().toString();
 
     String outputFile;
@@ -148,7 +141,7 @@ public class Folia implements RecipePlugin {
     }
 
     String fullOutputPath = Paths
-      .get(SYSTEM_DIR, workDir, OUTPUT_DIR, outputFile)
+      .get(WORK_DIR, workDir, OUTPUT_DIR, outputFile)
       .normalize().toString();
 
     File outputPath = Paths

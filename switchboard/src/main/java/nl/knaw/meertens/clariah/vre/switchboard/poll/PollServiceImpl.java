@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.poll;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
@@ -82,20 +85,30 @@ public class PollServiceImpl implements PollService {
   private void poll() {
     for (var report : requestRepositoryService.getAllStatusReports()) {
       if (shouldPoll(report)) {
-        String workDir = report.getWorkDir();
-        logger.info(String.format("Polling [%s]", workDir));
-        report.setPolled(now());
-
-        report = getDeploymentStatus(report);
-        runConsumer(report);
-        requestRepositoryService.saveStatusReport(report);
-
-        logger.info(String.format(
-          "Polled deployment [%s]; received status [%s]",
-          report.getWorkDir(), report.getStatus()
-        ));
+        try {
+          pollSingle(report);
+        } catch (Exception ex) {
+          logger.error(format("Deployment [%s] threw an exception", report.getWorkDir()), ex);
+        }
+      } else {
+        logger.info(format("Skipping [%s]", report.getWorkDir()));
       }
     }
+  }
+
+  private void pollSingle(DeploymentStatusReport report) {
+    var workDir = report.getWorkDir();
+    logger.info(format("Polling [%s]", workDir));
+    report.setPolled(now());
+
+    report = getDeploymentStatus(report);
+    runConsumer(report);
+    requestRepositoryService.saveStatusReport(report);
+
+    logger.info(format(
+      "Polled deployment [%s]; received status [%s]",
+      report.getWorkDir(), report.getStatus()
+    ));
   }
 
   private boolean shouldPoll(DeploymentStatusReport report) {
@@ -117,20 +130,22 @@ public class PollServiceImpl implements PollService {
     try {
       deploymentConsumer.accept(report);
     } catch (Exception e) {
-      logger.error(String.format("Consumer of deployment [%s] threw exception", report.getWorkDir()), e);
+      logger.error(format("Consumer of deployment [%s] threw exception", report.getWorkDir()), e);
     }
   }
 
   private DeploymentStatusReport getDeploymentStatus(DeploymentStatusReport report) {
-    var result = new DeploymentStatusReport(report);
+    var newReport = new DeploymentStatusReport(report);
 
-    var uri = createDeploymentStatusUri(report);
+    var uri = createDeploymentStatusUri(newReport);
     var response = requestDeploymentStatusReport(uri);
-    result.setStatus(getDeployStatus(response.httpStatus));
-    result.setMsg(response.message);
-    result.setPolled(now());
-    result.setInterval(calculateNewInterval(report.getInterval()));
-    return result;
+
+    newReport.setPolled(now());
+    newReport.setMsg(response.message);
+    newReport.setStatus(getDeployStatus(response.httpStatus));
+    newReport.setInterval(calculateNewInterval(newReport.getInterval()));
+
+    return newReport;
   }
 
   private int calculateNewInterval(int previousInterval) {
@@ -154,12 +169,12 @@ public class PollServiceImpl implements PollService {
       response.httpStatus = httpResponse.getStatus();
       return response;
     } catch (UnirestException | IOException e) {
-      throw new RuntimeIOException(String.format("Deployment status request failed for [%s]", uri.toString()), e);
+      throw new RuntimeIOException(format("Deployment status request failed for [%s]", uri.toString()), e);
     }
   }
 
   private URI createDeploymentStatusUri(DeploymentStatusReport report) {
-    return URI.create(String.format(
+    return URI.create(format(
       "%s/%s/%s/%s",
       hostName,
       "deployment-service/a/exec",

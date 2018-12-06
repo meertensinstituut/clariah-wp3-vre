@@ -24,7 +24,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static nl.knaw.meertens.deployment.lib.SystemConf.SYSTEM_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
@@ -34,35 +34,50 @@ public class DeploymentLib {
   /**
    * @throws RecipePluginException when work dir does not exist
    */
-  static void workDirExists(String workDir) throws RecipePluginException {
-    File file = Paths.get(SYSTEM_DIR, workDir).toFile();
+  public static void workDirExists(String workDir) throws RecipePluginException {
+    File file = Paths.get(WORK_DIR, workDir).toFile();
     if (!file.exists()) {
       throw new RecipePluginException("work dir does not exist");
     }
   }
 
+  /**
+   * Return json msg with fields:
+   * `status`, `message` and `finished`
+   * based on isFinished
+   */
+  public static JSONObject createDefaultStatus(Boolean isFinished) {
+    JSONObject status = new JSONObject();
+    if (isFinished) {
+      status.put("status", 200);
+      status.put("message", "Task finished");
+      status.put("finished", true);
+    } else {
+      status.put("status", 202);
+      status.put("message", "Task running");
+      status.put("finished", false);
+    }
+    return status;
+  }
+
   public Service getServiceByName(String serviceName) throws IOException, ConfigurationException {
-    // valid service, fetch data from db and return
-    JSONObject json = new JSONObject();
+    JSONObject json;
     JSONParser parser = new JSONParser();
-    String dbSessionToken = System.getenv("SERVICES_TOKEN");
     String dbApiKey = System.getenv("APP_KEY_SERVICES");
-    DeploymentLib dplib = new DeploymentLib();
 
     String urlString = "http://dreamfactory:80/api/v2/services/_table/service/?filter=name%3D" + serviceName;
     URL url = new URL(urlString);
 
-    HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-    httpCon.setDoOutput(false);
-    httpCon.setRequestMethod("GET");
-    httpCon.setRequestProperty("Content-Type", "application/json");
-    httpCon.setRequestProperty("accept", "application/json");
-    httpCon.setRequestProperty("X-DreamFactory-Api-Key", dbApiKey);
-
-    String rawString = dplib.getUrlBody(httpCon);
-    httpCon.disconnect();
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    connection.setDoOutput(false);
+    connection.setRequestMethod("GET");
+    connection.setRequestProperty("Content-Type", "application/json");
+    connection.setRequestProperty("accept", "application/json");
+    connection.setRequestProperty("X-DreamFactory-Api-Key", dbApiKey);
+    connection.disconnect();
 
     try {
+      String rawString = getResponseBody(connection);
       json = (JSONObject) parser.parse(rawString);
     } catch (ParseException ex) {
       throw new IllegalStateException("Invalid json from service", ex);
@@ -76,7 +91,7 @@ public class DeploymentLib {
         String serviceSemantics = (String) record.get("semantics");
         String serviceId = (String) record.get("id");
 
-        return new Service(serviceId, serviceName, serviceRecipe, serviceSemantics, "", true);
+        return new Service(serviceId, serviceName, serviceRecipe, serviceSemantics, "");
       }
     }
 
@@ -104,14 +119,14 @@ public class DeploymentLib {
       for (XdmItem param : Saxon
         .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter", null, nameSpace)) {
 
-        JSONObject parameterJson = new JSONObject();
+        JSONObject json = new JSONObject();
         String parameterName = Saxon.xpath2string(param, "cmdp:Name", null, nameSpace);
         String parameterDescription = Saxon.xpath2string(param, "cmdp:Description", null, nameSpace);
         String parameterType = Saxon.xpath2string(param, "cmdp:MIMEType", null, nameSpace);
 
-        parameterJson.put("parameterName", parameterName);
-        parameterJson.put("parameterDescription", parameterDescription);
-        parameterJson.put("parameterType", parameterType);
+        json.put("parameterName", parameterName);
+        json.put("parameterDescription", parameterDescription);
+        json.put("parameterType", parameterType);
 
         int valueCounter = 0;
         for (XdmItem paramValue : Saxon
@@ -126,12 +141,12 @@ public class DeploymentLib {
           parameterValueJson.put("parameterValueValue", parameterValueValue);
           parameterValueJson.put("parameterValueDescription", parameterValueDescription);
 
-          parameterJson.put("value" + Integer.toString(valueCounter), parameterValueJson);
+          json.put("value" + Integer.toString(valueCounter), parameterValueJson);
 
           valueCounter++;
         }
 
-        parametersJson.put("parameter" + Integer.toString(counter), parameterJson);
+        parametersJson.put("parameter" + Integer.toString(counter), json);
 
         counter++;
       }
@@ -145,7 +160,7 @@ public class DeploymentLib {
       json.put("serviceName", serviceName);
       json.put("serviceDescription", serviceDescription);
       json.put("serviceLocation", serviceLocation);
-      json.put("counter", counter);
+      json.put("counter", 0);
       json.put("parameters", parametersJson);
       return json;
     } catch (SaxonApiException ex) {
@@ -153,24 +168,24 @@ public class DeploymentLib {
     }
   }
 
-  public static JSONObject parseUserConfig(String workDir) throws IOException {
+  public static JSONObject parseUserConfig(String workDir) throws RecipePluginException {
     JSONParser parser = new JSONParser();
     if (isEmpty(workDir)) {
       throw new RuntimeException("working directory is empty");
     }
 
     String path = Paths
-      .get(SYSTEM_DIR, workDir, USER_CONF_FILE)
+      .get(WORK_DIR, workDir, USER_CONF_FILE)
       .normalize().toString();
 
     try {
       return (JSONObject) parser.parse(new FileReader(path));
     } catch (IOException | ParseException e) {
-      throw new IOException(String.format("could not read config path [%s]", path));
+      throw new RecipePluginException(String.format("could not read config file [%s]", path), e);
     }
   }
 
-  private String getUrlBody(HttpURLConnection conn) throws IOException {
+  public static String getResponseBody(HttpURLConnection conn) throws IOException {
 
     // handle error response code it occurs
     int responseCode = conn.getResponseCode();
