@@ -202,14 +202,14 @@ public class ClamTest extends AbstractDeploymentTest {
       .when(
         request()
           .withMethod("GET")
-          .withPath("/ucto/" + workDir + "/output/error.log.txt"),
+          .withPath("/ucto/" + workDir + "/output/error.log"),
         Times.exactly(times)
       )
       .respond(
         response()
           .withStatusCode(200)
           .withHeaders(new Header("Content-Type", "application/xml; charset=utf-8"))
-          .withBody(getTestFileContent("error.log"))
+          .withBody(getTestFileContent("error.log.txt"))
       );
   }
 
