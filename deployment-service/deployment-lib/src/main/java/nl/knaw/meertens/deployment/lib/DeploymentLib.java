@@ -28,8 +28,9 @@ import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
+// TODO: use Jackson (in deployment-service) instead of (oversimplified) simplejson
+// TODO: split utility class DeploymentLib up in multiple Services
 public class DeploymentLib {
-
 
   /**
    * @throws RecipePluginException when work dir does not exist
@@ -61,6 +62,7 @@ public class DeploymentLib {
   }
 
   public Service getServiceByName(String serviceName) throws IOException, ConfigurationException {
+    // TODO: use Unirest
     JSONObject json;
     JSONParser parser = new JSONParser();
     String dbApiKey = System.getenv("APP_KEY_SERVICES");
@@ -98,12 +100,8 @@ public class DeploymentLib {
     throw new IllegalStateException("No such service");
   }
 
-  public Boolean serviceExists(String serviceName) throws ConfigurationException, IOException {
-    Service service = this.getServiceByName(serviceName);
-    return service != null;
-  }
-
   public static JSONObject parseSemantics(String symantics) throws RecipePluginException {
+    // TODO: clean up code
     try {
       JSONObject parametersJson = new JSONObject();
 
@@ -185,6 +183,7 @@ public class DeploymentLib {
     }
   }
 
+  // TODO: simplify using Unirest
   public static String getResponseBody(HttpURLConnection conn) throws IOException {
 
     // handle error response code it occurs

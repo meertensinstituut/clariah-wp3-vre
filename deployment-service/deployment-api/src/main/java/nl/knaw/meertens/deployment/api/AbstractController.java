@@ -14,20 +14,19 @@ public abstract class AbstractController {
 
   /**
    * Logs exception with error msg and creates json body with msg
-   * @return Response with json body
+   * @return Response with json
    */
   Response handleException(
     String msg,
     Throwable ex
   ) {
-    JSONObject result = new JSONObject();
     logger.error(msg, ex);
-    return handleException(msg, result);
+    return handleException(msg);
   }
 
   /**
    * Logs error msg and creates json body with msg
-   * @return Response with json body
+   * @return Response with json
    */
   Response handleException(
     String msg

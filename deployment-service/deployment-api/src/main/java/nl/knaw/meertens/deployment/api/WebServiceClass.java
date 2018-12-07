@@ -17,6 +17,8 @@ import java.io.IOException;
 
 import static java.lang.String.format;
 
+// TODO: rename to controller
+// TODO: extract all logic to services
 @Path("/service")
 public class WebServiceClass extends AbstractController {
 

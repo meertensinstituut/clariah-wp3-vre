@@ -23,9 +23,8 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-/**
- * exposed at "exec" path
- */
+// TODO: rename to controller
+// TODO: extract all logic to services
 @Path("/exec")
 public class WebExec extends AbstractController {
 
@@ -83,38 +82,37 @@ public class WebExec extends AbstractController {
   }
 
   /**
-   * @param workDir Working directory also knowns as key, project id and project name
-   * @param service Service record in service registry
+   * @param workDir     Working directory also knowns as key, project id and project name
+   * @param serviceName Service record in service registry
    */
   @PUT
   @Path("/{service}/{workDir}")
   @Produces(APPLICATION_JSON)
   public Response exec(
     @PathParam("workDir") String workDir,
-    @PathParam("service") String service
+    @PathParam("service") String serviceName
   ) {
     try {
-      DeploymentLib dplib = new DeploymentLib();
-      if (!dplib.serviceExists(service)) {
+      logger.info("Get service");
+      Service service = new DeploymentLib().getServiceByName(serviceName);
+      if (isNull(service)) {
         String msg = "invalid service";
         return handleException(msg);
       }
 
-      logger.info("Get service");
-      Service serviceObj = dplib.getServiceByName(service);
-
       logger.info("Get recipe");
       RecipePlugin plugin;
-      String className = serviceObj.getRecipe();
+      String className = service.getRecipe();
 
       logger.info("Loading plugin");
       Class<?> loadedClass = Class.forName(className);
       Class<? extends RecipePlugin> pluginClass = loadedClass.asSubclass(RecipePlugin.class);
+      // TODO: replace with method that isn't deprecated:
       plugin = pluginClass.newInstance();
-      plugin.init(workDir, serviceObj);
+      plugin.init(workDir, service);
 
       logger.info("Check user config against service record");
-      String dbConfig = serviceObj.getServiceSemantics();
+      String dbConfig = service.getServiceSemantics();
       boolean userConfigIsValid = this.checkUserConfig(
         DeploymentLib.parseSemantics(dbConfig),
         DeploymentLib.parseUserConfig(workDir)
@@ -142,7 +140,7 @@ public class WebExec extends AbstractController {
         IllegalAccessException |
         RecipePluginException ex
     ) {
-      return handleException(format("Could not deploy [%s][%s]", service, workDir), ex);
+      return handleException(format("Could not deploy [%s][%s]", serviceName, workDir), ex);
     }
   }
 
@@ -153,6 +151,7 @@ public class WebExec extends AbstractController {
     @PathParam("workDir") String workDir,
     @PathParam("service") String service
   ) {
+    // TODO: Queues are created at three different places atm, shouldn't there be just one queue?
     Queue queue = new Queue();
     queue.removeTask(workDir);
     return Response
@@ -160,10 +159,8 @@ public class WebExec extends AbstractController {
       .build();
   }
 
-  /**
-   * TODO: it SHOULD check
-   */
   private boolean checkUserConfig(JSONObject dbSymantics, JSONObject userSymantics) {
+    // TODO: check if user config if valid instead of returning true
     logger.info(format("userConfig: %s", userSymantics.toJSONString()));
     logger.info(format("dbConfig: %s", dbSymantics.toJSONString()));
     return true;

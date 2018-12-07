@@ -15,6 +15,7 @@ public class Queue {
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   protected static LinkedHashMap<String, RecipePlugin> executed = new LinkedHashMap<>() {
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
@@ -67,6 +68,5 @@ public class Queue {
   public void removeTask(String key) {
     executed.remove(key);
   }
-
 
 }

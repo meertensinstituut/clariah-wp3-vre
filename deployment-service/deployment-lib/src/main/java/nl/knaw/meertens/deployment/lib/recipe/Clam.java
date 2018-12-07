@@ -503,7 +503,7 @@ public class Clam implements RecipePlugin {
 
   }
 
-  // TODO: check the remote configuration for REAL
+  // TODO: check the remote configuration instead of returning true
   private Boolean checkUserConfigOnRemoteServer(JSONObject remoteSymantics, JSONObject userSymantics) {
     return true;
   }

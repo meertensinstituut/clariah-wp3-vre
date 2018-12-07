@@ -2,6 +2,7 @@ package nl.knaw.meertens.deployment.lib;
 
 import org.apache.commons.io.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -25,12 +26,9 @@ public class FileUtil {
   }
 
   public static String getTestFileContent(String fileName) {
+    File resource = new File("src/test/resources/" + fileName);
     try {
-      return FileUtils.readFileToString(FileUtils.toFile(
-        Thread.currentThread()
-              .getContextClassLoader()
-              .getResource(fileName)
-      ), UTF_8);
+      return FileUtils.readFileToString(resource, UTF_8);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

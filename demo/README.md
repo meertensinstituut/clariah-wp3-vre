@@ -26,6 +26,6 @@ curl -v 'http://localhost:8082/remote.php/webdav/nos.txt' \
 0. [X] Deploy `ucto` in UI
 
 0. [X] Show the output in OwnCloud
-  - goto http://localhost:8082/
-  - (login `test:achtkarakters`)
+   - http://localhost:8082/
+   - (login `test:achtkarakters`)
 
