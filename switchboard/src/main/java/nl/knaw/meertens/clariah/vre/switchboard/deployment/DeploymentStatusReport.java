@@ -28,9 +28,7 @@ public class DeploymentStatusReport implements Cloneable {
   private String viewerFile;
   private String viewerFileContent;
 
-  DeploymentStatusReport() {
-    super();
-  }
+  public DeploymentStatusReport() {}
 
   /**
    * Make a shallow copy

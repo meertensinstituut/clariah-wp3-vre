@@ -16,6 +16,9 @@ public class FinishEditorDeploymentConsumer extends FinishDeploymentConsumer {
     this.nextcloudFileService = nextcloudFileService;
   }
 
+  /**
+   * TODO: code is duplicated from viewer, because editor is WIP
+   */
   @Override
   void handleFinishedDeployment(DeploymentStatusReport report) {
     nextcloudFileService.unstage(report.getWorkDir(), report.getFiles());

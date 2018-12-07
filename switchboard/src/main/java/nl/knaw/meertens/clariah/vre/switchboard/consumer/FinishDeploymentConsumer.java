@@ -11,6 +11,11 @@ import java.time.LocalDateTime;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 
+/**
+ * When a deployment is finished or stopped:
+ * - run handleFinishDeployment()
+ * - put result on kafka switchboard queue
+ */
 public abstract class FinishDeploymentConsumer implements DeploymentConsumer {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());

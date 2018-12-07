@@ -12,6 +12,7 @@ public interface DeploymentService {
 
   /**
    * Deploy requested service.
+   * Add a deploymentConsumer which is run after each poll
    */
   DeploymentStatusReport deploy(DeploymentRequest request, DeploymentConsumer deploymentConsumer);
 
