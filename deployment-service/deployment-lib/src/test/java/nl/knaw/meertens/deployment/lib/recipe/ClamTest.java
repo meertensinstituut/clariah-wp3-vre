@@ -202,7 +202,7 @@ public class ClamTest extends AbstractDeploymentTest {
       .when(
         request()
           .withMethod("GET")
-          .withPath("/ucto/" + workDir + "/output/error.log"),
+          .withPath("/ucto/" + workDir + "/output/error.log.txt"),
         Times.exactly(times)
       )
       .respond(

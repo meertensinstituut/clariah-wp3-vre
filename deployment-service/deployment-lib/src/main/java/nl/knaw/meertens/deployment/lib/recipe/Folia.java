@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.parseUserConfig;
@@ -49,7 +50,7 @@ public class Folia implements RecipePlugin {
       throw new RecipePluginException("Could not load xslt from url", e);
     }
 
-    logger.info(String.format("init folia plugin in workDir [%s]", workDir));
+    logger.info(format("init folia plugin in workDir [%s]", workDir));
     if (isEmpty(workDir)) {
       throw new RecipePluginException("work dir should not be empty");
     }
@@ -58,7 +59,7 @@ public class Folia implements RecipePlugin {
 
   @Override
   public JSONObject execute() throws RecipePluginException {
-    logger.info("Start plugin execution");
+    logger.info(format("execute [%s]", workDir));
 
     JSONObject json = new JSONObject();
     json.put("key", workDir);
@@ -67,22 +68,18 @@ public class Folia implements RecipePlugin {
     try {
       workDirExists(workDir);
 
-      userConfig = parseUserConfig(workDir);
-      logger.info("userConfig: ");
-      logger.info(userConfig.toJSONString());
-
-      logger.info("Running project");
+      logger.info(format("run [%s]", workDir));
       this.runProject(workDir);
 
       // keep polling project
-      logger.info("Polling the service");
       boolean ready = false;
       int counter = 0;
+
+      // TODO: create polling service
       while (!ready) {
-        logger.info(String.format("polling {%s}", counter));
+        logger.info(format("poll [%s]", workDir));
         counter++;
         Thread.sleep(3000);
-
         // TODO: check if output file exists
         ready = true;
       }
@@ -149,7 +146,7 @@ public class Folia implements RecipePlugin {
       .normalize().toFile();
 
     if (!outputPath.exists()) {
-      logger.info(String.format("creating folder [%s]", outputPath.toString()));
+      logger.info(format("creating folder [%s]", outputPath.toString()));
       outputPath.mkdirs();
     }
 

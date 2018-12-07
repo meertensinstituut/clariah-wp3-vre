@@ -1,0 +1,13 @@
+[CLAM Dispatcher] Adding to PYTHONPATH: /usr/local/lib/python3.5/dist-packages/clamservices/config
+[CLAM Dispatcher] Started CLAM Dispatcher v2.3.4 with clamservices.config.ucto (2018-11-28 16:30:46)
+[CLAM Dispatcher] Running python3 "/usr/local/lib/python3.5/dist-packages/clamservices/wrappers/uctowrapper.py" "/usr/local/bin/" "/usr/local/var/www-data/ucto.clam/projects/anonymous/testproject/clam.xml" "/usr/local/var/www-data/ucto.clam/projects/anonymous/testproject/.status" "/usr/local/var/www-data/ucto.clam/projects/anonymous/testproject/output/" > "/usr/local/var/www-data/ucto.clam/projects/anonymous/testproject/output//log"
+[CLAM Dispatcher] Running with pid 215 (2018-11-28 16:30:46)
+ucto: inputfile = input/ucto.txt
+ucto: outputfile =
+ucto:tokconfig-eng: version=0.2
+ucto: inputfile = input/.txt
+ucto: outputfile =
+ucto:tokconfig-eng: version=0.2
+[CLAM Dispatcher] Process ended (2018-11-28 16:30:46, 0.355861s)
+[CLAM Dispatcher] Removing temporary files
+[CLAM Dispatcher] Finished (2018-11-28 16:30:46), exit code 0, dispatcher wait time 0.35s, duration 0.356352s

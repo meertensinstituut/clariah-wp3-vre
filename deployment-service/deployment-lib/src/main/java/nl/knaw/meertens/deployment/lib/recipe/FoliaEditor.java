@@ -46,7 +46,7 @@ public class FoliaEditor implements RecipePlugin {
   protected int counter = 0;
   protected Boolean isFinished = false;
   protected Boolean userConfigRemoteError = false;
-  protected String projectName;
+  protected String workDir;
   protected String resultFileNameString = "";
   private static Logger logger = LoggerFactory.getLogger(RecipePlugin.class);
 
@@ -62,7 +62,7 @@ public class FoliaEditor implements RecipePlugin {
   public void init(String workDir, Service service) throws RecipePluginException {
     logger.info(format("init [%s]", workDir));
     JSONObject json = DeploymentLib.parseSemantics(service.getServiceSemantics());
-    this.projectName = workDir;
+    this.workDir = workDir;
     try {
       this.serviceUrl = new URL((String) json.get("serviceLocation"));
     } catch (MalformedURLException e) {
@@ -75,12 +75,12 @@ public class FoliaEditor implements RecipePlugin {
     logger.info("Start plugin execution");
 
     JSONObject json = new JSONObject();
-    json.put("key", projectName);
+    json.put("key", workDir);
     json.put("status", 202);
     JSONObject userConfig;
     try {
       logger.info("Running project");
-      this.runProject(projectName);
+      this.runProject(workDir);
 
       // keep polling project
       logger.info("Polling the service");
@@ -115,8 +115,8 @@ public class FoliaEditor implements RecipePlugin {
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
     String fullInputPath =
-      Paths.get(SystemConf.WORK_DIR, projectName, inputPathConst, inputFile).normalize().toString();
-    String inputPath = Paths.get(SystemConf.WORK_DIR, projectName, inputPathConst).normalize().toString();
+      Paths.get(SystemConf.WORK_DIR, workDir, inputPathConst, inputFile).normalize().toString();
+    String inputPath = Paths.get(SystemConf.WORK_DIR, workDir, inputPathConst).normalize().toString();
     logger.info(format("inputPath: %s", inputPath));
     logger.info(format("Full Input Path: %s", fullInputPath));
 
@@ -130,9 +130,9 @@ public class FoliaEditor implements RecipePlugin {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(SystemConf.WORK_DIR, projectName, outputPathConst).normalize().toString();
+    String outputPath = Paths.get(SystemConf.WORK_DIR, workDir, outputPathConst).normalize().toString();
     String fullOutputPath =
-      Paths.get(SystemConf.WORK_DIR, projectName, outputPathConst, outputFile).normalize().toString();
+      Paths.get(SystemConf.WORK_DIR, workDir, outputPathConst, outputFile).normalize().toString();
     logger.info(format("outputPath: %s", outputPath));
     logger.info(format("Full outputPath: %s", fullOutputPath));
 
@@ -162,20 +162,20 @@ public class FoliaEditor implements RecipePlugin {
   /**
    * Get output file.
    *
-   * @param projectName project name also knows as project ID, working directory and key
+   * @param workDir project name also knows as project ID, working directory and key
    * @throws MalformedURLException Wrongly formed URL
    * @throws IOException           Disk read/write Exception
    * @throws JDOMException         Invalide JDOM
    * @throws SaxonApiException     Saxon Exception
    */
-  public JSONObject getOutputFiles(String projectName) throws MalformedURLException, IOException, SaxonApiException {
+  public JSONObject getOutputFiles(String workDir) throws MalformedURLException, IOException, SaxonApiException {
     JSONObject json = new JSONObject();
 
     URL url = new URL(
       this.serviceUrl.getProtocol(),
       this.serviceUrl.getHost(),
       this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/" + projectName,
+      this.serviceUrl.getFile() + "/" + workDir,
       null
     );
 
@@ -212,9 +212,9 @@ public class FoliaEditor implements RecipePlugin {
     logger.info("Download successful");
   }
 
-  public JSONObject uploadFile(String projectName, String filename, String language, String inputTemplate,
+  public JSONObject uploadFile(String workDir, String filename, String language, String inputTemplate,
                                String author) throws IOException, ConfigurationException, UnirestException {
-    return uploadFile(projectName, filename);
+    return uploadFile(workDir, filename);
   }
 
   public JSONObject uploadFile(String projectName, String filename)
