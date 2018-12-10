@@ -84,7 +84,7 @@ class Deploy extends React.Component {
 
     handleInvalidConfig = () => {
         console.log("config is invalid");
-        this.setStep('config').value = false;
+        this.getStep('config').value = false;
         this.setState({
             config: null,
             steps: this.state.steps
