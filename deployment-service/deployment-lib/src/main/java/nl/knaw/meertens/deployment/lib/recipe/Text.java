@@ -21,7 +21,7 @@ import static java.lang.String.format;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 
 /**
  * @author Vic
@@ -87,8 +87,8 @@ public class Text implements RecipePlugin {
 
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
-    String inputPath = Paths.get(WORK_DIR, projectName, INPUT_DIR).normalize().toString();
-    String fullInputPath = Paths.get(WORK_DIR, projectName, INPUT_DIR, inputFile).normalize().toString();
+    String inputPath = Paths.get(ROOT_WORK_DIR, projectName, INPUT_DIR).normalize().toString();
+    String fullInputPath = Paths.get(ROOT_WORK_DIR, projectName, INPUT_DIR, inputFile).normalize().toString();
     logger.info(String.format("Full inputPath: %s", fullInputPath));
     logger.info(String.format("inputPath: %s", inputPath));
 
@@ -103,7 +103,7 @@ public class Text implements RecipePlugin {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(WORK_DIR, projectName, OUTPUT_DIR, outputFile).normalize().toString();
+    String outputPath = Paths.get(ROOT_WORK_DIR, projectName, OUTPUT_DIR, outputFile).normalize().toString();
 
     File outputPathAsFile = Paths
       .get(outputPath).getParent()

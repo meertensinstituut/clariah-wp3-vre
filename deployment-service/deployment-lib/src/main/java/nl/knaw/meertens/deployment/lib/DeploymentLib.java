@@ -24,7 +24,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
@@ -36,7 +36,7 @@ public class DeploymentLib {
    * @throws RecipePluginException when work dir does not exist
    */
   public static void workDirExists(String workDir) throws RecipePluginException {
-    File file = Paths.get(WORK_DIR, workDir).toFile();
+    File file = Paths.get(ROOT_WORK_DIR, workDir).toFile();
     if (!file.exists()) {
       throw new RecipePluginException("work dir does not exist");
     }
@@ -173,7 +173,7 @@ public class DeploymentLib {
     }
 
     String path = Paths
-      .get(WORK_DIR, workDir, USER_CONF_FILE)
+      .get(ROOT_WORK_DIR, workDir, USER_CONF_FILE)
       .normalize().toString();
 
     try {

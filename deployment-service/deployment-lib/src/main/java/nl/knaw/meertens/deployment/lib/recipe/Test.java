@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
-import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 
 /**
  * @author vic
@@ -54,7 +54,7 @@ public class Test implements RecipePlugin {
     }
 
     Path outputFile = Paths.get(
-      WORK_DIR,
+      ROOT_WORK_DIR,
       workDir,
       "/output/result.txt"
     );

@@ -44,19 +44,21 @@ public class ClamTest extends AbstractDeploymentTest {
 
   @Test
   public void execute_shouldExecute() throws RecipePluginException, IOException {
-    // create work dir:
+    // create work dir with a dash.
+    // note: project name should be without:
     String workDir = "test-" + RandomStringUtils.randomAlphanumeric(8);
+    String clamProjectName = workDir.replace("-", "");
     FileUtil.createWorkDir(workDir);
     logger.info(String.format("create workdir [%s]", workDir));
 
     // create config file:
-    Path configPath = Paths.get(WORK_DIR, workDir, USER_CONF_FILE);
+    Path configPath = Paths.get(ROOT_WORK_DIR, workDir, USER_CONF_FILE);
     String testFileContent = FileUtil.getTestFileContent("configUcto.json");
     createFile(configPath.toString(), testFileContent);
 
     // create input file:
     String inputFilename = "ucto.txt";
-    Path inputPath = Paths.get(WORK_DIR, workDir, INPUT_DIR, inputFilename);
+    Path inputPath = Paths.get(ROOT_WORK_DIR, workDir, INPUT_DIR, inputFilename);
     createFile(inputPath.toString(), FileUtil.getTestFileContent(inputFilename));
 
     // instantiate recipe:
@@ -66,20 +68,20 @@ public class ClamTest extends AbstractDeploymentTest {
     clam.init(workDir, service);
 
     // mock service calls:
-    createProjectMock(workDir, 1);
-    getClamFilesAndAccessKeyMock(workDir);
-    fileUploadMock(workDir, 1);
-    runProjectMock(workDir, 1);
-    pollProjectMock(workDir, 1);
-    downloadFileMock(workDir, 1);
-    downloadLogMock(workDir, 1);
-    downloadErrorLogMock(workDir, 1);
+    createProjectMock(clamProjectName, 1);
+    getClamFilesAndAccessKeyMock(clamProjectName);
+    fileUploadMock(clamProjectName, 1);
+    runProjectMock(clamProjectName, 1);
+    pollProjectMock(clamProjectName, 1);
+    downloadFileMock(clamProjectName, 1);
+    downloadLogMock(clamProjectName, 1);
+    downloadErrorLogMock(clamProjectName, 1);
 
     clam.execute();
 
     // assert output file exists:
     String outputFilename = "uctoOutput.xml";
-    Path outputFile = Paths.get(WORK_DIR, workDir, OUTPUT_DIR, outputFilename);
+    Path outputFile = Paths.get(ROOT_WORK_DIR, workDir, OUTPUT_DIR, outputFilename);
     logger.info("output path expected: " + outputFile.toString());
     boolean outputExists = outputFile.toFile().exists();
     assertThat(outputExists).isTrue();

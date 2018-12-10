@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +30,7 @@ import static java.time.LocalDateTime.now;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -206,7 +205,7 @@ public class Demo implements RecipePlugin {
 
   private String buildInputPath(String projectName, String inputFile) {
     return Paths.get(
-      WORK_DIR,
+      ROOT_WORK_DIR,
       projectName,
       INPUT_DIR, inputFile
     ).normalize().toString();
@@ -214,7 +213,7 @@ public class Demo implements RecipePlugin {
 
   private Path buildOutputFilePath(String file) {
     return Paths.get(
-      WORK_DIR,
+      ROOT_WORK_DIR,
       workDir,
       OUTPUT_DIR,
       file

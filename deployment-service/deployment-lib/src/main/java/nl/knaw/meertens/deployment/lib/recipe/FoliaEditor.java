@@ -115,8 +115,8 @@ public class FoliaEditor implements RecipePlugin {
     JSONObject inputOjbect = (JSONObject) params.get(0);
     String inputFile = (String) inputOjbect.get("value");
     String fullInputPath =
-      Paths.get(SystemConf.WORK_DIR, workDir, inputPathConst, inputFile).normalize().toString();
-    String inputPath = Paths.get(SystemConf.WORK_DIR, workDir, inputPathConst).normalize().toString();
+      Paths.get(SystemConf.ROOT_WORK_DIR, workDir, inputPathConst, inputFile).normalize().toString();
+    String inputPath = Paths.get(SystemConf.ROOT_WORK_DIR, workDir, inputPathConst).normalize().toString();
     logger.info(format("inputPath: %s", inputPath));
     logger.info(format("Full Input Path: %s", fullInputPath));
 
@@ -130,9 +130,9 @@ public class FoliaEditor implements RecipePlugin {
       outputFile = inputFile;
     }
 
-    String outputPath = Paths.get(SystemConf.WORK_DIR, workDir, outputPathConst).normalize().toString();
+    String outputPath = Paths.get(SystemConf.ROOT_WORK_DIR, workDir, outputPathConst).normalize().toString();
     String fullOutputPath =
-      Paths.get(SystemConf.WORK_DIR, workDir, outputPathConst, outputFile).normalize().toString();
+      Paths.get(SystemConf.ROOT_WORK_DIR, workDir, outputPathConst, outputFile).normalize().toString();
     logger.info(format("outputPath: %s", outputPath));
     logger.info(format("Full outputPath: %s", fullOutputPath));
 

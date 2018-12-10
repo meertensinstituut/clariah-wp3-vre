@@ -30,7 +30,7 @@ import static nl.knaw.meertens.deployment.lib.DeploymentLib.parseUserConfig;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.workDirExists;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.WORK_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 public class Folia implements RecipePlugin {
@@ -127,7 +127,7 @@ public class Folia implements RecipePlugin {
     String inputFile = (String) inputOjbect.get("value");
 
     String inputPath = Paths
-      .get(WORK_DIR, workDir, INPUT_DIR, inputFile)
+      .get(ROOT_WORK_DIR, workDir, INPUT_DIR, inputFile)
       .normalize().toString();
 
     String outputFile;
@@ -138,7 +138,7 @@ public class Folia implements RecipePlugin {
     }
 
     String fullOutputPath = Paths
-      .get(WORK_DIR, workDir, OUTPUT_DIR, outputFile)
+      .get(ROOT_WORK_DIR, workDir, OUTPUT_DIR, outputFile)
       .normalize().toString();
 
     File outputPath = Paths
