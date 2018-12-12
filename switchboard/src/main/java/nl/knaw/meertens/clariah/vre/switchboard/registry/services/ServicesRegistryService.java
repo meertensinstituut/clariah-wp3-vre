@@ -11,7 +11,9 @@ public interface ServicesRegistryService {
 
   ServiceRecord getServiceByName(String name);
 
-  List<ServiceRecord> getServicesByMimetype(String mimetype);
-
+  /**
+   * Gets available services from the services registry
+   * and checks validity of CMDI contained by semantics field
+   */
   List<ServiceRecord> getServicesByMimetypeAndKind(String mimetype, ServiceKind kind);
 }

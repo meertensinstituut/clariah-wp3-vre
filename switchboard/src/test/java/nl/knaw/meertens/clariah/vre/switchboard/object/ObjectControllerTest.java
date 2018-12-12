@@ -1,16 +1,19 @@
 package nl.knaw.meertens.clariah.vre.switchboard.object;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
+import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceRecord;
 import org.junit.Test;
 import org.mockserver.model.Header;
 import org.mockserver.model.Parameter;
 
-import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.join;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.getMockServer;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockserver.model.HttpRequest.request;
@@ -24,13 +27,13 @@ public class ObjectControllerTest extends AbstractControllerTest {
     "      \"kind\": \"service\",\n" +
     "      \"recipe\": \"nl.knaw.meertens.deployment.lib.recipe.Test\",\n" +
     "      \"semantics\": \"<cmd:CMD xmlns:cmd=\\\"http://www.clarin.eu/cmd/1\\\" xmlns:cmdp=\\\"http://www.clarin" +
-    ".eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795\\\" xmlns:xs=\\\"http://www.w3.org/2001/XMLSchema\\\" " +
+    ".eu/cmd/1/profiles/clarin.eu:cr1:p_1527668176011\\\" xmlns:xs=\\\"http://www.w3.org/2001/XMLSchema\\\" " +
     "xmlns:xsi=\\\"http://www.w3.org/2001/XMLSchema-instance\\\" xsi:schemaLocation=\\\"\\n  http://www.clarin" +
     ".eu/cmd/1 https://infra.clarin.eu/CMDI/1.x/xsd/cmd-envelop.xsd\\n  http://www.clarin.eu/cmd/1/profiles/clarin" +
-    ".eu:cr1:p_1505397653795 https://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/1.x/profiles/clarin" +
-    ".eu:cr1:p_1505397653795/xsd\\\" CMDVersion=\\\"1.2\\\">\\n  <cmd:Header>\\n    " +
+    ".eu:cr1:p_1527668176011 https://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/1.x/profiles/clarin" +
+    ".eu:cr1:p_1527668176011/xsd\\\" CMDVersion=\\\"1.2\\\">\\n  <cmd:Header>\\n    " +
     "<cmd:MdCreationDate>2018-05-28</cmd:MdCreationDate>\\n    <cmd:MdProfile>clarin" +
-    ".eu:cr1:p_1505397653795</cmd:MdProfile><!-- profile is fixed -->\\n  </cmd:Header>\\n  <cmd:Resources>\\n    " +
+    ".eu:cr1:p_1527668176011</cmd:MdProfile><!-- profile is fixed -->\\n  </cmd:Header>\\n  <cmd:Resources>\\n    " +
     "<cmd:ResourceProxyList/>\\n    <cmd:JournalFileProxyList/>\\n    <cmd:ResourceRelationList/>\\n  " +
     "</cmd:Resources>\\n  <cmd:Components>\\n    <cmdp:CLARINWebService>\\n      <cmdp:Service CoreVersion=\\\"1" +
     ".0\\\">\\n        <cmdp:Name>Test</cmdp:Name>\\n        <cmdp:Description>Service to test deployment mechanism " +
@@ -56,13 +59,13 @@ public class ObjectControllerTest extends AbstractControllerTest {
     "      \"kind\": \"service\",\n" +
     "      \"recipe\": \"nl.knaw.meertens.deployment.lib.recipe.Nandoe\",\n" +
     "      \"semantics\": \"<cmd:CMD xmlns:cmd=\\\"http://www.clarin.eu/cmd/1\\\" xmlns:cmdp=\\\"http://www.clarin" +
-    ".eu/cmd/1/profiles/clarin.eu:cr1:p_1505397653795\\\" xmlns:xs=\\\"http://www.w3.org/2001/XMLSchema\\\" " +
+    ".eu/cmd/1/profiles/clarin.eu:cr1:p_1527668176011\\\" xmlns:xs=\\\"http://www.w3.org/2001/XMLSchema\\\" " +
     "xmlns:xsi=\\\"http://www.w3.org/2001/XMLSchema-instance\\\" xsi:schemaLocation=\\\"\\n  http://www.clarin" +
     ".eu/cmd/1 https://infra.clarin.eu/CMDI/1.x/xsd/cmd-envelop.xsd\\n  http://www.clarin.eu/cmd/1/profiles/clarin" +
-    ".eu:cr1:p_1505397653795 https://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/1.x/profiles/clarin" +
-    ".eu:cr1:p_1505397653795/xsd\\\" CMDVersion=\\\"1.2\\\">\\n  <cmd:Header>\\n    " +
+    ".eu:cr1:p_1527668176011 https://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/1.x/profiles/clarin" +
+    ".eu:cr1:p_1527668176011/xsd\\\" CMDVersion=\\\"1.2\\\">\\n  <cmd:Header>\\n    " +
     "<cmd:MdCreationDate>2018-05-28</cmd:MdCreationDate>\\n    <cmd:MdProfile>clarin" +
-    ".eu:cr1:p_1505397653795</cmd:MdProfile><!-- profile is fixed -->\\n  </cmd:Header>\\n  <cmd:Resources>\\n    " +
+    ".eu:cr1:p_1527668176011</cmd:MdProfile><!-- profile is fixed -->\\n  </cmd:Header>\\n  <cmd:Resources>\\n    " +
     "<cmd:ResourceProxyList/>\\n    <cmd:JournalFileProxyList/>\\n    <cmd:ResourceRelationList/>\\n  " +
     "</cmd:Resources>\\n  <cmd:Components>\\n    <cmdp:CLARINWebService>\\n      <cmdp:Service CoreVersion=\\\"1" +
     ".0\\\">\\n        <cmdp:Name>Test</cmdp:Name>\\n        <cmdp:Description>Service to test deployment mechanism " +
@@ -82,20 +85,6 @@ public class ObjectControllerTest extends AbstractControllerTest {
     "      \"mimetype\": \"text/plain\"\n" +
     "    }";
 
-  // VIEWER is of type viewer:
-  private String viewer = "    {\n" +
-    "      \"id\": \"14\",\n" +
-    "      \"name\": \"VIEWER\",\n" +
-    "      \"kind\": \"viewer\",\n" +
-    "      \"recipe\": \"nl.knaw.meertens.deployment.lib.recipe.Viewer\",\n" +
-    "      \"semantics\": \"\"," +
-    "      \"tech\": null,\n" +
-    "      \"time_created\": \"2018-05-28 12:34:48.863548+00\",\n" +
-    "      \"time_changed\": null,\n" +
-    "      \"mimetype\": \"text/plain\"\n" +
-    "    }";
-
-
   @Test
   public void getServicesFor_shouldGetServicesOfKindService_whenCorrectMimetype() {
     startServicesRegistryMock(
@@ -103,7 +92,7 @@ public class ObjectControllerTest extends AbstractControllerTest {
       "(mimetype = text/plain) and (kind like service)"
     );
 
-    Response response = target("object/1/services")
+    var response = target("object/1/services")
       .request()
       .get();
 
@@ -117,13 +106,21 @@ public class ObjectControllerTest extends AbstractControllerTest {
   }
 
   @Test
-  public void getViewersFor_shouldGetServicesOfKindViewer_whenCorrectMimetype() {
+  public void getViewersFor_shouldGetServicesOfKindViewer_whenCorrectMimetype() throws JsonProcessingException {
+
+    // VIEWER is of type viewer:
+    var viewer = new ServiceRecord();
+    viewer.setId(14L);
+    viewer.setName("VIEWER");
+    viewer.setKind("viewer");
+    viewer.setSemantics(getTestFileContent("viewer.cmdi"));
+
     startServicesRegistryMock(
-      newArrayList(viewer),
+      newArrayList(getMapper().writeValueAsString(viewer)),
       "(mimetype = text/plain) and (kind like viewer)"
     );
 
-    Response response = target("object/1/viewers")
+    var response = target("object/1/viewers")
       .request()
       .get();
 
@@ -134,8 +131,34 @@ public class ObjectControllerTest extends AbstractControllerTest {
     assertThat(JsonPath.parse(json).read("$[0].name", String.class)).isEqualTo("VIEWER");
   }
 
+  @Test
+  public void getServicesFor_shouldReturnError_whenCmdiInvalid() throws JsonProcessingException {
+    var invalidService = new ServiceRecord();
+    invalidService.setId(15L);
+    invalidService.setKind("service");
+    invalidService.setName("INVALID");
+    invalidService.setSemantics(getTestFileContent("invalid.cmdi"));
+
+    // service registry returns valid test-service and an invalid service:
+    startServicesRegistryMock(
+      newArrayList(testService, getMapper().writeValueAsString(invalidService)),
+      "(mimetype = text/plain) and (kind like service)"
+    );
+
+    var response = target("object/1/services")
+      .request()
+      .get();
+    var json = response.readEntity(String.class);
+
+    // switchboard should return only valid test service:
+    assertThat(JsonPath.parse(json).read("$.length()", Integer.class)).isEqualTo(1);
+    assertThat(JsonPath.parse(json).read("$[0].id", Integer.class)).isEqualTo(1);
+    assertThat(JsonPath.parse(json).read("$[0].name", String.class)).isEqualTo("TEST");
+
+  }
+
   private void startServicesRegistryMock(List<String> servicesList, String filter) {
-    var services = servicesList.stream().collect(Collectors.joining(", "));
+    var services = join(", ", servicesList);
 
     getMockServer()
       .when(
@@ -156,3 +179,4 @@ public class ObjectControllerTest extends AbstractControllerTest {
   }
 
 }
+
