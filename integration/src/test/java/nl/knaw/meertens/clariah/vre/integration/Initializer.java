@@ -29,7 +29,7 @@ public class Initializer extends AbstractIntegrationTest {
 
     private Logger logger = LoggerFactory.getLogger(UploadingNewFileTest.class);
 
-    private static final int WAITING_PERIOD = 120; // seconds
+    private static final int WAITING_PERIOD = 300; // seconds
 
     @Test
     public void init() throws Exception {

@@ -90,8 +90,6 @@ public class PollServiceImpl implements PollService {
         } catch (Exception ex) {
           logger.error(format("Deployment [%s] threw an exception", report.getWorkDir()), ex);
         }
-      } else {
-        logger.info(format("Skipping [%s]", report.getWorkDir()));
       }
     }
   }
