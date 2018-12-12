@@ -139,6 +139,7 @@ public class ObjectControllerTest extends AbstractControllerTest {
     invalidService.setName("INVALID");
     invalidService.setSemantics(getTestFileContent("invalid.cmdi"));
 
+    // service registry returns valid test-service and an invalid service:
     startServicesRegistryMock(
       newArrayList(testService, getMapper().writeValueAsString(invalidService)),
       "(mimetype = text/plain) and (kind like service)"
@@ -149,6 +150,7 @@ public class ObjectControllerTest extends AbstractControllerTest {
       .get();
     var json = response.readEntity(String.class);
 
+    // switchboard should return only valid test service:
     assertThat(JsonPath.parse(json).read("$.length()", Integer.class)).isEqualTo(1);
     assertThat(JsonPath.parse(json).read("$[0].id", Integer.class)).isEqualTo(1);
     assertThat(JsonPath.parse(json).read("$[0].name", String.class)).isEqualTo("TEST");
