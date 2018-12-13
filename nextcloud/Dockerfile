@@ -1,4 +1,4 @@
-FROM nextcloud:latest
+FROM nextcloud:14-apache
 
 RUN apt-get update \
  && apt-get -y install watch \

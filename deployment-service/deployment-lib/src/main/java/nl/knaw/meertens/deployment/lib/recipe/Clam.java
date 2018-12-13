@@ -42,7 +42,6 @@ import java.util.Set;
 
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
-import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
@@ -99,7 +98,7 @@ public class Clam implements RecipePlugin {
     try {
       userConfig = DeploymentLib.parseUserConfig(workDir);
 
-      if (!this.checkUserConfigOnRemoteServer(this.getSymanticsFromRemote(), userConfig)) {
+      if (!this.checkUserConfigOnRemoteServer(this.getSymenticsFromRemote(), userConfig)) {
         json.put("status", 500);
         logger.error("bad user config according to remote server");
         return json;
@@ -165,11 +164,11 @@ public class Clam implements RecipePlugin {
     byte[] postDataBytes = postData.toString().getBytes(StandardCharsets.UTF_8);
 
     URL url = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/" + projectName + "/?user=" + user + "&accesstoken=" + accessToken,
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/" + projectName + "/?user=" + user + "&accesstoken=" + accessToken,
+        null
     );
     HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
     httpCon.setDoOutput(true);
@@ -188,7 +187,7 @@ public class Clam implements RecipePlugin {
   }
 
   private void prepareProject()
-    throws IOException, RecipePluginException {
+      throws IOException, RecipePluginException {
     JSONObject json = DeploymentLib.parseUserConfig(workDir);
 
     JSONArray params = (JSONArray) json.get("params");
@@ -250,11 +249,11 @@ public class Clam implements RecipePlugin {
       URL url;
       try {
         url = new URL(
-          this.serviceUrl.getProtocol(),
-          this.serviceUrl.getHost(),
-          this.serviceUrl.getPort(),
-          this.serviceUrl.getFile() + "/" + projectName + "/status/?user=" + user + "&accesstoken=" + accessToken,
-          null
+            this.serviceUrl.getProtocol(),
+            this.serviceUrl.getHost(),
+            this.serviceUrl.getPort(),
+            this.serviceUrl.getFile() + "/" + projectName + "/status/?user=" + user + "&accesstoken=" + accessToken,
+            null
         );
       } catch (MalformedURLException e) {
         throw new RecipePluginException("Could not create polling url", e);
@@ -283,11 +282,11 @@ public class Clam implements RecipePlugin {
     JSONObject json = new JSONObject();
 
     URL url = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/" + projectName,
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/" + projectName,
+        null
     );
     String xmlString = readStringFromUrl(url);
 
@@ -305,25 +304,25 @@ public class Clam implements RecipePlugin {
 
   private static String readStringFromUrl(URL requestUrl) throws IOException {
     try (Scanner scanner = new Scanner(requestUrl.openStream(),
-      StandardCharsets.UTF_8.toString())) {
+        StandardCharsets.UTF_8.toString())) {
       scanner.useDelimiter("\\A");
       return scanner.hasNext() ? scanner.next() : "";
     }
   }
 
   private JSONObject uploadFile(
-    String filename,
-    String language,
-    String inputTemplate,
-    String author
+      String filename,
+      String language,
+      String inputTemplate,
+      String author
   ) throws IOException {
     JSONObject jsonResult = new JSONObject();
 
     String path = Paths.get(
-      ROOT_WORK_DIR,
-      workDir,
-      INPUT_DIR,
-      filename
+        ROOT_WORK_DIR,
+        workDir,
+        INPUT_DIR,
+        filename
     ).normalize().toString();
     jsonResult.put("pathUploadFile", path);
 
@@ -332,13 +331,13 @@ public class Clam implements RecipePlugin {
     jsonResult.put("filenameOnly", filenameOnly);
 
     URL url = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/" +
-        projectName + "/input/" + filenameOnly + "?inputtemplate=" + inputTemplate +
-        "&language=" + language + "&documentid=&author=" + author + "&filename=" + filenameOnly,
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/" +
+            projectName + "/input/" + filenameOnly + "?inputtemplate=" + inputTemplate +
+            "&language=" + language + "&documentid=&author=" + author + "&filename=" + filenameOnly,
+        null
     );
 
     logger.info(format("upload [%s]", url.toString()));
@@ -354,8 +353,8 @@ public class Clam implements RecipePlugin {
       connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
 
       PrintWriter writer = new PrintWriter(new OutputStreamWriter(
-        connection.getOutputStream(),
-        StandardCharsets.UTF_8
+          connection.getOutputStream(),
+          StandardCharsets.UTF_8
       ));
 
       String lineFeed = "\r\n";
@@ -365,7 +364,7 @@ public class Clam implements RecipePlugin {
       writer.append("Content-Type: text/plain").append(lineFeed);
       writer.append(lineFeed);
       try (BufferedReader reader = new BufferedReader(
-        new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+          new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
         for (String line; (line = reader.readLine()) != null; ) {
           writer.append(line).append(lineFeed);
         }
@@ -379,8 +378,8 @@ public class Clam implements RecipePlugin {
 
       connection.disconnect();
       logger.info(format(
-        "File uploaded; response: [%d][%s]",
-        connection.getResponseCode(), connection.getResponseMessage()
+          "File uploaded; response: [%d][%s]",
+          connection.getResponseCode(), connection.getResponseMessage()
       ));
 
     } catch (Exception e) {
@@ -396,11 +395,11 @@ public class Clam implements RecipePlugin {
       JSONObject json = new JSONObject();
 
       URL url = new URL(
-        this.serviceUrl.getProtocol(),
-        this.serviceUrl.getHost(),
-        this.serviceUrl.getPort(),
-        this.serviceUrl.getFile() + "/" + projectName,
-        null
+          this.serviceUrl.getProtocol(),
+          this.serviceUrl.getHost(),
+          this.serviceUrl.getPort(),
+          this.serviceUrl.getFile() + "/" + projectName,
+          null
       );
 
       String urlString = url.toString();
@@ -464,11 +463,11 @@ public class Clam implements RecipePlugin {
     String errorMsg = "Could not create project";
     try {
       URL url = new URL(
-        this.serviceUrl.getProtocol(),
-        this.serviceUrl.getHost(),
-        this.serviceUrl.getPort(),
-        this.serviceUrl.getFile() + "/" + projectName,
-        null
+          this.serviceUrl.getProtocol(),
+          this.serviceUrl.getHost(),
+          this.serviceUrl.getPort(),
+          this.serviceUrl.getFile() + "/" + projectName,
+          null
       );
 
       HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
@@ -485,9 +484,9 @@ public class Clam implements RecipePlugin {
       json.put("status", responseCode);
       json.put("message", responseMessage);
       httpCon.disconnect();
-      if (responseCode / 100 != 2 ) {
+      if (responseCode / 100 != 2) {
         throw new RecipePluginException(format(
-          "%s: [%d][%s]", errorMsg, responseCode, responseMessage
+            "%s: [%d][%s]", errorMsg, responseCode, responseMessage
         ));
       }
     } catch (IOException ex) {
@@ -496,7 +495,7 @@ public class Clam implements RecipePlugin {
   }
 
   // TODO: get semantics from remove service in case of Clam
-  private JSONObject getSymanticsFromRemote() {
+  private JSONObject getSymenticsFromRemote() {
     JSONObject json = new JSONObject();
     return json;
 

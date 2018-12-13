@@ -132,8 +132,7 @@ public class WebExec extends AbstractController {
         .ok(json.toJSONString(), APPLICATION_JSON)
         .build();
 
-    } catch (
-      IOException |
+    } catch (IOException |
         ConfigurationException |
         InstantiationException |
         ClassNotFoundException |

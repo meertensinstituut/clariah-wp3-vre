@@ -18,3 +18,13 @@ WHERE NOT EXISTS (
   SELECT "name" FROM service WHERE "name" = 'VIEWER'
 );
 
+-- UCTO:
+\set ucto `cat ./ucto.cmdi`
+INSERT INTO service
+  ("name", "recipe", "semantics", "kind")
+SELECT
+  'UCTO', 'nl.knaw.meertens.deployment.lib.recipe.Clam', :'ucto', 'service'
+WHERE NOT EXISTS (
+  SELECT "name" FROM service WHERE "name" = 'UCTO'
+);
+
