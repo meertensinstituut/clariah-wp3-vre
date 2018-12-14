@@ -20,7 +20,6 @@ import java.nio.file.Paths;
 
 import static java.lang.String.format;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
-import static nl.knaw.meertens.deployment.lib.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
@@ -41,7 +40,7 @@ public class Text implements RecipePlugin {
   }
 
   @Override
-  public JSONObject execute() throws RecipePluginException {
+  public DeploymentStatus execute() throws RecipePluginException {
     logger.info("Start plugin execution");
     JSONObject userConfig;
     try {
@@ -64,19 +63,17 @@ public class Text implements RecipePlugin {
         Thread.sleep(3000);
         ready = true;
       }
-
-      this.status = FINISHED;
-
     } catch (IOException | InterruptedException ex) {
       logger.error(String.format("Execution ERROR: {%s}", ex.getLocalizedMessage()), ex);
     }
 
-    return status.getJsonStatus();
+    this.status = FINISHED;
+    return status;
   }
 
   @Override
-  public JSONObject getStatus() {
-    return status.getJsonStatus();
+  public DeploymentStatus getStatus() {
+    return status;
   }
 
   private void runProject(String key) throws IOException, RecipePluginException {

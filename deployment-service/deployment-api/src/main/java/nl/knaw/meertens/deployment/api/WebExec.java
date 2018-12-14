@@ -22,6 +22,7 @@ import java.io.IOException;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static nl.knaw.meertens.deployment.lib.DeploymentStatus.NOT_FOUND;
 
 // TODO: rename to controller
 // TODO: extract all logic to services
@@ -48,18 +49,15 @@ public class WebExec extends AbstractController {
     RecipePlugin plugin = queue.getPlugin(workDir);
 
     if (isNull(plugin)) {
-      result.put("status", 404);
-      result.put("message", "Task not found");
-      result.put("finished", false);
       return Response
         .status(404)
-        .entity(result.toJSONString())
+        .entity(NOT_FOUND.getJsonStatus())
         .type(APPLICATION_JSON)
         .build();
     }
 
     try {
-      result = plugin.getStatus();
+      result = plugin.getStatus().getJsonStatus();
     } catch (RecipePluginException ex) {
       String msg = format("Failed to get status of [%s]", workDir);
       return handleException(msg, ex);

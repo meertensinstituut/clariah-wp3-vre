@@ -68,7 +68,7 @@ public class FoliaEditor implements RecipePlugin {
   }
 
   @Override
-  public JSONObject execute() throws RecipePluginException {
+  public DeploymentStatus execute() throws RecipePluginException {
     logger.info("Start plugin execution");
 
     JSONObject json = new JSONObject();
@@ -97,12 +97,12 @@ public class FoliaEditor implements RecipePlugin {
       throw new RecipePluginException("Could not execute recipe", ex);
     }
 
-    return status.getJsonStatus();
+    return status;
   }
 
   @Override
-  public JSONObject getStatus() {
-    return status.getJsonStatus();
+  public DeploymentStatus getStatus() {
+    return status;
   }
 
   public JSONObject runProject(String key)

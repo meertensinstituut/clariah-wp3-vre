@@ -12,13 +12,11 @@ public interface RecipePlugin {
   /**
    * Execute recipe and start deployment
    */
-  // TODO: use a pojo to define the fields that WebExec needs to correctly handle the execute response
-  JSONObject execute() throws RecipePluginException;
+  DeploymentStatus execute() throws RecipePluginException;
 
   /**
    * Get status of deployment
    */
-  // TODO: use a pojo to define the fields that WebExec needs to correctly handle the status response
-  JSONObject getStatus() throws RecipePluginException;
+  DeploymentStatus getStatus() throws RecipePluginException;
 
 }

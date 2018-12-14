@@ -60,7 +60,7 @@ public class Folia implements RecipePlugin {
   }
 
   @Override
-  public JSONObject execute() throws RecipePluginException {
+  public DeploymentStatus execute() throws RecipePluginException {
     logger.info(format("execute [%s]", workDir));
 
     // TODO: userConfig should be used
@@ -90,12 +90,12 @@ public class Folia implements RecipePlugin {
       throw new RecipePluginException(ex.getMessage(), ex);
     }
 
-    return status.getJsonStatus();
+    return status;
   }
 
   @Override
-  public JSONObject getStatus() {
-    return status.getJsonStatus();
+  public DeploymentStatus getStatus() {
+    return status;
   }
 
   private static void convertXmlToHtml(Source xml, Source xslt, File file) {

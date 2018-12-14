@@ -5,7 +5,6 @@ import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,16 +33,16 @@ public class Test implements RecipePlugin {
   }
 
   @Override
-  public JSONObject execute() {
+  public DeploymentStatus execute() {
     logger.info(format("execute [%s]", workDir));
     this.status = RUNNING;
     new Thread(this::finishDeployment).start();
-    return status.getJsonStatus();
+    return status;
   }
 
   @Override
-  public JSONObject getStatus() {
-    return status.getJsonStatus();
+  public DeploymentStatus getStatus() {
+    return status;
   }
 
   private void finishDeployment() {

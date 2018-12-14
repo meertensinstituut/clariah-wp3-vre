@@ -76,16 +76,16 @@ public class Demo implements RecipePlugin {
   }
 
   @Override
-  public JSONObject execute() throws RecipePluginException {
+  public DeploymentStatus execute() throws RecipePluginException {
     logger.info(format("execute [%s][%s]", service.getName(), workDir));
     this.runProject(workDir);
     status = RUNNING;
-    return status.getJsonStatus();
+    return status;
   }
 
   @Override
-  public JSONObject getStatus() throws RecipePluginException {
-    return status.getJsonStatus();
+  public DeploymentStatus getStatus() throws RecipePluginException {
+    return status;
   }
 
   private void runProject(String projectName) throws RecipePluginException {
