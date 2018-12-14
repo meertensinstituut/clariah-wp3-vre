@@ -8,6 +8,7 @@ import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
@@ -68,7 +69,7 @@ public class FoliaEditor implements RecipePlugin {
   }
 
   @Override
-  public DeploymentStatus execute() throws RecipePluginException {
+  public DeploymentResponse execute() throws RecipePluginException {
     logger.info("Start plugin execution");
 
     JSONObject json = new JSONObject();
@@ -97,12 +98,12 @@ public class FoliaEditor implements RecipePlugin {
       throw new RecipePluginException("Could not execute recipe", ex);
     }
 
-    return status;
+    return status.toDeploymentResponse();
   }
 
   @Override
-  public DeploymentStatus getStatus() {
-    return status;
+  public DeploymentResponse getStatus() {
+    return status.toDeploymentResponse();
   }
 
   public JSONObject runProject(String key)

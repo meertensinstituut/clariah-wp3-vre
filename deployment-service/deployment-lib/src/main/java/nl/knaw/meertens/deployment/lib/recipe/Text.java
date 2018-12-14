@@ -2,6 +2,7 @@ package nl.knaw.meertens.deployment.lib.recipe;
 
 
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
@@ -40,7 +41,7 @@ public class Text implements RecipePlugin {
   }
 
   @Override
-  public DeploymentStatus execute() throws RecipePluginException {
+  public DeploymentResponse execute() throws RecipePluginException {
     logger.info("Start plugin execution");
     JSONObject userConfig;
     try {
@@ -68,12 +69,12 @@ public class Text implements RecipePlugin {
     }
 
     this.status = FINISHED;
-    return status;
+    return new DeploymentResponse(status);
   }
 
   @Override
-  public DeploymentStatus getStatus() {
-    return status;
+  public DeploymentResponse getStatus() {
+    return status.toDeploymentResponse();
   }
 
   private void runProject(String key) throws IOException, RecipePluginException {

@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.Service;
@@ -33,16 +34,16 @@ public class Test implements RecipePlugin {
   }
 
   @Override
-  public DeploymentStatus execute() {
+  public DeploymentResponse execute() {
     logger.info(format("execute [%s]", workDir));
     this.status = RUNNING;
     new Thread(this::finishDeployment).start();
-    return status;
+    return status.toDeploymentResponse();
   }
 
   @Override
-  public DeploymentStatus getStatus() {
-    return status;
+  public DeploymentResponse getStatus() {
+    return status.toDeploymentResponse();
   }
 
   private void finishDeployment() {

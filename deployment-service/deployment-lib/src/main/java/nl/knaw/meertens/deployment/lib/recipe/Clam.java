@@ -4,6 +4,7 @@ import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
@@ -91,19 +92,16 @@ public class Clam implements RecipePlugin {
   }
 
   @Override
-  public DeploymentStatus execute() throws RecipePluginException {
+  public DeploymentResponse execute() throws RecipePluginException {
     logger.info("start plugin execution");
 
-    JSONObject json = new JSONObject();
-    json.put("key", workDir);
-    json.put("status", 202);
     JSONObject userConfig;
     try {
       userConfig = DeploymentLib.parseUserConfig(workDir);
 
       if (!this.checkUserConfigOnRemoteServer(this.getSymenticsFromRemote(), userConfig)) {
         logger.error("bad user config according to remote server");
-        return ERROR;
+        return ERROR.toDeploymentResponse();
       }
 
       logger.info(format("creating project [%s]", workDir));
@@ -127,7 +125,7 @@ public class Clam implements RecipePlugin {
       logger.error(format("execution of [%s] failed", workDir), ex);
     }
 
-    return status;
+    return status.toDeploymentResponse();
   }
 
   private void pollDeployment() throws InterruptedException, RecipePluginException {
@@ -238,8 +236,8 @@ public class Clam implements RecipePlugin {
   }
 
   @Override
-  public DeploymentStatus getStatus() {
-    return status;
+  public DeploymentResponse getStatus() {
+    return status.toDeploymentResponse();
   }
 
   private JSONObject pollProject() throws RecipePluginException {

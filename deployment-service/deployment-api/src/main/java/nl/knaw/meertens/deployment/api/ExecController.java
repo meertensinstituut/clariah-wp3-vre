@@ -1,6 +1,7 @@
 package nl.knaw.meertens.deployment.api;
 
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.Queue;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
@@ -24,10 +25,9 @@ import static java.util.Objects.isNull;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.NOT_FOUND;
 
-// TODO: rename to controller
 // TODO: extract all logic to services
 @Path("/exec")
-public class WebExec extends AbstractController {
+public class ExecController extends AbstractController {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -45,34 +45,34 @@ public class WebExec extends AbstractController {
   ) {
 
     Queue queue = new Queue();
-    JSONObject result = new JSONObject();
+    DeploymentResponse result;
     RecipePlugin plugin = queue.getPlugin(workDir);
 
     if (isNull(plugin)) {
       return Response
-        .status(404)
-        .entity(NOT_FOUND.getJsonStatus())
+        .status(NOT_FOUND.getStatus())
+        .entity(NOT_FOUND.toDeploymentResponse().getBody().toString())
         .type(APPLICATION_JSON)
         .build();
     }
 
     try {
-      result = plugin.getStatus().getJsonStatus();
+      result = plugin.getStatus();
     } catch (RecipePluginException ex) {
       String msg = format("Failed to get status of [%s]", workDir);
       return handleException(msg, ex);
     }
 
-    Boolean finished = (Boolean) result.get("finished");
+    boolean finished = result.getStatus().isFinished();
 
     if (finished) {
       return Response
-        .ok(result.toJSONString(), APPLICATION_JSON)
+        .ok(result.getBody().toString(), APPLICATION_JSON)
         .build();
     } else {
       return Response
         .status(202)
-        .entity(result.toJSONString())
+        .entity(result.getBody().toString())
         .type(APPLICATION_JSON)
         .build();
     }

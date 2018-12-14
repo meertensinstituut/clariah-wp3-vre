@@ -1,7 +1,5 @@
 package nl.knaw.meertens.deployment.lib;
 
-import org.json.simple.JSONObject;
-
 public interface RecipePlugin {
 
   /**
@@ -12,11 +10,11 @@ public interface RecipePlugin {
   /**
    * Execute recipe and start deployment
    */
-  DeploymentStatus execute() throws RecipePluginException;
+  DeploymentResponse execute() throws RecipePluginException;
 
   /**
    * Get status of deployment
    */
-  DeploymentStatus getStatus() throws RecipePluginException;
+  DeploymentResponse getStatus() throws RecipePluginException;
 
 }

@@ -20,11 +20,28 @@ public enum DeploymentStatus {
     this.finished = finished;
   }
 
-  public JSONObject getJsonStatus() {
+  public JSONObject toSimpleJson() {
     JSONObject status = new JSONObject();
     status.put("status", this.status);
     status.put("message", message);
     status.put("finished", finished);
     return status;
   }
+
+  public DeploymentResponse toDeploymentResponse() {
+    return new DeploymentResponse(this);
+  }
+
+  public int getStatus() {
+    return status;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public boolean isFinished() {
+    return finished;
+  }
+
 }

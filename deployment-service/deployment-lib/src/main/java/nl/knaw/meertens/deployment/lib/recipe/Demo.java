@@ -4,6 +4,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
@@ -76,16 +77,16 @@ public class Demo implements RecipePlugin {
   }
 
   @Override
-  public DeploymentStatus execute() throws RecipePluginException {
+  public DeploymentResponse execute() throws RecipePluginException {
     logger.info(format("execute [%s][%s]", service.getName(), workDir));
     this.runProject(workDir);
     status = RUNNING;
-    return status;
+    return status.toDeploymentResponse();
   }
 
   @Override
-  public DeploymentStatus getStatus() throws RecipePluginException {
-    return status;
+  public DeploymentResponse getStatus() throws RecipePluginException {
+    return status.toDeploymentResponse();
   }
 
   private void runProject(String projectName) throws RecipePluginException {

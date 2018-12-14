@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
@@ -60,7 +61,7 @@ public class Folia implements RecipePlugin {
   }
 
   @Override
-  public DeploymentStatus execute() throws RecipePluginException {
+  public DeploymentResponse execute() throws RecipePluginException {
     logger.info(format("execute [%s]", workDir));
 
     // TODO: userConfig should be used
@@ -90,12 +91,12 @@ public class Folia implements RecipePlugin {
       throw new RecipePluginException(ex.getMessage(), ex);
     }
 
-    return status;
+    return status.toDeploymentResponse();
   }
 
   @Override
-  public DeploymentStatus getStatus() {
-    return status;
+  public DeploymentResponse getStatus() {
+    return status.toDeploymentResponse();
   }
 
   private static void convertXmlToHtml(Source xml, Source xslt, File file) {
