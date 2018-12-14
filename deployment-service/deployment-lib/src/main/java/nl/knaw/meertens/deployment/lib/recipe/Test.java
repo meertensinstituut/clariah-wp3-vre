@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.commons.io.Charsets;
@@ -14,35 +15,35 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
-import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
+import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
+import static nl.knaw.meertens.deployment.lib.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 
-/**
- * @author vic
- */
 public class Test implements RecipePlugin {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private Boolean isFinished = false;
+  private DeploymentStatus status;
   private String workDir;
 
   @Override
   public void init(String workDir, Service service) {
     logger.info(format("init [%s]", workDir));
     this.workDir = workDir;
+    this.status = DeploymentStatus.CREATED;
   }
 
   @Override
   public JSONObject execute() {
     logger.info(format("execute [%s]", workDir));
+    this.status = RUNNING;
     new Thread(this::finishDeployment).start();
-    return createDefaultStatus(isFinished);
+    return status.getJsonStatus();
   }
 
   @Override
   public JSONObject getStatus() {
-    return createDefaultStatus(isFinished);
+    return status.getJsonStatus();
   }
 
   private void finishDeployment() {
@@ -67,7 +68,7 @@ public class Test implements RecipePlugin {
     } catch (IOException ex) {
       logger.error(format("could not generate output for [%s]", workDir), ex);
     }
-    this.isFinished = true;
+    this.status = FINISHED;
   }
 
 }

@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
@@ -25,9 +26,9 @@ import java.nio.file.Paths;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.parseUserConfig;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.workDirExists;
+import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
@@ -35,7 +36,7 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 
 public class Folia implements RecipePlugin {
   private static Logger logger = LoggerFactory.getLogger(RecipePlugin.class);
-  private Boolean isFinished = false;
+  private DeploymentStatus status;
   private String workDir;
 
   private URL url;
@@ -55,15 +56,14 @@ public class Folia implements RecipePlugin {
       throw new RecipePluginException("work dir should not be empty");
     }
     this.workDir = workDir;
+    this.status = DeploymentStatus.CREATED;
   }
 
   @Override
   public JSONObject execute() throws RecipePluginException {
     logger.info(format("execute [%s]", workDir));
 
-    JSONObject json = new JSONObject();
-    json.put("key", workDir);
-    json.put("status", 202);
+    // TODO: userConfig should be used
     JSONObject userConfig;
     try {
       workDirExists(workDir);
@@ -84,18 +84,18 @@ public class Folia implements RecipePlugin {
         ready = true;
       }
 
-      this.isFinished = true;
+      this.status = FINISHED;
 
     } catch (IOException | InterruptedException ex) {
       throw new RecipePluginException(ex.getMessage(), ex);
     }
 
-    return json;
+    return status.getJsonStatus();
   }
 
   @Override
   public JSONObject getStatus() {
-    return createDefaultStatus(isFinished);
+    return status.getJsonStatus();
   }
 
   private static void convertXmlToHtml(Source xml, Source xslt, File file) {

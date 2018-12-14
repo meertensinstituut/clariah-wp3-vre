@@ -42,25 +42,6 @@ public class DeploymentLib {
     }
   }
 
-  /**
-   * Return json msg with fields:
-   * `status`, `message` and `finished`
-   * based on isFinished
-   */
-  public static JSONObject createDefaultStatus(Boolean isFinished) {
-    JSONObject status = new JSONObject();
-    if (isFinished) {
-      status.put("status", 200);
-      status.put("message", "Task finished");
-      status.put("finished", true);
-    } else {
-      status.put("status", 202);
-      status.put("message", "Task running");
-      status.put("finished", false);
-    }
-    return status;
-  }
-
   public Service getServiceByName(String serviceName) throws IOException, ConfigurationException {
     // TODO: use Unirest
     JSONObject json;

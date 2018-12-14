@@ -1,0 +1,28 @@
+package nl.knaw.meertens.deployment.lib;
+
+import org.json.simple.JSONObject;
+
+public enum DeploymentStatus {
+
+  CREATED(201, "Task created", false),
+  RUNNING(202, "Task running", false),
+  FINISHED(200, "Task finished", true);
+
+  private final int status;
+  private final String message;
+  private boolean finished;
+
+  DeploymentStatus(int status, String message, boolean finished) {
+    this.status = status;
+    this.message = message;
+    this.finished = finished;
+  }
+
+  public JSONObject getJsonStatus() {
+    JSONObject status = new JSONObject();
+    status.put("status", this.status);
+    status.put("message", message);
+    status.put("finished", finished);
+    return status;
+  }
+}

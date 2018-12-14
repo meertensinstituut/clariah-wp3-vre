@@ -4,6 +4,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
@@ -27,7 +28,7 @@ import java.util.regex.Pattern;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
-import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
+import static nl.knaw.meertens.deployment.lib.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
@@ -46,7 +47,7 @@ public class Demo implements RecipePlugin {
 
   private String workDir;
   private Service service;
-  private Boolean isFinished = false;
+  private DeploymentStatus status;
 
   /**
    * Cookie is saved for next deployments
@@ -71,21 +72,20 @@ public class Demo implements RecipePlugin {
     logger.info(format("init [%s]", workDir));
     this.workDir = workDir;
     this.service = service;
+    this.status = DeploymentStatus.CREATED;
   }
 
   @Override
   public JSONObject execute() throws RecipePluginException {
     logger.info(format("execute [%s][%s]", service.getName(), workDir));
     this.runProject(workDir);
-    new Thread(() -> {
-      isFinished = true;
-    }).start();
-    return createDefaultStatus(isFinished);
+    status = RUNNING;
+    return status.getJsonStatus();
   }
 
   @Override
   public JSONObject getStatus() throws RecipePluginException {
-    return createDefaultStatus(isFinished);
+    return status.getJsonStatus();
   }
 
   private void runProject(String projectName) throws RecipePluginException {

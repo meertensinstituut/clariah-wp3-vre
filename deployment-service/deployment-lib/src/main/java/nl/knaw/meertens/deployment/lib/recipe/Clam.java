@@ -4,6 +4,7 @@ import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
@@ -43,17 +44,15 @@ import java.util.Set;
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
+import static nl.knaw.meertens.deployment.lib.DeploymentStatus.CREATED;
+import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 
-/**
- * @author vic
- */
 public class Clam implements RecipePlugin {
   private URL serviceUrl;
-  private Boolean isFinished = false;
+  private DeploymentStatus status;
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private String workDir;
@@ -71,6 +70,8 @@ public class Clam implements RecipePlugin {
    */
   @Override
   public void init(String workDir, Service service) throws RecipePluginException {
+    status = CREATED;
+
     logger.info(format("init [%s]", workDir));
 
     this.workDir = workDir;
@@ -79,10 +80,11 @@ public class Clam implements RecipePlugin {
     final String serviceSemantics = service.getServiceSemantics();
     JSONObject semantics = DeploymentLib.parseSemantics(serviceSemantics);
 
+    String serviceLocation = (String) semantics.get("serviceLocation");
     try {
-      this.serviceUrl = new URL((String) semantics.get("serviceLocation"));
+      this.serviceUrl = new URL(serviceLocation);
     } catch (MalformedURLException e) {
-      throw new RecipePluginException("service url is invalid", e);
+      throw new RecipePluginException(format("service url [%s] is invalid", serviceLocation), e);
     }
     logger.info("finish init CLAM plugin");
   }
@@ -119,7 +121,7 @@ public class Clam implements RecipePlugin {
       logger.info("download result");
       this.downloadProject();
 
-      this.isFinished = true;
+      this.status = FINISHED;
 
     } catch (IOException | InterruptedException | JDOMException ex) {
       logger.error(format("execution of [%s] failed", workDir), ex);
@@ -237,7 +239,7 @@ public class Clam implements RecipePlugin {
 
   @Override
   public JSONObject getStatus() {
-    return createDefaultStatus(isFinished);
+    return status.getJsonStatus();
   }
 
   private JSONObject pollProject() throws RecipePluginException {
@@ -267,7 +269,7 @@ public class Clam implements RecipePlugin {
 
       json.put("status", httpCon.getResponseCode());
       json.put("message", httpCon.getResponseMessage());
-      json.put("finished", this.isFinished);
+      json.put("finished", this.status);
 
       httpCon.disconnect();
 

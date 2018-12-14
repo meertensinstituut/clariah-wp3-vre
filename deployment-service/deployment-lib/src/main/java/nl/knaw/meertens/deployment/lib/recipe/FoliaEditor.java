@@ -8,6 +8,7 @@ import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
@@ -33,18 +34,13 @@ import java.util.Map;
 
 import static java.lang.String.format;
 import static java.nio.charset.Charset.forName;
-import static nl.knaw.meertens.deployment.lib.DeploymentLib.createDefaultStatus;
+import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 
 
-/**
- * This is the Folia editor recipe.
- *
- * @author Vic
- */
 public class FoliaEditor implements RecipePlugin {
   public URL serviceUrl;
   protected int counter = 0;
-  protected Boolean isFinished = false;
+  protected DeploymentStatus status;
   protected Boolean userConfigRemoteError = false;
   protected String workDir;
   protected String resultFileNameString = "";
@@ -68,6 +64,7 @@ public class FoliaEditor implements RecipePlugin {
     } catch (MalformedURLException e) {
       throw new RecipePluginException("Url is not correct: " + serviceUrl);
     }
+    this.status = DeploymentStatus.CREATED;
   }
 
   @Override
@@ -94,13 +91,18 @@ public class FoliaEditor implements RecipePlugin {
         ready = true;
       }
 
-      this.isFinished = true;
+      this.status = FINISHED;
 
     } catch (IOException | InterruptedException | UnirestException | ConfigurationException ex) {
       throw new RecipePluginException("Could not execute recipe", ex);
     }
 
-    return json;
+    return status.getJsonStatus();
+  }
+
+  @Override
+  public JSONObject getStatus() {
+    return status.getJsonStatus();
   }
 
   public JSONObject runProject(String key)
@@ -152,11 +154,6 @@ public class FoliaEditor implements RecipePlugin {
     json.put("url", urlJson.get("url"));
     return json;
 
-  }
-
-  @Override
-  public JSONObject getStatus() {
-    return createDefaultStatus(this.isFinished);
   }
 
   /**
