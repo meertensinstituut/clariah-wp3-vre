@@ -1,0 +1,10 @@
+{
+  "params": [
+    {
+      "name": "input",
+      "type": "file",
+      "value": "inputDemo.txt",
+      "params": []
+    }
+  ]
+}

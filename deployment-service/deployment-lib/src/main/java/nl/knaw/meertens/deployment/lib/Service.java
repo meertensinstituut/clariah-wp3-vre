@@ -2,14 +2,17 @@ package nl.knaw.meertens.deployment.lib;
 
 import com.google.common.base.MoreObjects;
 
-/**
- * @author vic
- */
 public class Service {
   private String serviceId;
   private String serviceName;
   private String serviceRecipe;
+
+  /**
+   * Sementics described in cmdi format
+   * as to be found in the service registry
+   */
   private String serviceSemantics;
+
   private String serviceTech;
 
   public Service(

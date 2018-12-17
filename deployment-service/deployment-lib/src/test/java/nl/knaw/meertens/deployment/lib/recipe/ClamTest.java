@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static nl.knaw.meertens.deployment.lib.FileUtil.createFile;
+import static nl.knaw.meertens.deployment.lib.FileUtil.createInputFile;
 import static nl.knaw.meertens.deployment.lib.FileUtil.getTestFileContent;
 import static nl.knaw.meertens.deployment.lib.SystemConf.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -36,7 +37,7 @@ public class ClamTest extends AbstractDeploymentTest {
     Clam clam = new Clam();
     String workDir = "test-" + RandomStringUtils.randomAlphanumeric(8);
 
-    final String serviceSemantics = FileUtil.getTestFileContent("ucto.xml");
+    final String serviceSemantics = FileUtil.getTestFileContent("ucto.cmdi");
     Service service = new Service("0", "UCTO", "CLAM", serviceSemantics, "<xml></xml>");
 
     clam.init(workDir, service);
@@ -44,8 +45,7 @@ public class ClamTest extends AbstractDeploymentTest {
 
   @Test
   public void execute_shouldExecute() throws RecipePluginException, IOException {
-    // create work dir with a dash.
-    // note: project name should be without:
+    // create work dir with a dash to test it is removed when requesting ucto:
     String workDir = "test-" + RandomStringUtils.randomAlphanumeric(8);
     String clamProjectName = workDir.replace("-", "");
     FileUtil.createWorkDir(workDir);
@@ -56,13 +56,10 @@ public class ClamTest extends AbstractDeploymentTest {
     String testFileContent = FileUtil.getTestFileContent("configUcto.json");
     createFile(configPath.toString(), testFileContent);
 
-    // create input file:
-    String inputFilename = "ucto.txt";
-    Path inputPath = Paths.get(ROOT_WORK_DIR, workDir, INPUT_DIR, inputFilename);
-    createFile(inputPath.toString(), FileUtil.getTestFileContent(inputFilename));
+    createInputFile(workDir, "inputUcto.txt", "ucto.txt");
 
     // instantiate recipe:
-    final String serviceSemantics = FileUtil.getTestFileContent("ucto.xml");
+    final String serviceSemantics = FileUtil.getTestFileContent("ucto.cmdi");
     Service service = new Service("0", "UCTO", "CLAM", serviceSemantics, "<xml></xml>");
     Clam clam = new Clam();
     clam.init(workDir, service);
@@ -126,7 +123,7 @@ public class ClamTest extends AbstractDeploymentTest {
         .when(
             request()
                 .withMethod("POST")
-                .withPath("/ucto/" + workDir + "/input/ucto.txt"),
+                .withPath("/ucto/" + workDir + "/input/input.txt"),
             Times.exactly(times)
         )
         .respond(

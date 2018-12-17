@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
+import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
@@ -45,6 +46,7 @@ public class Demo implements RecipePlugin {
 
   private static final String SERVICE_URL = "https://tools.digitalmethods.net/beta/deduplicate/";
   private static final String RESULT_TAG = "result";
+  static final String OUTPUT_FILENAME = "result.txt";
 
   private String workDir;
   private Service service;
@@ -79,8 +81,8 @@ public class Demo implements RecipePlugin {
   @Override
   public DeploymentResponse execute() throws RecipePluginException {
     logger.info(format("execute [%s][%s]", service.getName(), workDir));
-    this.runProject(workDir);
     status = RUNNING;
+    this.runProject(workDir);
     return status.toDeploymentResponse();
   }
 
@@ -106,7 +108,7 @@ public class Demo implements RecipePlugin {
       throw new RecipePluginException(format("Request to [%s] failed", SERVICE_URL));
     }
 
-    Path outputFile = buildOutputFilePath("result.txt");
+    Path outputFile = buildOutputFilePath(OUTPUT_FILENAME);
     createOutputFolder(outputFile);
 
     try {
@@ -115,6 +117,7 @@ public class Demo implements RecipePlugin {
     } catch (IOException exception) {
       throw new RecipePluginException(format("could not write output to file [%s]", outputFile));
     }
+    status = FINISHED;
   }
 
   String getResultString(String html) {
