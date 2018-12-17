@@ -1,6 +1,5 @@
 package nl.knaw.meertens.deployment.lib;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -23,10 +22,19 @@ public class DeploymentResponse {
     setStatusFields(status);
   }
 
+  /**
+   * Set status fields when they don't exist in body yet
+   */
   private void setStatusFields(DeploymentStatus status) {
-    body.put("status", status.getStatus());
-    body.put("finished", status.isFinished());
-    body.put("message", status.getMessage());
+    if (!body.has("status")) {
+      body.put("status", status.getStatus());
+    }
+    if (!body.has("finished")) {
+      body.put("finished", status.isFinished());
+    }
+    if (!body.has("message")) {
+      body.put("message", status.getMessage());
+    }
   }
 
   public DeploymentStatus getStatus() {
