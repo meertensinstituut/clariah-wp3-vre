@@ -52,7 +52,6 @@ import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
-import static nl.knaw.meertens.deployment.lib.TmpUtil.readTree;
 
 public class Clam implements RecipePlugin {
   private URL serviceUrl;

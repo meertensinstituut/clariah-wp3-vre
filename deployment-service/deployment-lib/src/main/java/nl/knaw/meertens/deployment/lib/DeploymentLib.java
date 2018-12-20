@@ -115,12 +115,12 @@ public class DeploymentLib {
           parameterValueJson.put("parameterValueValue", parameterValueValue);
           parameterValueJson.put("parameterValueDescription", parameterValueDescription);
 
-          json.put("value" + Integer.toString(valueCounter), parameterValueJson);
+          json.set("value" + Integer.toString(valueCounter), parameterValueJson);
 
           valueCounter++;
         }
 
-        parametersJson.put("parameter" + Integer.toString(counter), json);
+        parametersJson.set("parameter" + Integer.toString(counter), json);
 
         counter++;
       }
@@ -135,7 +135,7 @@ public class DeploymentLib {
       json.put("serviceDescription", serviceDescription);
       json.put("serviceLocation", serviceLocation);
       json.put("counter", 0);
-      json.put("parameters", parametersJson);
+      json.set("parameters", parametersJson);
       return json;
     } catch (SaxonApiException ex) {
       throw new RecipePluginException("Invalid semantics xml", ex);

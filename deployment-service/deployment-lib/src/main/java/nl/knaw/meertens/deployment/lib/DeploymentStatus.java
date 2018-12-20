@@ -1,6 +1,5 @@
 package nl.knaw.meertens.deployment.lib;
 
-import org.json.simple.JSONObject;
 
 public enum DeploymentStatus {
 
@@ -18,14 +17,6 @@ public enum DeploymentStatus {
     this.status = status;
     this.message = message;
     this.finished = finished;
-  }
-
-  public JSONObject toSimpleJson() {
-    JSONObject status = new JSONObject();
-    status.put("status", this.status);
-    status.put("message", message);
-    status.put("finished", finished);
-    return status;
   }
 
   public DeploymentResponse toResponse() {

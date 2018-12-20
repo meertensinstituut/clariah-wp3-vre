@@ -26,7 +26,6 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.NOT_FOUND;
-import static nl.knaw.meertens.deployment.lib.TmpUtil.readTree;
 
 // TODO: extract all logic to services
 @Path("/exec")
