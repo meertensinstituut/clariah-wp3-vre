@@ -115,8 +115,8 @@ public class ExecController extends AbstractController {
       logger.info("Check user config against service record");
       String dbConfig = service.getServiceSemantics();
       boolean userConfigIsValid = this.checkUserConfig(
-        readTree(DeploymentLib.parseSemantics(dbConfig)),
-        readTree(DeploymentLib.parseUserConfig(workDir))
+        DeploymentLib.parseSemantics(dbConfig),
+        DeploymentLib.parseUserConfig(workDir)
       );
 
       if (!userConfigIsValid) {
@@ -139,8 +139,7 @@ public class ExecController extends AbstractController {
       InstantiationException |
       ClassNotFoundException |
       IllegalAccessException |
-      RecipePluginException |
-      ConfigurationException ex
+      RecipePluginException ex
     ) {
       return handleException(format("Could not deploy [%s][%s]", serviceName, workDir), ex);
     }

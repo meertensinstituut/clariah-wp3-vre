@@ -83,7 +83,7 @@ public class Clam implements RecipePlugin {
     this.projectName = workDir.replace("-", "");
 
     final String serviceSemantics = service.getServiceSemantics();
-    ObjectNode semantics = readTree(DeploymentLib.parseSemantics(serviceSemantics));
+    ObjectNode semantics = DeploymentLib.parseSemantics(serviceSemantics);
 
     String serviceLocation = semantics.get("serviceLocation").asText();
     try {
@@ -99,7 +99,7 @@ public class Clam implements RecipePlugin {
     logger.info("start plugin execution");
 
     try {
-      JsonNode userConfig = readTree(DeploymentLib.parseUserConfig(workDir));
+      JsonNode userConfig = DeploymentLib.parseUserConfig(workDir);
 
       if (!this.checkUserConfigOnRemoteServer(this.getSymenticsFromRemote(), userConfig)) {
         logger.error("bad user config according to remote server");
@@ -187,7 +187,7 @@ public class Clam implements RecipePlugin {
   }
 
   private void prepareProject() throws IOException, RecipePluginException {
-    ObjectNode userConfig = (ObjectNode) readTree(DeploymentLib.parseUserConfig(workDir));
+    ObjectNode userConfig = (ObjectNode) DeploymentLib.parseUserConfig(workDir);
 
     JsonNode params = userConfig.get("params");
 

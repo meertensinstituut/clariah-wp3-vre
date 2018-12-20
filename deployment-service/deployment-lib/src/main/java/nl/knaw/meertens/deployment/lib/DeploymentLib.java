@@ -1,14 +1,13 @@
 package nl.knaw.meertens.deployment.lib;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import nl.mpi.tla.util.Saxon;
-import org.apache.commons.configuration.ConfigurationException;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedReader;
@@ -32,6 +31,8 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 // TODO: split utility class DeploymentLib up in multiple Services
 public class DeploymentLib {
 
+  private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
+
   /**
    * @throws RecipePluginException when work dir does not exist
    */
@@ -42,10 +43,9 @@ public class DeploymentLib {
     }
   }
 
-  public Service getServiceByName(String serviceName) throws IOException, ConfigurationException {
+  public Service getServiceByName(String serviceName) throws IOException {
     // TODO: use Unirest
-    JSONObject json;
-    JSONParser parser = new JSONParser();
+    ObjectMapper parser = new ObjectMapper();
     String dbApiKey = System.getenv("APP_KEY_SERVICES");
 
     String urlString = "http://dreamfactory:80/api/v2/services/_table/service/?filter=name%3D" + serviceName;
@@ -59,20 +59,16 @@ public class DeploymentLib {
     connection.setRequestProperty("X-DreamFactory-Api-Key", dbApiKey);
     connection.disconnect();
 
-    try {
-      String rawString = getResponseBody(connection);
-      json = (JSONObject) parser.parse(rawString);
-    } catch (ParseException ex) {
-      throw new IllegalStateException("Invalid json from service", ex);
-    }
+    String rawString = getResponseBody(connection);
+    JsonNode json = parser.readTree(rawString);
 
-    JSONArray resource = (JSONArray) json.get("resource");
+    JsonNode resource = json.get("resource");
     if (resource != null) {
       if (resource.size() > 0) {
-        JSONObject record = (JSONObject) resource.get(0);
-        String serviceRecipe = (String) record.get("recipe");
-        String serviceSemantics = (String) record.get("semantics");
-        String serviceId = (String) record.get("id");
+        JsonNode record = resource.get(0);
+        String serviceRecipe = record.get("recipe").asText();
+        String serviceSemantics = record.get("semantics").asText();
+        String serviceId = record.get("id").asText();
 
         return new Service(serviceId, serviceName, serviceRecipe, serviceSemantics, "");
       }
@@ -81,10 +77,10 @@ public class DeploymentLib {
     throw new IllegalStateException("No such service");
   }
 
-  public static JSONObject parseSemantics(String symantics) throws RecipePluginException {
+  public static ObjectNode parseSemantics(String symantics) throws RecipePluginException {
     // TODO: clean up code
     try {
-      JSONObject parametersJson = new JSONObject();
+      ObjectNode parametersJson = jsonFactory.objectNode();
 
       Map<String, String> nameSpace = new LinkedHashMap<>();
       nameSpace.put("cmd", "http://www.clarin.eu/cmd/1");
@@ -98,7 +94,7 @@ public class DeploymentLib {
       for (XdmItem param : Saxon
         .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter", null, nameSpace)) {
 
-        JSONObject json = new JSONObject();
+        ObjectNode json = jsonFactory.objectNode();
         String parameterName = Saxon.xpath2string(param, "cmdp:Name", null, nameSpace);
         String parameterDescription = Saxon.xpath2string(param, "cmdp:Description", null, nameSpace);
         String parameterType = Saxon.xpath2string(param, "cmdp:MIMEType", null, nameSpace);
@@ -112,7 +108,7 @@ public class DeploymentLib {
           .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter/cmdp:ParameterValue",
             null, nameSpace)) {
 
-          JSONObject parameterValueJson = new JSONObject();
+          ObjectNode parameterValueJson = jsonFactory.objectNode();
 
           String parameterValueValue = Saxon.xpath2string(paramValue, "cmdp:Value", null, nameSpace);
           String parameterValueDescription = Saxon.xpath2string(paramValue, "cmdp:Description", null, nameSpace);
@@ -130,7 +126,7 @@ public class DeploymentLib {
         counter++;
       }
 
-      JSONObject json = new JSONObject();
+      ObjectNode json = jsonFactory.objectNode();
       String serviceName = Saxon.xpath2string(service, "cmdp:Name", null, nameSpace);
       String serviceDescription = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Description", null, nameSpace);
       String serviceLocation = Saxon.xpath2string(
@@ -147,8 +143,8 @@ public class DeploymentLib {
     }
   }
 
-  public static JSONObject parseUserConfig(String workDir) throws RecipePluginException {
-    JSONParser parser = new JSONParser();
+  public static ObjectNode parseUserConfig(String workDir) throws RecipePluginException {
+    ObjectMapper parser = new ObjectMapper();
     if (isEmpty(workDir)) {
       throw new RuntimeException("working directory is empty");
     }
@@ -158,8 +154,8 @@ public class DeploymentLib {
       .normalize().toString();
 
     try {
-      return (JSONObject) parser.parse(new FileReader(path));
-    } catch (IOException | ParseException e) {
+      return (ObjectNode) parser.readTree(new FileReader(path));
+    } catch (IOException e) {
       throw new RecipePluginException(String.format("could not read config file [%s]", path), e);
     }
   }

@@ -46,7 +46,7 @@ public class Text implements RecipePlugin {
     logger.info("Start plugin execution");
     ObjectNode userConfig;
     try {
-      userConfig = readTree(DeploymentLib.parseUserConfig(projectName));
+      userConfig = DeploymentLib.parseUserConfig(projectName);
       logger.info("userConfig: ");
       logger.info(userConfig.toString());
 
@@ -79,7 +79,7 @@ public class Text implements RecipePlugin {
   }
 
   private void runProject(String key) throws IOException, RecipePluginException {
-    ObjectNode userConfig = readTree(DeploymentLib.parseUserConfig(key));
+    ObjectNode userConfig = DeploymentLib.parseUserConfig(key);
     JsonNode params = userConfig.get("params");
 
     ObjectNode inputOjbect = (ObjectNode) params.get(0);
