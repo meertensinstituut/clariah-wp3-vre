@@ -8,7 +8,6 @@
     <artifactId>deployment-service</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <groupId>nl.knaw.meertens.deployment</groupId>
   <artifactId>deployment-api</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>war</packaging>
@@ -24,8 +23,8 @@
     <deployment-lib.version>1.0-SNAPSHOT</deployment-lib.version>
     <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>10</maven.compiler.source>
-    <maven.compiler.target>10</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -45,12 +44,7 @@
       <version>${org.jdom.version}</version>
       <type>jar</type>
     </dependency>
-    <dependency>
-      <groupId>com.googlecode.json-simple</groupId>
-      <artifactId>json-simple</artifactId>
-      <version>${json-simple.version}</version>
-      <type>jar</type>
-    </dependency>
+
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
       <artifactId>jersey-container-servlet-core</artifactId>
