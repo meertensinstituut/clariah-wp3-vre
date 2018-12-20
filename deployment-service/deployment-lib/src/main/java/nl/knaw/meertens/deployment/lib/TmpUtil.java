@@ -17,5 +17,9 @@ public class TmpUtil {
     }
   }
 
+  public static JSONObject readTree(ObjectNode serviceSemantics) throws RecipePluginException {
+    return jsonMapper.convertValue(serviceSemantics, JSONObject.class);
+  }
+
 
 }

@@ -26,7 +26,7 @@ public class ServiceController extends AbstractController {
   @GET
   @Path("/{service}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getService(@PathParam("service") String serviceName) {
+  public Response getService(@PathParam("service") String serviceName) throws ConfigurationException {
     DeploymentLib dplib = new DeploymentLib();
     try {
       Service service = dplib.getServiceByName(serviceName);
@@ -39,7 +39,7 @@ public class ServiceController extends AbstractController {
         .status(200)
         .entity(json.toJSONString())
         .build();
-    } catch (IOException | ConfigurationException ex) {
+    } catch (IOException ex) {
       String msg = format("Failed to get service by name [%s]", serviceName);
       return handleException(msg, ex);
     }
