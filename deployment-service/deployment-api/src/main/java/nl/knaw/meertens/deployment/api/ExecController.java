@@ -51,7 +51,7 @@ public class ExecController extends AbstractController {
     if (isNull(plugin)) {
       return Response
         .status(NOT_FOUND.getStatus())
-        .entity(NOT_FOUND.toDeploymentResponse().getBody().toString())
+        .entity(NOT_FOUND.toResponse().getBody().toString())
         .type(APPLICATION_JSON)
         .build();
     }

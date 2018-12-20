@@ -83,12 +83,12 @@ public class Demo implements RecipePlugin {
     logger.info(format("execute [%s][%s]", service.getName(), workDir));
     status = RUNNING;
     this.runProject(workDir);
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   @Override
   public DeploymentResponse getStatus() throws RecipePluginException {
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   private void runProject(String projectName) throws RecipePluginException {

@@ -20,7 +20,6 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +103,7 @@ public class Clam implements RecipePlugin {
 
       if (!this.checkUserConfigOnRemoteServer(this.getSymenticsFromRemote(), userConfig)) {
         logger.error("bad user config according to remote server");
-        return ERROR.toDeploymentResponse();
+        return ERROR.toResponse();
       }
 
       logger.info(format("creating project [%s]", workDir));
@@ -128,7 +127,7 @@ public class Clam implements RecipePlugin {
       logger.error(format("execution of [%s] failed", workDir), ex);
     }
 
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   private void pollDeployment() throws InterruptedException, RecipePluginException {
@@ -139,9 +138,9 @@ public class Clam implements RecipePlugin {
       looper++;
       Thread.sleep(ofSeconds(3).toMillis());
       ObjectNode projectStatus = this.pollProject();
-      long completionCode = Long.parseLong(projectStatus.get("completion").toString());
-      long statusCode = Long.parseLong(projectStatus.get("statuscode").toString());
-      Boolean successCode = Boolean.valueOf(projectStatus.get("success").toString());
+      long completionCode = Long.parseLong(projectStatus.get("completion").asText());
+      long statusCode = Long.parseLong(projectStatus.get("statuscode").asText());
+      Boolean successCode = Boolean.valueOf(projectStatus.get("success").asText());
       ready = (completionCode == 100L && statusCode == 2L && successCode);
     }
   }
@@ -149,8 +148,8 @@ public class Clam implements RecipePlugin {
   private void runProject() throws IOException, JDOMException {
 
     ObjectNode json = this.getAccessToken(projectName);
-    String user = json.get("user").toString();
-    String accessToken = json.get("accessToken").toString();
+    String user = json.get("user").asText();
+    String accessToken = json.get("accessToken").asText();
 
     Map<String, Object> params = new LinkedHashMap<>();
     params.put("xml", "1");
@@ -239,7 +238,7 @@ public class Clam implements RecipePlugin {
 
   @Override
   public DeploymentResponse getStatus() {
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   private ObjectNode pollProject() throws RecipePluginException {

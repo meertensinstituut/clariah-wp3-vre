@@ -1,14 +1,14 @@
 package nl.knaw.meertens.deployment.lib.recipe;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +24,7 @@ import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
+import static nl.knaw.meertens.deployment.lib.TmpUtil.readTree;
 
 public class Text implements RecipePlugin {
   public URL serviceUrl;
@@ -43,11 +44,11 @@ public class Text implements RecipePlugin {
   @Override
   public DeploymentResponse execute() throws RecipePluginException {
     logger.info("Start plugin execution");
-    JSONObject userConfig;
+    ObjectNode userConfig;
     try {
-      userConfig = DeploymentLib.parseUserConfig(projectName);
+      userConfig = readTree(DeploymentLib.parseUserConfig(projectName));
       logger.info("userConfig: ");
-      logger.info(userConfig.toJSONString());
+      logger.info(userConfig.toString());
 
       logger.info("Running project");
       this.runProject(projectName);
@@ -69,20 +70,20 @@ public class Text implements RecipePlugin {
     }
 
     this.status = FINISHED;
-    return new DeploymentResponse(status);
+    return status.toResponse();
   }
 
   @Override
   public DeploymentResponse getStatus() {
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   private void runProject(String key) throws IOException, RecipePluginException {
-    JSONObject userConfig = DeploymentLib.parseUserConfig(key);
-    JSONArray params = (JSONArray) userConfig.get("params");
+    ObjectNode userConfig = readTree(DeploymentLib.parseUserConfig(key));
+    JsonNode params = userConfig.get("params");
 
-    JSONObject inputOjbect = (JSONObject) params.get(0);
-    String inputFile = (String) inputOjbect.get("value");
+    ObjectNode inputOjbect = (ObjectNode) params.get(0);
+    String inputFile = inputOjbect.get("value").asText();
     String inputPath = Paths.get(ROOT_WORK_DIR, projectName, INPUT_DIR).normalize().toString();
     String fullInputPath = Paths.get(ROOT_WORK_DIR, projectName, INPUT_DIR, inputFile).normalize().toString();
     logger.info(String.format("Full inputPath: %s", fullInputPath));
@@ -90,11 +91,11 @@ public class Text implements RecipePlugin {
 
     String content = new String(Files.readAllBytes(Paths.get(fullInputPath)));
 
-    JSONObject outputOjbect;
+    ObjectNode outputOjbect;
     String outputFile;
     if (params.size() > 1) {
-      outputOjbect = (JSONObject) params.get(1);
-      outputFile = (String) outputOjbect.get("value");
+      outputOjbect = (ObjectNode) params.get(1);
+      outputFile = outputOjbect.get("value").asText();
     } else {
       outputFile = inputFile;
     }

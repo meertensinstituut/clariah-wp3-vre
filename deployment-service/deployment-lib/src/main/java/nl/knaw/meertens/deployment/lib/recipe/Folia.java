@@ -91,12 +91,12 @@ public class Folia implements RecipePlugin {
       throw new RecipePluginException(ex.getMessage(), ex);
     }
 
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   @Override
   public DeploymentResponse getStatus() {
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   private static void convertXmlToHtml(Source xml, Source xslt, File file) {

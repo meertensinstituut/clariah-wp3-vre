@@ -98,12 +98,12 @@ public class FoliaEditor implements RecipePlugin {
       throw new RecipePluginException("Could not execute recipe", ex);
     }
 
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   @Override
   public DeploymentResponse getStatus() {
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   public JSONObject runProject(String key)

@@ -38,12 +38,12 @@ public class Test implements RecipePlugin {
     logger.info(format("execute [%s]", workDir));
     this.status = RUNNING;
     new Thread(this::finishDeployment).start();
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   @Override
   public DeploymentResponse getStatus() {
-    return status.toDeploymentResponse();
+    return status.toResponse();
   }
 
   private void finishDeployment() {

@@ -28,7 +28,7 @@ public enum DeploymentStatus {
     return status;
   }
 
-  public DeploymentResponse toDeploymentResponse() {
+  public DeploymentResponse toResponse() {
     return new DeploymentResponse(this);
   }
 
