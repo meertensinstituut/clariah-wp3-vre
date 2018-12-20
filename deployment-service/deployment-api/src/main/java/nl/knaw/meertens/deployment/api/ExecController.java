@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.api;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.Queue;
@@ -24,6 +25,7 @@ import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.NOT_FOUND;
+import static nl.knaw.meertens.deployment.lib.TmpUtil.readTree;
 
 // TODO: extract all logic to services
 @Path("/exec")
@@ -112,8 +114,8 @@ public class ExecController extends AbstractController {
       logger.info("Check user config against service record");
       String dbConfig = service.getServiceSemantics();
       boolean userConfigIsValid = this.checkUserConfig(
-        DeploymentLib.parseSemantics(dbConfig),
-        DeploymentLib.parseUserConfig(workDir)
+        readTree(DeploymentLib.parseSemantics(dbConfig)),
+        readTree(DeploymentLib.parseUserConfig(workDir))
       );
 
       if (!userConfigIsValid) {
@@ -131,11 +133,11 @@ public class ExecController extends AbstractController {
         .build();
 
     } catch (IOException |
-        ConfigurationException |
-        InstantiationException |
+      InstantiationException |
         ClassNotFoundException |
         IllegalAccessException |
-        RecipePluginException ex
+        RecipePluginException |
+        ConfigurationException ex
     ) {
       return handleException(format("Could not deploy [%s][%s]", serviceName, workDir), ex);
     }
@@ -156,10 +158,10 @@ public class ExecController extends AbstractController {
       .build();
   }
 
-  private boolean checkUserConfig(JSONObject dbSymantics, JSONObject userSymantics) {
+  private boolean checkUserConfig(ObjectNode dbSymantics, ObjectNode userSymantics) {
     // TODO: check if user config if valid instead of returning true
-    logger.info(format("userConfig: %s", userSymantics.toJSONString()));
-    logger.info(format("dbConfig: %s", dbSymantics.toJSONString()));
+    logger.info(format("userConfig: %s", userSymantics.toString()));
+    logger.info(format("dbConfig: %s", dbSymantics.toString()));
     return true;
   }
 
