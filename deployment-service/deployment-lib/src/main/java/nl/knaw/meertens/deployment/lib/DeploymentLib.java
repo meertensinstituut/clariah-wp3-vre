@@ -27,7 +27,6 @@ import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
-// TODO: use Jackson (in deployment-service) instead of (oversimplified) simplejson
 // TODO: split utility class DeploymentLib up in multiple Services
 public class DeploymentLib {
 
