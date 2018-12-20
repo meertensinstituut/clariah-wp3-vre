@@ -127,9 +127,9 @@ public class ExecController extends AbstractController {
 
       Queue queue = new Queue();
       logger.info("Plugin invoked");
-      JSONObject json = queue.push(workDir, plugin);
+      ObjectNode json = queue.push(workDir, plugin);
       return Response
-        .ok(json.toJSONString(), APPLICATION_JSON)
+        .ok(json.toString(), APPLICATION_JSON)
         .build();
 
     } catch (IOException |

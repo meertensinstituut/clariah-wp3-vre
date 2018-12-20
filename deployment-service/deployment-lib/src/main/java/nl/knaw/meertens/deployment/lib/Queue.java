@@ -1,18 +1,17 @@
 package nl.knaw.meertens.deployment.lib;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * @author vic
- */
 public class Queue {
+
   private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
 
   protected static LinkedHashMap<String, RecipePlugin> executed = new LinkedHashMap<>() {
 
@@ -28,8 +27,8 @@ public class Queue {
     }
   };
 
-  public JSONObject push(String key, RecipePlugin plugin) {
-    JSONObject json = new JSONObject();
+  public ObjectNode push(String key, RecipePlugin plugin) {
+    ObjectNode json = jsonFactory.objectNode();
     json.put("id", key);
 
     if (!(key == null || plugin == null || executed == null) && !(executed.containsKey(key))) {
