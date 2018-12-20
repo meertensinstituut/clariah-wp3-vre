@@ -1,11 +1,10 @@
 package nl.knaw.meertens.deployment.api;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.commons.configuration.ConfigurationException;
-import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -21,7 +20,7 @@ import static java.lang.String.format;
 @Path("/service")
 public class ServiceController extends AbstractController {
 
-  private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private static JsonNodeFactory factory = new JsonNodeFactory(false);
 
   @GET
   @Path("/{service}")
@@ -30,14 +29,14 @@ public class ServiceController extends AbstractController {
     DeploymentLib dplib = new DeploymentLib();
     try {
       Service service = dplib.getServiceByName(serviceName);
-      JSONObject json = new JSONObject();
+      ObjectNode json = factory.objectNode();
       json.put("serviceName", service.getName());
       json.put("serviceId", service.getServiceId());
       json.put("serviceSymantics", service.getServiceSemantics());
       json.put("serviceTechInfo", service.getServiceTechInfo());
       return Response
         .status(200)
-        .entity(json.toJSONString())
+        .entity(json.toString())
         .build();
     } catch (IOException ex) {
       String msg = format("Failed to get service by name [%s]", serviceName);
