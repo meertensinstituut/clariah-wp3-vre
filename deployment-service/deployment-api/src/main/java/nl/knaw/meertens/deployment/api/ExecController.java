@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.api;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
@@ -8,7 +9,6 @@ import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.commons.configuration.ConfigurationException;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +20,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -32,6 +33,7 @@ import static nl.knaw.meertens.deployment.lib.TmpUtil.readTree;
 public class ExecController extends AbstractController {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
 
   /**
    * @param workDir Project id also known as project name, key and working directory
@@ -101,14 +103,13 @@ public class ExecController extends AbstractController {
       }
 
       logger.info("Get recipe");
-      RecipePlugin plugin;
       String className = service.getRecipe();
 
       logger.info("Loading plugin");
       Class<?> loadedClass = Class.forName(className);
       Class<? extends RecipePlugin> pluginClass = loadedClass.asSubclass(RecipePlugin.class);
-      // TODO: replace with method that isn't deprecated:
-      plugin = pluginClass.newInstance();
+      RecipePlugin plugin;
+      plugin = pluginClass.getDeclaredConstructor().newInstance();
       plugin.init(workDir, service);
 
       logger.info("Check user config against service record");
@@ -120,9 +121,9 @@ public class ExecController extends AbstractController {
 
       if (!userConfigIsValid) {
         String msg = "user config is invalid";
-        JSONObject status = new JSONObject();
+        ObjectNode status = jsonFactory.objectNode();
         status.put("finished", false);
-        return handleException(msg, status);
+        return handleException("", new IllegalStateException());
       }
 
       Queue queue = new Queue();
@@ -133,11 +134,13 @@ public class ExecController extends AbstractController {
         .build();
 
     } catch (IOException |
+      NoSuchMethodException |
+      InvocationTargetException |
       InstantiationException |
-        ClassNotFoundException |
-        IllegalAccessException |
-        RecipePluginException |
-        ConfigurationException ex
+      ClassNotFoundException |
+      IllegalAccessException |
+      RecipePluginException |
+      ConfigurationException ex
     ) {
       return handleException(format("Could not deploy [%s][%s]", serviceName, workDir), ex);
     }

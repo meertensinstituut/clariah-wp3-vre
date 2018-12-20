@@ -1,6 +1,7 @@
 package nl.knaw.meertens.deployment.api;
 
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public abstract class AbstractController {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
 
   /**
    * Logs exception with error msg and creates json body with msg
@@ -32,19 +34,19 @@ public abstract class AbstractController {
     String msg
   ) {
     logger.error(msg);
-    return handleException(msg, new JSONObject());
+    return handleException(msg, jsonFactory.objectNode());
   }
 
   /**
    * Logs error msg and adds error msg to json body
    * @return Response with json
    */
-  Response handleException(String msg, JSONObject body) {
+  Response handleException(String msg, ObjectNode body) {
     body.put("msg", msg);
     logger.error(msg);
     return Response
       .status(500)
-      .entity(body.toJSONString())
+      .entity(body.toString())
       .type(APPLICATION_JSON)
       .build();
   }
