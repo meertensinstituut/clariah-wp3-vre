@@ -97,6 +97,7 @@ services:
       - maven-m2:/root/.m2/repository
     depends_on:
       - dreamfactory
+      - tika
     environment:
       USER_SERVICES_EMAIL: ${USER_SERVICES_EMAIL}
       USER_SERVICES_PASSWORD: ${USER_SERVICES_PASSWORD}
@@ -128,6 +129,9 @@ services:
     command: /start-web.sh
     ports:
       - 9998:80
+
+  tika:
+    image: logicalspark/docker-tikaserver:1.20
 
 volumes:
   data-volume:

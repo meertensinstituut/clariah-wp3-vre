@@ -11,21 +11,23 @@ import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
 import nl.mpi.tla.util.Saxon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.transform.stream.StreamSource;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.HttpURLConnection;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
+import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
+import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
@@ -34,6 +36,7 @@ public class DeploymentLib {
 
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
   private static ObjectMapper parser = new ObjectMapper();
+  private static Logger logger = LoggerFactory.getLogger(DeploymentLib.class);
 
   /**
    * @throws RecipePluginException when work dir does not exist
@@ -158,4 +161,32 @@ public class DeploymentLib {
       throw new RecipePluginException(String.format("could not read config file [%s]", path), e);
     }
   }
+
+  public static String buildInputPath(String projectName, String inputFile) {
+    return Paths.get(
+      ROOT_WORK_DIR,
+      projectName,
+      INPUT_DIR, inputFile
+    ).normalize().toString();
+  }
+
+  public static Path buildOutputFilePath(String workDir, String file) {
+    return Paths.get(
+      ROOT_WORK_DIR,
+      workDir,
+      OUTPUT_DIR,
+      file
+    ).normalize();
+  }
+
+  public static void createOutputFolder(Path outputfilePath) {
+    File outputFolder = outputfilePath.getParent().normalize().toFile();
+    if (!outputFolder.exists()) {
+      outputFolder.mkdirs();
+      logger.info(format("created folder [%s]", outputFolder.toString()));
+    }
+  }
+
+
+
 }

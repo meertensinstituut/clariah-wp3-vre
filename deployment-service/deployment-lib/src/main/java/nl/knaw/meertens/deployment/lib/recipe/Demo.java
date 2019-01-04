@@ -30,6 +30,9 @@ import java.util.regex.Pattern;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.buildInputPath;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.buildOutputFilePath;
+import static nl.knaw.meertens.deployment.lib.DeploymentLib.createOutputFolder;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
@@ -109,7 +112,7 @@ public class Demo implements RecipePlugin {
       throw new RecipePluginException(format("Request to [%s] failed", SERVICE_URL));
     }
 
-    Path outputFile = buildOutputFilePath(OUTPUT_FILENAME);
+    Path outputFile = buildOutputFilePath(workDir, OUTPUT_FILENAME);
     createOutputFolder(outputFile);
 
     try {
@@ -205,31 +208,6 @@ public class Demo implements RecipePlugin {
       return new String(Files.readAllBytes(Paths.get(inputPath)));
     } catch (IOException e) {
       throw new RecipePluginException(format("Could not read input file [%s]", inputPath));
-    }
-  }
-
-  private String buildInputPath(String projectName, String inputFile) {
-    return Paths.get(
-      ROOT_WORK_DIR,
-      projectName,
-      INPUT_DIR, inputFile
-    ).normalize().toString();
-  }
-
-  private Path buildOutputFilePath(String file) {
-    return Paths.get(
-      ROOT_WORK_DIR,
-      workDir,
-      OUTPUT_DIR,
-      file
-    ).normalize();
-  }
-
-  private void createOutputFolder(Path outputfilePath) {
-    File outputFolder = outputfilePath.getParent().normalize().toFile();
-    if (!outputFolder.exists()) {
-      outputFolder.mkdirs();
-      logger.info(format("created folder [%s]", outputFolder.toString()));
     }
   }
 
