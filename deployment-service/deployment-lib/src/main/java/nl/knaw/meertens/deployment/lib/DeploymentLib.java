@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
@@ -18,19 +21,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static java.util.Objects.isNull;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
-// TODO: split utility class DeploymentLib up in multiple Services
 public class DeploymentLib {
 
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
+  private static ObjectMapper parser = new ObjectMapper();
 
   /**
    * @throws RecipePluginException when work dir does not exist
@@ -43,41 +46,38 @@ public class DeploymentLib {
   }
 
   public Service getServiceByName(String serviceName) throws IOException {
-    // TODO: use Unirest
-    ObjectMapper parser = new ObjectMapper();
     String dbApiKey = System.getenv("APP_KEY_SERVICES");
+    String servicesDatabase = "http://dreamfactory:80/api/v2/services";
+    String urlString = servicesDatabase + "/_table/service/?filter=name%3D" + serviceName;
 
-    String urlString = "http://dreamfactory:80/api/v2/services/_table/service/?filter=name%3D" + serviceName;
-    URL url = new URL(urlString);
-
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-    connection.setDoOutput(false);
-    connection.setRequestMethod("GET");
-    connection.setRequestProperty("Content-Type", "application/json");
-    connection.setRequestProperty("accept", "application/json");
-    connection.setRequestProperty("X-DreamFactory-Api-Key", dbApiKey);
-    connection.disconnect();
-
-    String rawString = getResponseBody(connection);
-    JsonNode json = parser.readTree(rawString);
-
-    JsonNode resource = json.get("resource");
-    if (resource != null) {
-      if (resource.size() > 0) {
-        JsonNode record = resource.get(0);
-        String serviceRecipe = record.get("recipe").asText();
-        String serviceSemantics = record.get("semantics").asText();
-        String serviceId = record.get("id").asText();
-
-        return new Service(serviceId, serviceName, serviceRecipe, serviceSemantics, "");
-      }
+    HttpResponse<String> result;
+    try {
+      result = Unirest
+        .get(urlString)
+        .header("Content-Type", "application/json")
+        .header("accept", "application/json")
+        .header("X-DreamFactory-Api-Key", dbApiKey)
+        .asString();
+    } catch (UnirestException e) {
+      throw new RuntimeException(String.format("Could not get service by name [%s]", serviceName));
     }
 
-    throw new IllegalStateException("No such service");
+    JsonNode json = parser.readTree(result.getBody());
+    JsonNode resource = json.get("resource");
+
+    if (isNull(resource) || resource.size() == 0) {
+      throw new IllegalStateException("No such service");
+    }
+
+    JsonNode record = resource.get(0);
+    String serviceRecipe = record.get("recipe").asText();
+    String serviceSemantics = record.get("semantics").asText();
+    String serviceId = record.get("id").asText();
+    return new Service(serviceId, serviceName, serviceRecipe, serviceSemantics, "");
+
   }
 
   public static ObjectNode parseSemantics(String symantics) throws RecipePluginException {
-    // TODO: clean up code
     try {
       ObjectNode parametersJson = jsonFactory.objectNode();
 
@@ -158,34 +158,4 @@ public class DeploymentLib {
       throw new RecipePluginException(String.format("could not read config file [%s]", path), e);
     }
   }
-
-  // TODO: simplify using Unirest
-  public static String getResponseBody(HttpURLConnection conn) throws IOException {
-
-    // handle error response code it occurs
-    int responseCode = conn.getResponseCode();
-    InputStream inputStream;
-    if (200 <= responseCode && responseCode <= 299) {
-      inputStream = conn.getInputStream();
-    } else {
-      inputStream = conn.getErrorStream();
-    }
-
-    BufferedReader in = new BufferedReader(
-      new InputStreamReader(
-        inputStream));
-
-    StringBuilder response = new StringBuilder();
-    String currentLine;
-
-    while ((currentLine = in.readLine()) != null) {
-      response.append(currentLine);
-    }
-
-    in.close();
-
-    return response.toString();
-  }
-
-
 }

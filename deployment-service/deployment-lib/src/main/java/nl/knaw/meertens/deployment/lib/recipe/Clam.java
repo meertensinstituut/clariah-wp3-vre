@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
@@ -145,7 +148,6 @@ public class Clam implements RecipePlugin {
   }
 
   private void runProject() throws IOException, JDOMException {
-
     ObjectNode json = this.getAccessToken(projectName);
     String user = json.get("user").asText();
     String accessToken = json.get("accessToken").asText();
@@ -162,7 +164,6 @@ public class Clam implements RecipePlugin {
       postData.append('=');
       postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
     }
-    byte[] postDataBytes = postData.toString().getBytes(StandardCharsets.UTF_8);
 
     URL url = new URL(
       this.serviceUrl.getProtocol(),
@@ -171,18 +172,21 @@ public class Clam implements RecipePlugin {
       this.serviceUrl.getFile() + "/" + projectName + "/?user=" + user + "&accesstoken=" + accessToken,
       null
     );
-    HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-    httpCon.setDoOutput(true);
-    httpCon.setRequestMethod("POST");
-    httpCon.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-    httpCon.setRequestProperty("Accept", "application/json");
-    httpCon.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-    httpCon.getOutputStream().write(postDataBytes);
+    HttpResponse<String> response;
+    try {
+      response = Unirest
+        .post(url.toString())
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .header("Accept", "application/json")
+        .body(postData.toString())
+        .asString();
+    } catch (UnirestException e) {
+      throw new RuntimeException(String.format("Could not create clam project with url [%s]", url.toString()), e);
+    }
 
-    json.put("status", httpCon.getResponseCode());
-    json.put("message", httpCon.getResponseMessage());
+    json.put("status", response.getCode());
+    json.put("message", response.getBody());
 
-    httpCon.disconnect();
   }
 
   private void prepareProject() throws IOException, RecipePluginException {
@@ -246,35 +250,28 @@ public class Clam implements RecipePlugin {
       String user = json.get("user").asText();
       String accessToken = json.get("accessToken").asText();
 
-      URL url;
-      try {
-        url = new URL(
-          this.serviceUrl.getProtocol(),
-          this.serviceUrl.getHost(),
-          this.serviceUrl.getPort(),
-          this.serviceUrl.getFile() + "/" + projectName + "/status/?user=" + user + "&accesstoken=" + accessToken,
-          null
-        );
-      } catch (MalformedURLException e) {
-        throw new RecipePluginException("Could not create polling url", e);
-      }
-      HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-      httpCon.setDoOutput(true);
-      httpCon.setRequestMethod("GET");
+      URL clamProjectUrl;
+      clamProjectUrl = new URL(
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/" + projectName + "/status/?user=" + user + "&accesstoken=" + accessToken,
+        null
+      );
 
       ObjectMapper parser = new ObjectMapper();
-      json = (ObjectNode) parser.readTree(DeploymentLib.getResponseBody(httpCon));
+      HttpResponse<String> response = Unirest
+        .get(clamProjectUrl.toString())
+        .asString();
+      json = (ObjectNode) parser.readTree(response.getBody());
 
-      json.put("status", httpCon.getResponseCode());
-      json.put("message", httpCon.getResponseMessage());
+      json.put("status", response.getCode());
+      json.put("message", response.getBody());
       json.put("finished", this.status.getStatus());
 
-      httpCon.disconnect();
-
       return json;
-    } catch (IOException | JDOMException e) {
-      throw new RecipePluginException("Could not create polling url", e);
-
+    } catch (IOException | JDOMException | UnirestException e) {
+      throw new RecipePluginException("Could not request status of project", e);
     }
   }
 
