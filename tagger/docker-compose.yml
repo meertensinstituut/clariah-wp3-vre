@@ -17,8 +17,6 @@ services:
     - kafka
     extra_hosts:
     - moby:127.0.0.1
-    links:
-    - kafka:kafka
     environment:
       KAFKA_PORT: ${KAFKA_PORT}
       RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}

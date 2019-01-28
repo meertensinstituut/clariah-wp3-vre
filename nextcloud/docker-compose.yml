@@ -12,8 +12,6 @@ services:
     - moby:127.0.0.1
     depends_on:
       - kafka
-    links:
-      - kafka
     environment:
       - NEXTCLOUD_APP_NAME=${NEXTCLOUD_APP_NAME}
       - KAFKA_PORT=${KAFKA_PORT}

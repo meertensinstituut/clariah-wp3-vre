@@ -12,9 +12,6 @@ services:
     depends_on:
       - recognizer
       - nextcloud
-    links:
-      - recognizer
-      - nextcloud
       - postgres
       - kafka
       - switchboard

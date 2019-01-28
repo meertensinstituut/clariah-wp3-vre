@@ -1,5 +1,7 @@
 version: '3.4'
 
+# Overwrites settings of compose files of components to fix paths
+
 services:
   integration:
     build: ./integration
@@ -28,7 +30,7 @@ services:
     command: ./docker/docker-run-switchboard.sh
     volumes:
       - ./switchboard:/usr/local/switchboard
-    links:
+    depends_on:
       - dreamfactory
       - deployment
     environment:
@@ -49,8 +51,8 @@ services:
     volumes:
       - ./recognizer:/usr/local/recognizer
       - data-volume:/tmp/recognizer
-    links:
-      - dreamfactory:dreamfactory
+    depends_on:
+      - dreamfactory
     environment:
       USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
       USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
@@ -80,8 +82,6 @@ services:
       ZK_HOST: zookeeper:2181
     depends_on:
       - zookeeper
-    links:
-      - zookeeper
 
   zookeeper:
     image: zookeeper:3.4
@@ -109,8 +109,8 @@ services:
     build: ./indexer/indexer
     volumes:
       - ./indexer:/usr/local/indexer
-    links:
-      - dreamfactory:dreamfactory
+    depends_on:
+      - dreamfactory
     environment:
       USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
       USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}

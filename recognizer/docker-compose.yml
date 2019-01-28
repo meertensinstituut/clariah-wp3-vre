@@ -18,9 +18,6 @@ services:
     - kafka
     extra_hosts:
     - moby:127.0.0.1
-    links:
-    - fits:fits
-    - kafka:kafka
     environment:
       KAFKA_BROKER: localhost
       FITS_FILES_ROOT: ${FITS_FILES_ROOT}

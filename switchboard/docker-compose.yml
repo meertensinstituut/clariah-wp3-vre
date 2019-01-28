@@ -13,8 +13,6 @@ services:
     - 9010:8080
     depends_on:
     - kafka
-    links:
-    - kafka
     volumes:
     - ./:/usr/local/switchboard
     # share maven repository of host:
