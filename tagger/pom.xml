@@ -23,7 +23,7 @@
     <assertj-core.version>3.9.0</assertj-core.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-lang.version>3.7</commons-lang.version>
-    <jackson-databind.version>2.9.7</jackson-databind.version>
+    <jackson-databind.version>2.9.8</jackson-databind.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <jaxb-api.version>2.4.0-b180725.0427</jaxb-api.version>
     <jaxrs.version>2.1</jaxrs.version>
