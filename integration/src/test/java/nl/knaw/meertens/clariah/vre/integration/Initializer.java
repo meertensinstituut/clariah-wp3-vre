@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 /**
@@ -35,7 +35,7 @@ public class Initializer extends AbstractIntegrationTest {
     public void init() throws Exception {
         logger.info("Initialize VRE Integration");
         String testFilename = uploadTestFile();
-        pollAndAssert(() -> fileCanBeDownloaded(testFilename, getTestFileContent()));
+        Poller.awaitAndGet(() -> fileCanBeDownloaded(testFilename, getTestFileContent()));
 
         KafkaConsumerService initConsumer = new KafkaConsumerService(
                 Config.KAFKA_ENDPOINT, Config.RECOGNIZER_TOPIC_NAME, getRandomGroupName()

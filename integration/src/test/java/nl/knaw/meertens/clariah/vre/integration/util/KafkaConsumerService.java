@@ -9,12 +9,11 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 
 public class KafkaConsumerService {
 
@@ -43,7 +42,7 @@ public class KafkaConsumerService {
     public void consumeAll(Consumer<ArrayList<ConsumerRecord<String, String>>> function) {
         logger.info("Start consuming all msgs from topic " + topic);
         ArrayList<ConsumerRecord<String, String>> list = newArrayList();
-        pollAndAssert(() -> findNewMessagesAndCheckIfAny(function, list));
+        awaitAndGet(() -> findNewMessagesAndCheckIfAny(function, list));
     }
 
     private void findNewMessagesAndCheckIfAny(

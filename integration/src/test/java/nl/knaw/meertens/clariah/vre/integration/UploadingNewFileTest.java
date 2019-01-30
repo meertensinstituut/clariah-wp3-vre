@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
+import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeD
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomFilenameWithTime;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 
@@ -94,7 +95,7 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
         KafkaConsumerService recognizerKafkaConsumer = getRecognizerTopic();
 
         final String expectedFilename = uploadTestFile();
-        pollAndAssert(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()));
+        Poller.awaitAndGet(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()));
         logger.info("Uploaded file");
 
         recognizerKafkaConsumer.consumeAll(consumerRecords -> {

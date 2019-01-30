@@ -16,11 +16,12 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFi
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.waitForOcc;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.awaitOcc;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 public class ClamTest extends AbstractIntegrationTest {
   private static Logger logger = LoggerFactory.getLogger(ClamTest.class);
@@ -31,22 +32,22 @@ public class ClamTest extends AbstractIntegrationTest {
     String testFileContent = getTestFileContent(deploymentTestFile);
     String testFilename = uploadTestFile(testFileContent);
 
-    pollAndAssert(() -> fileCanBeDownloaded(testFilename, testFileContent));
-    pollAndAssert(() -> fileExistsInRegistry(testFilename));
-    long inputFileId = pollAndAssert(() -> getObjectIdFromRegistry(testFilename));
+    await().until(() -> fileCanBeDownloaded(testFilename, testFileContent));
+    await().until(() -> fileExistsInRegistry(testFilename));
+    long inputFileId = awaitAndGet(() -> getObjectIdFromRegistry(testFilename));
     logger.info(String.format("input file has object id [%d]", inputFileId));
 
     String workDir = canCreateAndRunUctoProject(inputFileId);
     logger.info(String.format("workDir is [%s]", workDir));
-    String resultFile = pollAndAssert(() -> deploymentIsFinished(workDir, testFilename));
+    String resultFile = awaitAndGet(() -> deploymentIsFinished(workDir, testFilename));
 
-    waitForOcc();
+    awaitOcc();
     String resultFileContent = "<w xml:id=\"untitled.p.1.s.1.w.1\" class=\"WORD\">\n" +
         "          <t>En</t>\n" +
         "        </w>";
 
     logger.info(String.format("result file [%s] has content [%s]", resultFile, resultFileContent));
-    pollAndAssert(() -> resultFileCanBeDownloaded(resultFile, resultFileContent));
+    await().until(() -> resultFileCanBeDownloaded(resultFile, resultFileContent));
   }
 
   private String canCreateAndRunUctoProject(long inputFileId) throws UnirestException {
@@ -67,7 +68,7 @@ public class ClamTest extends AbstractIntegrationTest {
 
   private static String deploymentIsFinished(String workDir, String testFileName) {
     logger.info(String.format("check deployment [%s] is finished", workDir));
-    HttpResponse<String> statusResponse = pollAndAssert(() -> deploymentHasStatus(workDir, "FINISHED"));
+    HttpResponse<String> statusResponse = awaitAndGet(() -> deploymentHasStatus(workDir, "FINISHED"));
     String outputFilePath = getOutputFilePath(statusResponse, testFileName);
     logger.info(String.format("deployment has result file [%s]", outputFilePath));
     return outputFilePath;
@@ -84,11 +85,11 @@ public class ClamTest extends AbstractIntegrationTest {
     return outputPath;
   }
 
-  private static void resultFileCanBeDownloaded(String inputFile, String someContent) {
+  private static boolean resultFileCanBeDownloaded(String inputFile, String someContent) {
     logger.info(String.format("check file [%s] can be downloaded", inputFile));
     HttpResponse<String> downloadResult = downloadFile(inputFile);
-    assertThat(downloadResult.getBody()).contains(someContent);
-    assertThat(downloadResult.getStatus()).isEqualTo(200);
+    return downloadResult.getBody().contains(someContent)
+      && downloadResult.getStatus() == 200;
   }
 
 }

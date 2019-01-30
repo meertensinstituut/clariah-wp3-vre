@@ -27,5 +27,14 @@ public class ObjectsRepositoryService {
             function.accept(resultSet);
         }
     }
+    public boolean processQueryWithFunction(String query, ExceptionalFunction<ResultSet, Boolean> function) throws SQLException {
+        String url = String.format("jdbc:postgresql://postgres:5432/%s?user=%s&password=%s", database, user, password);
+        try (Connection connection = DriverManager.getConnection(url);
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)
+        ) {
+            return function.apply(resultSet);
+        }
+    }
 
 }

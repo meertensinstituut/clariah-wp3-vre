@@ -1,9 +1,8 @@
 package nl.knaw.meertens.clariah.vre.integration;
 
 import com.mashape.unirest.http.Unirest;
+import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +12,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDep
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 
 public class DeployServiceByFileTest extends AbstractIntegrationTest {
 
@@ -26,9 +25,9 @@ public class DeployServiceByFileTest extends AbstractIntegrationTest {
                 "In die kaas moest ik stikken, terwijl ik hier, " +
                 "tussen twee briefjes in, even kan luisteren naar innerlijke stemmen.";
         String inputFile = uploadTestFile(someContent);
-        pollAndAssert(() -> fileCanBeDownloaded(inputFile, someContent));
+        Poller.awaitAndGet(() -> fileCanBeDownloaded(inputFile, someContent));
 
-        long inputFileId = pollAndAssert(() -> getObjectIdFromRegistry(inputFile));
+        long inputFileId = Poller.awaitAndGet(() -> getObjectIdFromRegistry(inputFile));
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
         String url = String.format("%s/object/%d/services", Config.SWITCHBOARD_ENDPOINT, inputFileId);
@@ -37,7 +36,7 @@ public class DeployServiceByFileTest extends AbstractIntegrationTest {
         assertThatJson(json).node("[0].name").isEqualTo("TEST");
 
         String workDir = startDeploymentWithInputFileId(inputFileId);
-        pollAndAssert(() -> deploymentHasStatus(workDir, "RUNNING"));
+        Poller.awaitAndGet(() -> deploymentHasStatus(workDir, "RUNNING"));
 
     }
 }

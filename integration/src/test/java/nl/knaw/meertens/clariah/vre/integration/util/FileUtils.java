@@ -17,6 +17,7 @@ import java.util.Calendar;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.integration.Config.NEXTCLOUD_ADMIN_NAME;
 import static nl.knaw.meertens.clariah.vre.integration.Config.NEXTCLOUD_ADMIN_PASSWORD;
@@ -27,11 +28,11 @@ public class FileUtils {
 
     private static Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
-    public static void fileCanBeDownloaded(String inputFile, String someContent) {
-        logger.info(String.format("check file [%s] can be downloaded", inputFile));
+    public static boolean fileCanBeDownloaded(String inputFile, String someContent) {
+        logger.info(format("check file [%s] can be downloaded", inputFile));
         HttpResponse<String> downloadResult = downloadFile(inputFile);
-        assertThat(downloadResult.getBody()).isEqualTo(someContent);
-        assertThat(downloadResult.getStatus()).isEqualTo(200);
+        return downloadResult.getBody().equals(someContent)
+          && downloadResult.getStatus() == 200;
     }
 
     public static HttpResponse<String> downloadFile(String inputFile) {
@@ -47,7 +48,7 @@ public class FileUtils {
 
     public static void fileIsLocked(String inputFile) {
         try {
-            logger.info(String.format("check file [%s] is locked", inputFile));
+            logger.info(format("check file [%s] is locked", inputFile));
             HttpResponse<String> putAfterDeployment;
             putAfterDeployment = putInputFile(inputFile);
 
@@ -124,7 +125,7 @@ public class FileUtils {
         try {
             return IOUtils.toString(AbstractIntegrationTest.class.getResource(defaultTestFileName).toURI(), UTF_8);
         } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(format("Could not get content of [%s]", defaultTestFileName), e);
         }
     }
 
@@ -138,7 +139,7 @@ public class FileUtils {
      * Should happen every 5-6 seconds.
      * (see nextcloud/docker-scan-files.sh)
      */
-    public static void waitForOcc() {
+    public static void awaitOcc() {
         try {
             TimeUnit.SECONDS.sleep(7);
         } catch (InterruptedException e) {

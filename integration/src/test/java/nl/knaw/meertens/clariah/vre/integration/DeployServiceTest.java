@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
+import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -19,10 +20,10 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileIsLock
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newObjectIsAdded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.waitForOcc;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.awaitOcc;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeployServiceTest extends AbstractIntegrationTest {
@@ -48,36 +49,36 @@ public class DeployServiceTest extends AbstractIntegrationTest {
         String testFileContent = getTestFileContent(deploymentTestFile);
         String testFilename = uploadTestFile(testFileContent);
 
-        pollAndAssert(() -> fileCanBeDownloaded(testFilename, testFileContent));
-        pollAndAssert(() -> fileExistsInRegistry(testFilename));
-        long inputFileId = pollAndAssert(() -> getObjectIdFromRegistry(testFilename));
+        Poller.awaitAndGet(() -> fileCanBeDownloaded(testFilename, testFileContent));
+        Poller.awaitAndGet(() -> fileExistsInRegistry(testFilename));
+        long inputFileId = Poller.awaitAndGet(() -> getObjectIdFromRegistry(testFilename));
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
         String workDir = startDeploymentWithInputFileId(inputFileId);
         logger.info(String.format("deployment has workdir [%s]", workDir));
 
-        pollAndAssert(() -> deploymentHasStatus(workDir, "RUNNING"));
+        Poller.awaitAndGet(() -> deploymentHasStatus(workDir, "RUNNING"));
 
-        waitForOcc();
+        awaitOcc();
 
-        pollAndAssert(() -> fileCanBeDownloaded(testFilename, testFileContent));
-        pollAndAssert(() -> fileIsLocked(testFilename));
+        Poller.awaitAndGet(() -> fileCanBeDownloaded(testFilename, testFileContent));
+        awaitAndGet(() -> fileIsLocked(testFilename));
 
         String newInputFile = uploadTestFile(testFileContent);
 
-        pollAndAssert(() -> newObjectIsAdded(newInputFile));
+        awaitAndGet(() -> newObjectIsAdded(newInputFile));
 
-        String resultFile = pollAndAssert(() -> deploymentIsFinished(workDir));
+        String resultFile = Poller.awaitAndGet(() -> deploymentIsFinished(workDir));
 
-        pollAndAssert(() -> fileCanBeDownloaded(resultFile, getTestFileContent("test-result.txt")));
+        Poller.awaitAndGet(() -> fileCanBeDownloaded(resultFile, getTestFileContent("test-result.txt")));
 
-        pollAndAssert(() -> filesAreUnlocked(testFilename, getTestFileContent(deploymentTestFile)));
+        awaitAndGet(() -> filesAreUnlocked(testFilename, getTestFileContent(deploymentTestFile)));
 
         checkKafkaMsgsAreCreatedForOutputFiles(resultFile);
 
         String secondNewInputFile = uploadTestFile(testFileContent);
 
-        pollAndAssert(() -> newObjectIsAdded(secondNewInputFile));
+        awaitAndGet(() -> newObjectIsAdded(secondNewInputFile));
 
     }
 

@@ -21,7 +21,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.deleteInpu
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.putInputFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeployUtils {
@@ -78,7 +78,7 @@ public class DeployUtils {
 
     public static String deploymentIsFinished(String workDir) {
         logger.info(String.format("check deployment [%s] is finished", workDir));
-        HttpResponse<String> statusResponse = pollAndAssert(() -> deploymentHasStatus(workDir, "FINISHED"));
+        HttpResponse<String> statusResponse = Poller.awaitAndGet(() -> deploymentHasStatus(workDir, "FINISHED"));
         String outputFilePath = getOutputFilePath(statusResponse);
         logger.info(String.format("deployment has result file [%s]", outputFilePath));
         return outputFilePath;

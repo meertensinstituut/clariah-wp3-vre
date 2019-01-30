@@ -13,15 +13,15 @@ public class Poller {
 
     private static Logger logger = LoggerFactory.getLogger(Poller.class);
 
-    public static void pollAndAssert(Procedure check) {
-        pollAndAssert(() -> {check.execute(); return null;});
+    public static void awaitAndGet(Procedure check) {
+        awaitAndGet(() -> {check.execute(); return null;});
     }
 
-    public static <T> T pollAndAssert(Supplier<T> check) {
-        return pollAndAssertUntil(check, MAX_POLLING_PERIOD);
+    public static <T> T awaitAndGet(Supplier<T> check) {
+        return awaitAndGetUntil(check, MAX_POLLING_PERIOD);
     }
 
-    private static <T> T pollAndAssertUntil(Supplier<T> check, int maxPolled) {
+    private static <T> T awaitAndGetUntil(Supplier<T> check, int maxPolled) {
         T result = null;
         int polled = 0;
         AssertionError checkError;

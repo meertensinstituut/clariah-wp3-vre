@@ -4,6 +4,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
+import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.apache.http.HttpHeaders;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -28,7 +29,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFil
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.apache.http.auth.AuthScope.ANY_HOST;
 import static org.apache.http.auth.AuthScope.ANY_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,23 +47,23 @@ public class CrudObjectTest extends AbstractIntegrationTest {
     @Test
     public void testRecognizer_creates_updates_deletes_recordInObjectsRegistry() throws Exception {
         final String expectedFilename = uploadTestFile();
-        pollAndAssert(() -> fileExistsInRegistry(expectedFilename));
-        pollAndAssert(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()));
-        id = pollAndAssert(() -> getObjectIdFromRegistry(expectedFilename));
+        Poller.awaitAndGet(() -> fileExistsInRegistry(expectedFilename));
+        Poller.awaitAndGet(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()));
+        id = Poller.awaitAndGet(() -> getObjectIdFromRegistry(expectedFilename));
 
         String newHtmlFileName = updateTestFilePath(expectedFilename);
 
-        pollAndAssert(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent()));
-        pollAndAssert(() -> fileNameChangedButTypeDidNot(newHtmlFileName));
+        Poller.awaitAndGet(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent()));
+        awaitAndGet(() -> fileNameChangedButTypeDidNot(newHtmlFileName));
 
         updateContentToHtml(newHtmlFileName);
 
-        pollAndAssert(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent(html)));
-        pollAndAssert(() -> fileTypeIsHtml(newHtmlFileName));
+        Poller.awaitAndGet(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent(html)));
+        awaitAndGet(() -> fileTypeIsHtml(newHtmlFileName));
 
         deleteFile(newHtmlFileName);
 
-        pollAndAssert(this::fileIsSoftDeletedInRegistry);
+        awaitAndGet(this::fileIsSoftDeletedInRegistry);
     }
 
     private String updateTestFilePath(String oldFilename) throws IOException {

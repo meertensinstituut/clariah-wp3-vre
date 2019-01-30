@@ -38,17 +38,19 @@ public class ObjectUtils {
         }
     }
 
-    public static void fileExistsInRegistry(String expectedFilename) {
+    public static boolean fileExistsInRegistry(String expectedFilename) {
         String query = "select * from object WHERE filepath LIKE '%" + expectedFilename + "%' LIMIT 1;";
         try {
-            objectsRepositoryService.processQuery(query, (ResultSet rs) -> {
+            return objectsRepositoryService.processQueryWithFunction(query, (ResultSet rs) -> {
+                boolean fileExists = false;
                 while (rs.next()) {
                     int id = rs.getInt("id");
-                    assertThat(id).isNotZero();
-                    assertThat(rs.getString("filepath")).contains(expectedFilename);
-                    assertThat(rs.getString("format")).isEqualTo("Plain text");
-                    assertThat(rs.getString("mimetype")).isEqualTo("text/plain");
+                    fileExists = id != 0
+                      && rs.getString("filepath").contains(expectedFilename)
+                      &&rs.getString("format").equals("Plain text")
+                      &&rs.getString("mimetype").equals("text/plain");
                 }
+                return fileExists;
             });
         } catch (SQLException e) {
             throw new RuntimeException("Could not check file in registry", e);

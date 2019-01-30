@@ -1,9 +1,9 @@
 package nl.knaw.meertens.clariah.vre.integration;
 
 import com.jayway.jsonpath.JsonPath;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
+import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.apache.http.HttpHeaders;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -33,7 +33,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomF
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.pollAndAssert;
+import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.apache.http.auth.AuthScope.ANY_HOST;
 import static org.apache.http.auth.AuthScope.ANY_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,7 +61,7 @@ public class TaggerTest extends AbstractIntegrationTest {
         String oldDir = "test-dir-" + RandomStringUtils.randomAlphabetic(8).toLowerCase();
         createDir(oldDir);
         final String expectedFilename = uploadTestFile(oldDir + "/" + getRandomFilenameWithTime(), getTestFileContent());
-        id = pollAndAssert(() -> getObjectIdFromRegistry(expectedFilename));
+        id = Poller.awaitAndGet(() -> getObjectIdFromRegistry(expectedFilename));
 
         taggerTopic.consumeAll(records -> {
             ArrayList<String> expectedTypes = newArrayList(
