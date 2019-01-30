@@ -25,10 +25,10 @@ import static org.awaitility.Awaitility.await;
 
 public class ClamTest extends AbstractIntegrationTest {
   private static Logger logger = LoggerFactory.getLogger(ClamTest.class);
-  private String deploymentTestFile = "deployment-test.txt";
 
   @Test
   public void canRunUctoProject() throws UnirestException {
+    String deploymentTestFile = "deployment-test.txt";
     String testFileContent = getTestFileContent(deploymentTestFile);
     String testFilename = uploadTestFile(testFileContent);
 
