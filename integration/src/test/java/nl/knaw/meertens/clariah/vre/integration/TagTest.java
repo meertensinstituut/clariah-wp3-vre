@@ -34,7 +34,7 @@ public class TagTest extends AbstractIntegrationTest {
 
         // Create object:
         final String expectedFilename = uploadTestFile();
-        Long objectId = Poller.awaitAndGet(() -> getObjectIdFromRegistry(expectedFilename));
+        Long objectId = awaitAndGet(() -> getObjectIdFromRegistry(expectedFilename));
 
         // Tag object:
         HttpResponse<String> responseTagging = Unirest
