@@ -35,7 +35,7 @@ public class Initializer extends AbstractIntegrationTest {
     public void init() throws Exception {
         logger.info("Initialize VRE Integration");
         String testFilename = uploadTestFile();
-        Poller.awaitAndGet(() -> fileCanBeDownloaded(testFilename, getTestFileContent()));
+        awaitAndGet(() -> fileCanBeDownloaded(testFilename, getTestFileContent()));
 
         KafkaConsumerService initConsumer = new KafkaConsumerService(
                 Config.KAFKA_ENDPOINT, Config.RECOGNIZER_TOPIC_NAME, getRandomGroupName()
@@ -48,12 +48,12 @@ public class Initializer extends AbstractIntegrationTest {
         TimeUnit.SECONDS.sleep(15);
 
         logger.info("Check if services have started yet (max " + WAITING_PERIOD + "s)");
-        waitUntilSwitchboardIsUp();
+        awaitSwitchboard();
 
         logger.info("Finished initialisation of VRE Integration");
     }
 
-    private void waitUntilSwitchboardIsUp() throws InterruptedException {
+    private void awaitSwitchboard() throws InterruptedException {
         GetRequest getHealthRequest = Unirest.get(Config.SWITCHBOARD_ENDPOINT + "/health");
         HttpResponse<String> response;
         int status = 0;

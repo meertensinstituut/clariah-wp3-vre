@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentWithStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.filesAreUnlocked;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
@@ -45,7 +46,7 @@ public class ViewerTest extends AbstractIntegrationTest {
 
         Poller.awaitAndGet(() -> deploymentHasStatus(workDir, "RUNNING"));
 
-        HttpResponse<String> result = Poller.awaitAndGet(() -> deploymentHasStatus(workDir, "FINISHED"));
+        HttpResponse<String> result = Poller.awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
         String body = result.getBody();
         String view = JsonPath.parse(body).read("$.viewerFileContent");
         assertThat(view).isEqualTo("<pre>" + someContent + "</pre>");

@@ -14,8 +14,10 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.deleteInputFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
@@ -32,7 +34,7 @@ public class DeployUtils {
             Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build()
     );
 
-    public static HttpResponse<String> deploymentHasStatus(
+    public static HttpResponse<String> deploymentWithStatus(
             String workDir,
             String status
     ) {
@@ -65,6 +67,37 @@ public class DeployUtils {
         return deploymentStatusResponse;
     }
 
+    public static boolean deploymentHasStatus(
+            String workDir,
+            String status
+    ) {
+        logger.info(String.format("Check status is [%s] of [%s]", status, workDir));
+        boolean httpStatusSuccess = false;
+        boolean deploymentStatusFound = false;
+        HttpResponse<String> deploymentStatusResponse = null;
+        deploymentStatusResponse = getDeploymentStatus(workDir);
+        String body = deploymentStatusResponse.getBody();
+        String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
+        int responseStatus = deploymentStatusResponse.getStatus();
+        logger.info(String.format("Http status was [%s] and response body was [%s]",
+                responseStatus, body
+        ));
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("polling interrupted", e);
+        }
+
+        Integer[] success = {200, 201, 202};
+        if (Arrays.asList(success).contains(responseStatus)) {
+            httpStatusSuccess = true;
+        }
+        if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {
+            deploymentStatusFound = true;
+        }
+        return httpStatusSuccess && deploymentStatusFound;
+    }
+
     public static String startDeploymentWithInputFileId(Long expectedFilename) throws UnirestException {
         HttpResponse<String> result = Unirest
                 .post(Config.SWITCHBOARD_ENDPOINT + "/exec/TEST")
@@ -78,7 +111,7 @@ public class DeployUtils {
 
     public static String deploymentIsFinished(String workDir) {
         logger.info(String.format("check deployment [%s] is finished", workDir));
-        HttpResponse<String> statusResponse = Poller.awaitAndGet(() -> deploymentHasStatus(workDir, "FINISHED"));
+        HttpResponse<String> statusResponse = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
         String outputFilePath = getOutputFilePath(statusResponse);
         logger.info(String.format("deployment has result file [%s]", outputFilePath));
         return outputFilePath;
@@ -95,18 +128,21 @@ public class DeployUtils {
         return outputPath;
     }
 
-    public static void filesAreUnlocked(String inputFile, String testFileContent) {
+    public static boolean filesAreUnlocked(String inputFile, String testFileContent) {
         try {
             logger.info(String.format("check file [%s] is unlocked", inputFile));
             HttpResponse<String> downloadResult = downloadFile(inputFile);
-            assertThat(downloadResult.getBody()).isEqualTo(testFileContent);
-            assertThat(downloadResult.getStatus()).isIn(200, 202);
+            List expected = newArrayList(200, 202);
+            boolean get = downloadResult.getBody().equals(testFileContent)
+              && expected.contains(downloadResult.getStatus());
 
             HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-            assertThat(putAfterDeployment.getStatus()).isEqualTo(204);
+            boolean put = putAfterDeployment.getStatus() == 204;
 
             HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-            assertThat(deleteInputFile.getStatus()).isEqualTo(204);
+            boolean delete = deleteInputFile.getStatus() == 204;
+
+            return get && put && delete;
         } catch (UnirestException e) {
             throw new RuntimeException("Could not check files are unlocked", e);
         }

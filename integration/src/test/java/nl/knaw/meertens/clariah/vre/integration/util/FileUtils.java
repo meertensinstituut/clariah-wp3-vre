@@ -14,9 +14,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static nl.knaw.meertens.clariah.vre.integration.Config.NEXTCLOUD_ADMIN_NAME;
@@ -46,18 +48,18 @@ public class FileUtils {
         }
     }
 
-    public static void fileIsLocked(String inputFile) {
+    public static boolean fileIsLocked(String inputFile) {
         try {
             logger.info(format("check file [%s] is locked", inputFile));
             HttpResponse<String> putAfterDeployment;
             putAfterDeployment = putInputFile(inputFile);
 
-            // http 423 is 'locked'
-            assertThat(putAfterDeployment.getStatus()).isIn(403, 423, 500);
+            List lockedStatus = newArrayList(403, 423, 500);
+            List deleteStatus = newArrayList(403, 423);
 
-            // http 423 is 'locked'
             HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-            assertThat(deleteInputFile.getStatus()).isIn(403, 423);
+            return lockedStatus.contains(putAfterDeployment.getStatus())
+              && deleteStatus.contains(deleteInputFile.getStatus());
         } catch (UnirestException e) {
             throw new RuntimeException(e);
         }
@@ -84,11 +86,9 @@ public class FileUtils {
                 .asString();
     }
 
-    public static void newObjectIsAdded(String newInputFile) {
+    public static boolean newObjectIsAdded(String newInputFile) {
         logger.info("check that a new file is added");
-        long newInputFileId = 0;
-        newInputFileId = ObjectUtils.getObjectIdFromRegistry(newInputFile);
-        assertThat(newInputFileId).isNotEqualTo(0L);
+        return 0L != ObjectUtils.getObjectIdFromRegistry(newInputFile);
     }
 
     /**

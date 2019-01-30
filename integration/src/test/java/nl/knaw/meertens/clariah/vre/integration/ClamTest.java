@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentWithStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
@@ -68,7 +68,7 @@ public class ClamTest extends AbstractIntegrationTest {
 
   private static String deploymentIsFinished(String workDir, String testFileName) {
     logger.info(String.format("check deployment [%s] is finished", workDir));
-    HttpResponse<String> statusResponse = awaitAndGet(() -> deploymentHasStatus(workDir, "FINISHED"));
+    HttpResponse<String> statusResponse = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
     String outputFilePath = getOutputFilePath(statusResponse, testFileName);
     logger.info(String.format("deployment has result file [%s]", outputFilePath));
     return outputFilePath;

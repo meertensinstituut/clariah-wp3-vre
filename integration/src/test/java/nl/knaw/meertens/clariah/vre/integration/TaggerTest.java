@@ -61,7 +61,7 @@ public class TaggerTest extends AbstractIntegrationTest {
         String oldDir = "test-dir-" + RandomStringUtils.randomAlphabetic(8).toLowerCase();
         createDir(oldDir);
         final String expectedFilename = uploadTestFile(oldDir + "/" + getRandomFilenameWithTime(), getTestFileContent());
-        id = Poller.awaitAndGet(() -> getObjectIdFromRegistry(expectedFilename));
+        id = awaitAndGet(() -> getObjectIdFromRegistry(expectedFilename));
 
         taggerTopic.consumeAll(records -> {
             ArrayList<String> expectedTypes = newArrayList(
@@ -76,7 +76,6 @@ public class TaggerTest extends AbstractIntegrationTest {
                     "path",
                     "dir"
             );
-            // TODO: should be exact
             assertThat(records.size()).isGreaterThanOrEqualTo(expectedTypes.size());
             ArrayList<String> allTypes = new ArrayList<>();
             records.forEach(record -> {
@@ -86,10 +85,7 @@ public class TaggerTest extends AbstractIntegrationTest {
                         .isPresent()
                         .isEqualTo("system");
                 assertThatJson(record.value()).node("object")
-                        .isPresent()
-                        // TODO:
-                        // .isEqualTo(id)
-                        ;
+                        .isPresent();
                 assertThatJson(record.value()).node("tag")
                         .isPresent();
                 Integer tagId = JsonPath.parse(record.value()).read("$.tag");
@@ -114,7 +110,6 @@ public class TaggerTest extends AbstractIntegrationTest {
             );
             logger.info("tagger tags: " + Arrays.toString(expectedTypes.toArray()));
 
-            // TODO: should be exact
             assertThat(records.size()).isGreaterThanOrEqualTo(6);
             ArrayList<String> allTypes = new ArrayList<>();
             records.forEach(record -> {
@@ -122,15 +117,13 @@ public class TaggerTest extends AbstractIntegrationTest {
                         .isPresent()
                         .isEqualTo("system");
                 assertThatJson(record.value()).node("object")
-                        .isPresent()
-                        // TODO:
-                        // .isEqualTo(id)
-                        ;
+                        .isPresent();
                 assertThatJson(record.value()).node("tag")
                         .isPresent();
                 Integer tagId = JsonPath.parse(record.value()).read("$.tag");
                 allTypes.add(getTagType(tagId));
             });
+
             assertThat(allTypes).containsAll(expectedTypes);
         });
     }
@@ -179,7 +172,7 @@ public class TaggerTest extends AbstractIntegrationTest {
         taggerTopic.findNewMessages(new ArrayList<>());
     }
 
-    private String moveTestFileToNewDir(String oldFilename, String newFileName) throws IOException {
+    private void moveTestFileToNewDir(String oldFilename, String newFileName) throws IOException {
         logger.info(String.format("Rename file [%s] to [%s]", oldFilename, newFileName));
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
@@ -198,7 +191,6 @@ public class TaggerTest extends AbstractIntegrationTest {
         CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
         int status = httpResponse.getStatusLine().getStatusCode();
         assertThat(status).isEqualTo(201);
-        return newFileName;
     }
 
     private KafkaConsumerService getTaggerTopic() {
