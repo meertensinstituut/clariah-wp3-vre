@@ -22,7 +22,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newObjectI
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.awaitOcc;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getNonNullObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,7 +51,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
         Poller.awaitAndGet(() -> fileCanBeDownloaded(testFilename, testFileContent));
         Poller.awaitAndGet(() -> fileExistsInRegistry(testFilename));
-        long inputFileId = Poller.awaitAndGet(() -> getObjectIdFromRegistry(testFilename));
+        long inputFileId = Poller.awaitAndGet(() -> getNonNullObjectIdFromRegistry(testFilename));
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
         String workDir = startDeploymentWithInputFileId(inputFileId);

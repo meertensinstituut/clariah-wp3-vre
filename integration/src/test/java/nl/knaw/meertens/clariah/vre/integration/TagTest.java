@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.apache.maven.surefire.shade.org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -12,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getNonNullObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 
 public class TagTest extends AbstractIntegrationTest {
@@ -34,7 +33,7 @@ public class TagTest extends AbstractIntegrationTest {
 
         // Create object:
         final String expectedFilename = uploadTestFile();
-        Long objectId = awaitAndGet(() -> getObjectIdFromRegistry(expectedFilename));
+        Long objectId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(expectedFilename));
 
         // Tag object:
         HttpResponse<String> responseTagging = Unirest

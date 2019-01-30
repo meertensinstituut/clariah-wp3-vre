@@ -4,24 +4,22 @@ import com.jayway.jsonpath.JsonPath;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentWithStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.filesAreUnlocked;
-import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newObjectIsAdded;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.putInputFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.awaitOcc;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newObjectIsAdded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getNonNullObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 public class ViewerTest extends AbstractIntegrationTest {
 
@@ -35,28 +33,28 @@ public class ViewerTest extends AbstractIntegrationTest {
     public void testViewingFileWithSimplestViewer() throws UnirestException {
         String testFilename = uploadTestFile(someContent);
 
-        Poller.awaitAndGet(() -> fileCanBeDownloaded(testFilename, someContent));
-        Poller.awaitAndGet(() -> fileExistsInRegistry(testFilename));
+        await().until(() -> fileCanBeDownloaded(testFilename, someContent));
+        await().until(() -> fileExistsInRegistry(testFilename));
 
-        long inputFileId = Poller.awaitAndGet(() -> getObjectIdFromRegistry(testFilename));
+        long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(testFilename));
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
         String workDir = startViewDeploymentWithInputFileId(inputFileId);
         logger.info(String.format("deployment has workdir [%s]", workDir));
 
-        Poller.awaitAndGet(() -> deploymentHasStatus(workDir, "RUNNING"));
+        await().until(() -> deploymentHasStatus(workDir, "RUNNING"));
 
-        HttpResponse<String> result = Poller.awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
+        HttpResponse<String> result = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
         String body = result.getBody();
         String view = JsonPath.parse(body).read("$.viewerFileContent");
         assertThat(view).isEqualTo("<pre>" + someContent + "</pre>");
 
         awaitOcc();
 
-        awaitAndGet(() -> filesAreUnlocked(testFilename, someContent));
+        await().until(() -> filesAreUnlocked(testFilename, someContent));
 
         String secondNewInputFile = uploadTestFile(someContent);
-        awaitAndGet(() -> newObjectIsAdded(secondNewInputFile));
+        await().until(() -> newObjectIsAdded(secondNewInputFile));
     }
 
     private String startViewDeploymentWithInputFileId(long inputFileId) throws UnirestException {

@@ -7,11 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
-import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentWithStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getNonNullObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.awaitility.Awaitility.await;
 
@@ -28,7 +27,7 @@ public class DeployServiceByFileTest extends AbstractIntegrationTest {
         String inputFile = uploadTestFile(someContent);
         await().until(() -> fileCanBeDownloaded(inputFile, someContent));
 
-        long inputFileId = awaitAndGet(() -> getObjectIdFromRegistry(inputFile));
+        long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(inputFile));
         logger.info(String.format("input file has object id [%d]", inputFileId));
 
         String url = String.format("%s/object/%d/services", Config.SWITCHBOARD_ENDPOINT, inputFileId);

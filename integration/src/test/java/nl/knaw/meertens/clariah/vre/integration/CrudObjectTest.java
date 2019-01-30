@@ -27,7 +27,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomF
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
-import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getNonNullObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.apache.http.auth.AuthScope.ANY_HOST;
 import static org.apache.http.auth.AuthScope.ANY_PORT;
@@ -49,7 +49,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
     final String expectedFilename = uploadTestFile();
     await().until(() -> fileExistsInRegistry(expectedFilename));
     await().until(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()));
-    id = awaitAndGet(() -> getObjectIdFromRegistry(expectedFilename));
+    id = awaitAndGet(() -> getNonNullObjectIdFromRegistry(expectedFilename));
 
     String newHtmlFileName = updateTestFilePath(expectedFilename);
 

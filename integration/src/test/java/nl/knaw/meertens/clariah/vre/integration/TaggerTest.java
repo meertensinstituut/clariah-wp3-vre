@@ -3,7 +3,6 @@ package nl.knaw.meertens.clariah.vre.integration;
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.integration.util.ObjectsRepositoryService;
-import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.apache.http.HttpHeaders;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -32,7 +31,7 @@ import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomFilenameWithTime;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getObjectIdFromRegistry;
+import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getNonNullObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 import static org.apache.http.auth.AuthScope.ANY_HOST;
 import static org.apache.http.auth.AuthScope.ANY_PORT;
@@ -61,7 +60,7 @@ public class TaggerTest extends AbstractIntegrationTest {
         String oldDir = "test-dir-" + RandomStringUtils.randomAlphabetic(8).toLowerCase();
         createDir(oldDir);
         final String expectedFilename = uploadTestFile(oldDir + "/" + getRandomFilenameWithTime(), getTestFileContent());
-        id = awaitAndGet(() -> getObjectIdFromRegistry(expectedFilename));
+        id = awaitAndGet(() -> getNonNullObjectIdFromRegistry(expectedFilename));
 
         taggerTopic.consumeAll(records -> {
             ArrayList<String> expectedTypes = newArrayList(
