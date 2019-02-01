@@ -24,6 +24,6 @@ public interface DeploymentService {
   /**
    * Returns true when stop signal is send, false otherwise.
    */
-  boolean stop(String workDir);
+  boolean delete(String workDir);
 
 }

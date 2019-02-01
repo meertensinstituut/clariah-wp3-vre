@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileHasContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomFilenameWithTime;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
@@ -94,7 +94,7 @@ public class UploadingNewFileTest extends AbstractIntegrationTest {
         KafkaConsumerService recognizerKafkaConsumer = getRecognizerTopic();
 
         final String expectedFilename = uploadTestFile();
-        await().until(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()));
+        await().until(() -> fileHasContent(expectedFilename, getTestFileContent()));
         logger.info("Uploaded file");
 
         recognizerKafkaConsumer.consumeAll(consumerRecords -> {

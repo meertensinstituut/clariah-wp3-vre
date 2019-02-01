@@ -25,6 +25,10 @@ public abstract class FinishDeploymentConsumer implements DeploymentConsumer {
     this.kafkaSwitchboardService = kafkaSwitchboardService;
   }
 
+  abstract void handleFinish(DeploymentStatusReport report);
+
+  abstract void handleStop(DeploymentStatusReport report);
+
   @Override
   public void accept(DeploymentStatusReport report) {
     logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
@@ -32,7 +36,7 @@ public abstract class FinishDeploymentConsumer implements DeploymentConsumer {
       return;
     }
 
-    handleFinishedDeployment(report);
+    handleFinish(report);
 
     sendKafkaSwitchboardMsg(report);
 
@@ -55,7 +59,4 @@ public abstract class FinishDeploymentConsumer implements DeploymentConsumer {
     kafkaMsg.status = report.getStatus();
     kafkaSwitchboardService.send(kafkaMsg);
   }
-
-  abstract void handleFinishedDeployment(DeploymentStatusReport report);
-
 }

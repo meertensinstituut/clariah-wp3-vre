@@ -25,10 +25,19 @@ public class DeploymentStatusReport implements Cloneable {
   private URI uri;
   private String workDir;
   private List<String> files;
+
+  /**
+   * Path to generated view in user dir
+   */
   private String viewerFile;
+
+  /**
+   * Content of generated view
+   */
   private String viewerFileContent;
 
-  public DeploymentStatusReport() {}
+  public DeploymentStatusReport() {
+  }
 
   /**
    * Make a shallow copy

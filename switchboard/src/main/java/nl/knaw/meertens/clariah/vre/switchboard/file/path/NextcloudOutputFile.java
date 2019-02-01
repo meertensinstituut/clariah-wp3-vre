@@ -8,23 +8,23 @@ import java.nio.file.Paths;
  * Path of a output file stored in nextcloud has the following structure:
  * `/{nextcloud}/{user}/{files}/{outputResult}/{file}`
  */
-public class OwncloudOutputFile extends AbstractPath {
+public class NextcloudOutputFile extends AbstractSwitchboardPath {
 
-  private OwncloudOutputFile(String user, String outputResult, String file) {
+  private NextcloudOutputFile(String user, String outputResult, String file) {
     this.outputResult = outputResult;
     this.user = user;
     this.file = file;
   }
 
-  public static OwncloudOutputFile from(OwncloudOutputDir dir, File file) {
-    return new OwncloudOutputFile(
+  public static NextcloudOutputFile from(NextcloudOutputDir dir, File file) {
+    return new NextcloudOutputFile(
       dir.getUser(),
       dir.getOutputResult(),
       getRelativeFilePath(dir, file)
     );
   }
 
-  private static String getRelativeFilePath(OwncloudOutputDir dir, File file) {
+  private static String getRelativeFilePath(NextcloudOutputDir dir, File file) {
     return dir.toPath().relativize(file.toPath()).toString();
   }
 
@@ -38,7 +38,7 @@ public class OwncloudOutputFile extends AbstractPath {
     return Paths.get(user, files, outputResult, file).toString();
   }
 
-  public String getOwncloud() {
+  public String getNextcloud() {
     return nextcloud;
   }
 

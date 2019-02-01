@@ -5,14 +5,13 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import nl.knaw.meertens.clariah.vre.integration.util.KafkaConsumerService;
-import nl.knaw.meertens.clariah.vre.integration.util.Poller;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileHasContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
@@ -35,7 +34,7 @@ public class Initializer extends AbstractIntegrationTest {
     public void init() throws Exception {
         logger.info("Initialize VRE Integration");
         String testFilename = uploadTestFile();
-        awaitAndGet(() -> fileCanBeDownloaded(testFilename, getTestFileContent()));
+        awaitAndGet(() -> fileHasContent(testFilename, getTestFileContent()));
 
         KafkaConsumerService initConsumer = new KafkaConsumerService(
                 Config.KAFKA_ENDPOINT, Config.RECOGNIZER_TOPIC_NAME, getRandomGroupName()

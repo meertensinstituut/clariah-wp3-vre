@@ -1,7 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
 import nl.knaw.meertens.clariah.vre.switchboard.Config;
-import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractPath;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractSwitchboardPath;
 import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,13 +35,15 @@ public class LockService {
    * Lock staged files
    */
   private final String locker = Config.USER_TO_LOCK_WITH;
+
   /**
    * Unlocks staged files
    */
   private final String unlocker = Config.USER_TO_UNLOCK_WITH;
+
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  void lock(AbstractPath path) {
+  void lock(AbstractSwitchboardPath path) {
     var file = path.toPath();
     logger.info(String.format("Locking [%s]", file));
     try {
@@ -52,7 +54,7 @@ public class LockService {
     }
   }
 
-  void unlockFileAndParents(AbstractPath file) {
+  void unlockFileAndParents(AbstractSwitchboardPath file) {
     unlock(file);
     try {
       logger.info(String.format(
@@ -82,7 +84,7 @@ public class LockService {
     }
   }
 
-  void unlock(AbstractPath abstractPath) {
+  void unlock(AbstractSwitchboardPath abstractPath) {
     var path = abstractPath.toPath();
     unlock(path);
   }

@@ -101,6 +101,14 @@ public class ExecService {
     return request;
   }
 
+  public DeploymentStatusReport getStatus(String workDir) {
+    return deploymentService.getStatus(workDir);
+  }
+
+  public void delete(String workDir) {
+    deploymentService.delete(workDir);
+  }
+
   private DeploymentRequest prepareDeploymentRequest(
     String serviceName,
     String body,
@@ -234,10 +242,6 @@ public class ExecService {
     return config;
   }
 
-  public DeploymentStatusReport getStatus(String workDir) {
-    return deploymentService.getStatus(workDir);
-  }
-
   private DeploymentRequest mapServiceRequest(
     String body,
     String service,
@@ -287,5 +291,4 @@ public class ExecService {
     msg.deploymentRequest = mapper.writeValueAsString(serviceRequest.getParams());
     kafkaSwitchboardService.send(msg);
   }
-
 }

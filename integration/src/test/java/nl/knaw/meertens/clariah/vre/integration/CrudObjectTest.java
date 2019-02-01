@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileHasContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getRandomFilenameWithTime;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
@@ -48,17 +48,17 @@ public class CrudObjectTest extends AbstractIntegrationTest {
   public void testRecognizer_creates_updates_deletes_recordInObjectsRegistry() throws Exception {
     final String expectedFilename = uploadTestFile();
     await().until(() -> fileExistsInRegistry(expectedFilename));
-    await().until(() -> fileCanBeDownloaded(expectedFilename, getTestFileContent()));
+    await().until(() -> fileHasContent(expectedFilename, getTestFileContent()));
     id = awaitAndGet(() -> getNonNullObjectIdFromRegistry(expectedFilename));
 
     String newHtmlFileName = updateTestFilePath(expectedFilename);
 
-    await().until(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent()));
+    await().until(() -> fileHasContent(newHtmlFileName, getTestFileContent()));
     await().until(() -> fileNameChangedButTypeDidNot(newHtmlFileName));
 
     updateContentToHtml(newHtmlFileName);
 
-    await().until(() -> fileCanBeDownloaded(newHtmlFileName, getTestFileContent(html)));
+    await().until(() -> fileHasContent(newHtmlFileName, getTestFileContent(html)));
     await().until(() -> fileTypeIsHtml(newHtmlFileName));
 
     deleteFile(newHtmlFileName);

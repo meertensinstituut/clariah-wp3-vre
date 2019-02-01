@@ -8,7 +8,7 @@ import java.nio.file.Paths;
  * It has the following structure:
  * `/{tmp}/{workDir}/{output}/`
  */
-public class DeploymentOutputFile extends AbstractPath {
+public class DeploymentOutputFile extends AbstractSwitchboardPath {
 
   private DeploymentOutputFile(String workDir, String user, String file) {
     this.workDir = workDir;

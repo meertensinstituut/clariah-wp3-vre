@@ -49,7 +49,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
   private static ObjectsRegistryServiceStub objectsRegistryServiceStub = new ObjectsRegistryServiceStub();
 
   private KafkaProducerService kafkaSwitchboardServiceMock;
-  private KafkaProducerService kafkaOwncloudServiceMock;
+  private KafkaProducerService kafkaNextcloudServiceMock;
 
   static RequestRepository getRequestRepository() {
     return requestRepository;
@@ -74,7 +74,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
     var finishDeploymentConsumer = new DeploymentConsumerFactory(
       new NextcloudFileService(),
       kafkaSwitchboardServiceMock,
-      kafkaOwncloudServiceMock
+      kafkaNextcloudServiceMock
     );
 
     var diBinder = new SwitchboardDiBinder(
@@ -103,7 +103,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
 
   private void setMocks() {
     kafkaSwitchboardServiceMock = Mockito.mock(KafkaProducerService.class);
-    kafkaOwncloudServiceMock = Mockito.mock(KafkaProducerService.class);
+    kafkaNextcloudServiceMock = Mockito.mock(KafkaProducerService.class);
   }
 
   public Response deploy(String expectedService, DeploymentRequestDto deploymentRequestDto) {
@@ -117,7 +117,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
   }
 
   public KafkaProducerService getKafkaNextcloudServiceMock() {
-    return kafkaOwncloudServiceMock;
+    return kafkaNextcloudServiceMock;
   }
 
 }

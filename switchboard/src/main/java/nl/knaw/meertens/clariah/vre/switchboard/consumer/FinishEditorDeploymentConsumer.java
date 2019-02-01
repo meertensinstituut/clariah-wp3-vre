@@ -16,20 +16,20 @@ public class FinishEditorDeploymentConsumer extends FinishDeploymentConsumer {
     this.nextcloudFileService = nextcloudFileService;
   }
 
-  /**
-   * TODO: code is duplicated from viewer, because editor is WIP
-   */
   @Override
-  void handleFinishedDeployment(DeploymentStatusReport report) {
+  void handleFinish(DeploymentStatusReport report) {
     nextcloudFileService.unstage(report.getWorkDir(), report.getFiles());
-
-    var viewerFile = nextcloudFileService.unstageViewerOutputFile(
-      report.getWorkDir(),
-      report.getFiles().get(0),
-      report.getService()
-    );
-    report.setViewerFile(viewerFile.toString());
-    report.setViewerFileContent(nextcloudFileService.getContent(viewerFile.toString()));
+    var toDisplay = nextcloudFileService.getContent(report.getFiles().get(0));
+    report.setViewerFileContent(toDisplay);
     report.setWorkDir(report.getWorkDir());
   }
+
+  @Override
+  void handleStop(DeploymentStatusReport report) {
+    // TODO:
+    // - update edited file with content output file
+    // - unlock edited file in nextcloud
+    // - put update msg on nextcloud kafka log
+  }
+
 }

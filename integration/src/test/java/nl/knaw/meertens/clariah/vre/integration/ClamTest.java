@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentWithStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileHasContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.awaitOcc;
@@ -32,7 +32,7 @@ public class ClamTest extends AbstractIntegrationTest {
     String testFileContent = getTestFileContent(deploymentTestFile);
     String testFilename = uploadTestFile(testFileContent);
 
-    await().until(() -> fileCanBeDownloaded(testFilename, testFileContent));
+    await().until(() -> fileHasContent(testFilename, testFileContent));
     await().until(() -> fileExistsInRegistry(testFilename));
     long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(testFilename));
     logger.info(String.format("input file has object id [%d]", inputFileId));

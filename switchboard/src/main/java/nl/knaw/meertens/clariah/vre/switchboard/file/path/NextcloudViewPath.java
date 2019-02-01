@@ -7,16 +7,16 @@ import java.nio.file.Paths;
  * View path of a user file stored in nextcloud has the following structure:
  * `/{nextcloud}/{user}/{files}/{vre}/{service}/{file}`
  */
-public class OwncloudViewPath extends AbstractPath {
+public class NextcloudViewPath extends AbstractSwitchboardPath {
 
-  private OwncloudViewPath(String user, String service, String file) {
+  private NextcloudViewPath(String user, String service, String file) {
     this.user = user;
     this.service = service;
     this.file = file;
   }
 
-  public static OwncloudViewPath from(String service, String objectPath) {
-    return new OwncloudViewPath(
+  public static NextcloudViewPath from(String service, String objectPath) {
+    return new NextcloudViewPath(
       getUserFrom(objectPath),
       service,
       getFileFrom(objectPath)
@@ -33,7 +33,7 @@ public class OwncloudViewPath extends AbstractPath {
     return Paths.get(user, files, vre, service, file).toString();
   }
 
-  public String getOwncloud() {
+  public String getNextcloud() {
     return nextcloud;
   }
 

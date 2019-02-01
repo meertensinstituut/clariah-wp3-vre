@@ -48,8 +48,7 @@ class Editor extends React.Component {
                 .catch((e) => this.setState({error: e}));
             this.setState({
                 editor: editor,
-                editorFileContent: {__html: editorData.viewerFileContent},
-                editorFileName: editorData.viewerFile
+                editorFileContent: {__html: editorData.viewerFileContent}
             });
         } catch (e) {
             this.setState({error: {message: "Could not edit file: " + e.message}})

@@ -109,7 +109,7 @@ public class DeployUtils {
         return JsonPath.parse(result.getBody()).read("$.workDir");
     }
 
-    public static String deploymentIsFinished(String workDir) {
+    public static String resultWhenDeploymentFinished(String workDir) {
         logger.info(String.format("check deployment [%s] is finished", workDir));
         HttpResponse<String> statusResponse = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
         String outputFilePath = getOutputFilePath(statusResponse);

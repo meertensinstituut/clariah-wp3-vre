@@ -7,21 +7,21 @@ import java.nio.file.Paths;
  * Path of a user file stored in nextcloud has the following structure:
  * `/{nextcloud}/{user}/{files}/{file}`
  */
-public class OwncloudInputFile extends AbstractPath {
+public class NextcloudInputFile extends AbstractSwitchboardPath {
 
-  private OwncloudInputFile(String user, String file) {
+  private NextcloudInputFile(String user, String file) {
     this.user = user;
     this.file = file;
   }
 
-  public static OwncloudInputFile from(String objectPath) {
-    return new OwncloudInputFile(
+  public static NextcloudInputFile from(String objectPath) {
+    return new NextcloudInputFile(
       getUserFrom(objectPath),
       getFileFrom(objectPath)
     );
   }
 
-  public String getOwncloud() {
+  public String getNextcloud() {
     return nextcloud;
   }
 

@@ -1,13 +1,13 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
-import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractPath;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractSwitchboardPath;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentOutputDir;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentOutputFile;
-import nl.knaw.meertens.clariah.vre.switchboard.file.path.OwncloudInputFile;
-import nl.knaw.meertens.clariah.vre.switchboard.file.path.OwncloudOutputDir;
-import nl.knaw.meertens.clariah.vre.switchboard.file.path.OwncloudOutputFile;
-import nl.knaw.meertens.clariah.vre.switchboard.file.path.OwncloudViewPath;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudInputFile;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudOutputDir;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudOutputFile;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudViewPath;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.isNull;
@@ -42,7 +43,7 @@ public class NextcloudFileService implements FileService {
   public void stageFiles(String workDir, List<String> objectPaths) {
     var inputPaths = objectPaths
       .stream()
-      .map(OwncloudInputFile::from)
+      .map(NextcloudInputFile::from)
       .collect(toList());
     for (var file : inputPaths) {
       locker.lock(file);
@@ -74,7 +75,7 @@ public class NextcloudFileService implements FileService {
 
   @Override
   public void unlock(String objectPath) {
-    locker.unlock(OwncloudInputFile.from(objectPath));
+    locker.unlock(NextcloudInputFile.from(objectPath));
   }
 
   private void unstageObjectPaths(List<String> objectPaths) {
@@ -98,17 +99,17 @@ public class NextcloudFileService implements FileService {
   public Path unstageViewerOutputFile(String workDir, String objectPath, String service) {
     var deploymentView = DeploymentOutputFile
       .from(workDir, objectPath);
-    var nextcloudView = OwncloudViewPath
+    var nextcloudView = NextcloudViewPath
       .from(service, objectPath);
     moveFile(deploymentView, nextcloudView);
     locker.unlock(nextcloudView);
     return Paths.get(nextcloudView.toObjectPath());
   }
 
-  private void moveFile(AbstractPath fromPath, AbstractPath toPath) {
+  private void moveFile(AbstractSwitchboardPath fromPath, AbstractSwitchboardPath toPath) {
     var from = fromPath.toPath().toFile();
     var to = toPath.toPath().toFile();
-    logger.info(String.format(
+    logger.info(format(
       "Move [%s] to [%s]",
       from, to
     ));
@@ -118,7 +119,7 @@ public class NextcloudFileService implements FileService {
     try {
       FileUtils.moveFile(from, to);
     } catch (IOException e) {
-      throw new RuntimeException(String.format(
+      throw new RuntimeException(format(
         "Could not move [%s] to [%s]",
         from, to
       ), e);
@@ -127,14 +128,14 @@ public class NextcloudFileService implements FileService {
 
   @Override
   public String getContent(String objectPath) {
-    var file = OwncloudInputFile
+    var file = NextcloudInputFile
       .from(objectPath)
       .toPath()
       .toFile();
     try {
       return FileUtils.readFileToString(file, UTF_8);
     } catch (IOException e) {
-      throw new IllegalArgumentException(String.format(
+      throw new IllegalArgumentException(format(
         "Could not get content of objectPath [%s]",
         objectPath
       ), e);
@@ -147,9 +148,9 @@ public class NextcloudFileService implements FileService {
    *
    * @return output dir
    */
-  private OwncloudOutputDir moveOutputDir(DeploymentInputFile inputFile) {
+  private NextcloudOutputDir moveOutputDir(DeploymentInputFile inputFile) {
     var deployment = DeploymentOutputDir.from(inputFile);
-    var nextcloud = OwncloudOutputDir.from(inputFile);
+    var nextcloud = NextcloudOutputDir.from(inputFile);
     if (!hasOutput(deployment)) {
       createEmptyOutputFolder(inputFile.getWorkDir(), nextcloud);
     } else {
@@ -158,11 +159,11 @@ public class NextcloudFileService implements FileService {
     return nextcloud;
   }
 
-  private void moveOutputDir(DeploymentOutputDir deploymentOutput, OwncloudOutputDir outputDir) {
+  private void moveOutputDir(DeploymentOutputDir deploymentOutput, NextcloudOutputDir outputDir) {
     var deployment = deploymentOutput.toPath();
     var nextcloud = outputDir.toPath();
     try {
-      logger.info(String.format(
+      logger.info(format(
         "Move output dir from [%s] to [%s]",
         deployment, nextcloud
       ));
@@ -171,15 +172,15 @@ public class NextcloudFileService implements FileService {
         nextcloud.toFile()
       );
     } catch (IOException e) {
-      throw new RuntimeException(String.format(
+      throw new RuntimeException(format(
         "Could not move [%s] to [%s]",
         deployment, nextcloud
       ), e);
     }
   }
 
-  private void createEmptyOutputFolder(String workDir, OwncloudOutputDir nextcloudOutput) {
-    logger.warn(String.format(
+  private void createEmptyOutputFolder(String workDir, NextcloudOutputDir nextcloudOutput) {
+    logger.warn(format(
       "No output for [%s], create empty [%s]",
       workDir, nextcloudOutput.toPath())
     );
@@ -195,7 +196,7 @@ public class NextcloudFileService implements FileService {
       outputDir.listFiles().length > 0;
   }
 
-  private List<OwncloudOutputFile> unlockOutputFiles(OwncloudOutputDir outputDir) {
+  private List<NextcloudOutputFile> unlockOutputFiles(NextcloudOutputDir outputDir) {
     var outputFiles = getFilesFromOutputDir(outputDir);
     for (var file : outputFiles) {
       locker.unlockFileAndParents(file);
@@ -206,7 +207,7 @@ public class NextcloudFileService implements FileService {
   /**
    * Return files, and only files
    */
-  private List<OwncloudOutputFile> getFilesFromOutputDir(OwncloudOutputDir outputDir) {
+  private List<NextcloudOutputFile> getFilesFromOutputDir(NextcloudOutputDir outputDir) {
     var outputFiles = outputDir
       .toPath()
       .toFile()
@@ -217,12 +218,12 @@ public class NextcloudFileService implements FileService {
     }
     return Arrays
       .stream(outputFiles)
-      .map(file -> OwncloudOutputFile.from(outputDir, file))
+      .map(file -> NextcloudOutputFile.from(outputDir, file))
       .collect(toList());
   }
 
 
-  private void createSoftLink(String workDir, OwncloudInputFile inputFile) {
+  private void createSoftLink(String workDir, NextcloudInputFile inputFile) {
     var nextcloud = inputFile.toPath();
     var deployment = DeploymentInputFile
       .from(workDir, inputFile.toObjectPath())
@@ -234,7 +235,7 @@ public class NextcloudFileService implements FileService {
     try {
       Files.createSymbolicLink(deployment, nextcloud);
     } catch (IOException e) {
-      throw new RuntimeIOException(String.format(
+      throw new RuntimeIOException(format(
         "Could not link nextcloud [%s] and input [%s]",
         nextcloud.toString(), deployment.toString()
       ), e);

@@ -30,7 +30,7 @@ public class FileUtils {
 
     private static Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
-    public static boolean fileCanBeDownloaded(String inputFile, String someContent) {
+    public static boolean fileHasContent(String inputFile, String someContent) {
         logger.info(format("check file [%s] can be downloaded", inputFile));
         HttpResponse<String> downloadResult = downloadFile(inputFile);
         return downloadResult.getBody().equals(someContent)

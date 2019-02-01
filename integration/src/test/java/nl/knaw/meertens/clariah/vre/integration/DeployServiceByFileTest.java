@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileCanBeDownloaded;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileHasContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.getNonNullObjectIdFromRegistry;
 import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
@@ -25,7 +25,7 @@ public class DeployServiceByFileTest extends AbstractIntegrationTest {
                 "In die kaas moest ik stikken, terwijl ik hier, " +
                 "tussen twee briefjes in, even kan luisteren naar innerlijke stemmen.";
         String inputFile = uploadTestFile(someContent);
-        await().until(() -> fileCanBeDownloaded(inputFile, someContent));
+        await().until(() -> fileHasContent(inputFile, someContent));
 
         long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(inputFile));
         logger.info(String.format("input file has object id [%d]", inputFileId));

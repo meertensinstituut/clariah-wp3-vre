@@ -40,6 +40,22 @@ public class DeploymentServiceImpl implements DeploymentService {
     return report;
   }
 
+  @Override
+  public DeploymentStatusReport getStatus(String workDir) {
+    return requestRepositoryService.getStatusReport(workDir);
+  }
+
+  @Override
+  public boolean delete(String workDir) {
+    /**
+     * TODO:
+     * - send delete request to deployment
+     */
+    DeploymentConsumer consumer = requestRepositoryService.getConsumer(workDir);
+
+    return true;
+  }
+
   private DeploymentStatusReport requestDeployment(DeploymentRequest request) {
     var report = new DeploymentStatusReport();
     report.setUri(createDeployServiceUri(request));
@@ -69,16 +85,6 @@ public class DeploymentServiceImpl implements DeploymentService {
       request.getService(),
       request.getWorkDir()
     ));
-  }
-
-  @Override
-  public DeploymentStatusReport getStatus(String workDir) {
-    return requestRepositoryService.getStatusReport(workDir);
-  }
-
-  @Override
-  public boolean stop(String workDir) {
-    throw new UnsupportedOperationException("Stopping deployments has not been implemented");
   }
 
   private HttpResponse<String> sendRequest(URI uri) {

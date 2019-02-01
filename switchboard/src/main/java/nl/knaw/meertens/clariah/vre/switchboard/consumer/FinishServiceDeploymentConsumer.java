@@ -2,9 +2,8 @@ package nl.knaw.meertens.clariah.vre.switchboard.consumer;
 
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
-import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaOwncloudCreateFileDto;
+import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaNextcloudCreateFileDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +28,7 @@ public class FinishServiceDeploymentConsumer extends FinishDeploymentConsumer {
   }
 
   @Override
-  void handleFinishedDeployment(DeploymentStatusReport report) {
+  void handleFinish(DeploymentStatusReport report) {
     nextcloudFileService.unstage(report.getWorkDir(), report.getFiles());
 
     var outputFiles = nextcloudFileService.unstageServiceOutputFiles(
@@ -47,14 +46,19 @@ public class FinishServiceDeploymentConsumer extends FinishDeploymentConsumer {
     }
 
     report.setWorkDir(report.getWorkDir());
-    sendKafkaOwncloudMsgs(outputFiles);
+    sendKafkaNextcloudMsgs(outputFiles);
   }
 
-  private void sendKafkaOwncloudMsgs(
+  @Override
+  void handleStop(DeploymentStatusReport report) {
+    throw new UnsupportedOperationException("Service of type service cannot be stopped");
+  }
+
+  private void sendKafkaNextcloudMsgs(
     List<Path> outputFiles
   ) {
     for (var file : outputFiles) {
-      var msg = new KafkaOwncloudCreateFileDto();
+      var msg = new KafkaNextcloudCreateFileDto();
       msg.action = "create";
       msg.path = file.toString();
       msg.timestamp = new Timestamp(System.currentTimeMillis()).getTime();

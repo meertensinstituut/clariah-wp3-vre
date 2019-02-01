@@ -13,15 +13,15 @@ import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
  * Path of a output dir stored in nextcloud has the following structure:
  * `/{nextcloud}/{user}/{files}/{outputResult}/`
  */
-public class OwncloudOutputDir extends AbstractPath {
+public class NextcloudOutputDir extends AbstractSwitchboardPath {
 
-  private OwncloudOutputDir(String user, String outputResult) {
+  private NextcloudOutputDir(String user, String outputResult) {
     this.user = user;
     this.outputResult = outputResult;
   }
 
-  public static OwncloudOutputDir from(DeploymentInputFile file) {
-    return new OwncloudOutputDir(
+  public static NextcloudOutputDir from(DeploymentInputFile file) {
+    return new NextcloudOutputDir(
       file.user,
       generateOutputPath(file)
     );
@@ -51,7 +51,7 @@ public class OwncloudOutputDir extends AbstractPath {
     throw new UnsupportedOperationException();
   }
 
-  public String getOwncloud() {
+  public String getNextcloud() {
     return nextcloud;
   }
 

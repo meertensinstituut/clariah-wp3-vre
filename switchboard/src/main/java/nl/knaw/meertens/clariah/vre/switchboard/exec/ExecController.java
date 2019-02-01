@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -58,5 +59,18 @@ public class ExecController extends AbstractController {
     logger.info(String.format("Status request of [%s]", workDir));
     var report = execService.getStatus(workDir);
     return createResponse(report, report.getStatus().getHttpStatus());
+  }
+
+  @DELETE
+  @Path("/{service}/{workDir}")
+  @Consumes(APPLICATION_JSON)
+  @Produces(APPLICATION_JSON)
+  public Response deleteDeploymentRequest(
+    @PathParam("service") String service,
+    @PathParam("workDir") String workDir
+  ) {
+    logger.info(String.format("Received request to delete service [%s] [%s]", service, workDir));
+    execService.delete(workDir);
+    return createResponse(workDir, 200);
   }
 }
