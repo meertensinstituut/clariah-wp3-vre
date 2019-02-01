@@ -4,7 +4,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusRepor
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 
-public class FinishViewerDeploymentConsumer extends FinishDeploymentConsumer {
+public class FinishViewerDeploymentConsumer extends AbstractDeploymentConsumer {
 
   private FileService nextcloudFileService;
 

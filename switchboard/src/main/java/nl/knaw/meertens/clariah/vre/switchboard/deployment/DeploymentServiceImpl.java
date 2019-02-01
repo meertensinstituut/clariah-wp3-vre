@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.DEPLOYED;
+import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 
 public class DeploymentServiceImpl implements DeploymentService {
 
@@ -46,14 +47,17 @@ public class DeploymentServiceImpl implements DeploymentService {
   }
 
   @Override
-  public boolean delete(String workDir) {
-    /**
-     * TODO:
-     * - send delete request to deployment
-     */
-    DeploymentConsumer consumer = requestRepositoryService.getConsumer(workDir);
+  public void delete(String workDir) {
+    var report = requestRepositoryService.getStatusReport(workDir);
+    var uri = report.getUri();
 
-    return true;
+    sendStopDeploymentRequest(uri);
+
+    var deploymentConsumer = requestRepositoryService.getConsumer(workDir);
+    deploymentConsumer.accept(report);
+
+    report.setStatus(STOPPED);
+    requestRepositoryService.saveStatusReport(report);
   }
 
   private DeploymentStatusReport requestDeployment(DeploymentRequest request) {
@@ -63,7 +67,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     report.setFiles(new ArrayList<>(request.getFiles().values()));
     report.setWorkDir(request.getWorkDir());
 
-    var response = sendRequest(report.getUri());
+    var response = sendCreateDeploymentRequest(report.getUri());
     var httpStatus = response.getStatus();
     report.setMsg(response.getBody());
 
@@ -87,7 +91,19 @@ public class DeploymentServiceImpl implements DeploymentService {
     ));
   }
 
-  private HttpResponse<String> sendRequest(URI uri) {
+  private HttpResponse<String> sendStopDeploymentRequest(URI uri) {
+    try {
+      var response = Unirest
+        .delete(uri.toString())
+        .asString();
+      logger.info(format("Requested stopping deployment of [%s]", uri.toString()));
+      return response;
+    } catch (UnirestException e) {
+      throw new RuntimeException(format("Stop request of [%s] failed", uri.toString()), e);
+    }
+  }
+
+  private HttpResponse<String> sendCreateDeploymentRequest(URI uri) {
     try {
       var response = Unirest
         .put(uri.toString())

@@ -147,7 +147,7 @@ public class PollServiceImpl implements PollService {
   }
 
   private int calculateNewInterval(int previousInterval) {
-    return (int) Math.ceil(previousInterval * INCREASE_INTERVAL_FACTOR);
+    return (int) Math.ceil(((long) previousInterval) * INCREASE_INTERVAL_FACTOR);
   }
 
   private DeploymentStatusResponseDto requestDeploymentStatusReport(URI uri) {

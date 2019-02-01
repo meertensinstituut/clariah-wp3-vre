@@ -16,12 +16,12 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
  * - run handleFinishDeployment()
  * - put result on kafka switchboard queue
  */
-public abstract class FinishDeploymentConsumer implements DeploymentConsumer {
+public abstract class AbstractDeploymentConsumer implements DeploymentConsumer {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
   private KafkaProducerService kafkaSwitchboardService;
 
-  public FinishDeploymentConsumer(KafkaProducerService kafkaSwitchboardService) {
+  public AbstractDeploymentConsumer(KafkaProducerService kafkaSwitchboardService) {
     this.kafkaSwitchboardService = kafkaSwitchboardService;
   }
 
@@ -31,18 +31,22 @@ public abstract class FinishDeploymentConsumer implements DeploymentConsumer {
 
   @Override
   public void accept(DeploymentStatusReport report) {
-    logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
     if (!isFinishedOrStopped(report)) {
+      logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
       return;
     }
 
-    handleFinish(report);
+    if (report.getStatus().equals(FINISHED)) {
+      handleFinish(report);
+    } else if (report.getStatus().equals(STOPPED)) {
+      handleStop(report);
+    }
 
     sendKafkaSwitchboardMsg(report);
 
     logger.info(String.format(
-      "Completed deployment of service [%s] with workdir [%s]",
-      report.getService(), report.getWorkDir()
+      "Handled deployment of [%s][%s] with status [%s]",
+      report.getService(), report.getWorkDir(), report.getStatus()
     ));
   }
 

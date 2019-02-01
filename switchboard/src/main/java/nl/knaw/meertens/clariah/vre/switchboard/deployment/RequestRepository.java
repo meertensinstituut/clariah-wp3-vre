@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
@@ -53,7 +54,7 @@ public class RequestRepository {
     if (!isNull(request)) {
       return request;
     }
-    logger.info(String.format("Report of [%s] not available in memory: checking work dir", workDir));
+    logger.info(format("Report of [%s] not available in memory: checking work dir", workDir));
     return findReportInWorkDir(workDir);
   }
 
@@ -63,7 +64,7 @@ public class RequestRepository {
   ) {
     saveStatusReport(report);
     consumers.put(report.getWorkDir(), reportConsumer);
-    logger.info(String.format(
+    logger.info(format(
       "Persisted deployment request of workDir [%s]",
       report.getWorkDir()
     ));
@@ -96,17 +97,17 @@ public class RequestRepository {
     var statusFile = getStatusFilePath(workDir).toFile();
     var statusJson = "";
     if (!statusFile.exists()) {
-      throw new NoReportFileException(String.format("Status of [%s] could not be found", workDir));
+      throw new NoReportFileException(format("Status of [%s] not found", workDir));
     }
     try {
       statusJson = FileUtils.readFileToString(statusFile, UTF_8);
     } catch (IOException e) {
-      throw new RuntimeIOException(String.format("Could not read [%s]", statusFile.toString()), e);
+      throw new RuntimeIOException(format("Could not read [%s]", statusFile.toString()), e);
     }
     try {
       return mapper.readValue(statusJson, DeploymentStatusReport.class);
     } catch (IOException e) {
-      throw new RuntimeIOException(String.format("Could not parse [%s] to DeploymentStatusReport", statusJson), e);
+      throw new RuntimeIOException(format("Could not parse [%s]", statusJson), e);
     }
   }
 
@@ -128,7 +129,7 @@ public class RequestRepository {
         .writeValueAsString(report);
       FileUtils.write(file.toFile(), json, UTF_8);
     } catch (IOException e) {
-      throw new RuntimeIOException(String.format("Could create status report file [%s]", file.toString()), e);
+      throw new RuntimeIOException(format("Could create status report file [%s]", file.toString()), e);
     }
   }
 

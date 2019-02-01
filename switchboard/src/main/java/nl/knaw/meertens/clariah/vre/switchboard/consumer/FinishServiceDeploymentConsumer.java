@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.util.List;
 
-public class FinishServiceDeploymentConsumer extends FinishDeploymentConsumer {
+public class FinishServiceDeploymentConsumer extends AbstractDeploymentConsumer {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
   private final FileService nextcloudFileService;

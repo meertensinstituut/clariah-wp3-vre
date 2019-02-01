@@ -10,7 +10,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import java.nio.file.Path;
 import java.sql.Timestamp;
 
-public class FinishEditorDeploymentConsumer extends FinishDeploymentConsumer {
+public class FinishEditorDeploymentConsumer extends AbstractDeploymentConsumer {
 
   private final KafkaProducerService kafkaNextcloudService;
   private FileService nextcloudFileService;

@@ -1,13 +1,11 @@
 package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumerFactory;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
-import nl.knaw.meertens.clariah.vre.switchboard.consumer.FinishDeploymentConsumer;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
@@ -21,7 +19,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRegistry
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
