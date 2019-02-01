@@ -23,7 +23,8 @@ public class DeploymentConsumerFactory {
       ServiceKind.EDITOR,
       new FinishEditorDeploymentConsumer(
         nextcloudFileService,
-        kafkaSwitchboardService
+        kafkaSwitchboardService,
+        kafkaNextcloudService
       )
     );
 

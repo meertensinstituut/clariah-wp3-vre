@@ -59,4 +59,5 @@ public abstract class FinishDeploymentConsumer implements DeploymentConsumer {
     kafkaMsg.status = report.getStatus();
     kafkaSwitchboardService.send(kafkaMsg);
   }
+
 }

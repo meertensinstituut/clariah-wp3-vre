@@ -106,7 +106,8 @@ public class NextcloudFileService implements FileService {
     return Paths.get(nextcloudView.toObjectPath());
   }
 
-  private void moveFile(AbstractSwitchboardPath fromPath, AbstractSwitchboardPath toPath) {
+  @Override
+  public void moveFile(AbstractSwitchboardPath fromPath, AbstractSwitchboardPath toPath) {
     var from = fromPath.toPath().toFile();
     var to = toPath.toPath().toFile();
     logger.info(format(
@@ -126,18 +127,38 @@ public class NextcloudFileService implements FileService {
     }
   }
 
+  /**
+   * Get content of output file from deployment and its (future) objectPath
+   */
+  @Override
+  public String getDeployContent(String workDir, String objectPath) {
+    var deployView = DeploymentOutputFile
+      .from(workDir, objectPath);
+    var deployFile = Paths
+      .get(deployView.toObjectPath())
+      .toFile();
+    return getContent(deployFile);
+  }
+
+  /**
+   * Get content from nextcloud
+   */
   @Override
   public String getContent(String objectPath) {
     var file = NextcloudInputFile
       .from(objectPath)
       .toPath()
       .toFile();
+    return getContent(file);
+  }
+
+  private String getContent(File file) {
     try {
       return FileUtils.readFileToString(file, UTF_8);
     } catch (IOException e) {
       throw new IllegalArgumentException(format(
-        "Could not get content of objectPath [%s]",
-        objectPath
+        "Could not get content of file [%s]",
+        file.toPath()
       ), e);
     }
   }

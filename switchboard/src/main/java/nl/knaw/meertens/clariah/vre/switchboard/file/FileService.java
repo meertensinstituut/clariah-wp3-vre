@@ -1,5 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractSwitchboardPath;
+
 import java.nio.file.Path;
 import java.util.List;
 
@@ -28,7 +30,17 @@ public interface FileService {
 
   Path unstageViewerOutputFile(String workDir, String objectPath, String service);
 
+  /**
+   * Get content from nextcloud
+   */
   String getContent(String objectPath);
+
+  void moveFile(AbstractSwitchboardPath fromPath, AbstractSwitchboardPath toPath);
+
+  /**
+   * Get content from deployment workDir
+   */
+  String getDeployContent(String workDir, String objectPath);
 
   void unlock(String objectPath);
 }
