@@ -58,7 +58,7 @@ public enum DeploymentStatus {
       }
     }
     throw new IllegalArgumentException(format(
-      "Deployment response unexpected: got [%s] but should be in [%s]",
+      "Unexpected deployment response: got [%s] but should be in [%s]",
       httpStatus, stream(values()).map(v -> "" + v.getHttpStatus()).collect(joining(", ")))
     );
   }

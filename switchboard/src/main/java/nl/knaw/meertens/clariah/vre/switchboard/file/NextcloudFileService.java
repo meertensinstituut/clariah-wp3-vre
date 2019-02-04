@@ -128,14 +128,16 @@ public class NextcloudFileService implements FileService {
   }
 
   /**
-   * Get content of output file from deployment and its (future) objectPath
+   * Get from deployment workdir the content of an output file
+   * @param workDir workDir of deployment
+   * @param objectPath path in {workDir}/output/
    */
   @Override
   public String getDeployContent(String workDir, String objectPath) {
     var deployView = DeploymentOutputFile
       .from(workDir, objectPath);
-    var deployFile = Paths
-      .get(deployView.toObjectPath())
+    var deployFile = deployView
+      .toPath()
       .toFile();
     return getContent(deployFile);
   }

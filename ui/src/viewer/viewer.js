@@ -43,9 +43,13 @@ class Viewer extends React.Component {
             const deployData = await DeployResource
                 .postDeployment(viewer, params)
                 .catch((e) => this.setState({error: e}));
+            if(!deployData) return;
+
             const viewerData = await DeployResource
                 .getDeploymentWhen(deployData.workDir, DeploymentStatus.FINISHED)
                 .catch((e) => this.setState({error: e}));
+            if(!viewerData) return;
+
             this.setState({
                 viewer: viewer,
                 viewerFileContent: {__html: viewerData.viewerFileContent},

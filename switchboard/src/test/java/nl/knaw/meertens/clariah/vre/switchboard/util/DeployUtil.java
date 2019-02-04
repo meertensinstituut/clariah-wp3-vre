@@ -35,7 +35,7 @@ public class DeployUtil {
     return deploymentRequest;
   }
 
-  public static DeploymentRequestDto getViewerDeploymentRequestDto(String id) {
+  public static DeploymentRequestDto getViewerDeploymentRequest(String id) {
     var deploymentRequestDto = new DeploymentRequestDto();
     var paramDto = new ParamGroup();
     paramDto.name = "input";
@@ -45,12 +45,20 @@ public class DeployUtil {
     return deploymentRequestDto;
   }
 
+  /**
+   * Wait until switchboard endpoint of {request} returns {deploymentStatus}
+   * (Max 10 seconds)
+   */
   public static String waitUntil(Invocation.Builder request, DeploymentStatus deploymentStatus)
     throws InterruptedException {
+
+    var timeout = 500;
+    var iterations = 20;
+
     logger.info(String.format("Wait until status [%s]", deploymentStatus));
     var httpStatus = 0;
     var json = "";
-    for (int i = 0; i < 20; i++) {
+    for (var i = 0; i < iterations; i++) {
       var response = request.get();
       httpStatus = response.getStatus();
       json = response.readEntity(String.class);
@@ -59,7 +67,7 @@ public class DeployUtil {
         logger.info(String.format("Status is [%s]", deploymentStatus));
         return json;
       }
-      TimeUnit.MILLISECONDS.sleep(500);
+      TimeUnit.MILLISECONDS.sleep(timeout);
     }
     throw new AssertionError(
       String.format("Deployment status [%s] not found in response [%d][%s]", deploymentStatus, httpStatus, json));

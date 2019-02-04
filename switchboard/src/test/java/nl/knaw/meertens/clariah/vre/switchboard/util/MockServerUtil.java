@@ -30,7 +30,7 @@ public class MockServerUtil {
 
   public static void startDeployMockServer(String serviceName, Integer status) {
     logger.info(String.format("start deploy mock server of service [%s] with status [%d]", serviceName, status));
-    DeploymentStatus deploymentStatus = DeploymentStatus.getDeployStatus(status);
+    var deploymentStatus = DeploymentStatus.getDeployStatus(status);
     mockServer
       .when(
         request()
@@ -59,7 +59,7 @@ public class MockServerUtil {
   }
 
   public static void startOrUpdateStatusMockServer(int status, String workDir, String body, String serviceName) {
-    HttpRequest getStatusOfWorkDirRequest = request()
+    var getStatusOfWorkDirRequest = request()
       .withMethod("GET")
       .withPath("/deployment-service/a/exec/" + serviceName + "/" + workDir);
 

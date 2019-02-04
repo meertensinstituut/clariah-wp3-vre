@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -24,9 +26,9 @@ public class FileUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
-  public static ObjectsRecordDto createTestFileWithRegistryObject(String resultSentence) throws IOException {
+  public static ObjectsRecordDto createTestFileWithRegistryObject(String content) throws IOException {
     var fileName = String.format("admin/files/testfile-switchboard-%s.txt", UUID.randomUUID());
-    createFile(fileName, resultSentence);
+    createNextcloudFile(fileName, content);
     var maxId = SwitchboardJerseyTest.getObjectsRegistryServiceStub().getMaxTestObject();
     Long newId = maxId + 1;
     var newObject = createRegistryObject(fileName, newId);
@@ -45,11 +47,17 @@ public class FileUtil {
     }
   }
 
-  private static void createFile(String fileName, String resultSentence) throws IOException {
+  private static void createNextcloudFile(String fileName, String content) throws IOException {
     var path = Paths.get(NEXTCLOUD_VOLUME + "/" + fileName);
     var file = path.toFile();
     file.getParentFile().mkdirs();
-    Files.write(path, newArrayList(resultSentence), Charset.forName("UTF-8"));
+    Files.write(path, newArrayList(content), Charset.forName("UTF-8"));
+  }
+
+  public static String getNextcloudFileContent(String relativePath) throws IOException {
+    var path = Paths.get(NEXTCLOUD_VOLUME, relativePath);
+    assertThat(path.toFile()).exists();
+    return FileUtils.readFileToString(path.toFile(), UTF_8);
   }
 
   private static ObjectsRecordDto createRegistryObject(String filePath, long id) {
@@ -62,15 +70,14 @@ public class FileUtil {
 
   public static String getTestFileContent(String fileName) {
     try {
-      return FileUtils.readFileToString(FileUtils.toFile(
+      return FileUtils.readFileToString(Objects.requireNonNull(FileUtils.toFile(
         Thread.currentThread()
               .getContextClassLoader()
               .getResource(fileName)
-      ), UTF_8);
+      )), UTF_8);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
-
 
 }
