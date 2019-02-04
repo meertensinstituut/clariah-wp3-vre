@@ -43,9 +43,13 @@ class Editor extends React.Component {
             const deployData = await DeployResource
                 .postDeployment(editor, params)
                 .catch((e) => this.setState({error: e}));
+            if(!deployData) return;
+
             const editorData = await DeployResource
                 .getDeploymentWhen(deployData.workDir, DeploymentStatus.FINISHED)
                 .catch((e) => this.setState({error: e}));
+            if(!editorData) return;
+
             this.setState({
                 editor: editor,
                 editorFileContent: {__html: editorData.viewerFileContent}
