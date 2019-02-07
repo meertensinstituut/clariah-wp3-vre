@@ -95,7 +95,7 @@ public class ExecController extends AbstractController {
     @PathParam("service") String serviceName
   ) {
     try {
-      logger.info("Get service");
+      logger.info("Get service"); 
       Service service = new DeploymentLib().getServiceByName(serviceName);
       if (isNull(service)) {
         String msg = "invalid service";
