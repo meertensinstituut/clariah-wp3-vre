@@ -45,6 +45,7 @@ public class FoliaEditor implements RecipePlugin {
   protected String workDir;
   private static Logger logger = LoggerFactory.getLogger(RecipePlugin.class);
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
+  private String docId = "";
 
   /**
    * Initiate the recipe
@@ -53,11 +54,13 @@ public class FoliaEditor implements RecipePlugin {
   public void init(String workDir, Service service) throws RecipePluginException {
     logger.info(format("init [%s]", workDir));
     ObjectNode json = DeploymentLib.parseSemantics(service.getServiceSemantics());
+    logger.info(format("loaded cmdi to json: [%s]", json.toString()));
     this.workDir = workDir;
     try {
-      this.serviceUrl = new URL(json.get("serviceLocation").toString());
+      this.serviceUrl = new URL(json.get("serviceLocation").asText());
     } catch (MalformedURLException e) {
-      throw new RecipePluginException("Url is not correct: " + serviceUrl);
+      logger.info(e.getMessage());
+      throw new RecipePluginException(format("Url is not correct: [%s]", json.get("serviceLocation").asText()));
     }
     this.status = DeploymentStatus.CREATED;
   }
@@ -184,15 +187,37 @@ public class FoliaEditor implements RecipePlugin {
     return StringUtils.splitPreserveAllTokens(stringToExplode, separator);
   }
 
-  public void downloadResultFile(String url) throws IOException {
-    downloadResultFile(new URL(url));
-  }
-
-  public void downloadResultFile(URL url) throws IOException {
+  public void downloadResultFile(URL url) throws IOException, RecipePluginException {
     logger.info("Download URL:" + url + "");
+
+    final String outputPathConst = "output";
+    String key = this.workDir;
+    ObjectNode userConfig = null;
+    userConfig = DeploymentLib.parseUserConfig(key);
+    JsonNode params = userConfig.get("params");
+    ObjectNode outputOjbect;
+    String outputFile;
+
+    outputOjbect = (ObjectNode) params.get(2);
+    outputFile = outputOjbect.get("value").asText();
+
+    String fullOutputPath = Paths.get(
+        SystemConf.ROOT_WORK_DIR,
+        this.workDir,
+        outputPathConst,
+        outputFile
+    ).normalize().toString();
+    logger.info(format("Full outputPath: [%s]", fullOutputPath));
+
+    File outputPathAsFile = new File(Paths.get(fullOutputPath).getParent().normalize().toString());
+    if (!outputPathAsFile.exists()) {
+      logger.info(format("Creating folder: %s", outputPathAsFile.toString()));
+      outputPathAsFile.mkdirs();
+    }
+
     FileUtils.copyURLToFile(
       url,
-      new File("resultFile.xml"),
+      new File(fullOutputPath),
       60,
       60);
     logger.info("Download successful");
@@ -233,13 +258,14 @@ public class FoliaEditor implements RecipePlugin {
 
     logger.info(format("Response code: %s", jsonResponse.getCode()));
     Headers headers = jsonResponse.getHeaders();
-    logger.info(format("Response url: %s", headers.get("location").get(0)));
+    this.docId = headers.get("location").get(0);
+    logger.info(format("Response url: %s", this.docId));
 
     URL returnUrl = new URL(
       this.serviceUrl.getProtocol(),
       this.serviceUrl.getHost(),
       this.serviceUrl.getPort(),
-      headers.get("location").get(0),
+      this.docId,
       null
     );
     logger.info(format("returnUrl: %s", returnUrl.toString()));
@@ -248,6 +274,8 @@ public class FoliaEditor implements RecipePlugin {
 
     logger.info(format("Hacking returnUrl for dev environment: %s", devReturnUrl.toString()));
     jsonResult.put("url", devReturnUrl.toString());
+    jsonResult.put("docId", headers.get("location").get(0));
+
     Unirest.shutdown();
     return jsonResult;
   }
@@ -255,5 +283,20 @@ public class FoliaEditor implements RecipePlugin {
   private static void writeToHtml(String content, File file) throws IOException {
     FileUtils.writeStringToFile(new File(file.toString()), content, forName("UTF-8"));
     logger.info("Generated successfully");
+  }
+
+  public Boolean saveFoliaFileFromEditor() throws RecipePluginException, IOException {
+
+    URL url = new URL(
+      this.serviceUrl.getProtocol(),
+      this.serviceUrl.getHost(),
+      this.serviceUrl.getPort(),
+      this.serviceUrl.getFile() + "/download/pub/" + this.docId + ".folia.xml",
+      null
+    );
+
+    this.downloadResultFile(url);
+
+    return true;
   }
 }
