@@ -1,22 +1,8 @@
 #!/bin/bash
-docker kill $(docker ps -q)
-# kill and prune VRE containers:
-docker kill vre_integration_1
-docker kill vre_recognizer_1
-docker kill vre_deployment_1
-docker kill vre_dreamfactory_1
-docker kill vre_nextcloud_1
-docker kill vre_trifecta_1
-docker kill vre_kafka_1
-docker kill vre_fits_1
-docker kill vre_solr_1
-docker kill vre_zookeeper_1
-docker kill vre_postgres_1
-docker kill vre_switchboard_1
-docker kill vre_indexer_1
-docker kill vre_lamachine_1
-docker kill vre_tagger_1
+VRE_CONTAINERS=$(docker ps -a | command grep vre | awk '{print $1}')
+echo "stop"
+docker stop $VRE_CONTAINERS
+echo "rm"
+docker rm $VRE_CONTAINERS
 
-docker container prune -f
-
-docker ps -a 
+docker ps -a

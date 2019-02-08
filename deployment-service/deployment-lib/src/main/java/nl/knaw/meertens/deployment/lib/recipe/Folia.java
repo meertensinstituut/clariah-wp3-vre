@@ -78,9 +78,9 @@ public class Folia implements RecipePlugin {
 
       // TODO: create polling service
       while (!ready) {
-      logger.info(format("poll [%s]", workDir));
+        logger.info(format("poll [%s]", workDir));
         counter++;
-      Thread.sleep(3000);
+        Thread.sleep(3000);
         // TODO: check if output file exists
         ready = true;
       }
