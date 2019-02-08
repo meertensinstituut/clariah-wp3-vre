@@ -1,6 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard;
 
-public class Config {
+public class SystemConfig {
 
   public static final String DEPLOYMENT_VOLUME = System.getenv("DEPLOYMENT_VOLUME");
   public static final String DEPLOYMENT_HOST_NAME = "http://deployment:8080";
@@ -13,6 +13,9 @@ public class Config {
   public static final String INPUT_DIR = "input";
   public static final String FILES_DIR = "files";
   public static final String CONFIG_FILE_NAME = "config.json";
+  public static final String EDITOR_TMP = "editor.html";
+  public static final String EDITOR_OUTPUT = "result";
+
   public static final String STATUS_FILE_NAME = "switchboard.status.json";
   public static final String OBJECTS_DB_URL = "http://dreamfactory/api/v2/objects";
   public static final String OBJECTS_DB_KEY = System.getenv("APP_KEY_OBJECTS");

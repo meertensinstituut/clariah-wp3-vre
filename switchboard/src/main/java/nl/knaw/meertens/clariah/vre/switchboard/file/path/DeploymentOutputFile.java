@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 /**
  * Path of an output file of a deployed service
  * It has the following structure:
- * `/{tmp}/{workDir}/{output}/`
+ * `/{tmp}/{workDir}/{output}/{objectPath}`
  */
 public class DeploymentOutputFile extends AbstractSwitchboardPath {
 

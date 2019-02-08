@@ -1,6 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.tag;
 
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.TEST_USER;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.TEST_USER;
 
 public class TagService {
 

@@ -2,7 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.poll;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
-import nl.knaw.meertens.clariah.vre.switchboard.Config;
+import nl.knaw.meertens.clariah.vre.switchboard.SystemConfig;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil;
@@ -21,6 +21,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.STATUS_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.createTestFileWithRegistryObject;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -112,7 +114,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
     String uniqueTestFile,
     DeploymentStatus status
   ) throws IOException {
-    var reportPath = Paths.get(Config.DEPLOYMENT_VOLUME, workDir, Config.STATUS_FILE_NAME);
+    var reportPath = Paths.get(DEPLOYMENT_VOLUME, workDir, STATUS_FILE_NAME);
     assertThat(reportPath.toFile()).exists();
     var reportJson = FileUtils.readFileToString(reportPath.toFile(), UTF_8);
     var report = getMapper().readValue(reportJson, DeploymentStatusReport.class);
@@ -126,7 +128,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
   }
 
   private DeploymentStatusReport getReport(String workDir) throws IOException {
-    var reportPath = Paths.get(Config.DEPLOYMENT_VOLUME, workDir, Config.STATUS_FILE_NAME);
+    var reportPath = Paths.get(DEPLOYMENT_VOLUME, workDir, STATUS_FILE_NAME);
     assertThat(reportPath.toFile()).exists();
     var reportJson = FileUtils.readFileToString(reportPath.toFile(), UTF_8);
     return getMapper().readValue(reportJson, DeploymentStatusReport.class);

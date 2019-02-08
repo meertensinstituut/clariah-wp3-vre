@@ -21,7 +21,7 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_MEMORY_SPAN;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_MEMORY_SPAN;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 
 public class RequestRepository {

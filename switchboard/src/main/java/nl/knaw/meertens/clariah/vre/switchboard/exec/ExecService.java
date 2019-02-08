@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,10 +34,16 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.CONFIG_FILE_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_OUTPUT;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_TMP;
+import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamService.getParamByName;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
+import static org.apache.commons.io.FilenameUtils.getExtension;
+import static org.apache.commons.io.FilenameUtils.getPath;
 
 /**
  * ExecService:
@@ -88,7 +95,7 @@ public class ExecService {
     String body
   ) {
     var service = serviceRegistryService.getServiceByName(serviceName);
-    var kind = ServiceKind.fromKind(service.getKind());
+    var kind = ServiceKind.fromString(service.getKind());
     var request = prepareDeploymentRequest(serviceName, body, kind);
     var consumer = finishDeploymentConsumer.get(kind);
     List<String> files = new ArrayList<>(request.getFiles().values());
@@ -124,11 +131,10 @@ public class ExecService {
           request = prepareEditorDeployment(serviceName, body);
           break;
         default:
-          throw new UnsupportedOperationException(
-            String.format("Unsupported deployment of service with kind [%s]", kind));
+          throw new UnsupportedOperationException(format("Unsupported service kind [%s]", kind));
       }
     } catch (IOException e) {
-      throw new RuntimeException(String.format("Could not prepare deployment of [%s]", serviceName), e);
+      throw new RuntimeException(format("Could not prepare deployment of [%s]", serviceName), e);
     }
     return request;
   }
@@ -149,25 +155,58 @@ public class ExecService {
     String service,
     String body
   ) throws IOException {
-    return prepareViewerDeployment(service, body);
+    var request = prepareServiceDeployment(service, body);
+    var params = request.getParams();
+    params.add(createEditorTmpParam(params));
+    params.add(createEditorOutputParam(params));
+    createConfig(request);
+    return request;
   }
 
+  /**
+   * Name of viewer result file
+   */
   private Param createViewerOutputParam(
     List<Param> params
   ) {
     var output = new Param();
     output.name = "output";
     output.type = STRING;
-    output.value = params
-      .stream()
-      .filter(p -> p.name.equals("input"))
-      .findFirst()
-      .orElseGet(() -> {
-        throw new IllegalStateException("No input field in params for deployment of viewer");
-      })
-      .value;
+    output.value = getParamByName(params, "input");
     return output;
   }
+
+  /**
+   * Editor result file
+   */
+  private Param createEditorOutputParam(
+    List<Param> params
+  ) {
+    var output = new Param();
+    output.name = "output";
+    output.type = STRING;
+
+    var inputFile = getParamByName(params, "input");
+    output.value = Path.of(
+      getPath(inputFile),
+      EDITOR_OUTPUT + "." + getExtension(inputFile)
+    ).toString();
+    return output;
+  }
+
+  /**
+   * File that displays editor
+   */
+  private Param createEditorTmpParam(
+    List<Param> params
+  ) {
+    var output = new Param();
+    output.name = "tmp";
+    output.type = STRING;
+    output.value = EDITOR_TMP;
+    return output;
+  }
+
 
   private DeploymentRequest prepareServiceDeployment(
     String service,
@@ -195,7 +234,7 @@ public class ExecService {
     var name = UUID.randomUUID().toString();
     var path = Paths.get(DEPLOYMENT_VOLUME, name);
     assert (path.toFile().mkdirs());
-    logger.info(String.format(
+    logger.info(format(
       "Created workDir [%s]",
       path.toString()
     ));
@@ -215,7 +254,7 @@ public class ExecService {
       var json = mapper.writeValueAsString(config);
       FileUtils.write(configPath.toFile(), json, UTF_8);
     } catch (IOException e) {
-      throw new RuntimeIOException(String.format(
+      throw new RuntimeIOException(format(
         "Could create config file [%s]",
         configPath.toString()
       ), e);

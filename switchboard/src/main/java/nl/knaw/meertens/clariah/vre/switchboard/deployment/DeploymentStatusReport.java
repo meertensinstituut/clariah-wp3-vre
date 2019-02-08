@@ -1,6 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
-import nl.knaw.meertens.clariah.vre.switchboard.Config;
+import nl.knaw.meertens.clariah.vre.switchboard.SystemConfig;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -16,7 +16,7 @@ public class DeploymentStatusReport implements Cloneable {
   /**
    * Interval in seconds between previous and next poll
    */
-  private int interval = Config.MIN_POLL_INTERVAL;
+  private int interval = SystemConfig.MIN_POLL_INTERVAL;
 
   private DeploymentStatus status;
   private String msg;
@@ -40,7 +40,7 @@ public class DeploymentStatusReport implements Cloneable {
   }
 
   /**
-   * Make a shallow copy
+   * Make a shallow clone
    */
   public DeploymentStatusReport(DeploymentStatusReport original) {
     this.polled = original.polled;

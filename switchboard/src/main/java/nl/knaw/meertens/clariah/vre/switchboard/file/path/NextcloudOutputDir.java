@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.OUTPUT_DIR;
 
 /**
  * Path of a output dir stored in nextcloud has the following structure:

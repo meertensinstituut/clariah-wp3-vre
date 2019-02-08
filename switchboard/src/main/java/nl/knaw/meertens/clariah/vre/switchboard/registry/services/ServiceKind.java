@@ -21,7 +21,7 @@ public enum ServiceKind {
   /**
    * ServiceKind is called 'kind' in services registry
    */
-  public static ServiceKind fromKind(String kind) {
+  public static ServiceKind fromString(String kind) {
     if (isBlank(kind)) {
       throw new IllegalArgumentException("Cannot determine ServiceKind when String kind is blank");
     }

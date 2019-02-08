@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -16,11 +17,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static java.nio.file.Path.*;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.CONFIG_FILE_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.INPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.NEXTCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.CONFIG_FILE_NAME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_OUTPUT;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_TMP;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.INPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.NEXTCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
@@ -31,6 +35,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.createTestF
 import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.*;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.startOrUpdateStatusMockServer;
+import static org.apache.commons.io.FilenameUtils.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.never;
@@ -281,17 +286,8 @@ public class ExecControllerTest extends AbstractControllerTest {
            .send(Mockito.any());
   }
 
-  /**
-   * TODO:
-   * - create test deployment of editor
-   * - mock editor creation
-   * - test iframe is passed
-   * - mock editor finish
-   * - test input file is updated with saved output file
-   */
   @Test
-  public void simpleName() throws IOException, InterruptedException {
-  // public void deleteDeploymentRequest_shouldUpdateEditedFile() throws IOException {
+  public void deleteDeploymentRequest_shouldUpdateEditedFile() throws IOException, InterruptedException {
 
     getMockServer().reset();
     startServicesRegistryMockServer(dummyEditorService);
@@ -306,29 +302,56 @@ public class ExecControllerTest extends AbstractControllerTest {
     var deploymentRequestDto = getViewerDeploymentRequest("" + object.id);
     var deployed = deploy(service, deploymentRequestDto);
     assertThat(deployed.getStatus()).isBetween(200, 203);
-    String response = deployed.readEntity(String.class);
-    System.out.println("response:" + response);
+    var response = deployed.readEntity(String.class);
     String workDir = JsonPath.parse(response).read("$.workDir");
 
-    // check output param in config:
-    Path configFile = Paths.get(DEPLOYMENT_VOLUME, workDir, CONFIG_FILE_NAME);
+    // get config:
+    var configFile = Paths.get(DEPLOYMENT_VOLUME, workDir, CONFIG_FILE_NAME);
     assertThat(configFile.toFile()).exists();
     var configJson = new String(Files.readAllBytes(configFile));
     var config = new ObjectMapper().readValue(configJson, ConfigDto.class);
-    assertThat(config.params.get(1).name).isEqualTo("output");
-    assertThat(config.params.get(1).value).contains(inputPath.toString());
+
+    // check input file is defined:
+    assertThat(config.params.get(0).name).isEqualTo("input");
+    assertThat(config.params.get(0).value).contains(inputPath.toString());
+
+    // check editor iframe is defined:
+    assertThat(config.params.get(1).name).isEqualTo("tmp");
+    assertThat(config.params.get(1).value).isEqualTo(EDITOR_TMP);
+
+    // check editor save file is defined:
+    assertThat(config.params.get(2).name).isEqualTo("output");
+    assertThat(
+      getExtension(config.params.get(2).value)
+    ).isEqualTo(
+      getExtension(config.params.get(0).value)
+    );
 
     // finish deployment:
     var request = target(String.format("exec/task/%s/", workDir)).request();
     startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", service);
 
-    // editor iframe:
+    // get editor iframe:
     var editor = getTestFileContent("editor-iframe.html");
-    createResultFile(workDir, object.filepath, editor);
+    createResultFile(workDir, "editor.html", editor);
     var finishedJson = waitUntil(request, FINISHED);
     String viewerFileContentInJson = JsonPath.parse(finishedJson).read("$.viewerFileContent");
     assertThat(viewerFileContentInJson).isEqualToIgnoringWhitespace(editor);
 
+    // create result file:
+    var resultContent = getTestFileContent("editor-savefile.xml");
+    var resultFilename = of(getPath(object.filepath), EDITOR_OUTPUT + ".txt").toString();
+    createResultFile(workDir, resultFilename, resultContent);
+
+    // stop deployment:
+    var result = target(String.format("exec/task/%s", workDir))
+      .request()
+      .delete();
+    assertThat(result.getStatus()).isEqualTo(200);
+
+    // input file should be updated:
+    assertThat(getNextcloudFileContent(inputPath.toString()))
+      .isEqualToIgnoringWhitespace(getTestFileContent("editor-savefile.xml"));
 
   }
 

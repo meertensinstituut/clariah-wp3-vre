@@ -2,13 +2,18 @@ package nl.knaw.meertens.clariah.vre.switchboard.consumer;
 
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentConfigFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentInputFile;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentTmpFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaNextcloudCreateFileDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
+import nl.knaw.meertens.clariah.vre.switchboard.param.ParamService;
 
 import java.nio.file.Path;
 import java.sql.Timestamp;
+
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_TMP;
 
 public class FinishEditorDeploymentConsumer extends AbstractDeploymentConsumer {
 
@@ -29,7 +34,7 @@ public class FinishEditorDeploymentConsumer extends AbstractDeploymentConsumer {
   void handleFinish(DeploymentStatusReport report) {
     var content = nextcloudFileService.getDeployContent(
       report.getWorkDir(),
-      report.getFiles().get(0)
+      EDITOR_TMP
     );
     report.setViewerFileContent(content);
     report.setWorkDir(report.getWorkDir());
@@ -37,14 +42,18 @@ public class FinishEditorDeploymentConsumer extends AbstractDeploymentConsumer {
 
   @Override
   void handleStop(DeploymentStatusReport report) {
-    var inputObjectPath = report.getFiles().get(0);
-    var fromPath = DeploymentInputFile
-      .from(report.getWorkDir(), inputObjectPath);
+    var config = DeploymentConfigFile
+      .from(report.getWorkDir())
+      .getConfig();
+    var editorOutputPath = ParamService
+      .getConfigParamByName(config.params, "output");
+    var fromPath = DeploymentTmpFile
+      .from(report.getWorkDir(), editorOutputPath);
     var toPath = NextcloudInputFile
-      .from(inputObjectPath);
+      .from(report.getFiles().get(0));
 
     nextcloudFileService.moveFile(fromPath, toPath);
-    nextcloudFileService.unlock(inputObjectPath);
+    nextcloudFileService.unlock(editorOutputPath);
     sendKafkaNextcloudUpdateMsg(toPath.toPath());
   }
 

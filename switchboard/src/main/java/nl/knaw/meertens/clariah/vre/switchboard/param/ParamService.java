@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.param;
 
+import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 import org.slf4j.Logger;
@@ -44,12 +45,34 @@ public class ParamService {
     this.servicesRegistryService = servicesRegistryService;
   }
 
+  public static String getParamByName(List<Param> params, String name) {
+    return params
+      .stream()
+      .filter(p -> p.name.equals(name))
+      .findFirst()
+      .orElseGet(() -> {
+        throw new IllegalStateException("No input field in params for deployment of viewer");
+      })
+      .value;
+  }
+
+  public static String getConfigParamByName(List<ConfigParamDto> params, String name) {
+    return params
+      .stream()
+      .filter(p -> p.name.equals(name))
+      .findFirst()
+      .orElseGet(() -> {
+        throw new IllegalStateException("No name field in params for deployment of viewer");
+      })
+      .value;
+  }
+
   public Cmdi getParams(long serviceId) {
     var service = servicesRegistryService.getService(serviceId);
     var params = new Cmdi();
     params.id = serviceId;
     params.name = service.getName();
-    params.kind = ServiceKind.fromKind(service.getKind());
+    params.kind = ServiceKind.fromString(service.getKind());
     params.params = convertCmdiXmlToParams(service.getSemantics());
     if (params.kind.equals(ServiceKind.VIEWER)) {
       params.params = removeOutputParam(params.params);

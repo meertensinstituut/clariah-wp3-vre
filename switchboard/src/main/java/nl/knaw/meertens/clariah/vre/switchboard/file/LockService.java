@@ -1,6 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
-import nl.knaw.meertens.clariah.vre.switchboard.Config;
+import nl.knaw.meertens.clariah.vre.switchboard.SystemConfig;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractSwitchboardPath;
 import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
@@ -25,6 +25,9 @@ import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.NEXTCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.USER_TO_LOCK_WITH;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.USER_TO_UNLOCK_WITH;
 
 /**
  * Locks and unlocks files
@@ -34,12 +37,12 @@ public class LockService {
   /**
    * Lock staged files
    */
-  private final String locker = Config.USER_TO_LOCK_WITH;
+  private final String locker = USER_TO_LOCK_WITH;
 
   /**
    * Unlocks staged files
    */
-  private final String unlocker = Config.USER_TO_UNLOCK_WITH;
+  private final String unlocker = USER_TO_UNLOCK_WITH;
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -62,7 +65,7 @@ public class LockService {
       ));
       var path = file.toPath();
       String nextcloudDir = Paths
-        .get(Config.NEXTCLOUD_VOLUME)
+        .get(NEXTCLOUD_VOLUME)
         .getFileName()
         .toString();
       unlockParents(path, nextcloudDir);

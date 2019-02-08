@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.util;
 
-import nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDto;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.exception.RuntimeIOException;
@@ -10,15 +9,15 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.DEPLOYMENT_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.NEXTCLOUD_VOLUME;
-import static nl.knaw.meertens.clariah.vre.switchboard.Config.OUTPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.NEXTCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.OUTPUT_DIR;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest.getObjectsRegistryServiceStub;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 
@@ -29,10 +28,9 @@ public class FileUtil {
   public static ObjectsRecordDto createTestFileWithRegistryObject(String content) throws IOException {
     var fileName = String.format("admin/files/testfile-switchboard-%s.txt", UUID.randomUUID());
     createNextcloudFile(fileName, content);
-    var maxId = SwitchboardJerseyTest.getObjectsRegistryServiceStub().getMaxTestObject();
-    Long newId = maxId + 1;
+    var newId = getObjectsRegistryServiceStub().getNewId();
     var newObject = createRegistryObject(fileName, newId);
-    SwitchboardJerseyTest.getObjectsRegistryServiceStub().addTestObject(newObject);
+    getObjectsRegistryServiceStub().addTestObject(newObject);
     return newObject;
   }
 

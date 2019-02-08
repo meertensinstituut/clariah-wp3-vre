@@ -62,14 +62,13 @@ public class ExecController extends AbstractController {
   }
 
   @DELETE
-  @Path("/{service}/{workDir}")
+  @Path("/task/{workDir}")
   @Consumes(APPLICATION_JSON)
   @Produces(APPLICATION_JSON)
   public Response deleteDeploymentRequest(
-    @PathParam("service") String service,
     @PathParam("workDir") String workDir
   ) {
-    logger.info(String.format("Received request to delete service [%s] [%s]", service, workDir));
+    logger.info(String.format("Received request to delete service [%s]", workDir));
     execService.delete(workDir);
     return createResponse(workDir, 200);
   }

@@ -26,11 +26,11 @@ public class ObjectsRegistryServiceStub implements ObjectsRegistryService {
     this.testFileRecords.put(testFileRecords.id, testFileRecords);
   }
 
-  public Long getMaxTestObject() {
+  public Long getNewId() {
     if (testFileRecords.isEmpty()) {
-      return 0L;
+      return 1L;
     }
-    return Collections.max(testFileRecords.keySet());
+    return Collections.max(testFileRecords.keySet()) + 1;
   }
 
 }

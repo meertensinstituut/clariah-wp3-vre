@@ -49,14 +49,14 @@ public class DeploymentServiceImpl implements DeploymentService {
   @Override
   public void delete(String workDir) {
     var report = requestRepositoryService.getStatusReport(workDir);
+
     var uri = report.getUri();
-
     sendStopDeploymentRequest(uri);
-
-    var deploymentConsumer = requestRepositoryService.getConsumer(workDir);
-    deploymentConsumer.accept(report);
-
     report.setStatus(STOPPED);
+
+    var abstractDeploymentConsumer = requestRepositoryService.getConsumer(workDir);
+    abstractDeploymentConsumer.accept(report);
+
     requestRepositoryService.saveStatusReport(report);
   }
 

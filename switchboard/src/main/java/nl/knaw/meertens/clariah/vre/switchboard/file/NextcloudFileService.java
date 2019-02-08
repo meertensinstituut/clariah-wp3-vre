@@ -4,6 +4,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractSwitchboardPat
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentOutputDir;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentOutputFile;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentTmpFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudOutputDir;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudOutputFile;
@@ -134,7 +135,7 @@ public class NextcloudFileService implements FileService {
    */
   @Override
   public String getDeployContent(String workDir, String objectPath) {
-    var deployView = DeploymentOutputFile
+    var deployView = DeploymentTmpFile
       .from(workDir, objectPath);
     var deployFile = deployView
       .toPath()
