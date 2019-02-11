@@ -2,7 +2,6 @@ package nl.knaw.meertens.clariah.vre.switchboard.poll;
 
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
-import nl.knaw.meertens.clariah.vre.switchboard.SystemConfig;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil;
@@ -48,7 +47,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
     var request = target(String.format("exec/task/%s", workDir)).request();
     DeployUtil.waitUntil(request, RUNNING);
 
-    testReportFileFields(startTest, expectedService, workDir, uniqueTestFile, RUNNING);
+    testReportFileFields(startTest, expectedService, workDir, uniqueTestFile.toString(), RUNNING);
   }
 
   @Test
@@ -124,7 +123,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
     assertThat(report.getPolled()).isAfter(startTest);
     assertThat(report.getPolled()).isBefore(now());
     assertThat(report.getService()).isEqualTo(expectedService);
-    assertThat(report.getFiles().get(0)).isEqualTo(uniqueTestFile);
+    assertThat(report.getFiles().get(0).toString()).isEqualTo(uniqueTestFile);
   }
 
   private DeploymentStatusReport getReport(String workDir) throws IOException {

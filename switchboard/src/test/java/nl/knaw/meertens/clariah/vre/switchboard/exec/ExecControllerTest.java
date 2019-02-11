@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
-import org.apache.commons.io.FilenameUtils;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -116,12 +116,12 @@ public class ExecControllerTest extends AbstractControllerTest {
     startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
     var response = waitUntil(request, FINISHED);
 
-    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
-    createResultFile(workDir, resultFilename, resultSentence);
+    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile.toString()).toFile()).exists();
+    createResultFile(workDir, resultFilename.toString(), resultSentence);
     assertThatJson(response).node("status").isEqualTo("FINISHED");
 
     // Atm links are kept:
-    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
+    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile.toString()).toFile()).exists();
   }
 
   @Test
@@ -146,6 +146,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     var finishedJson = waitUntil(request, FINISHED);
 
     // Check output file is moved:
+    // error:
     var outputFolder = findOutputFolder(finishedJson);
     assertThat(outputFolder).isNotNull();
     assertThat(outputFolder.toString()).startsWith("/usr/local/nextcloud/admin/files/output-20");
@@ -171,7 +172,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     var configJson = new String(Files.readAllBytes(configFile));
     var config = new ObjectMapper().readValue(configJson, ConfigDto.class);
 
-    assertThat(config.params.get(0).value).contains(uniqueTestFile);
+    assertThat(config.params.get(0).value).contains(uniqueTestFile.toString());
     assertThat(config.params.get(0).name).isEqualTo("untokinput");
 
     assertThat(config.params.get(0).type).isEqualTo(FILE);
@@ -263,7 +264,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     var viewerService = "VIEWER";
     startDeployMockServer(viewerService, 200);
     var object = createTestFileWithRegistryObject(resultSentence);
-    var inputPath = Paths.get(object.filepath);
+    var inputPath = ObjectPath.of(object.filepath).toPath();
     var expectedOutputPath = "admin/files/.vre/VIEWER/" + inputPath.subpath(2, inputPath.getNameCount());
 
     // request deployment:
@@ -296,7 +297,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     var service = "EDITOR";
     startDeployMockServer(service, 200);
     var object = createTestFileWithRegistryObject(getTestFileContent("editor-inputfile.xml"));
-    var inputPath = Paths.get(object.filepath);
+    var inputPath = object.filepath;
 
     // request deployment:
     var deploymentRequestDto = getViewerDeploymentRequest("" + object.id);
@@ -313,7 +314,7 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     // check input file is defined:
     assertThat(config.params.get(0).name).isEqualTo("input");
-    assertThat(config.params.get(0).value).contains(inputPath.toString());
+    assertThat(config.params.get(0).value).contains(inputPath);
 
     // check editor iframe is defined:
     assertThat(config.params.get(1).name).isEqualTo("tmp");
@@ -350,7 +351,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     assertThat(result.getStatus()).isEqualTo(200);
 
     // input file should be updated:
-    assertThat(getNextcloudFileContent(inputPath.toString()))
+    assertThat(getNextcloudFileContent(inputPath))
       .isEqualToIgnoringWhitespace(getTestFileContent("editor-savefile.xml"));
 
   }

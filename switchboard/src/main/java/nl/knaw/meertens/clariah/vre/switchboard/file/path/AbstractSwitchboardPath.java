@@ -77,53 +77,6 @@ public abstract class AbstractSwitchboardPath {
   String outputResult;
 
   /**
-   * Object paths constist of:
-   * {user}/{files}/{file}
-   *
-   * @return {file}
-   */
-  static String getFileFrom(String objectPath) {
-    assertIsObjectPath(objectPath);
-    var inputPath = Paths.get(objectPath);
-    return inputPath
-      .subpath(2, inputPath.getNameCount())
-      .toString();
-  }
-
-  /**
-   * Object path constists of:
-   * {user}/{files}/{file}
-   *
-   * @return {user}
-   */
-  static String getUserFrom(String objectPath) {
-    assertIsObjectPath(objectPath);
-    var inputPath = Paths.get(objectPath);
-    return inputPath.subpath(0, 1).toString();
-  }
-
-  /**
-   * Assert that objectPath has the following structure:
-   * {user}/files/{rest/of/file/path.txt}
-   * Nb. Validity of user name is not checked
-
-   * @throws IllegalArgumentException when assertion fails
-   */
-  private static void assertIsObjectPath(String objectPath) {
-    var pattern = "(.*)/" + FILES_DIR + "/(.*)";
-    var match = Pattern
-      .compile(pattern)
-      .matcher(objectPath)
-      .matches();
-    if (!match) {
-      throw new IllegalArgumentException(String.format(
-        "objectPath [%s] did not match pattern [%s]",
-        objectPath, pattern
-      ));
-    }
-  }
-
-  /**
    * @return absolute path
    */
   public abstract Path toPath();
@@ -133,5 +86,5 @@ public abstract class AbstractSwitchboardPath {
    *
    * @return relative path
    */
-  public abstract String toObjectPath();
+  public abstract ObjectPath toObjectPath();
 }

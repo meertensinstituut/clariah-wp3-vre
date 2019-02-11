@@ -10,6 +10,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
 import nl.knaw.meertens.clariah.vre.switchboard.file.NextcloudFileService;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaDeploymentStartDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.param.Param;
@@ -98,7 +99,7 @@ public class ExecService {
     var kind = ServiceKind.fromString(service.getKind());
     var request = prepareDeploymentRequest(serviceName, body, kind);
     var consumer = finishDeploymentConsumer.get(kind);
-    List<String> files = new ArrayList<>(request.getFiles().values());
+    List<ObjectPath> files = new ArrayList<>(request.getFiles().values());
     nextcloudFileService.stageFiles(request.getWorkDir(), files);
     var statusReport = deploymentService.deploy(request, consumer);
     request.setStatusReport(statusReport);
@@ -292,15 +293,15 @@ public class ExecService {
     );
   }
 
-  private HashMap<Long, String> requestFilesFromRegistry(
+  private HashMap<Long, ObjectPath> requestFilesFromRegistry(
     DeploymentRequest serviceRequest
   ) {
-    HashMap<Long, String> files = new HashMap<>();
+    HashMap<Long, ObjectPath> files = new HashMap<>();
     for (var param : serviceRequest.getParams()) {
       if (param.type.equals(ParamType.FILE)) {
         var objectId = Long.valueOf(param.value);
         var record = objectsRegistryService.getObjectById(objectId);
-        files.put(objectId, record.filepath);
+        files.put(objectId, ObjectPath.of(record.filepath));
       }
     }
     return files;
@@ -308,11 +309,11 @@ public class ExecService {
 
   private void replaceObjectIdsWithPaths(
     List<Param> params,
-    HashMap<Long, String> registryPaths
+    HashMap<Long, ObjectPath> registryPaths
   ) {
     for (var param : params) {
       if (param.type.equals(ParamType.FILE)) {
-        param.value = registryPaths.get(Long.valueOf(param.value));
+        param.value = registryPaths.get(Long.valueOf(param.value)).toString();
       }
     }
   }

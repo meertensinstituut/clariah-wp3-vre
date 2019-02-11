@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.util;
 
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.objects.ObjectsRecordDto;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.exception.RuntimeIOException;
@@ -29,13 +30,13 @@ public class FileUtil {
     var fileName = String.format("admin/files/testfile-switchboard-%s.txt", UUID.randomUUID());
     createNextcloudFile(fileName, content);
     var newId = getObjectsRegistryServiceStub().getNewId();
-    var newObject = createRegistryObject(fileName, newId);
+    var newObject = createRegistryObject(newId, ObjectPath.of(fileName));
     getObjectsRegistryServiceStub().addTestObject(newObject);
     return newObject;
   }
 
   public static void createResultFile(String workDir, String resultFilename, String content) {
-    var path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, resultFilename);
+    var path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, resultFilename.toString());
     assertThat((path.toFile().getParentFile().mkdirs())).isTrue();
     path.toFile().getParentFile().mkdirs();
     try {
@@ -58,10 +59,10 @@ public class FileUtil {
     return FileUtils.readFileToString(path.toFile(), UTF_8);
   }
 
-  private static ObjectsRecordDto createRegistryObject(String filePath, long id) {
+  private static ObjectsRecordDto createRegistryObject(long id, ObjectPath filePath) {
     var testFileRecord = new ObjectsRecordDto();
     testFileRecord.id = id;
-    testFileRecord.filepath = filePath;
+    testFileRecord.filepath = filePath.toString();
     testFileRecord.mimetype = "text/plain";
     return testFileRecord;
   }

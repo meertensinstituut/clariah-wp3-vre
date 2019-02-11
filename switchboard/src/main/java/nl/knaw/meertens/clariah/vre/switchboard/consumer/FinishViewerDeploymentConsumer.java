@@ -27,7 +27,7 @@ public class FinishViewerDeploymentConsumer extends AbstractDeploymentConsumer {
     );
 
     report.setViewerFile(viewerFile.toString());
-    report.setViewerFileContent(nextcloudFileService.getContent(viewerFile.toString()));
+    report.setViewerFileContent(nextcloudFileService.getContent(viewerFile));
     report.setWorkDir(report.getWorkDir());
   }
 

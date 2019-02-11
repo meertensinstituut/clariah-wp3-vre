@@ -16,11 +16,11 @@ public class DeploymentInputFile extends AbstractSwitchboardPath {
     this.file = file;
   }
 
-  public static DeploymentInputFile from(String workDir, String objectPath) {
+  public static DeploymentInputFile from(String workDir, ObjectPath objectPath) {
     return new DeploymentInputFile(
       workDir,
-      getUserFrom(objectPath),
-      getFileFrom(objectPath)
+      objectPath.getUser(),
+      objectPath.getFile()
     );
   }
 
@@ -30,8 +30,8 @@ public class DeploymentInputFile extends AbstractSwitchboardPath {
   }
 
   @Override
-  public String toObjectPath() {
-    return Paths.get(user, files, file).toString();
+  public ObjectPath toObjectPath() {
+    return ObjectPath.of(user, files, file);
   }
 
   public String getTmp() {

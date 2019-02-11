@@ -24,7 +24,7 @@ public class DeploymentOutputDir extends AbstractSwitchboardPath {
   }
 
   @Override
-  public String toObjectPath() {
+  public ObjectPath toObjectPath() {
     throw new UnsupportedOperationException();
   }
 

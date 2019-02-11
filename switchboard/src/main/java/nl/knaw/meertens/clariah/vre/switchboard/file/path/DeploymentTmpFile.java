@@ -31,7 +31,7 @@ public class DeploymentTmpFile extends AbstractSwitchboardPath {
   }
 
   @Override
-  public String toObjectPath() {
+  public ObjectPath toObjectPath() {
     throw new IllegalStateException("A temporary file cannot be converted into a objectPath");
   }
 

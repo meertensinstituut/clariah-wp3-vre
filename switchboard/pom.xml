@@ -35,7 +35,6 @@
     <log4j.version>2.11.1</log4j.version>
     <mockito-core.version>2.21.0</mockito-core.version>
     <mockserver.version>5.4.1</mockserver.version>
-    <random-beans.version>3.7.0</random-beans.version>
     <reflections.version>0.9.11</reflections.version>
     <unirest-java.version>1.4.9</unirest-java.version>
   </properties>
@@ -190,12 +189,6 @@
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
       <version>${reflections.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.github.benas</groupId>
-      <artifactId>random-beans</artifactId>
-      <version>${random-beans.version}</version>
       <scope>test</scope>
     </dependency>
 

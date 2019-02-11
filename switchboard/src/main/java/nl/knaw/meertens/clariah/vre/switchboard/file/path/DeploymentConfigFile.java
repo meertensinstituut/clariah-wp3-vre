@@ -35,7 +35,7 @@ public class DeploymentConfigFile extends AbstractSwitchboardPath {
   }
 
   @Override
-  public String toObjectPath() {
+  public ObjectPath toObjectPath() {
     throw new IllegalStateException("A config file cannot be converted into a objectPath");
   }
 

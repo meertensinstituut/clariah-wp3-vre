@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
@@ -40,11 +41,9 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
         .asString();
       var result = isBlank(response.getBody()) ? new ObjectsRecordDto()
         : mapper.readValue(response.getBody(), ObjectsRecordDto.class);
-      logger.info(String.format("Requested [%d] from registry, received object of [%s]", id, result.filepath));
       return result;
     } catch (IOException | UnirestException e) {
-      throw new RuntimeException(String.format("Could not retrieve object record [%d] from registry", id.toString()),
-        e);
+      throw new RuntimeException(format("Could not retrieve object record [%d] from registry", id), e);
     }
   }
 

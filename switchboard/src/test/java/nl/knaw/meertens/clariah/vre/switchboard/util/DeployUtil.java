@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.client.Invocation;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
 import static org.assertj.core.util.Lists.newArrayList;
 
@@ -50,12 +51,12 @@ public class DeployUtil {
    * (Max 10 seconds)
    */
   public static String waitUntil(Invocation.Builder request, DeploymentStatus deploymentStatus)
-    throws InterruptedException {
+    throws InterruptedException, AssertionError {
 
     var timeout = 500;
     var iterations = 20;
 
-    logger.info(String.format("Wait until status [%s]", deploymentStatus));
+    logger.info(format("Wait until status [%s]", deploymentStatus));
     var httpStatus = 0;
     var json = "";
     for (var i = 0; i < iterations; i++) {
@@ -64,12 +65,11 @@ public class DeployUtil {
       json = response.readEntity(String.class);
       String status = JsonPath.parse(json).read("$.status");
       if (status.equals(deploymentStatus.toString())) {
-        logger.info(String.format("Status is [%s]", deploymentStatus));
+        logger.info(format("Status is [%s]", deploymentStatus));
         return json;
       }
       TimeUnit.MILLISECONDS.sleep(timeout);
     }
-    throw new AssertionError(
-      String.format("Deployment status [%s] not found in response [%d][%s]", deploymentStatus, httpStatus, json));
+    throw new AssertionError(format("Status [%s] not found in [%d][%s]", deploymentStatus, httpStatus, json));
   }
 }

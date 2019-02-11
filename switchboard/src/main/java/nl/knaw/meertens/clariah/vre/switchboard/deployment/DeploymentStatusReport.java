@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import nl.knaw.meertens.clariah.vre.switchboard.SystemConfig;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class DeploymentStatusReport implements Cloneable {
   private String service;
   private URI uri;
   private String workDir;
-  private List<String> files;
+  private List<ObjectPath> files;
 
   /**
    * Path to generated view in user dir
@@ -104,11 +105,11 @@ public class DeploymentStatusReport implements Cloneable {
     this.service = service;
   }
 
-  public List<String> getFiles() {
+  public List<ObjectPath> getFiles() {
     return files;
   }
 
-  public void setFiles(List<String> files) {
+  public void setFiles(List<ObjectPath> files) {
     this.files = files;
   }
 
