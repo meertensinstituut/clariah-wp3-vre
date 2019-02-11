@@ -30,7 +30,7 @@ public class NextcloudViewPath extends AbstractSwitchboardPath {
 
   @Override
   public ObjectPath toObjectPath() {
-    return new ObjectPath(Paths.get(user, files, vre, service, file).toString());
+    return ObjectPath.of(user, files, vre, service, file);
   }
 
   public String getNextcloud() {

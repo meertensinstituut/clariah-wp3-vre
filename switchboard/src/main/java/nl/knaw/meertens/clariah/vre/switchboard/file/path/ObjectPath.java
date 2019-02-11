@@ -12,11 +12,8 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.FILES_DIR;
 /**
  * Path of a file in nextcloud as found in object registry
  * Object path constists of:
- * {user}/{files}/{file}
- * Where {files} is defined with FILES_DIR
- * TODO:
- * - replace string with ObjectPath,
- * - move objectPath functionality from AbstractSwitchboardPath to ObjectPath
+ * {user}/{files}/{path/to/file}
+ * Where {files} is FILES_DIR
  */
 public class ObjectPath {
 
@@ -61,7 +58,6 @@ public class ObjectPath {
   }
 
   private static String getFileFrom(String objectPath) {
-    assertIsObjectPath(objectPath);
     var inputPath = Paths.get(objectPath);
     return inputPath
       .subpath(2, inputPath.getNameCount())
@@ -69,9 +65,12 @@ public class ObjectPath {
   }
 
   private static String getUserFrom(String objectPath) {
-    assertIsObjectPath(objectPath);
     var inputPath = Paths.get(objectPath);
     return inputPath.subpath(0, 1).toString();
+  }
+
+  public static ObjectPath of(String first, String... more) {
+    return new ObjectPath(Path.of(first, more).toString());
   }
 
   public Path toPath() {
