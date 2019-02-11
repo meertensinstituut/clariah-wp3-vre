@@ -8,6 +8,7 @@ import nl.knaw.meertens.deployment.lib.Queue;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
+import nl.knaw.meertens.deployment.lib.recipe.FoliaEditor;
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +95,7 @@ public class ExecController extends AbstractController {
     @PathParam("service") String serviceName
   ) {
     try {
-      logger.info("Get service");
+      logger.info("Get service"); 
       Service service = new DeploymentLib().getServiceByName(serviceName);
       if (isNull(service)) {
         String msg = "invalid service";
@@ -150,9 +151,20 @@ public class ExecController extends AbstractController {
   public Response delete(
     @PathParam("workDir") String workDir,
     @PathParam("service") String service
-  ) {
+  ) throws RecipePluginException, IOException {
     // TODO: Queues are created at three different places atm, shouldn't there be just one queue?
     Queue queue = new Queue();
+
+    // is service is FOLIAEDITOR save file first before closing
+    if (service == "FOLIAEDITOR") {
+      RecipePlugin plugin = queue.getPlugin(workDir);
+
+      FoliaEditor editor = (FoliaEditor) plugin;
+      assert editor.saveFoliaFileFromEditor();
+
+    }
+
+
     queue.removeTask(workDir);
     return Response
       .ok("deleted", APPLICATION_JSON)
