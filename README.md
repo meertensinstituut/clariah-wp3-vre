@@ -1,10 +1,16 @@
 # A CLARIAH WP3 Virtual Research Environment
 
+## Introduction
 The CLARIAH WP3 VRE aims to offer an environment that integrates many of the tools and services that were and are developed and supported in the CLARIN NL and CLARIAH (WP3) projects. Thus the VRE should overcome the fragmentation that now exists which forces the researchers to accept a different environment for every tool and service they want to use.
 
 Next to integrating existing services, the VRE should also facilitate more easily repeatable research workflow by maintaining a solid data administration (provenance) that tracks the in and export of data and its processing.
 
 The basis of the WP3 VRE is a largely general user environment not very specific for a particular discipline; discipline specific aspects are the supported (meta) data formats, the integrated services, including visualizations and the policies for in and exporting data from external repositories.
+
+## Demonstration
+Want to run the VRE locally? See:
+- [technical readme](./README-tech.md)
+- [demo readme](./demo/README.md)
 
 ## User Perspective
 
@@ -37,8 +43,3 @@ From a user perspective the VRE should be offering the use of both local and web
 -	frequently used resource processing offered via  workflow ‘recipes’
 -	managing user profiles that include for instance user specific lexica for semantic search
 -	archiving of results via CLARIN/EUDAT services
-
-## Where to go next?
-
-- further [technical info](./README-tech.md)
-- [demo](./demo/README.md)

@@ -3,19 +3,23 @@ CLARIAH WP3 VRE under the hood
 
 The CLARIAH WP3 VRE consists of the following components:
 
-- **Owncloud**: to host files
-- **Recognizer**: to determine file types
-- **Registry**: to persist objects and list services
-- **Switchboard**: to prepare service requests
 - **UI**: to allow users to interact with the VRE through a user interface
+- **Nextcloud**: to host files
+- **Recognizer**: to determine file types
 - **Tagger**: to tag (new) files in the objects registry
+- **Registry**: to list services and save metadata about files
+- **Switchboard**: to prepare service deployment
+- **Deployment-service**: to deploy a (remote) service
 - **Integration**: to verify that all components play nicely together
 
 See [vre-model.svg](vre-model.svg) for an overview of the VRE.
 
 Using:
-- Java 9 or higher
+- Java 9/11
 - Php 7
+- [Kafka](https://kafka.apache.org/)
+- [Nextcloud](https://nextcloud.com/)
+- [Dreamfactory](https://www.dreamfactory.com/)
 
 Deployment
 ---
