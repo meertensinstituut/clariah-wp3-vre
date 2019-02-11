@@ -9,6 +9,7 @@ import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudOutputDir;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudOutputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudViewPath;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
@@ -41,7 +42,7 @@ public class NextcloudFileService implements FileService {
   }
 
   @Override
-  public void stageFiles(String workDir, List<String> objectPaths) {
+  public void stageFiles(String workDir, List<ObjectPath> objectPaths) {
     var inputPaths = objectPaths
       .stream()
       .map(NextcloudInputFile::from)
@@ -59,27 +60,27 @@ public class NextcloudFileService implements FileService {
    * next to which the output folder is created.
    */
   @Override
-  public void unstage(String workDir, List<String> objectPaths) {
+  public void unstage(String workDir, List<ObjectPath> objectPaths) {
     unstageObjectPaths(objectPaths);
   }
 
   @Override
-  public List<Path> unstageServiceOutputFiles(String workDir, String objectPath) {
+  public List<ObjectPath> unstageServiceOutputFiles(String workDir, ObjectPath objectPath) {
     var inputFile = DeploymentInputFile.from(workDir, objectPath);
     var outputDir = moveOutputDir(inputFile);
     var output = unlockOutputFiles(outputDir);
     return output
       .stream()
-      .map(f -> Paths.get(f.toObjectPath()))
+      .map(f -> f.toObjectPath())
       .collect(toList());
   }
 
   @Override
-  public void unlock(String objectPath) {
+  public void unlock(ObjectPath objectPath) {
     locker.unlock(NextcloudInputFile.from(objectPath));
   }
 
-  private void unstageObjectPaths(List<String> objectPaths) {
+  private void unstageObjectPaths(List<ObjectPath> objectPaths) {
     if (objectPaths.isEmpty()) {
       throw new IllegalArgumentException(
         "Could not move output next to input: input file is unknown"
@@ -97,14 +98,14 @@ public class NextcloudFileService implements FileService {
    * @return path of viewer file in nextcloud dir
    */
   @Override
-  public Path unstageViewerOutputFile(String workDir, String objectPath, String service) {
+  public ObjectPath unstageViewerOutputFile(String workDir, ObjectPath objectPath, String service) {
     var deploymentView = DeploymentOutputFile
       .from(workDir, objectPath);
     var nextcloudView = NextcloudViewPath
       .from(service, objectPath);
     moveFile(deploymentView, nextcloudView);
     locker.unlock(nextcloudView);
-    return Paths.get(nextcloudView.toObjectPath());
+    return nextcloudView.toObjectPath();
   }
 
   @Override
@@ -131,12 +132,12 @@ public class NextcloudFileService implements FileService {
   /**
    * Get from deployment workdir the content of an output file
    * @param workDir workDir of deployment
-   * @param objectPath path in {workDir}/output/
+   * @param path path in {workDir}/output/
    */
   @Override
-  public String getDeployContent(String workDir, String objectPath) {
+  public String getDeployContent(String workDir, String path) {
     var deployView = DeploymentTmpFile
-      .from(workDir, objectPath);
+      .from(workDir, path);
     var deployFile = deployView
       .toPath()
       .toFile();
@@ -147,7 +148,7 @@ public class NextcloudFileService implements FileService {
    * Get content from nextcloud
    */
   @Override
-  public String getContent(String objectPath) {
+  public String getContent(ObjectPath objectPath) {
     var file = NextcloudInputFile
       .from(objectPath)
       .toPath()

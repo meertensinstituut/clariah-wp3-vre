@@ -2,6 +2,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.consumer;
 
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaNextcloudCreateFileDto;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import org.slf4j.Logger;
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 public class FinishServiceDeploymentConsumer extends AbstractDeploymentConsumer {
 
@@ -42,11 +45,20 @@ public class FinishServiceDeploymentConsumer extends AbstractDeploymentConsumer 
         report.getWorkDir(), report.getService()
       ));
     } else {
-      report.setOutputDir(outputFiles.get(0).getParent().toString());
+      report.setOutputDir(outputFiles
+        .get(0)
+        .toPath()
+        .getParent()
+        .toString()
+      );
     }
 
     report.setWorkDir(report.getWorkDir());
-    sendKafkaNextcloudMsgs(outputFiles);
+    var paths = outputFiles
+      .stream()
+      .map(ObjectPath::toPath)
+      .collect(toList());
+    sendKafkaNextcloudMsgs(paths);
   }
 
   @Override

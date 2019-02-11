@@ -124,7 +124,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
     assertThat(report.getPolled()).isAfter(startTest);
     assertThat(report.getPolled()).isBefore(now());
     assertThat(report.getService()).isEqualTo(expectedService);
-    assertThat(report.getFiles().get(0)).isEqualTo(uniqueTestFile);
+    assertThat(report.getFiles().get(0).toString()).isEqualTo(uniqueTestFile);
   }
 
   private DeploymentStatusReport getReport(String workDir) throws IOException {

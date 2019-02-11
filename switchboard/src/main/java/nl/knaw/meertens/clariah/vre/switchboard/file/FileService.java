@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractSwitchboardPath;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -17,30 +18,30 @@ public interface FileService {
    * - Create workdir
    * - Create links of object paths in work dir
    */
-  void stageFiles(String workDir, List<String> objectPaths);
+  void stageFiles(String workDir, List<ObjectPath> objectPaths);
 
   /**
    * Clean up files and folders used by deployed service:
    * - Unlock files
-   * - Move output files back to source
+   * - Move output files back to user storage
    */
-  void unstage(String workDir, List<String> objectPaths);
+  void unstage(String workDir, List<ObjectPath> objectPaths);
 
-  List<Path> unstageServiceOutputFiles(String workDir, String objectPath);
+  List<ObjectPath> unstageServiceOutputFiles(String workDir, ObjectPath objectPath);
 
-  Path unstageViewerOutputFile(String workDir, String objectPath, String service);
+  ObjectPath unstageViewerOutputFile(String workDir, ObjectPath objectPath, String service);
 
   /**
    * Get content from nextcloud
    */
-  String getContent(String objectPath);
+  String getContent(ObjectPath objectPath);
 
   void moveFile(AbstractSwitchboardPath fromPath, AbstractSwitchboardPath toPath);
 
   /**
    * Get content from deployment workDir
    */
-  String getDeployContent(String workDir, String objectPath);
+  String getDeployContent(String workDir, String path);
 
-  void unlock(String objectPath);
+  void unlock(ObjectPath objectPath);
 }

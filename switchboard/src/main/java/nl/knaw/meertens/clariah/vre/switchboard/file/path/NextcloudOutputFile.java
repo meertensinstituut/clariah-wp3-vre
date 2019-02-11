@@ -34,8 +34,8 @@ public class NextcloudOutputFile extends AbstractSwitchboardPath {
   }
 
   @Override
-  public String toObjectPath() {
-    return Paths.get(user, files, outputResult, file).toString();
+  public ObjectPath toObjectPath() {
+    return new ObjectPath(Paths.get(user, files, outputResult, file).toString());
   }
 
   public String getNextcloud() {

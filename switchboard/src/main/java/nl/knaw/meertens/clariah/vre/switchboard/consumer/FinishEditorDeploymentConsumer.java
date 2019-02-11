@@ -3,7 +3,6 @@ package nl.knaw.meertens.clariah.vre.switchboard.consumer;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentConfigFile;
-import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.DeploymentTmpFile;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.NextcloudInputFile;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaNextcloudCreateFileDto;
@@ -53,7 +52,7 @@ public class FinishEditorDeploymentConsumer extends AbstractDeploymentConsumer {
       .from(report.getFiles().get(0));
 
     nextcloudFileService.moveFile(fromPath, toPath);
-    nextcloudFileService.unlock(editorOutputPath);
+    nextcloudFileService.unlock(toPath.toObjectPath());
     sendKafkaNextcloudUpdateMsg(toPath.toPath());
   }
 

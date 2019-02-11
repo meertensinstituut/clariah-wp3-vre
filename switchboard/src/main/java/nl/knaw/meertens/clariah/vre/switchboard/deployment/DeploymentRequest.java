@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.switchboard.deployment;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 import nl.knaw.meertens.clariah.vre.switchboard.param.Param;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ public class DeploymentRequest {
    * Key: object id
    * Value: dile path relative to data directory> files
    */
-  private HashMap<Long, String> files;
+  private HashMap<Long, ObjectPath> files;
   private DeploymentStatusReport statusReport;
 
   public DeploymentRequest(String service, String workDir, LocalDateTime dateTime, List<Param> params) {
@@ -48,11 +49,11 @@ public class DeploymentRequest {
     return params;
   }
 
-  public HashMap<Long, String> getFiles() {
+  public HashMap<Long, ObjectPath> getFiles() {
     return files;
   }
 
-  public void setFiles(HashMap<Long, String> files) {
+  public void setFiles(HashMap<Long, ObjectPath> files) {
     this.files = files;
   }
 

@@ -14,10 +14,10 @@ public class NextcloudInputFile extends AbstractSwitchboardPath {
     this.file = file;
   }
 
-  public static NextcloudInputFile from(String objectPath) {
+  public static NextcloudInputFile from(ObjectPath objectPath) {
     return new NextcloudInputFile(
-      getUserFrom(objectPath),
-      getFileFrom(objectPath)
+      objectPath.getUser(),
+      objectPath.getFile()
     );
   }
 
@@ -34,8 +34,8 @@ public class NextcloudInputFile extends AbstractSwitchboardPath {
    * @return {user}/{files}/{file}
    */
   @Override
-  public String toObjectPath() {
-    return Paths.get(user, files, file).toString();
+  public ObjectPath toObjectPath() {
+    return new ObjectPath(Paths.get(user, files, file).toString());
   }
 
   public String getUser() {
