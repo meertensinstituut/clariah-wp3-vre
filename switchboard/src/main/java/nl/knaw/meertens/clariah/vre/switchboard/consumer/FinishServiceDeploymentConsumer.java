@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.util.List;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 public class FinishServiceDeploymentConsumer extends AbstractDeploymentConsumer {
@@ -40,10 +41,12 @@ public class FinishServiceDeploymentConsumer extends AbstractDeploymentConsumer 
     );
 
     if (outputFiles.isEmpty()) {
-      logger.warn(String.format(
-        "Deployment [%s] with service [%s] did not produce any output files",
-        report.getWorkDir(), report.getService()
-      ));
+      var msg = format(
+        "Deployment [%s][%s] did not generate output",
+        report.getService(), report.getWorkDir()
+      );
+      logger.warn(msg);
+      report.setMsg(msg);
     } else {
       report.setOutputDir(outputFiles
         .get(0)

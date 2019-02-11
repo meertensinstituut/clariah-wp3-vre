@@ -11,7 +11,8 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.FILES_DIR;
 
 /**
  * Path of a file in nextcloud as found in object registry
- * Object path constists of:
+ *
+ * <p>Object path constists of:
  * {user}/{files}/{path/to/file}
  * Where {files} is FILES_DIR
  */
@@ -21,7 +22,9 @@ public class ObjectPath {
   private final String file;
   private final String user;
 
-  public ObjectPath(String objectPath) {
+  public ObjectPath(
+    String objectPath
+  ) {
     assertIsObjectPath(objectPath);
     this.objectPath = Path.of(objectPath);
     this.file = getFileFrom(objectPath);
@@ -36,6 +39,13 @@ public class ObjectPath {
     this.user = user;
     this.file = file;
     this.objectPath = Path.of(user, FILES_DIR, file);
+  }
+
+  /**
+   * Create object path from sequence of strings
+   */
+  public static ObjectPath of(String first, String... more) {
+    return new ObjectPath(Path.of(first, more).toString());
   }
 
   /**
@@ -67,10 +77,6 @@ public class ObjectPath {
   private static String getUserFrom(String objectPath) {
     var inputPath = Paths.get(objectPath);
     return inputPath.subpath(0, 1).toString();
-  }
-
-  public static ObjectPath of(String first, String... more) {
-    return new ObjectPath(Path.of(first, more).toString());
   }
 
   public Path toPath() {

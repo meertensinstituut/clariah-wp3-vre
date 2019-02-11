@@ -7,6 +7,11 @@ import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 public class ObjectsRecordDto {
   public Long id;
 
+  /**
+   * Note: Cannot annotate two constructors with JsonCreator,
+   * so use ordinary String for filepath:
+   */
   public String filepath;
+
   public String mimetype = "";
 }

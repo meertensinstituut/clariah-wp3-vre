@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumerFactory;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
@@ -38,7 +37,6 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_OUTPUT;
@@ -303,7 +301,7 @@ public class ExecService {
       if (param.type.equals(ParamType.FILE)) {
         var objectId = Long.valueOf(param.value);
         var record = objectsRegistryService.getObjectById(objectId);
-        files.put(objectId, new ObjectPath(record.filepath));
+        files.put(objectId, ObjectPath.of(record.filepath));
       }
     }
     return files;
