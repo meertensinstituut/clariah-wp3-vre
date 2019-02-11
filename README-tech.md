@@ -8,6 +8,7 @@ The CLARIAH WP3 VRE consists of the following components:
 - **Registry**: to persist objects and list services
 - **Switchboard**: to prepare service requests
 - **UI**: to allow users to interact with the VRE through a user interface
+- **Tagger**: to tag (new) files in the objects registry
 - **Integration**: to verify that all components play nicely together
 
 See [vre-model.svg](vre-model.svg) for an overview of the VRE.
@@ -23,6 +24,7 @@ Deployment
 - To start all containers, run: `./start-vre.sh`. 
   - To run integration tests in remote debug-mode, add: `debug`.
   - NB. Atm saxon-utils of deployment-service is added by hand: see readme of component.
+- To start UI, run: `cd ./ui && ./start-ui.sh`. 
 - UI runs at `localhost:3000`
 
 Development
