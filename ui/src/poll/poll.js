@@ -28,7 +28,7 @@ export default class Poll extends React.Component {
         this.setState({polling: true});
         try {
 
-            const data = await DeployResource.getDeploymentStatusResult(this.state.workDir);
+            const data = await DeployResource.getDeploymentStatus(this.state.workDir);
 
             // TODO: use actual http status code:
             const httpStatus = 200;

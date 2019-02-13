@@ -33,14 +33,22 @@ export default class DeployResource {
         return Resource.validate(response);
     }
 
-    static async getParams(serviceId) {
-        let url = `${SWITCHBOARD_ENDPOINT}/services/${serviceId}/params`;
+    static async deleteDeployment(workDir) {
+        let url = `${SWITCHBOARD_ENDPOINT}/exec/task/${workDir}`;
+        const response = await fetch(url, {
+            method: "DELETE"
+        });
+        return Resource.validate(response);
+    }
+
+    static async getDeploymentStatus(workDir) {
+        let url = `${SWITCHBOARD_ENDPOINT}/exec/task/${workDir}`;
         const response = await fetch(url);
         return Resource.validate(response);
     }
 
-    static async getDeploymentStatusResult(workDir) {
-        let url = `${SWITCHBOARD_ENDPOINT}/exec/task/${workDir}`;
+    static async getParams(serviceId) {
+        let url = `${SWITCHBOARD_ENDPOINT}/services/${serviceId}/params`;
         const response = await fetch(url);
         return Resource.validate(response);
     }
@@ -50,7 +58,7 @@ export default class DeployResource {
      */
     static async getDeploymentWhen(workDir, deploymentStatus) {
         const timeout = 1000;
-        const response = await this.getDeploymentStatusResult(workDir);
+        const response = await this.getDeploymentStatus(workDir);
         if (deploymentStatus === response.status) {
             return response;
         } else {

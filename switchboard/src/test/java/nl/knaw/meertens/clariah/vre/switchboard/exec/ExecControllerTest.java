@@ -44,7 +44,9 @@ import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.apache.commons.io.FilenameUtils.getPath;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 public class ExecControllerTest extends AbstractControllerTest {
 
@@ -141,7 +143,6 @@ public class ExecControllerTest extends AbstractControllerTest {
     var finishedJson = waitUntil(request, FINISHED);
 
     // Check output file is moved:
-    // error:
     var outputFolder = findOutputFolder(finishedJson);
     assertThat(outputFolder).isNotNull();
     assertThat(outputFolder.toString()).startsWith("/usr/local/nextcloud/admin/files/output-20");
@@ -276,10 +277,7 @@ public class ExecControllerTest extends AbstractControllerTest {
 
     // verify:
     var kafkaNextcloudServiceMock = jerseyTest.getKafkaNextcloudServiceMock();
-    Mockito.verify(
-      kafkaNextcloudServiceMock,
-      never())
-           .send(Mockito.any());
+    verify(kafkaNextcloudServiceMock, never()).send(any());
   }
 
   @Test

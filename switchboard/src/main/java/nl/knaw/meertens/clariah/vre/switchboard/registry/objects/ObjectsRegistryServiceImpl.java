@@ -39,9 +39,11 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
         .header("Content-Type", "application/json")
         .header("X-DreamFactory-Api-Key", objectsDbKey)
         .asString();
-      var result = isBlank(response.getBody()) ? new ObjectsRecordDto()
-        : mapper.readValue(response.getBody(), ObjectsRecordDto.class);
-      return result;
+      if(isBlank(response.getBody())) {
+        return new ObjectsRecordDto();
+      } else {
+        return mapper.readValue(response.getBody(), ObjectsRecordDto.class);
+      }
     } catch (IOException | UnirestException e) {
       throw new RuntimeException(format("Could not retrieve object record [%d] from registry", id), e);
     }

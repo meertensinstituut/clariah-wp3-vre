@@ -17,5 +17,5 @@ docker cp foliaeditor.cmdi vre_postgres_1:/tmp/foliaeditor.xml
 # Editor of deduplicate files, WIP:
 docker cp demo.cmdi vre_postgres_1:/tmp/demo.xml
 
-docker cp services.sql vre_postgres_1:/tmp/services.sql
-docker exec -it vre_postgres_1 psql -U services services -f /tmp/services.sql
+docker cp insert-services.sql vre_postgres_1:/tmp/insert-services.sql
+docker exec -it vre_postgres_1 psql -U services services -f /tmp/insert-services.sql
