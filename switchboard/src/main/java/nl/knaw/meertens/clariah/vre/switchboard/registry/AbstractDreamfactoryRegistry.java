@@ -159,7 +159,7 @@ public class AbstractDreamfactoryRegistry {
   /**
    * Source: technicaladvices.com/2012/02/20/java-encoding-similiar-to-javascript-encodeuricomponent/
    */
-  private String encodeUriComponent(String filter) {
+  private String encodeUriComponent(String filter) throws RuntimeException {
     try {
       return URLEncoder.encode(filter, "UTF-8")
                        .replaceAll("\\%28", "(")
@@ -169,7 +169,7 @@ public class AbstractDreamfactoryRegistry {
                        .replaceAll("\\%21", "!")
                        .replaceAll("\\%7E", "~");
     } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(String.format(
+      throw new RuntimeException(format(
         "Could not create url from filter %s", filter
       ));
     }

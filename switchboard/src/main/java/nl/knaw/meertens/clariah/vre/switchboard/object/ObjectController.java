@@ -11,6 +11,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Path("/object")
@@ -25,7 +26,7 @@ public class ObjectController extends AbstractController {
   @Path("/{objectId}/services")
   @Produces(APPLICATION_JSON)
   public Response getServicesFor(@PathParam("objectId") long objectId) {
-    logger.info(String.format("Received request of available 'service' services for object [%s]", objectId));
+    logger.info(format("Received request of available 'service' services for object [%s]", objectId));
     var services = objectService.getServiceServicesFor(objectId);
     return createResponse(services);
   }
@@ -34,7 +35,7 @@ public class ObjectController extends AbstractController {
   @Path("/{objectId}/viewers")
   @Produces(APPLICATION_JSON)
   public Response getViewersFor(@PathParam("objectId") long objectId) {
-    logger.info(String.format("Received request of available viewers for object [%s]", objectId));
+    logger.info(format("Received request of available viewers for object [%s]", objectId));
     var services = objectService.getViewersFor(objectId);
     return createResponse(services);
   }
@@ -43,7 +44,7 @@ public class ObjectController extends AbstractController {
   @Path("/{objectId}/editors")
   @Produces(APPLICATION_JSON)
   public Response getEditorsFor(@PathParam("objectId") long objectId) {
-    logger.info(String.format("Received request of available editors for object [%s]", objectId));
+    logger.info(format("Received request of available editors for object [%s]", objectId));
     var services = objectService.getEditorsFor(objectId);
     return createResponse(services);
   }

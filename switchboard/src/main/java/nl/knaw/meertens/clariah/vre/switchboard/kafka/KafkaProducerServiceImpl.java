@@ -6,6 +6,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.String.format;
+
 public class KafkaProducerServiceImpl implements KafkaProducerService {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -27,7 +29,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
       producer.getKafkaProducer().send(new ProducerRecord<>(
         topic, "key", mapper.writeValueAsString(kafkaMsg)
       ));
-      logger.info(String.format("Kafka message sent successfully to [%s]", topic));
+      logger.info(format("Kafka message sent successfully to [%s]", topic));
     } catch (JsonProcessingException e) {
       logger.error("Could not create json for kafka msg", e);
     }

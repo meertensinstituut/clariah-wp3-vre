@@ -19,6 +19,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
+import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
 
 /**
@@ -107,7 +108,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
   }
 
   public Response deploy(String expectedService, DeploymentRequestDto deploymentRequestDto) {
-    return target(String.format("exec/%s", expectedService))
+    return target(format("exec/%s", expectedService))
       .request()
       .post(Entity.json(deploymentRequestDto));
   }

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 
+import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.STOPPED;
 
@@ -32,7 +33,7 @@ public abstract class AbstractDeploymentConsumer implements DeploymentConsumer {
   @Override
   public void accept(DeploymentStatusReport report) {
     if (!isFinishedOrStopped(report)) {
-      logger.info(String.format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
+      logger.info(format("Status of [%s] is [%s]", report.getWorkDir(), report.getStatus()));
       return;
     }
 
@@ -44,7 +45,7 @@ public abstract class AbstractDeploymentConsumer implements DeploymentConsumer {
 
     sendKafkaSwitchboardMsg(report);
 
-    logger.info(String.format(
+    logger.info(format(
       "Handled deployment of [%s][%s] with status [%s]",
       report.getService(), report.getWorkDir(), report.getStatus()
     ));

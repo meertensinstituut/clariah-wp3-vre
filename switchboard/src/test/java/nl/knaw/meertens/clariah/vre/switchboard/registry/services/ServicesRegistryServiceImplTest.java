@@ -1,14 +1,10 @@
 package nl.knaw.meertens.clariah.vre.switchboard.registry.services;
 
 import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
-import nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil;
 import org.junit.Test;
-import org.mockserver.matchers.Times;
 import org.mockserver.model.Header;
-import org.mockserver.model.Parameter;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
-import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.*;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.getMockServer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;

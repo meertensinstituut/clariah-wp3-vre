@@ -14,11 +14,12 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.UUID;
 
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest.getObjectsRegistryServiceStub;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.NEXTCLOUD_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.OUTPUT_DIR;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardJerseyTest.getObjectsRegistryServiceStub;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 
@@ -27,7 +28,7 @@ public class FileUtil {
   private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
   public static ObjectsRecordDto createTestFileWithRegistryObject(String content) throws IOException {
-    var fileName = String.format("admin/files/testfile-switchboard-%s.txt", UUID.randomUUID());
+    var fileName = format("admin/files/testfile-switchboard-%s.txt", UUID.randomUUID());
     createNextcloudFile(fileName, content);
     var newId = getObjectsRegistryServiceStub().getNewId();
     var newObject = createRegistryObject(newId, ObjectPath.of(fileName));

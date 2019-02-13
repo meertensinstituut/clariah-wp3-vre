@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import static java.lang.String.format;
+
 public class TagRegistry extends AbstractDreamfactoryRegistry {
 
   private final ObjectMapper mapper;
@@ -45,7 +47,7 @@ public class TagRegistry extends AbstractDreamfactoryRegistry {
       filters.put("id", "" + tag);
       json = delete(filters, table);
     } catch (SQLException e) {
-      var msg = String.format("Could not delete tag [%d].", tag);
+      var msg = format("Could not delete tag [%d].", tag);
       if (e.getSQLState().equals("23503")) {
         msg += " Tag cannot be removed when it is still linked to an object.";
       }
@@ -54,7 +56,7 @@ public class TagRegistry extends AbstractDreamfactoryRegistry {
     try {
       return JsonPath.parse(json).read("$.resource[0].id", Long.class);
     } catch (PathNotFoundException e) {
-      throw new RuntimeException(String.format("Tag [%d] could not be found", tag));
+      throw new RuntimeException(format("Tag [%d] could not be found", tag));
     }
   }
 }

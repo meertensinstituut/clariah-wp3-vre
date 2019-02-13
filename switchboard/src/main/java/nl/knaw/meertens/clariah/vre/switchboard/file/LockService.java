@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file;
 
-import nl.knaw.meertens.clariah.vre.switchboard.SystemConfig;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractSwitchboardPath;
 import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
@@ -15,6 +14,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.lang.String.format;
 import static java.nio.file.Files.getFileAttributeView;
 import static java.nio.file.Files.setPosixFilePermissions;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
@@ -48,19 +48,19 @@ public class LockService {
 
   void lock(AbstractSwitchboardPath path) {
     var file = path.toPath();
-    logger.info(String.format("Locking [%s]", file));
+    logger.info(format("Locking [%s]", file));
     try {
       chown(file, locker);
       setPosixFilePermissions(file, get444());
     } catch (IOException e) {
-      logger.error(String.format("Could not lock [%s]", file), e);
+      logger.error(format("Could not lock [%s]", file), e);
     }
   }
 
   void unlockFileAndParents(AbstractSwitchboardPath file) {
     unlock(file);
     try {
-      logger.info(String.format(
+      logger.info(format(
         "Unlocking parent dirs of [%s]", file.toPath()
       ));
       var path = file.toPath();
@@ -70,7 +70,7 @@ public class LockService {
         .toString();
       unlockParents(path, nextcloudDir);
     } catch (IOException e) {
-      throw new RuntimeIOException(String.format(
+      throw new RuntimeIOException(format(
         "Could not unlock [%s]", file
       ), e);
     }
@@ -83,7 +83,7 @@ public class LockService {
     if (!parent.getFileName().toString().equals(stopAt)) {
       unlockParents(parent, stopAt);
     } else {
-      logger.info(String.format("Found [%s], stop unlocking", stopAt));
+      logger.info(format("Found [%s], stop unlocking", stopAt));
     }
   }
 
@@ -93,14 +93,14 @@ public class LockService {
   }
 
   private void unlock(Path path) {
-    logger.info(String.format("Unlocking [%s]", path));
+    logger.info(format("Unlocking [%s]", path));
     try {
       chown(path, unlocker);
       setPosixFilePermissions(path, get644());
       var parent = path.getParent();
       chown(parent, unlocker);
     } catch (IOException e) {
-      logger.error(String.format("Could not unlock [%s]", path), e);
+      logger.error(format("Could not unlock [%s]", path), e);
     }
   }
 

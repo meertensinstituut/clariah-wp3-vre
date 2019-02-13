@@ -9,8 +9,8 @@ import java.nio.file.Paths;
 
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.CONFIG_FILE_NAME;
 
 /**
  * Path of an config file of a deployed service

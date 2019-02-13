@@ -12,7 +12,7 @@ public class HealthControllerTest extends AbstractControllerTest {
 
   @Test
   public void getHealth() {
-    Response response = target("/health")
+    var response = target("/health")
       .request()
       .get();
 

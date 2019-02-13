@@ -17,7 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static java.nio.file.Path.*;
+import static java.lang.String.format;
+import static java.nio.file.Path.of;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.CONFIG_FILE_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_VOLUME;
@@ -28,14 +29,19 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.NEXTCLOUD_VO
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
-import static nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil.*;
-import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.*;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil.getDeploymentRequestDto;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil.getViewerDeploymentRequest;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.DeployUtil.waitUntil;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.createResultFile;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.createTestFileWithRegistryObject;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.getNextcloudFileContent;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.getTestFileContent;
-import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.*;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.getMockServer;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.startDeployMockServer;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.startOrUpdateStatusMockServer;
-import static org.apache.commons.io.FilenameUtils.*;
+import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.startServicesRegistryMockServer;
+import static org.apache.commons.io.FilenameUtils.getExtension;
+import static org.apache.commons.io.FilenameUtils.getPath;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.never;
@@ -89,17 +95,6 @@ public class ExecControllerTest extends AbstractControllerTest {
     "    }";
 
   @Test
-  public void getHelp() {
-    var response = target("exec")
-      .request()
-      .get();
-
-    assertThat(response.getStatus()).isEqualTo(200);
-    var json = response.readEntity(String.class);
-    assertThatJson(json).node("msg").matches(containsString("readme"));
-  }
-
-  @Test
   public void postDeploymentRequest_shouldCreateSymbolicLinksToInputFiles() throws Exception {
     var object = createTestFileWithRegistryObject(resultSentence);
     var uniqueTestFile = object.filepath;
@@ -111,7 +106,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     assertThat(deployed.getStatus()).isBetween(200, 203);
     String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-    var request = target(String.format("exec/task/%s/", workDir)).request();
+    var request = target(format("exec/task/%s/", workDir)).request();
 
     startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
     var response = waitUntil(request, FINISHED);
@@ -135,7 +130,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     assertThat(deployed.getStatus()).isBetween(200, 203);
     String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-    var request = target(String.format("exec/task/%s/", workDir)).request();
+    var request = target(format("exec/task/%s/", workDir)).request();
 
     startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
     waitUntil(request, RUNNING);
@@ -194,7 +189,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     assertThat(deployed.getStatus()).isBetween(200, 203);
     String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
-    var request = target(String.format("exec/task/%s/", workDir)).request();
+    var request = target(format("exec/task/%s/", workDir)).request();
     createResultFile(workDir, resultFilename, resultSentence);
     startOrUpdateStatusMockServer(
       FINISHED.getHttpStatus(),
@@ -236,7 +231,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     assertThat(config.params.get(1).value).contains(inputPath.toString());
 
     // finish deployment:
-    var request = target(String.format("exec/task/%s/", workDir)).request();
+    var request = target(format("exec/task/%s/", workDir)).request();
     startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
     createResultFile(workDir, object.filepath, "<pre>" + resultSentence + "</pre>");
     var finishedJson = waitUntil(request, FINISHED);
@@ -274,7 +269,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     String workDir = JsonPath.parse(deployed.readEntity(String.class)).read("$.workDir");
 
     // finish deployment:
-    var request = target(String.format("exec/task/%s/", workDir)).request();
+    var request = target(format("exec/task/%s/", workDir)).request();
     startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
     createResultFile(workDir, object.filepath, "<pre>" + resultSentence + "</pre>");
     var finishedJson = waitUntil(request, FINISHED);
@@ -329,7 +324,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     );
 
     // finish deployment:
-    var request = target(String.format("exec/task/%s/", workDir)).request();
+    var request = target(format("exec/task/%s/", workDir)).request();
     startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", service);
 
     // get editor iframe:
@@ -345,7 +340,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     createResultFile(workDir, resultFilename, resultContent);
 
     // stop deployment:
-    var result = target(String.format("exec/task/%s", workDir))
+    var result = target(format("exec/task/%s", workDir))
       .request()
       .delete();
     assertThat(result.getStatus()).isEqualTo(200);

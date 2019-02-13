@@ -3,7 +3,6 @@ package nl.knaw.meertens.clariah.vre.switchboard.file;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractSwitchboardPath;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 
-import java.nio.file.Path;
 import java.util.List;
 
 /**

@@ -3,7 +3,6 @@ package nl.knaw.meertens.clariah.vre.switchboard.consumer;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServiceKind;
-import nl.knaw.meertens.clariah.vre.switchboard.registry.services.ServicesRegistryService;
 
 import java.util.HashMap;
 import java.util.Map;

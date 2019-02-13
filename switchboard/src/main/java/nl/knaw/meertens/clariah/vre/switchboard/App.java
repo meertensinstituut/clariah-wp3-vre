@@ -12,6 +12,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.ApplicationPath;
 
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getPollService;
+import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getRequestRepository;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_HOST_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.KAFKA_HOST_NAME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.NEXTCLOUD_TOPIC_NAME;
@@ -20,9 +23,6 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.OBJECTS_DB_U
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.SERVICES_DB_KEY;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.SERVICES_DB_URL;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.SWITCHBOARD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getPollService;
-import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getRequestRepository;
 
 @ApplicationPath("resources")
 public class App extends ResourceConfig {

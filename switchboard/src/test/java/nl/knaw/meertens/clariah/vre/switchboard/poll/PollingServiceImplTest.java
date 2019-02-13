@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
@@ -44,7 +45,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
     String workDir = JsonPath.parse(json).read("$.workDir");
     MockServerUtil.startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
 
-    var request = target(String.format("exec/task/%s", workDir)).request();
+    var request = target(format("exec/task/%s", workDir)).request();
     DeployUtil.waitUntil(request, RUNNING);
 
     testReportFileFields(startTest, expectedService, workDir, uniqueTestFile.toString(), RUNNING);
@@ -76,7 +77,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
     while (waited < maxWaitPeriod) {
       report = getReport(workDir);
       if (isNull(report.getPolled())) {
-        logger.info(String.format("Deployment [%s] not polled yet", workDir));
+        logger.info(format("Deployment [%s] not polled yet", workDir));
       } else {
         return report;
       }
@@ -84,7 +85,7 @@ public class PollingServiceImplTest extends AbstractControllerTest {
       TimeUnit.SECONDS.sleep(1);
     }
     throw new IllegalStateException(
-      String.format("Deployment [%s] was not polled within [%s] seconds", workDir, maxWaitPeriod));
+      format("Deployment [%s] was not polled within [%s] seconds", workDir, maxWaitPeriod));
   }
 
   private DeploymentStatusReport getReportWhenPollInterval(String workDir, int pollInterval)
@@ -95,15 +96,15 @@ public class PollingServiceImplTest extends AbstractControllerTest {
     while (waited < maxWaitPeriod) {
       var report = getReport(workDir);
       if (report.getInterval() >= pollInterval) {
-        logger.info(String.format("Found poll interval: [%d]", pollInterval));
+        logger.info(format("Found poll interval: [%d]", pollInterval));
         return report;
       }
-      logger.info(String.format("Current poll interval is: [%d]", pollInterval));
+      logger.info(format("Current poll interval is: [%d]", pollInterval));
       waited++;
       TimeUnit.SECONDS.sleep(1);
     }
     throw new IllegalStateException(
-      String.format("Could not find report with poll interval [%d] within [%s] seconds", pollInterval, maxWaitPeriod));
+      format("Could not find report with poll interval [%d] within [%s] seconds", pollInterval, maxWaitPeriod));
   }
 
   private void testReportFileFields(

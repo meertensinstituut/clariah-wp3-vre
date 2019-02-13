@@ -3,10 +3,10 @@ package nl.knaw.meertens.clariah.vre.switchboard.util;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
-import org.mockserver.model.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.String.format;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -29,7 +29,7 @@ public class MockServerUtil {
   }
 
   public static void startDeployMockServer(String serviceName, Integer status) {
-    logger.info(String.format("start deploy mock server of service [%s] with status [%d]", serviceName, status));
+    logger.info(format("start deploy mock server of service [%s] with status [%d]", serviceName, status));
     var deploymentStatus = DeploymentStatus.getDeployStatus(status);
     mockServer
       .when(

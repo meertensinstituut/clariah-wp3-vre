@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
+import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.FILES_DIR;
 
 /**
@@ -53,14 +54,14 @@ public class ObjectPath {
    * {user}/{files}/{rest/of/file/path.txt}
    * @throws IllegalArgumentException when assertion fails
    */
-  private static void assertIsObjectPath(String objectPath) {
+  private static void assertIsObjectPath(String objectPath) throws IllegalArgumentException {
     var pattern = "(.*)/" + FILES_DIR + "/(.*)";
     var match = Pattern
       .compile(pattern)
       .matcher(objectPath)
       .matches();
     if (!match) {
-      throw new IllegalArgumentException(String.format(
+      throw new IllegalArgumentException(format(
         "objectPath [%s] did not match pattern [%s]",
         objectPath, pattern
       ));

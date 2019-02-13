@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+import static java.lang.String.format;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.NOT_FOUND;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
@@ -62,7 +63,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
 
     MockServerUtil.startOrUpdateStatusMockServer(RUNNING.getHttpStatus(), workDir, "{}", "UCTO");
 
-    var request = target(String.format("exec/task/%s", workDir)).request();
+    var request = target(format("exec/task/%s", workDir)).request();
     var json = DeployUtil.waitUntil(request, RUNNING);
     assertThatJson(json).node("status").isEqualTo("RUNNING");
   }
@@ -74,7 +75,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
 
     MockServerUtil.startOrUpdateStatusMockServer(NOT_FOUND.getHttpStatus(), workDir, "{}", "UCTO");
 
-    var request = target(String.format("exec/task/%s", workDir)).request();
+    var request = target(format("exec/task/%s", workDir)).request();
     var json = DeployUtil.waitUntil(request, NOT_FOUND);
     assertThatJson(json).node("status").isEqualTo("NOT_FOUND");
   }

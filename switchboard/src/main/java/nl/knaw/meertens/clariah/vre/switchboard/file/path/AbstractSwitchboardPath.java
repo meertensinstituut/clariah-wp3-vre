@@ -1,10 +1,6 @@
 package nl.knaw.meertens.clariah.vre.switchboard.file.path;
 
-import nl.knaw.meertens.clariah.vre.switchboard.SystemConfig;
-
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.regex.Pattern;
 
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_VOLUME;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.FILES_DIR;
