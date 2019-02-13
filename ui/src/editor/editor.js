@@ -95,24 +95,28 @@ class Editor extends React.Component {
             ? <div dangerouslySetInnerHTML={this.state.editorFileContent}/>
             : null;
 
+        const stopBtn = this.state.editorFileContent
+            ? <button type="button" className="btn-warning btn-lg pull-right close-editor-btn" onClick={() => this.stopEditor()}>
+                <i className="fa fa-window-close" aria-hidden="true"/>
+                &nbsp;
+                <span>Sluit af</span>
+            </button>
+            : null;
+
         const spinner = !this.state.editorFileContent && !this.state.error
             ? <Spinner response={this.state.error}/>
             : null;
 
-        const usingEditor = this.state.editor
+        const editorName = this.state.editor
             ? <span>With editor: <code>{this.state.editor}</code></span>
             : null;
 
         return (
             <div>
-                <button type="button" className="btn-warning btn-lg pull-right close-editor-btn" onClick={() => this.stopEditor()}>
-                    <i className="fa fa-window-close" aria-hidden="true"/>
-                    &nbsp;
-                    <span>Sluit af</span>
-                </button>
+                {stopBtn}
                 <h1>Editing file {this.state.objectName}</h1>
                 <ErrorMsg response={this.state.error}/>
-                <p>{usingEditor}</p>
+                <p>{editorName}</p>
                 <div>{this.props.content}</div>
                 {editorFile}
                 {spinner}
