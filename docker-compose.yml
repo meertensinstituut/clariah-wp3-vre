@@ -1,6 +1,6 @@
 version: '3.4'
 
-# Overwrites settings of compose files of components to fix paths
+# Root compose file of components to overwrite relative volume and build paths
 
 services:
   integration:
@@ -9,7 +9,6 @@ services:
       - ./integration:/usr/local/integration
 
   tagger:
-    command: ./docker/docker-run-tagger.sh
     volumes:
       - ./tagger:/usr/local/tagger
     environment:
@@ -27,7 +26,6 @@ services:
 
   switchboard:
     build: ./switchboard/docker
-    command: ./docker/docker-run-switchboard.sh
     volumes:
       - ./switchboard:/usr/local/switchboard
     depends_on:

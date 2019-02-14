@@ -64,6 +64,8 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     await().until(() -> newObjectIsAdded(newInputFile));
 
+    awaitOcc();
+
     String resultFile = awaitAndGet(() -> resultWhenDeploymentFinished(workDir));
 
     await().until(() -> fileHasContent(resultFile, getTestFileContent("test-result.txt")));
@@ -78,7 +80,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
   }
 
-  private void checkKafkaMsgsAreCreatedForOutputFiles(String outputFilename) throws InterruptedException {
+  private void checkKafkaMsgsAreCreatedForOutputFiles(String outputFilename) {
     logger.info(String.format("check kafka message is created for output file [%s]", outputFilename));
     nextcloudKafkaConsumer.consumeAll(consumerRecords -> {
       assertThat(consumerRecords.size()).isGreaterThan(0);

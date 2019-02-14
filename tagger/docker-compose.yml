@@ -4,9 +4,9 @@ services:
   tagger:
     container_name: vre_tagger_1
     image: maven:3.5.4-jdk-11-slim
-    tty: true
     working_dir: /usr/local/tagger
     command: ./docker/docker-run-tagger.sh
+    tty: true
     expose:
     - 80
     volumes:

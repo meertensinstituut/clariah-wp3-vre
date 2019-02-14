@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.deleteInputFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
@@ -57,7 +58,7 @@ public class DeployUtils {
         }
 
         Integer[] success = {200, 201, 202};
-        if (Arrays.asList(success).contains(responseStatus)) {
+        if (asList(success).contains(responseStatus)) {
             httpStatusSuccess = true;
         }
         if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {
@@ -90,7 +91,7 @@ public class DeployUtils {
         }
 
         Integer[] success = {200, 201, 202};
-        if (Arrays.asList(success).contains(responseStatus)) {
+        if (asList(success).contains(responseStatus)) {
             httpStatusSuccess = true;
         }
         if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {

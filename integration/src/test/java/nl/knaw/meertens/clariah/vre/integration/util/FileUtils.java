@@ -136,12 +136,12 @@ public class FileUtils {
 
     /**
      * Wait for nextcouds occ cronjob to scan all files
-     * Should happen every 5-6 seconds.
+     * Should happen every 2-3 seconds.
      * (see nextcloud/docker-scan-files.sh)
      */
     public static void awaitOcc() {
         try {
-            TimeUnit.SECONDS.sleep(7);
+            TimeUnit.SECONDS.sleep(4);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
