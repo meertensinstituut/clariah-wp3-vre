@@ -64,11 +64,11 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     await().until(() -> newObjectIsAdded(newInputFile));
 
-    awaitOcc();
-
     String resultFile = awaitAndGet(() -> resultWhenDeploymentFinished(workDir));
 
     await().until(() -> fileHasContent(resultFile, getTestFileContent("test-result.txt")));
+
+    awaitOcc();
 
     await().until(() -> filesAreUnlocked(testFilename, getTestFileContent(deploymentTestFile)));
 

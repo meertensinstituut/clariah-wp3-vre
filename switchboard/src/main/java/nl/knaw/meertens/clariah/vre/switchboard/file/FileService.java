@@ -3,6 +3,7 @@ package nl.knaw.meertens.clariah.vre.switchboard.file;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.AbstractSwitchboardPath;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ public interface FileService {
    * - Create workdir
    * - Create links of object paths in work dir
    */
-  void stageFiles(String workDir, List<ObjectPath> objectPaths);
+  void stageFiles(String workDir, Collection<ObjectPath> objectPaths);
 
   /**
    * Clean up files and folders used by deployed service:

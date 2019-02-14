@@ -10,6 +10,9 @@ import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 
+/**
+ * Contains all info of deployment relevant for switchboard
+ */
 public class DeploymentRequest {
 
   @JsonFormat(shape = STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
@@ -17,13 +20,14 @@ public class DeploymentRequest {
   private final String service;
   private final String workDir;
   private final List<Param> params;
+  private DeploymentStatusReport statusReport;
+
   /**
    * Files used in deployment request
    * Key: object id
-   * Value: dile path relative to data directory> files
+   * Value: file path relative to data directory > files
    */
   private HashMap<Long, ObjectPath> files;
-  private DeploymentStatusReport statusReport;
 
   public DeploymentRequest(String service, String workDir, LocalDateTime dateTime, List<Param> params) {
     this.service = service;

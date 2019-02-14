@@ -24,7 +24,11 @@ import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_MEMORY_SPAN;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 
-public class RequestRepository {
+/**
+ * Contains list of deployments requests
+ * On save status reports are also saved as json to workDir
+ */
+public class DeploymentRequestRepository {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
   private final String deploymentRoot;
@@ -35,7 +39,7 @@ public class RequestRepository {
   private final Map<String, DeploymentConsumer> consumers = new HashMap<>();
   private final Map<String, LocalDateTime> finished = new HashMap<>();
 
-  public RequestRepository(
+  public DeploymentRequestRepository(
     String deploymentRoot,
     String statusFileName,
     ObjectMapper mapper
@@ -79,7 +83,7 @@ public class RequestRepository {
    * in a json file in workDir.
    *
    * <p>A report is removed from the hashmap when it has
-   * finished longer than DEPLOYMENT_MEMORY_SPAN-seconds ago.
+   * been finished DEPLOYMENT_MEMORY_SPAN seconds ago.
    *
    * <p>When the status of a deployment is requested,
    * it is added to the hashmap again
