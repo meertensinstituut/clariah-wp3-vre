@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.deleteInputFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.downloadFile;
@@ -38,7 +39,7 @@ public class DeployUtils {
             String workDir,
             String status
     ) {
-        logger.info(String.format("Check status is [%s] of [%s]", status, workDir));
+        logger.info(format("Check status is [%s] of [%s]", status, workDir));
         boolean httpStatusSuccess = false;
         boolean deploymentStatusFound = false;
         HttpResponse<String> deploymentStatusResponse = null;
@@ -46,7 +47,7 @@ public class DeployUtils {
         String body = deploymentStatusResponse.getBody();
         String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
         int responseStatus = deploymentStatusResponse.getStatus();
-        logger.info(String.format("Http status was [%s] and response body was [%s]",
+        logger.info(format("Http status was [%s] and response body was [%s]",
                 responseStatus, body
         ));
         try {
@@ -71,7 +72,7 @@ public class DeployUtils {
             String workDir,
             String status
     ) {
-        logger.info(String.format("Check status is [%s] of [%s]", status, workDir));
+        logger.info(format("Check status is [%s] of [%s]", status, workDir));
         boolean httpStatusSuccess = false;
         boolean deploymentStatusFound = false;
         HttpResponse<String> deploymentStatusResponse = null;
@@ -79,7 +80,7 @@ public class DeployUtils {
         String body = deploymentStatusResponse.getBody();
         String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
         int responseStatus = deploymentStatusResponse.getStatus();
-        logger.info(String.format("Http status was [%s] and response body was [%s]",
+        logger.info(format("Http status was [%s] and response body was [%s]",
                 responseStatus, body
         ));
         try {
@@ -110,10 +111,10 @@ public class DeployUtils {
     }
 
     public static String resultWhenDeploymentFinished(String workDir) {
-        logger.info(String.format("check deployment [%s] is finished", workDir));
+        logger.info(format("check deployment [%s] is finished", workDir));
         HttpResponse<String> statusResponse = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
         String outputFilePath = getOutputFilePath(statusResponse);
-        logger.info(String.format("deployment has result file [%s]", outputFilePath));
+        logger.info(format("deployment has result file [%s]", outputFilePath));
         return outputFilePath;
     }
 
@@ -124,13 +125,12 @@ public class DeployUtils {
         Path pathRelative = pathBase.relativize(pathAbsolute);
         String resultFileName = "result.txt";
         String outputPath = Paths.get(pathRelative.toString(), resultFileName).toString();
-        logger.info(String.format("output file path is [%s]", outputPath));
+        logger.info(format("output file path is [%s]", outputPath));
         return outputPath;
     }
 
     public static boolean filesAreUnlocked(String inputFile, String testFileContent) {
         try {
-            logger.info(String.format("check file [%s] is unlocked", inputFile));
             HttpResponse<String> downloadResult = downloadFile(inputFile);
             List expected = newArrayList(200, 202);
             boolean get = downloadResult.getBody().equals(testFileContent)
@@ -141,6 +141,11 @@ public class DeployUtils {
 
             HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
             boolean delete = deleteInputFile.getStatus() == 204;
+
+            logger.info(format(
+              "check file [%s] is unlocked: get [%s], put [%s], delete [%s]",
+              inputFile, get, put, delete
+            ));
 
             return get && put && delete;
         } catch (UnirestException e) {
