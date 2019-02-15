@@ -25,10 +25,10 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.DEPLOYMENT_M
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 
 /**
- * Contains list of deployments requests
+ * Contains list of deployments statuses
  * On save status reports are also saved as json to workDir
  */
-public class DeploymentRequestRepository {
+public class DeploymentStatusRepository {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
   private final String deploymentRoot;
@@ -39,7 +39,7 @@ public class DeploymentRequestRepository {
   private final Map<String, DeploymentConsumer> consumers = new HashMap<>();
   private final Map<String, LocalDateTime> finished = new HashMap<>();
 
-  public DeploymentRequestRepository(
+  public DeploymentStatusRepository(
     String deploymentRoot,
     String statusFileName,
     ObjectMapper mapper
@@ -58,7 +58,7 @@ public class DeploymentRequestRepository {
     if (!isNull(request)) {
       return request;
     }
-    logger.info(format("Report of [%s] not available in memory: checking work dir", workDir));
+    logger.info(format("Status of [%s] not in hashmap; check work dir", workDir));
     return findReportInWorkDir(workDir);
   }
 

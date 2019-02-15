@@ -11,7 +11,7 @@ import java.util.List;
 import static com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING;
 
 /**
- * Contains all info of deployment relevant for switchboard
+ * Contains all info needed to request a deployment at deployment-service
  */
 public class DeploymentRequest {
 

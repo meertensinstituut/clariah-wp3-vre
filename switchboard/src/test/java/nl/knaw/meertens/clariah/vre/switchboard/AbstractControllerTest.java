@@ -76,7 +76,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
   @After
   public void tearDown() {
     logger.info("reset abstract controller test setup");
-    SwitchboardJerseyTest.getDeploymentRequestRepository().clearAll();
+    SwitchboardJerseyTest.getDeploymentStatusRepository().clearAll();
     MockServerUtil.getMockServer().reset();
     MockServerUtil.startDeployMockServerWithUcto(200);
     MockServerUtil.startServicesRegistryMockServer(dummyUctoService);
