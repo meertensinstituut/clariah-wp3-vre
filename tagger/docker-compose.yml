@@ -3,9 +3,18 @@ version: '3.4'
 services:
   tagger:
     container_name: vre_tagger_1
-    image: maven:3.5.4-jdk-11-slim
-    working_dir: /usr/local/tagger
-    command: ./docker/docker-run-tagger.sh
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile
+      args:
+        KAFKA_PORT: ${KAFKA_PORT}
+        RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}
+        RECOGNIZER_GROUP_NAME: ${RECOGNIZER_GROUP_NAME}
+        TAGGER_TOPIC_NAME: ${TAGGER_TOPIC_NAME}
+        TAGGER_GROUP_NAME: ${TAGGER_TOPIC_NAME}
+        TEST_USER: ${TEST_USER}
+        TEST_PASSWORD: ${TEST_PASSWORD}
+    image: knawhuc/clariah-wp3-vre:tagger
     tty: true
     expose:
     - 80
