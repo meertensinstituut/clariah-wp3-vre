@@ -10,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static nl.knaw.meertens.clariah.vre.switchboard.SwitchboardDiBinder.getMapper;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.TEST_USER;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.FileUtil.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.getMockServer;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -162,7 +163,7 @@ public class TagControllerTest extends AbstractControllerTest {
           .withPath("/_proc/insert_object_tag")
           .withQueryStringParameter("_tag", "1")
           .withQueryStringParameter("_object", "2")
-          .withQueryStringParameter("_owner", "test")
+          .withQueryStringParameter("_owner", TEST_USER)
       ).respond(
       response()
         .withStatusCode(statusCode)

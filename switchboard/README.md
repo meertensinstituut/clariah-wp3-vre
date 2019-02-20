@@ -10,7 +10,7 @@ Tools, languages and techniques:
 # Development
 - Add static files (e.g. users) to `./static_files`
 
-## Deployment
+## Local deployment
 
 - Run: `./start-switchboard.sh`. Runs at: `localhost:9010/switchboard`
 
@@ -19,6 +19,9 @@ Tools, languages and techniques:
 ## Testing
 
 Run: `docker exec vre_switchboard_1 mvn clean test`
+
+Note 1: environment variables are mocked with surefire plugin, see pom.xml
+Note 2: in order to run tests `$USER` should be set with existing username
 
 ## Workflow
 - A service deployment request contains a list of input files.
