@@ -16,13 +16,12 @@ public class TagRegistry extends AbstractDreamfactoryRegistry {
   private final ObjectMapper mapper;
   private final String table = "/_table/tag/";
 
-  private final Configuration conf = Configuration
+  private final Configuration jsonPathConf = Configuration
     .builder()
     .options(Option.DEFAULT_PATH_LEAF_TO_NULL)
     .options(Option.SUPPRESS_EXCEPTIONS)
     .build();
-  private final ParseContext jsonPath = JsonPath.using(conf);
-
+  private final ParseContext jsonPath = JsonPath.using(jsonPathConf);
 
   public TagRegistry(String objectsDbUrl, String objectsDbKey, ObjectMapper mapper) {
     super(objectsDbUrl, objectsDbKey);

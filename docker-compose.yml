@@ -11,18 +11,6 @@ services:
   tagger:
     volumes:
       - ./tagger:/usr/local/tagger
-    environment:
-      KAFKA_BROKER: localhost
-      KAFKA_PORT: ${KAFKA_PORT}
-      RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}
-      RECOGNIZER_GROUP_NAME: ${RECOGNIZER_GROUP_NAME}
-      TAGGER_TOPIC_NAME: ${TAGGER_TOPIC_NAME}
-      TAGGER_GROUP_NAME: ${TAGGER_TOPIC_NAME}
-      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
-      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
-      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
-      TEST_USER: ${TEST_USER}
-      TEST_PASSWORD: ${TEST_PASSWORD}
 
   switchboard:
     build: ./switchboard/docker
