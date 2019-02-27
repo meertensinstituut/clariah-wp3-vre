@@ -19,9 +19,6 @@ services:
     depends_on:
       - dreamfactory
       - deployment
-    environment:
-      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
-      APP_KEY_SERVICES: ${APP_KEY_SERVICES}
 
   nextcloud:
     build: ./nextcloud

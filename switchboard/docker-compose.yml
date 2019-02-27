@@ -3,9 +3,22 @@ version: '3.4'
 services:
   switchboard:
     container_name: vre_switchboard_1
-    build: ./docker
-    working_dir: /usr/local/switchboard
-    command: ./docker/docker-run-switchboard.sh
+    image: knawhuc/clariah-wp3-vre-switchboard:latest
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+      args:
+        SWITCHBOARD_TOPIC_NAME: ${SWITCHBOARD_TOPIC_NAME}
+        NEXTCLOUD_TOPIC_NAME: ${NEXTCLOUD_TOPIC_NAME}
+        KAFKA_PORT: ${KAFKA_PORT}
+        NEXTCLOUD_VOLUME: ${SWITCHBOARD_NEXTCLOUD_VOLUME}
+        DEPLOYMENT_VOLUME: ${SWITCHBOARD_DEPLOYMENT_VOLUME}
+        TEST_USER: ${TEST_USER}
+        TEST_PASSWORD: ${TEST_PASSWORD}
+        USER_TO_LOCK_WITH: ${SWITCHBOARD_USER_TO_LOCK_WITH}
+        USER_TO_UNLOCK_WITH: ${SWITCHBOARD_USER_TO_UNLOCK_WITH}
+        APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+        APP_KEY_SERVICES: ${APP_KEY_SERVICES}
     tty: true
     extra_hosts:
     - moby:127.0.0.1
@@ -15,8 +28,6 @@ services:
     - kafka
     volumes:
     - ./:/usr/local/switchboard
-    # share maven repository of host:
-    - ${HOME}/.m2/repository:/root/.m2/repository
     - data-volume:/usr/local/nextcloud
     - deployment-volume:/tmp/deployment
     environment:
@@ -29,6 +40,8 @@ services:
       TEST_PASSWORD: ${TEST_PASSWORD}
       USER_TO_LOCK_WITH: ${SWITCHBOARD_USER_TO_LOCK_WITH}
       USER_TO_UNLOCK_WITH: ${SWITCHBOARD_USER_TO_UNLOCK_WITH}
+      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+      APP_KEY_SERVICES: ${APP_KEY_SERVICES}
 
   kafka:
     image: wurstmeister/kafka:1.0.0
