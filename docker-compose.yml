@@ -36,10 +36,6 @@ services:
       - data-volume:/tmp/recognizer
     depends_on:
       - dreamfactory
-    environment:
-      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
-      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
-      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
 
   fits:
     container_name: vre_fits_1

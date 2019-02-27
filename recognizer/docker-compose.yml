@@ -3,16 +3,26 @@ version: '3.4'
 services:
   recognizer:
     container_name: vre_recognizer_1
-    build: ./recognizer
+    image: knawhuc/clariah-wp3-vre-recognizer:latest
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+      args:
+        KAFKA_BROKER: localhost
+        FITS_FILES_ROOT: ${FITS_FILES_ROOT}
+        KAFKA_PORT: ${KAFKA_PORT}
+        NEXTCLOUD_TOPIC_NAME: ${NEXTCLOUD_TOPIC_NAME}
+        NEXTCLOUD_GROUP_NAME: ${NEXTCLOUD_GROUP_NAME}
+        RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}
+        RECOGNIZER_GROUP_NAME: ${RECOGNIZER_GROUP_NAME}
+        USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
+        USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
+        APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
     tty: true
-    working_dir: /usr/local/recognizer
-    command: ./docker-run-recognizer.sh
     expose:
     - 80
     volumes:
     - ./:/usr/local/recognizer
-    # share maven repository of host:
-    - ${HOME}/.m2/repository:/root/.m2/repository
     depends_on:
     - fits
     - kafka
@@ -26,6 +36,9 @@ services:
       NEXTCLOUD_GROUP_NAME: ${NEXTCLOUD_GROUP_NAME}
       RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}
       RECOGNIZER_GROUP_NAME: ${RECOGNIZER_GROUP_NAME}
+      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
+      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
+      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
 
   fits:
     build: ./fits
