@@ -1,6 +1,0 @@
-# Used to create basic docker image with empty maven repo
-FROM maven:3.5.4-jdk-11-slim
-RUN mkdir -p /root/.m2/repository
-WORKDIR /usr/local/tagger
-
-
