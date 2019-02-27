@@ -59,12 +59,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     if (isSetUp) {
       return;
     }
+    initializeTestEnv();
+    isSetUp = true;
+  }
+
+  private static void initializeTestEnv() throws Exception {
     jerseyTest.setUp();
     FileUtil.createTestFileWithRegistryObject(resultSentence);
     MockServerUtil.setMockServer(ClientAndServer.startClientAndServer(1080));
     MockServerUtil.startDeployMockServerWithUcto(200);
     MockServerUtil.startServicesRegistryMockServer(dummyUctoService);
-    isSetUp = true;
   }
 
   /* Method signature prevents JerseyTest.setUp() from running. */

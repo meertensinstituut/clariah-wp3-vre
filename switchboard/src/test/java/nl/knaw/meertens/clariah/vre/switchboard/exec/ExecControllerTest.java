@@ -8,8 +8,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,12 +41,9 @@ import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.start
 import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.apache.commons.io.FilenameUtils.getPath;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.never;
 
 public class ExecControllerTest extends AbstractControllerTest {
-
-  private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private static String dummyViewerService = "{\n" +
     "      \"id\": \"1\",\n" +
@@ -87,7 +82,8 @@ public class ExecControllerTest extends AbstractControllerTest {
     "      \"name\": \"EDITOR\",\n" +
     "      \"kind\": \"editor\",\n" +
     "      \"recipe\": \"nl.knaw.meertens.deployment.lib.recipe.Test\",\n" +
-    "      \"semantics\": \"" + new JsonStringEncoder().quoteAsString(getTestFileContent("editor.cmdi")) + "\",\n" +
+    "      \"semantics\": \"" + new String(new JsonStringEncoder().quoteAsString(getTestFileContent("editor.cmdi"))) +
+    "\",\n" +
     "      \"tech\": null,\n" +
     "      \"time_created\": \"2018-05-28 12:34:48.863548+00\",\n" +
     "      \"time_changed\": null,\n" +
@@ -111,12 +107,12 @@ public class ExecControllerTest extends AbstractControllerTest {
     startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
     var response = waitUntil(request, FINISHED);
 
-    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile.toString()).toFile()).exists();
-    createResultFile(workDir, resultFilename.toString(), resultSentence);
+    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
+    createResultFile(workDir, resultFilename, resultSentence);
     assertThatJson(response).node("status").isEqualTo("FINISHED");
 
     // Atm links are kept:
-    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile.toString()).toFile()).exists();
+    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
   }
 
   @Test
@@ -141,10 +137,9 @@ public class ExecControllerTest extends AbstractControllerTest {
     var finishedJson = waitUntil(request, FINISHED);
 
     // Check output file is moved:
-    // error:
     var outputFolder = findOutputFolder(finishedJson);
     assertThat(outputFolder).isNotNull();
-    assertThat(outputFolder.toString()).startsWith("/usr/local/nextcloud/admin/files/output-20");
+    assertThat(outputFolder.toString()).contains("admin/files/output-20");
     var outputFile = Paths.get(outputFolder.getPath(), resultFilename);
     assertThat(outputFile.toFile()).exists();
     assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo(resultSentence);

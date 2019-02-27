@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,7 +49,7 @@ public class LockService {
 
   void lock(AbstractSwitchboardPath path) {
     var file = path.toPath();
-    logger.info(format("Locking [%s]", file));
+    logger.info("Locking [{}]", file);
     try {
       chown(file, locker);
       setPosixFilePermissions(file, get444());
@@ -64,7 +65,7 @@ public class LockService {
         "Unlocking parent dirs of [%s]", file.toPath()
       ));
       var path = file.toPath();
-      String nextcloudDir = Paths
+      var nextcloudDir = Paths
         .get(NEXTCLOUD_VOLUME)
         .getFileName()
         .toString();
@@ -105,15 +106,18 @@ public class LockService {
   }
 
   private void chown(Path file, String user) throws IOException {
+    logger.info("Chown using [{}]", locker);
     var lookupService = FileSystems
       .getDefault()
       .getUserPrincipalLookupService();
     var fileAttributeView = getFileAttributeView(
       file, PosixFileAttributeView.class, NOFOLLOW_LINKS
     );
-    fileAttributeView.setGroup(
-      lookupService.lookupPrincipalByGroupName(user)
-    );
+    try {
+      fileAttributeView.setGroup(lookupService.lookupPrincipalByGroupName(user));
+    } catch (UserPrincipalNotFoundException e) {
+      logger.error("Could not find user group to lock with [{}]", user);
+    }
     fileAttributeView.setOwner(
       lookupService.lookupPrincipalByName(user)
     );

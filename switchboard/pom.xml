@@ -283,6 +283,18 @@
             --add-opens java.base/java.lang=ALL-UNNAMED --illegal-access=permit
           </argLine>
           <forkMode>once</forkMode>
+          <!-- Set vars so switchboard can be tested and build outside of its container: -->
+          <environmentVariables>
+            <DEPLOYMENT_VOLUME>/tmp/test/deployment</DEPLOYMENT_VOLUME>
+            <NEXTCLOUD_VOLUME>/tmp/test/nextcloud</NEXTCLOUD_VOLUME>
+            <USER_TO_LOCK_WITH>${env.USER}</USER_TO_LOCK_WITH>
+            <USER_TO_UNLOCK_WITH>${env.USER}</USER_TO_UNLOCK_WITH>
+            <SWITCHBOARD_TOPIC_NAME>test_switchboard_topic_name</SWITCHBOARD_TOPIC_NAME>
+            <NEXTCLOUD_TOPIC_NAME>test_nextcloud_topic_name</NEXTCLOUD_TOPIC_NAME>
+            <KAFKA_PORT>0000</KAFKA_PORT>
+            <TEST_USER>test</TEST_USER>
+            <TEST_PASSWORD>test_test_password</TEST_PASSWORD>
+          </environmentVariables>
         </configuration>
         <dependencies>
           <!-- java modules: -->

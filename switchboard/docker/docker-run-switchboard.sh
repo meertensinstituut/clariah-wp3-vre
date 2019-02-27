@@ -6,7 +6,9 @@ echo "add test user..."
 echo "remove work dirs in tmp deployment volume..."
 rm -rf "${DEPLOYMENT_VOLUME}"/*
 
+# $USER is needed for tests
 echo "build switchboard..." && \
+export USER=$(whoami) && \
 mvn clean install && \
 
 echo "deploy switchboard.war..." && \
