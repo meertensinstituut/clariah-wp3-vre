@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "add test user..."
-./docker/set-test-user.sh
+./set-test-user.sh
 
 echo "remove work dirs in tmp deployment volume..."
 rm -rf "${DEPLOYMENT_VOLUME}"/*
