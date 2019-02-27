@@ -8,6 +8,9 @@ FROM knawhuc/clariah-wp3-vre-tagger AS old
 FROM maven:3.5.4-jdk-11-slim
 COPY --from=old /root/.m2/repository /root/.m2/repository
 
+RUN ls -R /root/.m2/repository
+RUN mvn help:evaluate -Dexpression=settings.localRepository | grep -v '\[INFO\]'
+
 RUN rm -rf /user/local/tagger
 COPY ./ /usr/local/tagger
 WORKDIR /usr/local/tagger
