@@ -9,11 +9,14 @@ services:
       - ./integration:/usr/local/integration
 
   tagger:
+    build:
+      context: ./tagger
     volumes:
       - ./tagger:/usr/local/tagger
 
   switchboard:
-    build: ./switchboard/docker
+    build:
+      context: ./switchboard
     volumes:
       - ./switchboard:/usr/local/switchboard
     depends_on:
@@ -30,7 +33,8 @@ services:
           - nextcloud
 
   recognizer:
-    build: ./recognizer/recognizer
+    build:
+      context: ./recognizer
     volumes:
       - ./recognizer:/usr/local/recognizer
       - data-volume:/tmp/recognizer
@@ -66,14 +70,13 @@ services:
     image: zookeeper:3.4
 
   deployment:
-    build: ./deployment-service
+    build:
+      context: ./deployment-service
     volumes:
       - ./deployment-service/conf:/conf
       - ./deployment-service/:/tmp/deployment
       - deployment-volume:/tmp/wd/
       - data-volume:/usr/local/nextcloud
-      # share maven repository of host:
-      - maven-m2:/root/.m2/repository
     depends_on:
       - dreamfactory
       - tika
