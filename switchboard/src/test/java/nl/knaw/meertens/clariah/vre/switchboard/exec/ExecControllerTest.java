@@ -24,6 +24,8 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_OUTPU
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_TMP;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.NEXTCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.USER_TO_LOCK_WITH;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.USER_TO_UNLOCK_WITH;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
@@ -117,6 +119,9 @@ public class ExecControllerTest extends AbstractControllerTest {
 
   @Test
   public void postDeploymentRequest_shouldOutputFolderWithTestResult() throws InterruptedException, IOException {
+    System.out.println("USER_TO_LOCK_WITH:" + USER_TO_LOCK_WITH);
+    System.out.println("USER_TO_UNLOCK_WITH:" + USER_TO_UNLOCK_WITH);
+
     startServicesRegistryMockServer(dummyUctoService);
 
     var object = createTestFileWithRegistryObject(resultSentence);
@@ -177,7 +182,28 @@ public class ExecControllerTest extends AbstractControllerTest {
   }
 
   @Test
-  public void testFinishRequest_shouldIgnoreUnknownFields() throws InterruptedException, IOException {
+  public void requestStatus_shouldReturnObjectPathsAsStrings() throws IOException {
+    var object = createTestFileWithRegistryObject(resultSentence);
+    var uniqueTestFile = object.filepath;
+
+    var deploymentRequestDto = getDeploymentRequestDto("" + object.id, longName);
+    var expectedService = "UCTO";
+
+    var deployed = deploy(expectedService, deploymentRequestDto);
+    assertThat(deployed.getStatus()).isBetween(200, 203);
+    var deployResponse = deployed.readEntity(String.class);
+    String workDir = JsonPath.parse(deployResponse).read("$.workDir");
+
+    var request = target(format("exec/task/%s/", workDir)).request();
+    var status = request
+      .get()
+      .readEntity(String.class);
+    String file = JsonPath.parse(status).read("$.files[0]");
+    assertThat(uniqueTestFile).isEqualTo(file);
+  }
+
+  @Test
+  public void testFinishRequest_shouldIgnoreUnknownFields() throws InterruptedException {
     var deploymentRequestDto = getDeploymentRequestDto("1", longName);
     var expectedService = "UCTO";
     var deployed = deploy(expectedService, deploymentRequestDto);
@@ -194,7 +220,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     );
 
     // Check status is finished:
-    String finishedResponse = waitUntil(request, FINISHED);
+    var finishedResponse = waitUntil(request, FINISHED);
     assertThatJson(finishedResponse).node("status").isEqualTo("FINISHED");
   }
 
@@ -268,6 +294,8 @@ public class ExecControllerTest extends AbstractControllerTest {
     startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", viewerService);
     createResultFile(workDir, object.filepath, "<pre>" + resultSentence + "</pre>");
     var finishedJson = waitUntil(request, FINISHED);
+
+
 
     // verify:
     var kafkaNextcloudServiceMock = jerseyTest.getKafkaNextcloudServiceMock();

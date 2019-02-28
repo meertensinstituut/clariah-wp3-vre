@@ -51,7 +51,7 @@ public class ExecController extends AbstractController {
   public Response getDeploymentStatus(@PathParam("workDir") String workDir) {
     logger.info(format("Status request of [%s]", workDir));
     var report = execService.getStatus(workDir);
-    return createResponse(report, report.getStatus().getHttpStatus());
+    return createResponse(report, report.status.getHttpStatus());
   }
 
   @DELETE

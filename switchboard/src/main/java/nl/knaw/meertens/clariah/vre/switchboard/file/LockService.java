@@ -54,7 +54,7 @@ public class LockService {
       chown(file, locker);
       setPosixFilePermissions(file, get444());
     } catch (IOException e) {
-      logger.error(format("Could not lock [%s]", file), e);
+      logger.error(format("Could not lock [%s] using [%s]", path.toString(), locker), e);
     }
   }
 
@@ -101,7 +101,7 @@ public class LockService {
       var parent = path.getParent();
       chown(parent, unlocker);
     } catch (IOException e) {
-      logger.error(format("Could not unlock [%s]", path), e);
+      logger.error(format("Could not unlock [%s] using [%s]", path.toString(), unlocker), e);
     }
   }
 

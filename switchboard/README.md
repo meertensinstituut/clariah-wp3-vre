@@ -16,6 +16,16 @@ Tools, languages and techniques:
 
 - Redeploy: `docker exec vre_switchboard_1 bash -c "../tomcat/bin/shutdown.sh && ./docker/docker-run-switchboard.sh"`
 
+- To make the tests run on a developer host machine, run like:
+```
+export USER_TO_LOCK_WITH=$USER
+export USER_TO_UNLOCK_WITH=$USER
+mvn clean test
+```
+Note 1: in production locker and unlocker should be different users, as defined in docker-compose.yml
+
+Note 2: make sure port 9998 (jerseytest) and 1080 (mockserver) are free
+
 ## Testing
 
 Run: `docker exec vre_switchboard_1 mvn clean test`

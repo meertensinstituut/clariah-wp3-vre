@@ -6,7 +6,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumerFacto
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
@@ -107,8 +106,8 @@ public class ExecService {
     return request;
   }
 
-  public DeploymentStatusReport getStatus(String workDir) {
-    return deploymentService.getStatus(workDir);
+  public DeploymentStatusReportDto getStatus(String workDir) {
+    return new DeploymentStatusReportDto(deploymentService.getStatus(workDir));
   }
 
   public void delete(String workDir) {
