@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+BUILD_OR_NOT=${1:--no-build} # or --build
+
 # Combine compose files of different components
 # (add new compose file after blank, and before root)
 docker-compose \
@@ -14,5 +16,5 @@ docker-compose \
   -f ./deployment-service/docker-compose.yml \
   -f ./tagger/docker-compose.yml \
   -f ./docker-compose.yml \
-  -p vre up -d --build # replace with 'config' to see generated docker-compose-file
+  -p vre up -d $BUILD_OR_NOT # replace with 'config' to see generated docker-compose-file
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-source ./start-containers.sh
+source ./start-containers.sh --no-build
 
 docker cp nextcloud/vre vre_nextcloud_1:/tmp/vre
 cp .env nextcloud/.env
