@@ -3,6 +3,11 @@
 #RUN mkdir -p /root/.m2/repository
 #WORKDIR /usr/local/switchboard
 
+FROM knawhuc/clariah-wp3-vre-switchboard AS old
+
+FROM knawhuc/clariah-wp3-vre-switchboard-builder
+COPY --from=old /root/.m2/repository /root/.m2/repository
+
 ARG SWITCHBOARD_TOPIC_NAME
 ARG NEXTCLOUD_TOPIC_NAME
 ARG KAFKA_PORT
@@ -15,10 +20,8 @@ ARG USER_TO_UNLOCK_WITH
 ARG APP_KEY_OBJECTS
 ARG APP_KEY_SERVICES
 
-FROM knawhuc/clariah-wp3-vre-switchboard AS old
-
-FROM knawhuc/clariah-wp3-vre-switchboard-builder
-COPY --from=old /root/.m2/repository /root/.m2/repository
+RUN echo $USER_TO_LOCK_WITH
+RUN echo $USER_TO_UNLOCK_WITH
 
 RUN ls -R /root/.m2/repository
 RUN mvn help:evaluate -Dexpression=settings.localRepository | grep -v '\[INFO\]'
