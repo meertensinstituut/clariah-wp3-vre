@@ -31,6 +31,11 @@ Using:
 - To start UI, run: `cd ./ui && ./start-ui.sh`. 
 - UI runs at `localhost:3000`
 
+## Integration tests
+- Run `./test-vre.sh` which:
+  - Builds all components
+  - Runs tests in `./integration`
+    
 ## Development
 
 - Add new component: 
@@ -39,11 +44,6 @@ Using:
   - References to component files and volumes in `./<component>/docker-compose.yml` should be overwritten in `./docker-compose.yml`
   - Integration tests can be added to java app in `./integation`
 
-## Integration tests
-- Run `./test-vre.sh` which:
-  - Builds all components
-  - Runs tests in `./integration`
-    
 Demo
 ---
 

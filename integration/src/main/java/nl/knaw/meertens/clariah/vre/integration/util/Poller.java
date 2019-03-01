@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.integration.util;
 
+import nl.knaw.meertens.clariah.vre.integration.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,7 @@ public class Poller {
     }
 
     public static <T> T awaitAndGet(Supplier<T> check) {
-        return awaitAndGetUntil(check, MAX_POLLING_PERIOD);
+        return awaitAndGetUntil(check, Config.MAX_POLLING_PERIOD);
     }
 
     private static <T> T awaitAndGetUntil(Supplier<T> check, int maxPolled) {

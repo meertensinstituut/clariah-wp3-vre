@@ -34,7 +34,7 @@ public abstract class AbstractIntegrationTest {
   };
 
   static String getRandomGroupName() {
-    return "vre_integration_group" + UUID.randomUUID();
+    return "vre_integration_test_group" + UUID.randomUUID();
   }
 
 }

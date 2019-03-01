@@ -8,21 +8,26 @@
     <name>integration</name>
     <url>http://maven.apache.org</url>
     <properties>
-        <maven.compiler.source>1.9</maven.compiler.source>
-        <maven.compiler.target>1.9</maven.compiler.target>
+        <java.version>1.9</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit.version>4.12</junit.version>
-        <surefire-junit.version>2.4.3</surefire-junit.version>
-        <unirest-java.version>1.4.9</unirest-java.version>
+        <main-class>nl.knaw.meertens.clariah.vre.integration.App</main-class>
+
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven-failsafe-plugin.version>2.12</maven-failsafe-plugin.version>
         <maven-resources-plugin.version>3.0.2</maven-resources-plugin.version>
-        <assertj-core.version>3.9.0</assertj-core.version>
+        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <mavens-surefire-plugin.version>2.21.0</mavens-surefire-plugin.version>
-        <kafka-clients.version>2.0.0</kafka-clients.version>
-        <json-unit-fluent.version>1.28.1</json-unit-fluent.version>
+        <assertj-core.version>3.9.0</assertj-core.version>
+
         <guava.version>23.6-jre</guava.version>
         <json-path.version>2.3.0</json-path.version>
+        <json-unit-fluent.version>1.28.1</json-unit-fluent.version>
+        <junit.version>4.12</junit.version>
+        <kafka-clients.version>2.0.0</kafka-clients.version>
         <sl4j-api.version>1.7.25</sl4j-api.version>
+        <surefire-junit.version>2.4.3</surefire-junit.version>
+        <unirest-java.version>1.4.9</unirest-java.version>
     </properties>
     <dependencies>
 
@@ -31,13 +36,11 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj-core.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.surefire</groupId>
@@ -48,7 +51,6 @@
             <groupId>net.javacrumbs.json-unit</groupId>
             <artifactId>json-unit-fluent</artifactId>
             <version>${json-unit-fluent.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
@@ -61,7 +63,6 @@
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <version>3.1.6</version>
-            <scope>test</scope>
         </dependency>
 
 
@@ -106,12 +107,47 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.6</version>
-            <scope>test</scope>
         </dependency>
 
     </dependencies>
     <build>
         <plugins>
+            <!-- build executable jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>${main-class}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- copy dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                            <excludeScope>provided</excludeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- set encoding -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -120,29 +156,15 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
+
+            <!-- run tests with surefire -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${mavens-surefire-plugin.version}</version>
                 <configuration>
                     <forkCount>0</forkCount>
-                    <excludes>
-                        <exclude>**/Initializer.java</exclude>
-                    </excludes>
                 </configuration>
-                <!-- Always run Initializer first: -->
-                <executions>
-                    <execution>
-                        <id>init</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <test>Initializer</test>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

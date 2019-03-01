@@ -7,8 +7,10 @@ version: '3.4'
 services:
   integration:
     container_name: vre_integration_1
+    command: tail -f /dev/null # to keep container up
     build: .
     tty: true
+    working_dir: /usr/local/integration/
     depends_on:
       - recognizer
       - nextcloud
@@ -38,6 +40,5 @@ services:
       - DB_SERVICES_USER=${DB_SERVICES_USER}
       - DB_SERVICES_PASSWORD=${DB_SERVICES_PASSWORD}
 
-    command: tail -f /dev/null # to keep container up
     ports:
       - "8085:8085"

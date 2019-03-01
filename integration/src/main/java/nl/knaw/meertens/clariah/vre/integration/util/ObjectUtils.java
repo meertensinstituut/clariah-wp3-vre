@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.integration.util;
 
 import nl.knaw.meertens.clariah.vre.integration.Config;
+import org.assertj.core.api.Assertions;
 import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class ObjectUtils {
   public static long getNonNullObjectIdFromRegistry(String inputFile) {
     long id;
     id = getObjectIdFromRegistry(inputFile);
-    assertThat(id).isNotZero();
+    Assertions.assertThat(id).isNotZero();
     return id;
   }
 
