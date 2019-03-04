@@ -34,7 +34,7 @@ public class SystemConfig {
   public static final int MIN_POLL_INTERVAL = 1; // seconds
 
   private static String requireNonBlank(String field) {
-    if(isBlank(field)) {
+    if (isBlank(field)) {
       throw new RuntimeException("Environment variable is not set");
     }
     return field;

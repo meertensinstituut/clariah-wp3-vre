@@ -11,6 +11,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>11</java.version>
+    <checkstyle.config.location>https://raw.githubusercontent.com/HuygensING/checkstyle/master/checkstyle_config.xml</checkstyle.config.location>
 
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
