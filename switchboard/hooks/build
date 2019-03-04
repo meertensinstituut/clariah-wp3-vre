@@ -1,0 +1,6 @@
+#!/bin/bash
+docker build \
+  --build-arg USER_TO_LOCK_WITH=$USER_TO_LOCK_WITH \
+  --build-arg USER_TO_UNLOCK_WITH=$USER_TO_UNLOCK_WITH \
+  -f $DOCKERFILE_PATH \
+  -t $IMAGE_NAME .

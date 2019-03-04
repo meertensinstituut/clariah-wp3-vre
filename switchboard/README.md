@@ -28,7 +28,7 @@ Note 2: make sure port 9998 (jerseytest) and 1080 (mockserver) are free
 
 ## Testing
 
-Run: `docker exec vre_switchboard_1 mvn clean test`
+Run: `docker-compose build switchboard`
 
 Note 1: environment variables are mocked with surefire plugin, see pom.xml
 Note 2: in order to run tests `$USER` should be set with existing username
