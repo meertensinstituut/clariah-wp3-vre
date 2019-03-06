@@ -28,4 +28,7 @@ RUN apt-get update && \
 
 RUN mvn clean install
 
-CMD java -jar ./target/recognizer-0.1-SNAPSHOT.jar
+RUN pwd
+RUN ls -al
+
+CMD pwd && ls -al && java -jar ./target/recognizer-0.1-SNAPSHOT.jar

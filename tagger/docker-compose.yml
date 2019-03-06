@@ -18,8 +18,6 @@ services:
         TEST_PASSWORD: ${TEST_PASSWORD}
     expose:
     - 80
-    volumes:
-    - ./:/usr/local/tagger
     depends_on:
     - kafka
     extra_hosts:

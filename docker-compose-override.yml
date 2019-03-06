@@ -1,6 +1,7 @@
 version: '3.4'
 
-# Root compose file of components to overwrite relative volume and build paths
+# Root compose file of components to override relative volumes and build paths
+# - see ./merge-containers.sh
 
 services:
   integration:
@@ -11,8 +12,6 @@ services:
   tagger:
     build:
       context: ./tagger
-    volumes:
-      - ./tagger:/usr/local/tagger
 
   switchboard:
     build:
@@ -36,7 +35,6 @@ services:
     build:
       context: ./recognizer
     volumes:
-      - ./recognizer:/usr/local/recognizer
       - data-volume:/tmp/recognizer
     depends_on:
       - dreamfactory

@@ -1,7 +1,9 @@
 #!/bin/bash
 set -e
 
-source ./start-containers.sh --no-build
+source ./merge-containers.sh
+
+docker-compose -p vre up -d
 
 docker cp nextcloud/vre vre_nextcloud_1:/tmp/vre
 cp .env nextcloud/.env
