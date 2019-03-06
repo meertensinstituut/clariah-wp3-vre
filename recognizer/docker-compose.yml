@@ -21,8 +21,6 @@ services:
     tty: true
     expose:
     - 80
-    volumes:
-    - ./:/usr/local/recognizer
     depends_on:
     - fits
     - kafka

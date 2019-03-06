@@ -31,8 +31,8 @@ public class FileUtils {
   public static boolean fileHasContent(String inputFile, String someContent) {
     logger.info(format("check file [%s] can be downloaded", inputFile));
     HttpResponse<String> downloadResult = downloadFile(inputFile);
-    return downloadResult.getBody().equals(someContent)
-      && downloadResult.getStatus() == 200;
+    return downloadResult.getStatus() == 200
+      && downloadResult.getBody().equals(someContent);
   }
 
   public static HttpResponse<String> downloadFile(String inputFile) {
