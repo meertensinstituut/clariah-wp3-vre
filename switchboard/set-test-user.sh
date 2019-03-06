@@ -4,7 +4,11 @@
 mkdir -p /usr/local/tomcat/conf/Catalina/localhost && \
   touch /usr/local/tomcat/conf/Catalina/localhost/static.xml
 
-# add static file dir:
+echo "do static files exit?"
+ls -al /usr/local/switchboard
+ls -al /usr/local/switchboard/static_files
+
+# add static files dir:
 echo '<Context path="/static" docBase="/usr/local/switchboard/static_files/"></Context>' \
   > /usr/local/tomcat/conf/Catalina/localhost/static.xml
 

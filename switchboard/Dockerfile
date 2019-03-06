@@ -47,5 +47,6 @@ RUN echo "deploy switchboard.war..." && \
 
 # tail to keep docker running when redeploying jar:
 CMD export CATALINA_OPTS="-Xmx700m --add-exports java.base/jdk.internal.ref=ALL-UNNAMED" && \
+    ls -al /usr/local/switchboard && \
     /usr/local/tomcat/bin/catalina.sh run && \
     tail -f /dev/null
