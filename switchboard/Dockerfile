@@ -1,12 +1,13 @@
 # Create basic docker image with empty maven repo:
 #FROM maven:3.5.4-jdk-11-slim
-#RUN mkdir -p /root/.m2/repository
+#RUN mkdir -p /usr/local/mvn-repo-volume
 #WORKDIR /usr/local/switchboard
 
 FROM knawhuc/clariah-wp3-vre-switchboard AS old
 
 FROM knawhuc/clariah-wp3-vre-switchboard-builder
-COPY --from=old /root/.m2/repository /root/.m2/repository
+COPY --from=old /usr/local/mvn-repo-volume /usr/local/mvn-repo-volume
+RUN find / -name '*unirest*'
 
 ARG SWITCHBOARD_TOPIC_NAME
 ARG NEXTCLOUD_TOPIC_NAME
@@ -19,12 +20,6 @@ ARG USER_TO_LOCK_WITH
 ARG USER_TO_UNLOCK_WITH
 ARG APP_KEY_OBJECTS
 ARG APP_KEY_SERVICES
-
-RUN echo $USER_TO_LOCK_WITH
-RUN echo $USER_TO_UNLOCK_WITH
-
-RUN ls -R /root/.m2/repository
-RUN mvn help:evaluate -Dexpression=settings.localRepository | grep -v '\[INFO\]'
 
 RUN rm -rf /user/local/switchboard
 COPY ./ /usr/local/switchboard
@@ -40,7 +35,11 @@ RUN echo "remove work dirs in tmp deployment volume [${DEPLOYMENT_VOLUME}]..." &
 # $USER is needed for tests
 RUN echo "build switchboard..." && \
     export USER=$(whoami) && \
-    mvn clean install
+    mvn clean install -Dmaven.repo.local=/usr/local/mvn-repo-volume && \
+    find / -name '*unirest*'
+VOLUME /usr/local/mvn-repo-volume
+
+RUN find / -name '*unirest*'
 
 RUN echo "deploy switchboard.war..." && \
     cp /usr/local/switchboard/target/switchboard-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/switchboard.war

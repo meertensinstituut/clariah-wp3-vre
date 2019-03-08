@@ -23,9 +23,6 @@ ARG USER_OBJECTS_EMAIL
 ARG USER_OBJECTS_PASSWORD
 ARG APP_KEY_OBJECTS
 
-RUN apt-get update && \
-    apt-get -y install jq
-
 RUN mvn clean install
 
 CMD java -jar ./target/recognizer-0.1-SNAPSHOT.jar
