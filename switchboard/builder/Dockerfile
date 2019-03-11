@@ -35,8 +35,6 @@ ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
 COPY mvn-entrypoint.sh /usr/local/bin/mvn-entrypoint.sh
 COPY settings-docker.xml /usr/share/maven/ref/
 
-VOLUME "$USER_HOME_DIR/.m2"
-
 ##
 # Add JDK, based on: https://github.com/docker-library/openjdk/tree/master/9-jdk/slim
 ##
