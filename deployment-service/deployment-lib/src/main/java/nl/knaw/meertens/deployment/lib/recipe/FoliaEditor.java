@@ -141,7 +141,7 @@ public class FoliaEditor implements RecipePlugin {
     File file = new File(fullOutputPath);
     logger.info(format("Generating output file: %s", fullOutputPath));
     writeToHtml(format(
-        "<iframe src=\"%s\" width=\"100%%\" height=\"800px\">Your browser does not support iframes. Direct link to " +
+        "<iframe src=%s width=\"100%%\" height=\"800px\">Your browser does not support iframes. Direct link to " +
             "editor: %s</iframe>",
         urlJson.get("url"),
         urlJson.get("url")
@@ -277,6 +277,7 @@ public class FoliaEditor implements RecipePlugin {
 
     logger.info(format("Hacking returnUrl for dev environment: %s", devReturnUrl.toString()));
     jsonResult.put("url", devReturnUrl.toString());
+    jsonResult.put("returnUrl", returnUrl.toString());
     jsonResult.put("docId", headers.get("location").get(0));
 
     Unirest.shutdown();
