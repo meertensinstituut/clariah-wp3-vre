@@ -48,7 +48,7 @@ public class Folia implements RecipePlugin {
     try {
       url = new URL(
           "https://gist.githubusercontent.com/vicding-mi/a2f1733240867433b4fdb24ca3fa4e29/raw" +
-              "/6aeeb575bd55d0b048de5a6c70b946f76a4a28e8/folia2html.xsl");
+              "/11e1d4e2cddb983fcebe783ddf65bd56a68e2e8e/folia2html.xsl");
     } catch (MalformedURLException e) {
       throw new RecipePluginException("Could not load xslt from url", e);
     }
