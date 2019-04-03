@@ -5,6 +5,7 @@ import DeployResource from "../common/deploy-resource";
 import Spinner from "../common/spinner";
 import ErrorMsg from "../common/error-msg";
 import './editor.css';
+import {DeploymentStatus} from "../common/deployment-status";
 
 /**
  * Edits a file using the first editor
@@ -43,22 +44,21 @@ class Editor extends React.Component {
 
             const editor = data[0].name;
 
-            // TODO: uncomment when deployment service works:
-            // const deployData = await DeployResource
-            //     .postDeployment(editor, params)
-            //     .catch((e) => this.setState({error: e}));
-            // if(!deployData) return;
-            //
-            // const editorData = await DeployResource
-            //     .getDeploymentWhen(deployData.workDir, DeploymentStatus.FINISHED)
-            //     .catch((e) => this.setState({error: e}));
-            // if(!editorData) return;
-            //
-            // this.setState({
-            //     editor: editor,
-            //     workDir: editorData.workDir,
-            //     editorFileContent: {__html: editorData.viewerFileContent}
-            // });
+            const deployData = await DeployResource
+                .postDeployment(editor, params)
+                .catch((e) => this.setState({error: e}));
+            if(!deployData) return;
+
+            const editorData = await DeployResource
+                .getDeploymentWhen(deployData.workDir, DeploymentStatus.FINISHED)
+                .catch((e) => this.setState({error: e}));
+            if(!editorData) return;
+
+            this.setState({
+                editor: editor,
+                workDir: editorData.workDir,
+                editorFileContent: {__html: editorData.viewerFileContent}
+            });
 
             this.setState({
                 workDir: "dummy-uuid-workdir",

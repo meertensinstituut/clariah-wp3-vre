@@ -39,7 +39,7 @@ public class ObjectsRegistryServiceImpl implements ObjectsRegistryService {
         .header("Content-Type", "application/json")
         .header("X-DreamFactory-Api-Key", objectsDbKey)
         .asString();
-      if(isBlank(response.getBody())) {
+      if (isBlank(response.getBody())) {
         return new ObjectsRecordDto();
       } else {
         return mapper.readValue(response.getBody(), ObjectsRecordDto.class);
