@@ -19,8 +19,6 @@ import static org.mockserver.model.HttpRequest.request;
 
 public class DeploymentServiceImplTest extends AbstractControllerTest {
 
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
   @Test
   public void postDeploymentRequest_shouldRequestsDeployment() throws IOException {
     var expectedService = "UCTO";
@@ -34,7 +32,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
   }
 
   @Test
-  public void postDeploymentRequest_shouldNotRequestsDeployment_whenAlreadyRunning() throws IOException {
+  public void postDeploymentRequest_shouldNotRequestsDeployment_whenAlreadyRunning() {
     var expectedService = "UCTO";
     var deploymentRequestDto = DeployUtil.getDeploymentRequestDto("1", longName);
 
@@ -53,7 +51,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
     assertThat(secondTimeResponse.getStatus()).isEqualTo(403);
     assertThatJson(json).node("status").isEqualTo("ALREADY_RUNNING");
 
-    setDeployBackTo200();
+    setDeployStatusTo200();
   }
 
   @Test
@@ -81,7 +79,7 @@ public class DeploymentServiceImplTest extends AbstractControllerTest {
   }
 
 
-  private void setDeployBackTo200() {
+  private void setDeployStatusTo200() {
     MockServerUtil.getMockServer().clear(
       request()
         .withMethod("PUT")

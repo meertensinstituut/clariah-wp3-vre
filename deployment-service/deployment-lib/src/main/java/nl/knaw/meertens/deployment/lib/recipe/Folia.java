@@ -46,8 +46,9 @@ public class Folia implements RecipePlugin {
   public void init(String workDir, Service service) throws RecipePluginException {
 
     try {
-      url = new URL("https://raw.githubusercontent.com/" +
-        "proycon/folia/master/foliatools/folia2html.xsl");
+      url = new URL(
+          "https://gist.githubusercontent.com/vicding-mi/a2f1733240867433b4fdb24ca3fa4e29/raw" +
+              "/11e1d4e2cddb983fcebe783ddf65bd56a68e2e8e/folia2html.xsl");
     } catch (MalformedURLException e) {
       throw new RecipePluginException("Could not load xslt from url", e);
     }
@@ -128,8 +129,8 @@ public class Folia implements RecipePlugin {
     String inputFile = inputOjbect.get("value").asText();
 
     String inputPath = Paths
-      .get(ROOT_WORK_DIR, workDir, INPUT_DIR, inputFile)
-      .normalize().toString();
+        .get(ROOT_WORK_DIR, workDir, INPUT_DIR, inputFile)
+        .normalize().toString();
 
     String outputFile;
     if (params.size() > 1) {
@@ -139,12 +140,12 @@ public class Folia implements RecipePlugin {
     }
 
     String fullOutputPath = Paths
-      .get(ROOT_WORK_DIR, workDir, OUTPUT_DIR, outputFile)
-      .normalize().toString();
+        .get(ROOT_WORK_DIR, workDir, OUTPUT_DIR, outputFile)
+        .normalize().toString();
 
     File outputPath = Paths
-      .get(fullOutputPath).getParent()
-      .normalize().toFile();
+        .get(fullOutputPath).getParent()
+        .normalize().toFile();
 
     if (!outputPath.exists()) {
       logger.info(format("creating folder [%s]", outputPath.toString()));

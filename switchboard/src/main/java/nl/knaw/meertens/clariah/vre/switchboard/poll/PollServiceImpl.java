@@ -3,9 +3,9 @@ package nl.knaw.meertens.clariah.vre.switchboard.poll;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusResponseDto;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
 import org.assertj.core.api.exception.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,18 +26,18 @@ public class PollServiceImpl implements PollService {
   private static final double INCREASE_INTERVAL_FACTOR = 1.1;
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  private final RequestRepository requestRepositoryService;
+  private final DeploymentStatusRepository deploymentStatusRepository;
   private final String hostName;
   private ObjectMapper mapper;
   private volatile boolean polling = false;
   private Thread pollThread;
 
   public PollServiceImpl(
-    RequestRepository requestRepository,
+    DeploymentStatusRepository deploymentStatusRepository,
     ObjectMapper mapper,
     String hostName
   ) {
-    this.requestRepositoryService = requestRepository;
+    this.deploymentStatusRepository = deploymentStatusRepository;
     this.mapper = mapper;
     this.hostName = hostName;
     startPolling();
@@ -81,7 +81,7 @@ public class PollServiceImpl implements PollService {
    * - save deployment status
    */
   private void poll() {
-    for (var report : requestRepositoryService.getAllStatusReports()) {
+    for (var report : deploymentStatusRepository.getAllStatusReports()) {
       if (shouldPoll(report)) {
         try {
           pollSingle(report);
@@ -99,7 +99,7 @@ public class PollServiceImpl implements PollService {
 
     report = getDeploymentStatus(report);
     runConsumer(report);
-    requestRepositoryService.saveStatusReport(report);
+    deploymentStatusRepository.saveStatusReport(report);
 
     logger.info(format(
       "Polled deployment [%s]; received status [%s]",
@@ -122,7 +122,7 @@ public class PollServiceImpl implements PollService {
 
   private void runConsumer(DeploymentStatusReport report) {
     var deploymentConsumer =
-      requestRepositoryService.getConsumer(report.getWorkDir());
+      deploymentStatusRepository.getConsumer(report.getWorkDir());
     try {
       deploymentConsumer.accept(report);
     } catch (Exception e) {

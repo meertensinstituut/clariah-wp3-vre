@@ -3,7 +3,7 @@ package nl.knaw.meertens.clariah.vre.switchboard;
 import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumerFactory;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentServiceImpl;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.RequestRepository;
+import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusRepository;
 import nl.knaw.meertens.clariah.vre.switchboard.file.NextcloudFileService;
 import nl.knaw.meertens.clariah.vre.switchboard.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.switchboard.poll.PollServiceImpl;
@@ -33,10 +33,10 @@ public class SwitchboardJerseyTest extends JerseyTest {
 
   private static ResourceConfig resourceConfig;
 
-  private static RequestRepository requestRepository = SwitchboardDiBinder.getRequestRepository();
+  private static DeploymentStatusRepository deploymentStatusRepository = SwitchboardDiBinder.getRequestRepository();
 
   private static PollServiceImpl pollService = new PollServiceImpl(
-    requestRepository,
+    deploymentStatusRepository,
     SwitchboardDiBinder.getMapper(),
     mockHostName
   );
@@ -52,8 +52,8 @@ public class SwitchboardJerseyTest extends JerseyTest {
   private KafkaProducerService kafkaSwitchboardServiceMock;
   private KafkaProducerService kafkaNextcloudServiceMock;
 
-  static RequestRepository getRequestRepository() {
-    return requestRepository;
+  static DeploymentStatusRepository getDeploymentStatusRepository() {
+    return deploymentStatusRepository;
   }
 
   public static ObjectsRegistryServiceStub getObjectsRegistryServiceStub() {
@@ -83,7 +83,7 @@ public class SwitchboardJerseyTest extends JerseyTest {
       servicesRegistryService,
       new DeploymentServiceImpl(
         mockHostName,
-        requestRepository,
+        deploymentStatusRepository,
         pollService
       ),
       kafkaSwitchboardServiceMock,

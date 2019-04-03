@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -40,7 +41,7 @@ public class NextcloudFileService implements FileService {
   }
 
   @Override
-  public void stageFiles(String workDir, List<ObjectPath> objectPaths) {
+  public void stageFiles(String workDir, Collection<ObjectPath> objectPaths) {
     var inputPaths = objectPaths
       .stream()
       .map(NextcloudInputFile::from)

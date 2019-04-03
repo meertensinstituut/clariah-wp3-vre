@@ -1,6 +1,7 @@
 version: '3.4'
 
-# Overwrites settings of compose files of components to fix paths
+# Root compose file of components to override relative volumes and build paths
+# - see ./merge-containers.sh
 
 services:
   integration:
@@ -9,33 +10,17 @@ services:
       - ./integration:/usr/local/integration
 
   tagger:
-    command: ./docker/docker-run-tagger.sh
-    volumes:
-      - ./tagger:/usr/local/tagger
-    environment:
-      KAFKA_BROKER: localhost
-      KAFKA_PORT: ${KAFKA_PORT}
-      RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}
-      RECOGNIZER_GROUP_NAME: ${RECOGNIZER_GROUP_NAME}
-      TAGGER_TOPIC_NAME: ${TAGGER_TOPIC_NAME}
-      TAGGER_GROUP_NAME: ${TAGGER_TOPIC_NAME}
-      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
-      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
-      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
-      TEST_USER: ${TEST_USER}
-      TEST_PASSWORD: ${TEST_PASSWORD}
+    build:
+      context: ./tagger
 
   switchboard:
-    build: ./switchboard/docker
-    command: ./docker/docker-run-switchboard.sh
+    build:
+      context: ./switchboard
     volumes:
       - ./switchboard:/usr/local/switchboard
     depends_on:
       - dreamfactory
       - deployment
-    environment:
-      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
-      APP_KEY_SERVICES: ${APP_KEY_SERVICES}
 
   nextcloud:
     build: ./nextcloud
@@ -47,16 +32,12 @@ services:
           - nextcloud
 
   recognizer:
-    build: ./recognizer/recognizer
+    build:
+      context: ./recognizer
     volumes:
-      - ./recognizer:/usr/local/recognizer
       - data-volume:/tmp/recognizer
     depends_on:
       - dreamfactory
-    environment:
-      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
-      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
-      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
 
   fits:
     container_name: vre_fits_1
@@ -87,14 +68,13 @@ services:
     image: zookeeper:3.4
 
   deployment:
-    build: ./deployment-service
+    build:
+      context: ./deployment-service
     volumes:
       - ./deployment-service/conf:/conf
       - ./deployment-service/:/tmp/deployment
       - deployment-volume:/tmp/wd/
       - data-volume:/usr/local/nextcloud
-      # share maven repository of host:
-      - maven-m2:/root/.m2/repository
     depends_on:
       - dreamfactory
       - tika

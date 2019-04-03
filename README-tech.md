@@ -12,32 +12,41 @@ The CLARIAH WP3 VRE consists of the following components:
 - **Deployment-service**: to deploy a (remote) service
 - **Integration**: to verify that all components play nicely together
 
+See component readme's for more information.
+
 See [vre-model.svg](vre-model.svg) for an overview of the VRE.
 
 Using:
-- Java 9/11
+- Java 11
 - Php 7
 - [Kafka](https://kafka.apache.org/)
 - [Nextcloud](https://nextcloud.com/)
 - [Dreamfactory](https://www.dreamfactory.com/)
 
-Deployment
----
+## Local deployment
 
-- See README of components.
 - To start all containers, run: `./start-vre.sh`. 
-  - To run integration tests in remote debug-mode, add: `debug`.
-  - NB. Atm saxon-utils of deployment-service is added by hand: see readme of component.
 - To start UI, run: `cd ./ui && ./start-ui.sh`. 
 - UI runs at `localhost:3000`
+- To get latest service images, run: `docker-compose pull`
 
-Development
----
+## Integration tests
+- Run `./test-vre.sh` which:
+  - Builds all components
+  - Runs tests in `./integration`
+    
+## Development
 
-- Add new components: expand docker-compose command in `./start-vre.sh`.
-    - Environment variables can be added to `./.env`.
-    - References to component files and volumes in `./<component>/docker-compose.yml` should be overwritten in `./docker-compose.yml`
-  
+- Add new component: 
+  - Environment variables can be added to `./.env`.
+  - Expand docker-compose command in `./start-vre.sh`.
+  - References to component files and volumes in `./<component>/docker-compose.yml` should be overwritten in `./docker-compose.yml`
+  - Integration tests can be added to java app in `./integation`
+
+## Docker containers
+
+Each component runs in its own container. The images of switchboard, recognizer, tagger and deployment are build automatically on docker hub.
+
 Demo
 ---
 

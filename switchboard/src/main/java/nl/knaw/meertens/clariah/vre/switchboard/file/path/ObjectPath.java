@@ -19,17 +19,17 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.FILES_DIR;
  */
 public class ObjectPath {
 
-  private final Path objectPath;
+  private final Path path;
   private final String file;
   private final String user;
 
   public ObjectPath(
-    String objectPath
+    String path
   ) {
-    assertIsObjectPath(objectPath);
-    this.objectPath = Path.of(objectPath);
-    this.file = getFileFrom(objectPath);
-    this.user = getUserFrom(objectPath);
+    assertIsObjectPath(path);
+    this.path = Path.of(path);
+    this.file = getFileFrom(path);
+    this.user = getUserFrom(path);
   }
 
   @JsonCreator
@@ -39,7 +39,7 @@ public class ObjectPath {
   ) {
     this.user = user;
     this.file = file;
-    this.objectPath = Path.of(user, FILES_DIR, file);
+    this.path = Path.of(user, FILES_DIR, file);
   }
 
   /**
@@ -81,12 +81,13 @@ public class ObjectPath {
   }
 
   public Path toPath() {
-    return objectPath;
+    return path;
   }
 
   public String toString() {
-    return objectPath.toString();
+    return path.toString();
   }
+
 
   public String getFile() {
     return file;

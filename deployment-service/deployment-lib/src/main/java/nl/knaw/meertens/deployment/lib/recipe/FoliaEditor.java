@@ -110,7 +110,7 @@ public class FoliaEditor implements RecipePlugin {
     ObjectNode inputOjbect = (ObjectNode) params.get(0);
     String inputFile = inputOjbect.get("value").asText();
     String fullInputPath =
-      Paths.get(SystemConf.ROOT_WORK_DIR, workDir, inputPathConst, inputFile).normalize().toString();
+        Paths.get(SystemConf.ROOT_WORK_DIR, workDir, inputPathConst, inputFile).normalize().toString();
     String inputPath = Paths.get(SystemConf.ROOT_WORK_DIR, workDir, inputPathConst).normalize().toString();
     logger.info(format("inputPath: %s", inputPath));
     logger.info(format("Full Input Path: %s", fullInputPath));
@@ -126,7 +126,7 @@ public class FoliaEditor implements RecipePlugin {
     }
 
     String fullOutputPath = Paths.get(
-      SystemConf.ROOT_WORK_DIR, workDir, outputPathConst, outputFile
+        SystemConf.ROOT_WORK_DIR, workDir, outputPathConst, outputFile
     ).normalize().toString();
     logger.info(format("Full outputPath: [%s]", fullOutputPath));
 
@@ -141,8 +141,11 @@ public class FoliaEditor implements RecipePlugin {
     File file = new File(fullOutputPath);
     logger.info(format("Generating output file: %s", fullOutputPath));
     writeToHtml(format(
-      "<iframe src=\"%s\" width=\"100%%\" height=\"800px\">Text to display when iframe is not supported</iframe>",
-      urlJson.get("url")), file);
+        "<iframe src=%s width=\"100%%\" height=\"800px\">Your browser does not support iframes. Direct link to " +
+            "editor: %s</iframe>",
+        urlJson.get("url"),
+        urlJson.get("url")
+    ), file);
     json.set("url", urlJson.get("url"));
     return json;
 
@@ -161,11 +164,11 @@ public class FoliaEditor implements RecipePlugin {
     ObjectNode json = jsonFactory.objectNode();
 
     URL url = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/" + workDir,
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/" + workDir,
+        null
     );
 
     String urlString = url.toString();
@@ -216,10 +219,10 @@ public class FoliaEditor implements RecipePlugin {
     }
 
     FileUtils.copyURLToFile(
-      url,
-      new File(fullOutputPath),
-      60,
-      60);
+        url,
+        new File(fullOutputPath),
+        60,
+        60);
     logger.info("Download successful");
   }
 
@@ -241,20 +244,20 @@ public class FoliaEditor implements RecipePlugin {
     jsonResult.put("filenameOnly", filenameOnly);
 
     URL url = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/pub/upload/",
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/pub/upload/",
+        null
     );
     logger.info("Upload URL:" + url.toString() + "");
 
     HttpResponse<String> jsonResponse = Unirest
-      .post(url.toString())
-      .header("accept", "application/json")
-      .header("file", file.toString())
-      .field("file", file)
-      .asString();
+        .post(url.toString())
+        .header("accept", "application/json")
+        .header("file", file.toString())
+        .field("file", file)
+        .asString();
 
     logger.info(format("Response code: %s", jsonResponse.getCode()));
     Headers headers = jsonResponse.getHeaders();
@@ -262,11 +265,11 @@ public class FoliaEditor implements RecipePlugin {
     logger.info(format("Response url: %s", this.docId));
 
     URL returnUrl = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.docId,
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.docId,
+        null
     );
     logger.info(format("returnUrl: %s", returnUrl.toString()));
 
@@ -274,6 +277,7 @@ public class FoliaEditor implements RecipePlugin {
 
     logger.info(format("Hacking returnUrl for dev environment: %s", devReturnUrl.toString()));
     jsonResult.put("url", devReturnUrl.toString());
+    jsonResult.put("returnUrl", returnUrl.toString());
     jsonResult.put("docId", headers.get("location").get(0));
 
     Unirest.shutdown();
@@ -288,11 +292,11 @@ public class FoliaEditor implements RecipePlugin {
   public Boolean saveFoliaFileFromEditor() throws RecipePluginException, IOException {
 
     URL url = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/download/pub/" + this.docId + ".folia.xml",
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/download/pub/" + this.docId + ".folia.xml",
+        null
     );
 
     this.downloadResultFile(url);

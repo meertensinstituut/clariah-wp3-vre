@@ -193,6 +193,16 @@
             <!-- java modules -->
             <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --illegal-access=permit</argLine>
             <forkMode>once</forkMode>
+            <environmentVariables>
+              <KAFKA_PORT>1234</KAFKA_PORT>
+              <RECOGNIZER_TOPIC_NAME>test_recognizer_topic_name</RECOGNIZER_TOPIC_NAME>
+              <RECOGNIZER_GROUP_NAME>test_recognizer_group_name</RECOGNIZER_GROUP_NAME>
+              <TAGGER_TOPIC_NAME>test_tagger_topic_name</TAGGER_TOPIC_NAME>
+              <TAGGER_GROUP_NAME>test_tagger_group_name</TAGGER_GROUP_NAME>
+              <APP_KEY_OBJECTS>test_app_key_objects</APP_KEY_OBJECTS>
+              <TEST_USER>test</TEST_USER>
+              <TEST_PASSWORD>test_test_password</TEST_PASSWORD>
+            </environmentVariables>
           </configuration>
           <dependencies>
             <!-- java modules -->

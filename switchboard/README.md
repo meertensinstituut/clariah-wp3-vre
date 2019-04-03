@@ -8,17 +8,30 @@ Tools, languages and techniques:
  - Jersey
 
 # Development
-- Add static files (e.g. users) to `./static_files`
+- Add static files (e.g. test users) to `./static_files`
 
-## Deployment
+## Local deployment
 
 - Run: `./start-switchboard.sh`. Runs at: `localhost:9010/switchboard`
 
 - Redeploy: `docker exec vre_switchboard_1 bash -c "../tomcat/bin/shutdown.sh && ./docker/docker-run-switchboard.sh"`
 
+- To make the tests run on a developer host machine, run like:
+```
+export USER_TO_LOCK_WITH=$USER
+export USER_TO_UNLOCK_WITH=$USER
+mvn clean test
+```
+Note 1: in production locker and unlocker should be different users, as defined in docker-compose.yml
+
+Note 2: make sure port 9998 (jerseytest) and 1080 (mockserver) are free
+
 ## Testing
 
-Run: `docker exec vre_switchboard_1 mvn clean test`
+Run: `docker-compose build switchboard`
+
+Note 1: environment variables are mocked with surefire plugin, see pom.xml
+Note 2: in order to run tests `$USER` should be set with existing username
 
 ## Workflow
 - A service deployment request contains a list of input files.

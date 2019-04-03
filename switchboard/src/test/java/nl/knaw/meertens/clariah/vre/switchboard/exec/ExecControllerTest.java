@@ -7,9 +7,6 @@ import nl.knaw.meertens.clariah.vre.switchboard.AbstractControllerTest;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.path.ObjectPath;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +23,8 @@ import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_OUTPU
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.EDITOR_TMP;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.INPUT_DIR;
 import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.NEXTCLOUD_VOLUME;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.USER_TO_LOCK_WITH;
+import static nl.knaw.meertens.clariah.vre.switchboard.SystemConfig.USER_TO_UNLOCK_WITH;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.FILE;
@@ -43,14 +42,11 @@ import static nl.knaw.meertens.clariah.vre.switchboard.util.MockServerUtil.start
 import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.apache.commons.io.FilenameUtils.getPath;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 public class ExecControllerTest extends AbstractControllerTest {
-
-  private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private static String dummyViewerService = "{\n" +
     "      \"id\": \"1\",\n" +
@@ -89,7 +85,8 @@ public class ExecControllerTest extends AbstractControllerTest {
     "      \"name\": \"EDITOR\",\n" +
     "      \"kind\": \"editor\",\n" +
     "      \"recipe\": \"nl.knaw.meertens.deployment.lib.recipe.Test\",\n" +
-    "      \"semantics\": \"" + new JsonStringEncoder().quoteAsString(getTestFileContent("editor.cmdi")) + "\",\n" +
+    "      \"semantics\": \"" + new String(new JsonStringEncoder().quoteAsString(getTestFileContent("editor.cmdi"))) +
+    "\",\n" +
     "      \"tech\": null,\n" +
     "      \"time_created\": \"2018-05-28 12:34:48.863548+00\",\n" +
     "      \"time_changed\": null,\n" +
@@ -113,16 +110,19 @@ public class ExecControllerTest extends AbstractControllerTest {
     startOrUpdateStatusMockServer(FINISHED.getHttpStatus(), workDir, "{}", "UCTO");
     var response = waitUntil(request, FINISHED);
 
-    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile.toString()).toFile()).exists();
-    createResultFile(workDir, resultFilename.toString(), resultSentence);
+    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
+    createResultFile(workDir, resultFilename, resultSentence);
     assertThatJson(response).node("status").isEqualTo("FINISHED");
 
     // Atm links are kept:
-    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile.toString()).toFile()).exists();
+    assertThat(Paths.get(DEPLOYMENT_VOLUME, workDir, INPUT_DIR, uniqueTestFile).toFile()).exists();
   }
 
   @Test
   public void postDeploymentRequest_shouldOutputFolderWithTestResult() throws InterruptedException, IOException {
+    System.out.println("USER_TO_LOCK_WITH:" + USER_TO_LOCK_WITH);
+    System.out.println("USER_TO_UNLOCK_WITH:" + USER_TO_UNLOCK_WITH);
+
     startServicesRegistryMockServer(dummyUctoService);
 
     var object = createTestFileWithRegistryObject(resultSentence);
@@ -145,7 +145,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     // Check output file is moved:
     var outputFolder = findOutputFolder(finishedJson);
     assertThat(outputFolder).isNotNull();
-    assertThat(outputFolder.toString()).startsWith("/usr/local/nextcloud/admin/files/output-20");
+    assertThat(outputFolder.toString()).contains("admin/files/output-20");
     var outputFile = Paths.get(outputFolder.getPath(), resultFilename);
     assertThat(outputFile.toFile()).exists();
     assertThat(Files.readAllLines(outputFile).get(0)).isEqualTo(resultSentence);
@@ -183,7 +183,28 @@ public class ExecControllerTest extends AbstractControllerTest {
   }
 
   @Test
-  public void testFinishRequest_shouldIgnoreUnknownFields() throws InterruptedException, IOException {
+  public void requestStatus_shouldReturnObjectPathsAsStrings() throws IOException {
+    var object = createTestFileWithRegistryObject(resultSentence);
+    var uniqueTestFile = object.filepath;
+
+    var deploymentRequestDto = getDeploymentRequestDto("" + object.id, longName);
+    var expectedService = "UCTO";
+
+    var deployed = deploy(expectedService, deploymentRequestDto);
+    assertThat(deployed.getStatus()).isBetween(200, 203);
+    var deployResponse = deployed.readEntity(String.class);
+    String workDir = JsonPath.parse(deployResponse).read("$.workDir");
+
+    var request = target(format("exec/task/%s/", workDir)).request();
+    var status = request
+      .get()
+      .readEntity(String.class);
+    String file = JsonPath.parse(status).read("$.files[0]");
+    assertThat(uniqueTestFile).isEqualTo(file);
+  }
+
+  @Test
+  public void testFinishRequest_shouldIgnoreUnknownFields() throws InterruptedException {
     var deploymentRequestDto = getDeploymentRequestDto("1", longName);
     var expectedService = "UCTO";
     var deployed = deploy(expectedService, deploymentRequestDto);
@@ -200,7 +221,7 @@ public class ExecControllerTest extends AbstractControllerTest {
     );
 
     // Check status is finished:
-    String finishedResponse = waitUntil(request, FINISHED);
+    var finishedResponse = waitUntil(request, FINISHED);
     assertThatJson(finishedResponse).node("status").isEqualTo("FINISHED");
   }
 

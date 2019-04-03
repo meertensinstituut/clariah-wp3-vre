@@ -3,11 +3,8 @@ version: '3.4'
 services:
   deployment:
     container_name: vre_deployment_1
-    build: ./
-    volumes:
-      - ./:/tmp/deployment
-      # share maven repository of host:
-      - ${HOME}/.m2/repository:/root/.m2/repository
+    image: knawhuc/clariah-wp3-vre-deployment:latest
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
     tty: true
-    working_dir: /tmp/deployment
-    command: /tmp/deployment/docker/docker-run-deployment.sh

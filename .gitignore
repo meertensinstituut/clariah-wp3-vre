@@ -17,8 +17,12 @@ nb-configuration.xml
 **/*.iml
 recognizer/bin
 recognizer/bin/*
+
+# Integration
 integration/bin
 integration/bin/*
+/docker-compose.yml
+
 
 # Java
 **/target/*
@@ -46,4 +50,4 @@ react-gui/node_modules/
 
 # Switchboard
 switchboard/.factorypath
-switchboard/static_files/test-user.json
+

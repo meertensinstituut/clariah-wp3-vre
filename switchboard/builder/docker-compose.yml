@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  switchboard-builder:
+    image: knawhuc/clariah-wp3-vre-switchboard-builder:latest
+    build:
+      context: ./
+      dockerfile: ./Dockerfile

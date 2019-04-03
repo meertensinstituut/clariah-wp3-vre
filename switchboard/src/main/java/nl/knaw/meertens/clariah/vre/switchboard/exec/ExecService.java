@@ -1,11 +1,11 @@
 package nl.knaw.meertens.clariah.vre.switchboard.exec;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.switchboard.consumer.DeploymentConsumerFactory;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequest;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentRequestDto;
 import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentService;
-import nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStatusReport;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.ConfigParamDto;
 import nl.knaw.meertens.clariah.vre.switchboard.file.FileService;
@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -97,24 +96,25 @@ public class ExecService {
   ) {
     var service = serviceRegistryService.getServiceByName(serviceName);
     var kind = ServiceKind.fromString(service.getKind());
-    var request = prepareDeploymentRequest(serviceName, body, kind);
+    var request = prepareDeployment(serviceName, body, kind);
+    nextcloudFileService.stageFiles(request.getWorkDir(), request.getFiles().values());
     var consumer = finishDeploymentConsumer.get(kind);
-    List<ObjectPath> files = new ArrayList<>(request.getFiles().values());
-    nextcloudFileService.stageFiles(request.getWorkDir(), files);
     var statusReport = deploymentService.deploy(request, consumer);
     request.setStatusReport(statusReport);
+    sendKafkaRequestMsg(request);
+
     return request;
   }
 
-  public DeploymentStatusReport getStatus(String workDir) {
-    return deploymentService.getStatus(workDir);
+  public DeploymentStatusReportDto getStatus(String workDir) {
+    return new DeploymentStatusReportDto(deploymentService.getStatus(workDir));
   }
 
   public void delete(String workDir) {
     deploymentService.delete(workDir);
   }
 
-  private DeploymentRequest prepareDeploymentRequest(
+  private DeploymentRequest prepareDeployment(
     String serviceName,
     String body,
     ServiceKind kind
@@ -208,26 +208,19 @@ public class ExecService {
     return output;
   }
 
-
+  /**
+   * Create working directory with config file
+   */
   private DeploymentRequest prepareServiceDeployment(
-    String service,
-    String body
-  ) throws IOException {
-    var request = createDeploymentRequest(service, body);
-    createConfig(request);
-    return request;
-  }
-
-  private DeploymentRequest createDeploymentRequest(
     String service,
     String body
   ) throws IOException {
     var workDir = createWorkDir();
     var request = mapServiceRequest(body, service, workDir);
-    var paths = requestFilesFromRegistry(request);
+    var paths = getPathsFromObjectRegistry(request.getParams());
     replaceObjectIdsWithPaths(request.getParams(), paths);
     request.setFiles(paths);
-    sendKafkaRequestMsg(request);
+    createConfig(request);
     return request;
   }
 
@@ -293,11 +286,9 @@ public class ExecService {
     );
   }
 
-  private HashMap<Long, ObjectPath> requestFilesFromRegistry(
-    DeploymentRequest serviceRequest
-  ) {
+  private HashMap<Long, ObjectPath> getPathsFromObjectRegistry(List<Param> params) {
     HashMap<Long, ObjectPath> files = new HashMap<>();
-    for (var param : serviceRequest.getParams()) {
+    for (var param : params) {
       if (param.type.equals(ParamType.FILE)) {
         var objectId = Long.valueOf(param.value);
         var record = objectsRegistryService.getObjectById(objectId);
@@ -320,12 +311,16 @@ public class ExecService {
 
   private void sendKafkaRequestMsg(
     DeploymentRequest serviceRequest
-  ) throws IOException {
+  ) {
     var msg = new KafkaDeploymentStartDto();
     msg.dateTime = serviceRequest.getDateTime();
     msg.service = serviceRequest.getService();
     msg.workDir = serviceRequest.getWorkDir();
-    msg.deploymentRequest = mapper.writeValueAsString(serviceRequest.getParams());
+    try {
+      msg.deploymentRequest = mapper.writeValueAsString(serviceRequest.getParams());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("Could not generate kafka deployment request msg", e);
+    }
     kafkaSwitchboardService.send(msg);
   }
 }

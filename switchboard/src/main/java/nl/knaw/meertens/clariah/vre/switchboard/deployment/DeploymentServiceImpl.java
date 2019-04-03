@@ -18,16 +18,16 @@ import static nl.knaw.meertens.clariah.vre.switchboard.deployment.DeploymentStat
 public class DeploymentServiceImpl implements DeploymentService {
 
   private final String hostName;
-  private final RequestRepository requestRepositoryService;
+  private final DeploymentStatusRepository deploymentStatusRepository;
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   public DeploymentServiceImpl(
     String hostName,
-    RequestRepository requestRepositoryService,
+    DeploymentStatusRepository deploymentStatusRepository,
     PollService pollService
   ) {
     this.hostName = hostName;
-    this.requestRepositoryService = requestRepositoryService;
+    this.deploymentStatusRepository = deploymentStatusRepository;
     pollService.startPolling();
   }
 
@@ -37,27 +37,27 @@ public class DeploymentServiceImpl implements DeploymentService {
     DeploymentConsumer deploymentConsumer
   ) {
     var report = requestDeployment(request);
-    requestRepositoryService.saveDeploymentRequest(report, deploymentConsumer);
+    deploymentStatusRepository.saveDeploymentRequest(report, deploymentConsumer);
     return report;
   }
 
   @Override
   public DeploymentStatusReport getStatus(String workDir) {
-    return requestRepositoryService.getStatusReport(workDir);
+    return deploymentStatusRepository.getStatusReport(workDir);
   }
 
   @Override
   public void delete(String workDir) {
-    var report = requestRepositoryService.getStatusReport(workDir);
+    var report = deploymentStatusRepository.getStatusReport(workDir);
 
     var uri = report.getUri();
     sendStopDeploymentRequest(uri);
     report.setStatus(STOPPED);
 
-    var abstractDeploymentConsumer = requestRepositoryService.getConsumer(workDir);
+    var abstractDeploymentConsumer = deploymentStatusRepository.getConsumer(workDir);
     abstractDeploymentConsumer.accept(report);
 
-    requestRepositoryService.saveStatusReport(report);
+    deploymentStatusRepository.saveStatusReport(report);
   }
 
   private DeploymentStatusReport requestDeployment(DeploymentRequest request) {
