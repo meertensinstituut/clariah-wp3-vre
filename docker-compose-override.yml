@@ -78,6 +78,7 @@ services:
     depends_on:
       - dreamfactory
       - tika
+      - lamachine
     environment:
       USER_SERVICES_EMAIL: ${USER_SERVICES_EMAIL}
       USER_SERVICES_PASSWORD: ${USER_SERVICES_PASSWORD}
