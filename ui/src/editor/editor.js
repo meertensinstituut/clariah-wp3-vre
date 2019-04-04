@@ -60,12 +60,6 @@ class Editor extends React.Component {
                 editorFileContent: {__html: editorData.viewerFileContent}
             });
 
-            this.setState({
-                workDir: "dummy-uuid-workdir",
-                editor: editor,
-                editorFileContent: {__html: '<iframe src="" width="100%" height="800px">iframe not supported</iframe>'},
-            });
-
         } catch (e) {
             this.setState({error: {message: "Could not edit file: " + e.message}})
         }

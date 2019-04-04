@@ -28,3 +28,13 @@ WHERE NOT EXISTS (
   SELECT "name" FROM service WHERE "name" = 'UCTO'
 );
 
+-- FOLIAEDITOR:
+\set foliaeditor `cat ./foliaeditor.cmdi`
+INSERT INTO service
+  ("name", "recipe", "semantics", "kind")
+SELECT
+  'FOLIAEDITOR', 'nl.knaw.meertens.deployment.lib.recipe.FoliaEditor', :'foliaeditor', 'editor'
+WHERE NOT EXISTS (
+  SELECT "name" FROM service WHERE "name" = 'FOLIAEDITOR'
+);
+

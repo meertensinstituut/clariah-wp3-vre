@@ -95,7 +95,7 @@ public class ExecController extends AbstractController {
     @PathParam("service") String serviceName
   ) {
     try {
-      logger.info("Get service");
+      logger.info(String.format("Get service [%s]", serviceName));
       Service service = new DeploymentLib().getServiceByName(serviceName);
       if (isNull(service)) {
         String msg = "invalid service";
@@ -133,13 +133,7 @@ public class ExecController extends AbstractController {
         .ok(json.toString(), APPLICATION_JSON)
         .build();
 
-    } catch (IOException |
-      NoSuchMethodException |
-      InvocationTargetException |
-      InstantiationException |
-      ClassNotFoundException |
-      IllegalAccessException |
-      RecipePluginException ex
+    } catch (Exception ex
     ) {
       return handleException(format("Could not deploy [%s][%s]", serviceName, workDir), ex);
     }
@@ -152,23 +146,31 @@ public class ExecController extends AbstractController {
     @PathParam("workDir") String workDir,
     @PathParam("service") String service
   ) throws RecipePluginException, IOException {
+    Boolean deleteResult = false;
+    logger.info(String.format("Saving folia file and downloading for service [%s]", service));
     // TODO: Queues are created at three different places atm, shouldn't there be just one queue?
     Queue queue = new Queue();
 
     // is service is FOLIAEDITOR save file first before closing
-    if (service == "FOLIAEDITOR") {
+    if (service.equals("FOLIAEDITOR")) {
+      logger.info("Service is FOLIAEDITOR");
       RecipePlugin plugin = queue.getPlugin(workDir);
 
       FoliaEditor editor = (FoliaEditor) plugin;
-      assert editor.saveFoliaFileFromEditor();
+      deleteResult = editor.saveFoliaFileFromEditor();
 
     }
 
-
     queue.removeTask(workDir);
-    return Response
-      .ok("deleted", APPLICATION_JSON)
-      .build();
+    if (deleteResult) {
+      return Response
+          .ok("deleted", APPLICATION_JSON)
+          .build();
+    } else {
+      return Response.status(500).build();
+
+    }
+
   }
 
   private boolean checkUserConfig(ObjectNode dbSymantics, ObjectNode userSymantics) {

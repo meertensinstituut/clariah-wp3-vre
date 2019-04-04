@@ -33,7 +33,7 @@ public class ClamTest extends AbstractIntegrationTest {
     String testFilename = uploadTestFile(testFileContent);
 
     await().until(() -> fileHasContent(testFilename, testFileContent));
-    await().until(() -> fileExistsInRegistry(testFilename));
+    await().until(() -> fileExistsInRegistry(testFilename, "text/plain", "Plain text"));
     long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(testFilename));
     logger.info(String.format("input file has object id [%d]", inputFileId));
 

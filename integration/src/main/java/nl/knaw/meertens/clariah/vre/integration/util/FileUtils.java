@@ -119,11 +119,11 @@ public class FileUtils {
     return getTestFileContent(defaultTestFileName);
   }
 
-  public static String getTestFileContent(String defaultTestFileName) {
+  public static String getTestFileContent(String fileName) {
     try {
-      return IOUtils.toString(App.class.getResource(defaultTestFileName).toURI(), UTF_8);
+      return IOUtils.toString(App.class.getResource(fileName).toURI(), UTF_8);
     } catch (IOException | URISyntaxException e) {
-      throw new RuntimeException(format("Could not get content of [%s]", defaultTestFileName), e);
+      throw new RuntimeException(format("Could not get content of [%s]", fileName), e);
     }
   }
 

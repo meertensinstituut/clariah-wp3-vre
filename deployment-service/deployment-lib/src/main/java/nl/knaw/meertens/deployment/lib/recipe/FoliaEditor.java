@@ -25,10 +25,13 @@ import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.constraints.Null;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
@@ -89,6 +92,8 @@ public class FoliaEditor implements RecipePlugin {
 
     } catch (IOException | InterruptedException | UnirestException ex) {
       throw new RecipePluginException("Could not execute recipe", ex);
+    } catch (URISyntaxException e) {
+      e.printStackTrace();
     }
 
     return status.toResponse();
@@ -99,7 +104,8 @@ public class FoliaEditor implements RecipePlugin {
     return status.toResponse();
   }
 
-  public ObjectNode runProject(String key) throws IOException, UnirestException, RecipePluginException {
+  public ObjectNode runProject(String key)
+      throws IOException, UnirestException, RecipePluginException, URISyntaxException {
     final String outputPathConst = "output";
     final String inputPathConst = "input";
 
@@ -190,8 +196,8 @@ public class FoliaEditor implements RecipePlugin {
     return StringUtils.splitPreserveAllTokens(stringToExplode, separator);
   }
 
-  public void downloadResultFile(URL url) throws IOException, RecipePluginException {
-    logger.info("Download URL:" + url + "");
+  public Boolean downloadResultFile(URL url) throws IOException, RecipePluginException {
+    logger.info(String.format("Download result file from URL: [%s]", url));
 
     final String outputPathConst = "output";
     String key = this.workDir;
@@ -217,22 +223,37 @@ public class FoliaEditor implements RecipePlugin {
       logger.info(format("Creating folder: %s", outputPathAsFile.toString()));
       outputPathAsFile.mkdirs();
     }
+    try {
+      File resultFile = new File(fullOutputPath);
+      FileUtils.copyURLToFile(
+          url,
+          resultFile,
+          60,
+          60);
 
-    FileUtils.copyURLToFile(
-        url,
-        new File(fullOutputPath),
-        60,
-        60);
-    logger.info("Download successful");
+      if (resultFile.isFile()) {
+        logger.info("Download successful");
+        return true;
+      } else {
+        logger.info("Download file disk IO failed");
+        return false;
+      }
+
+    } catch (Exception e) {
+      logger.info("Download failed; ", e);
+      return false;
+    }
+
   }
 
   public ObjectNode uploadFile(String workDir, String filename, String language, String inputTemplate,
-                               String author) throws IOException, ConfigurationException, UnirestException {
+                               String author)
+      throws IOException, ConfigurationException, UnirestException, URISyntaxException {
     return uploadFile(workDir, filename);
   }
 
   public ObjectNode uploadFile(String projectName, String filename)
-      throws IOException, UnirestException {
+      throws IOException, UnirestException, URISyntaxException {
     ObjectNode jsonResult = jsonFactory.objectNode();
 
     String path = filename;
@@ -260,15 +281,22 @@ public class FoliaEditor implements RecipePlugin {
         .asString();
 
     logger.info(format("Response code: %s", jsonResponse.getCode()));
+    assert jsonResponse.getCode() == 200 : "Upload failed";
+
     Headers headers = jsonResponse.getHeaders();
-    this.docId = headers.get("location").get(0);
-    logger.info(format("Response url: %s", this.docId));
+    String responseUrl = headers.get("location").get(0);
+    logger.info(format("Response url: %s", responseUrl));
+
+    URI docIdUri = new URI(responseUrl);
+    String[] segments = docIdUri.getPath().split("/");
+    this.docId = segments[segments.length - 1];
+    logger.info(format("docId: %s", this.docId));
 
     URL returnUrl = new URL(
         this.serviceUrl.getProtocol(),
         this.serviceUrl.getHost(),
         this.serviceUrl.getPort(),
-        this.docId,
+        responseUrl,
         null
     );
     logger.info(format("returnUrl: %s", returnUrl.toString()));
@@ -277,10 +305,10 @@ public class FoliaEditor implements RecipePlugin {
 
     logger.info(format("Hacking returnUrl for dev environment: %s", devReturnUrl.toString()));
     jsonResult.put("url", devReturnUrl.toString());
+    jsonResult.put("responseUrl", responseUrl);
     jsonResult.put("returnUrl", returnUrl.toString());
-    jsonResult.put("docId", headers.get("location").get(0));
+    jsonResult.put("docId", this.docId);
 
-    Unirest.shutdown();
     return jsonResult;
   }
 
@@ -299,8 +327,6 @@ public class FoliaEditor implements RecipePlugin {
         null
     );
 
-    this.downloadResultFile(url);
-
-    return true;
+    return this.downloadResultFile(url);
   }
 }

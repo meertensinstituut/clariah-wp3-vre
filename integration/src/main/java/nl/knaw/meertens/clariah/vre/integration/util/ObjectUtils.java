@@ -44,7 +44,7 @@ public class ObjectUtils {
     return id[0];
   }
 
-  public static boolean fileExistsInRegistry(String expectedFilename) {
+  public static boolean fileExistsInRegistry(String expectedFilename, String mimeType, String fileFormat) {
     String query = "select * from object WHERE filepath LIKE '%" + expectedFilename + "%' LIMIT 1;";
     try {
       return objectsRepositoryService.processQueryWithFunction(query, (ResultSet rs) -> {
@@ -53,8 +53,8 @@ public class ObjectUtils {
           int id = rs.getInt("id");
           fileExists = id != 0
             && rs.getString("filepath").contains(expectedFilename)
-            && rs.getString("format").equals("Plain text")
-            && rs.getString("mimetype").equals("text/plain");
+            && rs.getString("format").equals(fileFormat)
+            && rs.getString("mimetype").equals(mimeType);
         }
         return fileExists;
       });

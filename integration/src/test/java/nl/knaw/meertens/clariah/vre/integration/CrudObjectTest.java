@@ -47,7 +47,7 @@ public class CrudObjectTest extends AbstractIntegrationTest {
   @Test
   public void testRecognizer_creates_updates_deletes_recordInObjectsRegistry() throws Exception {
     final String expectedFilename = uploadTestFile();
-    await().until(() -> fileExistsInRegistry(expectedFilename));
+    await().until(() -> fileExistsInRegistry(expectedFilename, "text/plain", "Plain text"));
     await().until(() -> fileHasContent(expectedFilename, getTestFileContent()));
     id = awaitAndGet(() -> getNonNullObjectIdFromRegistry(expectedFilename));
 

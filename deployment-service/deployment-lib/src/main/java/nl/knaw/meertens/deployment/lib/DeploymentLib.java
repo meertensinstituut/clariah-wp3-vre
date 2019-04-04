@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.HttpRequest;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
@@ -22,6 +23,7 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -53,6 +55,7 @@ public class DeploymentLib {
     String servicesDatabase = "http://dreamfactory:80/api/v2/services";
     String urlString = servicesDatabase + "/_table/service/?filter=name%3D" + serviceName;
 
+    logger.info(String.format("url is : [%s]", urlString));
     HttpResponse<String> result;
     try {
       result = Unirest
@@ -62,7 +65,7 @@ public class DeploymentLib {
         .header("X-DreamFactory-Api-Key", dbApiKey)
         .asString();
     } catch (UnirestException e) {
-      throw new RuntimeException(String.format("Could not get service by name [%s]", serviceName));
+      throw new RuntimeException(String.format("Could not get service by name [%s]", serviceName), e);
     }
 
     JsonNode json = parser.readTree(result.getBody());

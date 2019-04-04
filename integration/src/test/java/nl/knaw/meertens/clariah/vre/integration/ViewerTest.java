@@ -34,7 +34,7 @@ public class ViewerTest extends AbstractIntegrationTest {
         String testFilename = uploadTestFile(someContent);
 
         await().until(() -> fileHasContent(testFilename, someContent));
-        await().until(() -> fileExistsInRegistry(testFilename));
+        await().until(() -> fileExistsInRegistry(testFilename, "text/plain", "Plain text"));
 
         long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(testFilename));
         logger.info(String.format("input file has object id [%d]", inputFileId));
