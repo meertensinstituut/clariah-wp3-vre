@@ -18,6 +18,7 @@ services:
       - kafka
       - switchboard
       - deployment
+      - lamachine
     volumes:
       - ./:/usr/local/integration
       # share maven repository of host:

@@ -32,6 +32,7 @@ public class Initializer {
     awaitNextcloud();
     awaitRecognizer();
     awaitSwitchboard();
+    awaitLamachine();
 
     logger.info("Finished initialisation");
   }
