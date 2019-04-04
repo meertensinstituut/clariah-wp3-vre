@@ -109,7 +109,7 @@ public class Initializer {
         status = response.getStatus();
       } catch (UnirestException ignored) {
       }
-      logger.info((MAX_WAITING_PERIOD - waited) + " Lamachine not up yet...");
+      logger.info(String.format("[%d] Lamachine not up yet...; status is [%d]", MAX_WAITING_PERIOD - waited, status));
     } while (status != 200 && waited < MAX_WAITING_PERIOD);
     AssertionsForClassTypes.assertThat(waited).isLessThan(MAX_WAITING_PERIOD);
     logger.info("Lamachine is up");
