@@ -32,6 +32,7 @@ public class Poller {
                 result = check.get();
             } catch (AssertionError e) {
                 checkError = e;
+                logger.info(String.format("Error in wait: [%s]", checkError), e);
             }
             if (isNull(checkError)) {
                 logger.info(String.format("Polled %ds", polled));
