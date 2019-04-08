@@ -62,11 +62,9 @@ public class DeployUtils {
     if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {
       deploymentStatusFound = true;
     }
-    if (httpStatusSuccess & deploymentStatusFound) {
-      logger.info("Both are true");
-    } else {
-      logger.info(String.format("httpStatusSuccess is [%s]; deploymentStatusFound is [%s]", httpStatusSuccess, deploymentStatusFound));
-    }
+
+    logger.info(String.format("httpStatusSuccess is [%s]; deploymentStatusFound is [%s]; deploymentStatus is [%s]", httpStatusSuccess, deploymentStatusFound, deploymentStatus));
+
     assertThat(httpStatusSuccess).isTrue();
     assertThat(deploymentStatusFound).isTrue();
     return deploymentStatusResponse;
