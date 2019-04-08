@@ -57,12 +57,15 @@ public class DeployUtils {
 
     Integer[] success = {200, 201, 202};
     if (asList(success).contains(responseStatus)) {
-      logger.info(String.format("Response status is [%s]; Checking against [%s]", responseStatus, asList(success)));
       httpStatusSuccess = true;
     }
     if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {
-      logger.info(String.format("Deployment status is [%s]; Checking against [%s]", deploymentStatus, status));
       deploymentStatusFound = true;
+    }
+    if (httpStatusSuccess & deploymentStatusFound) {
+      logger.info("Both are true");
+    } else {
+      logger.info(String.format("httpStatusSuccess is [%s]; deploymentStatusFound is [%s]", httpStatusSuccess, deploymentStatusFound));
     }
     assertThat(httpStatusSuccess).isTrue();
     assertThat(deploymentStatusFound).isTrue();
