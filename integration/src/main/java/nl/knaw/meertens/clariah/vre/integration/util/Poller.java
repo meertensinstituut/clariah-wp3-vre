@@ -29,10 +29,12 @@ public class Poller {
         while (true) {
             checkError = null;
             try {
+                logger.info(String.format("check is []%s", check));
+                logger.info(String.format("check.get() is []%s", check.get()));
                 result = check.get();
             } catch (AssertionError e) {
                 checkError = e;
-                logger.info(String.format("Error in wait: [%s]", checkError), e);
+                logger.info(String.format("Error in wait: [%s]", e));
             }
             if (isNull(checkError)) {
                 logger.info(String.format("Polled %ds", polled));
