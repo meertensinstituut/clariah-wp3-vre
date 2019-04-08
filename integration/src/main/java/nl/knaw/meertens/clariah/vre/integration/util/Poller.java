@@ -29,19 +29,20 @@ public class Poller {
         while (true) {
             checkError = null;
             try {
-                logger.info(String.format("check is []%s", check));
-                logger.info(String.format("check.get() is []%s", check.get()));
                 result = check.get();
             } catch (AssertionError e) {
                 checkError = e;
-                logger.info(String.format("Error in wait: [%s]", e));
             }
+
             if (isNull(checkError)) {
-                logger.info(String.format("Polled %ds", polled));
+                logger.info(String.format("Finished polling at %d seconds", polled));
                 break;
+            } else {
+                logger.info(String.format("Polling for %d seconds", polled));
             }
+
             if (polled > maxPolled) {
-                throw new AssertionError("Timed out with assertion error", checkError);
+                throw new AssertionError(String.format("Timed out at [%d seconds] with assertion error", polled), checkError);
             }
             waitASecond();
             polled++;

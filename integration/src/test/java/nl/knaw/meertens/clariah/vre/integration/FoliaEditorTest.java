@@ -56,8 +56,9 @@ public class FoliaEditorTest extends AbstractIntegrationTest {
     logger.info(String.format("deployment has workdir [%s]", workDir));
 
     await().until(() -> deploymentHasStatus(workDir, "RUNNING"));
-
+    logger.info("#### before");
     HttpResponse<String> result = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
+    logger.info("#### after");
     String body = result.getBody();
     String view = JsonPath.parse(body).read("$.viewerFileContent");
     assertThat(view).isEqualTo("<iframe src=\"http://localhost:9998/flat/editor/pub/full/untitled\" width=\"100%\" " +
