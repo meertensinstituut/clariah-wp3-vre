@@ -38,6 +38,7 @@ class Viewer extends React.Component {
             const hasViewer = data.length > 0;
             if (!hasViewer) {
                 this.setState({error: Error("No viewer found for " + this.state.objectName)});
+                return;
             }
             const viewer = data[0].name;
             const deployData = await DeployResource
