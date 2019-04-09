@@ -90,7 +90,6 @@ public class FoliaEditor implements RecipePlugin {
       }
 
       this.status = FINISHED;
-      logger.info(String.format("Deployment of foliaeditor is [%s]", this.status));
     } catch (IOException | InterruptedException | UnirestException ex) {
       throw new RecipePluginException("Could not execute recipe", ex);
     } catch (URISyntaxException e) {

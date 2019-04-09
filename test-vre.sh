@@ -12,7 +12,7 @@ docker-compose build --no-cache \
   recognizer \
   tagger
 
-docker-compose  -p vre up -d 
+docker-compose  -p vre up -d --no-build
 
 docker cp nextcloud/vre vre_nextcloud_1:/tmp/vre
 cp .env nextcloud/.env
