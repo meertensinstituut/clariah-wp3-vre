@@ -36,6 +36,7 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.nio.charset.Charset.forName;
@@ -83,13 +84,13 @@ public class FoliaEditor implements RecipePlugin {
       while (!ready) {
         logger.info(format("polling {%s}", counter));
         counter++;
-        Thread.sleep(3000);
+        TimeUnit.SECONDS.sleep(1);
         // TODO: where does the polling happen?
         ready = true;
       }
 
       this.status = FINISHED;
-
+      logger.info(String.format("Deployment of foliaeditor is [%s]", this.status));
     } catch (IOException | InterruptedException | UnirestException ex) {
       throw new RecipePluginException("Could not execute recipe", ex);
     } catch (URISyntaxException e) {
