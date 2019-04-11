@@ -37,16 +37,16 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
 
   @Test
   public void testCreateJsonCreatesJson() throws Exception {
-    Fits fits = fitsService.unmarshalFits(testFitsXml);
-    Report report = new Report();
+    var fits = fitsService.unmarshalFits(testFitsXml);
+    var report = new Report();
     report.setFits(fits);
-    String expectedPath = "/some/path.txt";
+    var expectedPath = "/some/path.txt";
     report.setPath(expectedPath);
-    String expectedUser = "some-user";
+    var expectedUser = "some-user";
     report.setUser(expectedUser);
     report.setXml(testFitsXml);
 
-    String result = objectsRepositoryService.createObjectRecordJson(report);
+    var result = objectsRepositoryService.createObjectRecordJson(report);
 
     assertThatJson(result).node("time_created").matches(
       containsString(now().format(ofPattern("yyyy-MM-dd'T'HH"))));
@@ -61,8 +61,8 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
 
   @Test
   public void testSoftDelete() {
-    long expectedId = 8L;
-    String annotatedBanana = "john-doe/files/banana.xml";
+    var expectedId = 8L;
+    var annotatedBanana = "john-doe/files/banana.xml";
     startObjectsRegistryMock(
       "objects-not-deleted.json",
       "(filepath='" + annotatedBanana + "') AND (deleted='0')"
@@ -73,7 +73,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
   }
 
   private void startObjectsPatchRegistryMock(String patchFile, Long id) {
-    String content = getContentOfResource(patchFile);
+    var content = getContentOfResource(patchFile);
 
     mockServer
       .when(request()
@@ -89,7 +89,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
   }
 
   private void startObjectsRegistryMock(String objectsFile, String filter) {
-    String content = getContentOfResource(objectsFile);
+    var content = getContentOfResource(objectsFile);
 
     mockServer
       .when(request()
@@ -106,7 +106,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
   }
 
   private String getContentOfResource(String objectsFile) {
-    File file = new File(getClass().getClassLoader().getResource(objectsFile).getFile());
+    var file = new File(getClass().getClassLoader().getResource(objectsFile).getFile());
     String content;
     try {
       content = FileUtils.readFileToString(file, UTF_8);

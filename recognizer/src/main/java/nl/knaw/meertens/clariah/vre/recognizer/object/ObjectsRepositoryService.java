@@ -41,7 +41,7 @@ public class ObjectsRepositoryService {
     this.objectsDbKey = objectsDbKey;
     this.objectTable = objectTable;
 
-    Configuration conf = Configuration
+    var conf = Configuration
       .builder()
       .options(Option.DEFAULT_PATH_LEAF_TO_NULL)
       .options(Option.SUPPRESS_EXCEPTIONS)
@@ -59,9 +59,12 @@ public class ObjectsRepositoryService {
    * @return objectId
    */
   public Long create(Report report) {
-    String recordJson = createObjectRecordJson(report);
-    String persistResult = persistRecord(recordJson, null);
-    return jsonPath.parse(persistResult).read("$.resource[0].id", Integer.class).longValue();
+    var recordJson = createObjectRecordJson(report);
+    var persistResult = persistRecord(recordJson, null);
+    return jsonPath
+      .parse(persistResult)
+      .read("$.resource[0].id", Integer.class)
+      .longValue();
   }
 
   /**
@@ -70,10 +73,13 @@ public class ObjectsRepositoryService {
    * @return objectId
    */
   public Long update(Report report) {
-    Long id = getObjectIdByPath(report.getPath());
-    String recordJson = createObjectRecordJson(report);
-    String persistResult = persistRecord(recordJson, id);
-    return Long.valueOf(jsonPath.parse(persistResult).read("$.id", String.class));
+    var id = getObjectIdByPath(report.getPath());
+    var recordJson = createObjectRecordJson(report);
+    var persistResult = persistRecord(recordJson, id);
+    return Long.valueOf(jsonPath
+      .parse(persistResult)
+      .read("$.id", String.class)
+    );
   }
 
   /**
@@ -82,11 +88,10 @@ public class ObjectsRepositoryService {
    * @return objectId
    */
   public Long updatePath(String oldPath, String newPath) {
-    Long id = getObjectIdByPath(oldPath);
+    var id = getObjectIdByPath(oldPath);
+    var patchObject = getObjectUrl(id);
+    var bodyWithNewPath = format("{ \"filepath\" : \"%s\" }", newPath);
 
-    String patchObject = getObjectUrl(id);
-
-    String bodyWithNewPath = format("{ \"filepath\" : \"%s\" }", newPath);
     HttpResponse<String> patchResponse;
     try {
       patchResponse = Unirest
@@ -117,9 +122,9 @@ public class ObjectsRepositoryService {
    * @return objectId
    */
   public Long softDelete(String path) {
-    Long id = getObjectIdByPath(path);
-    String deletedTrue = "{ \"deleted\" : true }";
-    HttpResponse<String> patchResponse = patch(id, deletedTrue);
+    var id = getObjectIdByPath(path);
+    var deletedTrue = "{ \"deleted\" : true }";
+    var patchResponse = patch(id, deletedTrue);
 
     if (!isSuccess(patchResponse)) {
       throw new RuntimeException((format(
@@ -131,7 +136,7 @@ public class ObjectsRepositoryService {
   }
 
   private HttpResponse<String> patch(Long id, String patch) {
-    String urlToPatch = getObjectUrl(id);
+    var urlToPatch = getObjectUrl(id);
 
     HttpResponse<String> patchResponse;
     try {
@@ -164,10 +169,8 @@ public class ObjectsRepositoryService {
    * (filepath='{path}') AND (deleted='0')
    */
   private Long getObjectIdByPath(String path) {
-    String getObjectByPath;
-
-    String filter = "(filepath='" + path + "') AND (deleted='0')";
-    getObjectByPath = objectsDbUrl +
+    var filter = "(filepath='" + path + "') AND (deleted='0')";
+    var getObjectByPath = objectsDbUrl +
       objectTable +
       "?limit=1&order=id%20DESC&filter=" +
       encodeUriComponent(filter);
@@ -177,7 +180,7 @@ public class ObjectsRepositoryService {
         "Request id by path [%s] using url [%s]",
         path, getObjectByPath
       ));
-      HttpResponse<String> getIdResponse = Unirest
+      var getIdResponse = Unirest
         .get(getObjectByPath)
         .header("Content-Type", "application/json")
         .header("X-DreamFactory-Api-Key", OBJECTS_DB_KEY)
@@ -199,27 +202,8 @@ public class ObjectsRepositoryService {
     }
   }
 
-  /**
-   * Source: technicaladvices.com/2012/02/20/java-encoding-similiar-to-javascript-encodeuricomponent/
-   */
-  private String encodeUriComponent(String filter) {
-    try {
-      return URLEncoder.encode(filter, "UTF-8")
-                       .replaceAll("\\%28", "(")
-                       .replaceAll("\\%29", ")")
-                       .replaceAll("\\+", "%20")
-                       .replaceAll("\\%27", "'")
-                       .replaceAll("\\%21", "!")
-                       .replaceAll("\\%7E", "~");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(String.format(
-        "Could not create url from filter %s", filter
-      ));
-    }
-  }
-
   public String createObjectRecordJson(Report report) {
-    ObjectsRecordDto record = fillObjectsRecordDto(report);
+    var record = createObjectsRecordDto(report);
     try {
       return mapper.writeValueAsString(record);
     } catch (JsonProcessingException e) {
@@ -236,7 +220,7 @@ public class ObjectsRepositoryService {
     }
     HttpResponse<String> response;
     try {
-      RequestBodyEntity body = createPostOrPut(recordJson, id);
+      var body = createPostOrPut(recordJson, id);
       response = body.asString();
     } catch (UnirestException e) {
       throw new RuntimeException(format(
@@ -282,8 +266,8 @@ public class ObjectsRepositoryService {
     return response.getStatus() / 100 == 2;
   }
 
-  private ObjectsRecordDto fillObjectsRecordDto(Report report) {
-    ObjectsRecordDto msg = new ObjectsRecordDto();
+  private ObjectsRecordDto createObjectsRecordDto(Report report) {
+    var msg = new ObjectsRecordDto();
     msg.filepath = report.getPath();
     msg.fits = report.getXml();
 
@@ -310,4 +294,23 @@ public class ObjectsRepositoryService {
     return true;
   }
 
+  /**
+   * Source: technicaladvices.com/2012/02/20/java-encoding-similiar-to-javascript-encodeuricomponent/
+   */
+  private String encodeUriComponent(String filter) {
+    try {
+      return URLEncoder
+        .encode(filter, "UTF-8")
+        .replaceAll("\\%28", "(")
+        .replaceAll("\\%29", ")")
+        .replaceAll("\\+", "%20")
+        .replaceAll("\\%27", "'")
+        .replaceAll("\\%21", "!")
+        .replaceAll("\\%7E", "~");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(String.format(
+        "Could not create url from filter %s", filter
+      ));
+    }
+  }
 }

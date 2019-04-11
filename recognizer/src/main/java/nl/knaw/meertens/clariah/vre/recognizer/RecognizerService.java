@@ -60,8 +60,8 @@ public class RecognizerService {
   public void consumeOwncloud() {
     nextcloudConsumerService.consumeWith((String json) -> {
       try {
-        OwncloudKafkaDto msg = objectMapper.readValue(json, OwncloudKafkaDto.class);
-        FileAction action = FileAction.from(msg.action);
+        var msg = objectMapper.readValue(json, OwncloudKafkaDto.class);
+        var action = FileAction.from(msg.action);
         if (!ACTIONS_TO_PERSIST.contains(msg.action)) {
           logger.info(format(
             "Ignored message about file [%s] with action [%s]",
@@ -74,7 +74,7 @@ public class RecognizerService {
             "No field path in nextcloud msg [%s]", json
           ));
         }
-        Report report = mapToReport(msg);
+        var report = mapToReport(msg);
         handleFileActions(action, report);
         kafkaProducer.produceToRecognizerTopic(report);
       } catch (Exception e) {
@@ -84,7 +84,7 @@ public class RecognizerService {
   }
 
   private Report mapToReport(OwncloudKafkaDto msg) {
-    Report report = new Report();
+    var report = new Report();
     report.setAction(msg.action);
     report.setUser(msg.user);
     report.setPath(Paths.get(msg.path).normalize().toString());
@@ -112,7 +112,6 @@ public class RecognizerService {
   }
 
   private void checkFileType(Report report) throws IllegalArgumentException {
-    // TODO: use rule lib of menzo
     if (FitsService.getMimeType(report.getFits()).equals("inode/directory")) {
       throw new IllegalArgumentException("File is a directory");
     }
@@ -121,7 +120,7 @@ public class RecognizerService {
   private void requestFileType(
     Report report
   ) throws IOException, JAXBException {
-    FitsResult fitsResult = fitsService.checkFile(report.getPath());
+    var fitsResult = fitsService.checkFile(report.getPath());
     report.setXml(fitsResult.getXml());
     report.setFits(fitsResult.getFits());
   }

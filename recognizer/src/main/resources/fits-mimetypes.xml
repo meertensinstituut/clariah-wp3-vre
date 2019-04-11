@@ -1,0 +1,7 @@
+<mimetypes>
+  <mimetype value="text/folia+xml" xpath="//fits:identity/@mimetype='text/xml'">
+    <assertions>
+      <assertion xpath="exists(doc($file)/*[namespace-uri()='http://ilk.uvt.nl/folia' and local-name()='FoLiA'])"/>
+    </assertions>
+  </mimetype>
+</mimetypes>

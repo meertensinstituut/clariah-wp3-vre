@@ -194,7 +194,36 @@
       <artifactId>jaxb-core</artifactId>
       <version>${jaxb-core.version}</version>
     </dependency>
+
+    <!-- fits mime type checking -->
+    <dependency>
+      <groupId>nl.mpi.tla</groupId>
+      <artifactId>SaxonUtils</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <type>jar</type>
+    </dependency>
+
   </dependencies>
+
+  <!-- repositories containing saxon utils -->
+  <repositories>
+    <repository>
+      <id>CLARIN</id>
+      <name>CLARIN Repository</name>
+      <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>CLARIN-Snapshot</id>
+      <name>CLARIN Snapshot Repository</name>
+      <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <build>
     <plugins>

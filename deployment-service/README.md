@@ -1,30 +1,13 @@
-Deployment service
-===
+# Deployment service
 
-Deployment
----
+## Deployment
+Run: `./start.sh`
 
-- Add saxon utils to local repo:
-```
-cd ./saxon-utils
-mvn install:install-file \
-  -Dfile=SaxonUtils-1.0-SNAPSHOT.jar \
-  -DgroupId=nl.knaw.meertens.deployment \
-  -DartifactId=deployment-service \
-  -Dversion=1.0-SNAPSHOT \
-  -Dpackaging=jar \
-  -DgeneratePom=true
-  
-```
-- To build war-file, run `mvn clean install`
-- Run `cd ../ ; ./start-vre.sh`
+## Tests
+Run: `docker exec vre_deployment_1 mvn clean test`
 
-Tests
-===
-Run tests: `docker exec vre_deployment_1 mvn clean test`
+## Status codes
 
-Status codes
----
 ```
 url: {protocol}://{host}:{port}/deployment-service/a
 

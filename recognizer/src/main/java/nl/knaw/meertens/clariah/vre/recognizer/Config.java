@@ -25,4 +25,6 @@ public class Config {
     DELETE.msgValue()
   );
   public static final String ACTION_RENAME = "update";
+  public static final String FITS_MIMETYPES_RESOURCE = "fits-mimetypes.xml";
+
 }

@@ -1,0 +1,60 @@
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.2.0" timestamp="4/8/19 12:54 PM">
+  <identification status="CONFLICT">
+    <identity format="Extensible Markup Language" mimetype="text/xml" toolname="FITS" toolversion="1.2.0">
+      <tool toolname="Droid" toolversion="6.3" />
+      <tool toolname="Jhove" toolversion="1.16" />
+      <tool toolname="Exiftool" toolversion="10.00" />
+      <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" />
+      <tool toolname="OIS XML Metadata" toolversion="0.2" />
+      <tool toolname="ffident" toolversion="0.2" />
+      <tool toolname="Tika" toolversion="1.10" />
+      <version toolname="Droid" toolversion="6.3">1.0</version>
+      <externalIdentifier toolname="Droid" toolversion="6.3" type="puid">fmt/101</externalIdentifier>
+    </identity>
+    <identity format="XML 1.0 document, ASCII text" mimetype="text/xml" toolname="FITS" toolversion="1.2.0">
+      <tool toolname="file utility" toolversion="5.30" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.16">1067</size>
+    <filepath toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">/tmp/recognizer/test/files/output-2019-04-08_12-54-22-350/test.xml</filepath>
+    <filename toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">test.xml</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">8fe2aea777d170ff05b5eb4ba3fce181</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">1554728060000</fslastmodified>
+  </fileinfo>
+  <filestatus>
+    <well-formed toolname="Jhove" toolversion="1.16" status="SINGLE_RESULT">true</well-formed>
+    <valid toolname="Jhove" toolversion="1.16" status="SINGLE_RESULT">false</valid>
+    <message toolname="Jhove" toolversion="1.16" status="SINGLE_RESULT">cvc-elt.1: Cannot find the declaration of element 'FoLiA'. Line = 3, Column = 144</message>
+  </filestatus>
+  <metadata>
+    <text>
+      <charset toolname="Jhove" toolversion="1.16">UTF-8</charset>
+      <markupBasis toolname="Jhove" toolversion="1.16">XML</markupBasis>
+      <markupBasisVersion toolname="Jhove" toolversion="1.16">1.0</markupBasisVersion>
+      <standard>
+        <textMD:textMD xmlns:textMD="info:lc/xmlns/textMD-v3">
+          <textMD:character_info>
+            <textMD:charset>UTF-8</textMD:charset>
+          </textMD:character_info>
+          <textMD:markup_basis version="1.0">XML</textMD:markup_basis>
+        </textMD:textMD>
+      </standard>
+    </text>
+  </metadata>
+  <statistics fitsExecutionTime="1691">
+    <tool toolname="MediaInfo" toolversion="0.7.75" status="did not run" />
+    <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+    <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="Droid" toolversion="6.3" executionTime="245" />
+    <tool toolname="Jhove" toolversion="1.16" executionTime="1459" />
+    <tool toolname="file utility" toolversion="5.30" executionTime="1465" />
+    <tool toolname="Exiftool" toolversion="10.00" executionTime="1475" />
+    <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" executionTime="1558" />
+    <tool toolname="OIS File Information" toolversion="0.2" executionTime="100" />
+    <tool toolname="OIS XML Metadata" toolversion="0.2" executionTime="122" />
+    <tool toolname="ffident" toolversion="0.2" executionTime="182" />
+    <tool toolname="Tika" toolversion="1.10" executionTime="708" />
+  </statistics>
+</fits>

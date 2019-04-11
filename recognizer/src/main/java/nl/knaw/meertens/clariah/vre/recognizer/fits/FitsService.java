@@ -35,7 +35,7 @@ public class FitsService {
     this.fitsFilesRoot = fitsFilesRoot;
     try {
       this.fitsUrl = new URL(fitsUrl);
-      JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+      var jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
       unmarshaller = jaxbContext.createUnmarshaller();
     } catch (MalformedURLException | JAXBException e) {
       e.printStackTrace();
@@ -51,31 +51,31 @@ public class FitsService {
   }
 
   public FitsResult checkFile(String path) throws IOException, JAXBException {
-    Path fitsPath = Paths.get(fitsFilesRoot, path);
+    var fitsPath = Paths.get(fitsFilesRoot, path);
 
     if (!fitsPath.toFile().exists()) {
       waitUntilFileIsUploaded(fitsPath);
     }
 
-    String fitsXmlResult = askFits(fitsPath.toString());
-    FitsResult fitsResult = new FitsResult();
+    var fitsXmlResult = askFits(fitsPath.toString());
+    var fitsResult = new FitsResult();
     fitsResult.setXml(fitsXmlResult);
     fitsResult.setFits(unmarshalFits(fitsXmlResult));
     return fitsResult;
   }
 
   private void waitUntilFileIsUploaded(Path fitsPath) {
-    File parentFolder = fitsPath.getParent().toFile();
+    var parentFolder = fitsPath.getParent().toFile();
     while (true) {
       try {
         TimeUnit.MILLISECONDS.sleep(250);
       } catch (InterruptedException e) {
         throw new RuntimeException("Waiting for file upload was interrupted");
       }
-      File[] tmpUploadFiles = parentFolder.listFiles((dir, name) ->
+      var fileIsBeingUploaded = parentFolder.listFiles((dir, name) ->
         name.contains(fitsPath.getFileName().toString() + ".ocTransferId")
       );
-      if (!isNull(tmpUploadFiles) && tmpUploadFiles.length == 1) {
+      if (!isNull(fileIsBeingUploaded) && fileIsBeingUploaded.length == 1) {
         logger.info("Nextcloud is still uploading " + fitsPath);
       } else if (fitsPath.toFile().exists()) {
         logger.info("Nextcloud finished uploading " + fitsPath + ". Resume recognizing...");
@@ -87,9 +87,9 @@ public class FitsService {
   }
 
   private String askFits(String path) throws IOException {
-    String result = "";
-    URL url = new URL(fitsUrl, "examine?file=" + path);
-    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+    var result = "";
+    var url = new URL(fitsUrl, "examine?file=" + path);
+    var con = (HttpURLConnection) url.openConnection();
     if (!hasStatusSuccess(con)) {
       throw new RuntimeException(String.format(
         "Fits request [%s] error: [%s][%s]",
@@ -106,9 +106,9 @@ public class FitsService {
   }
 
   public Fits unmarshalFits(String fitsXmlResult) throws JAXBException {
-    StringReader reader = new StringReader(fitsXmlResult);
+    var reader = new StringReader(fitsXmlResult);
     System.out.print("unmarshaller:" + unmarshaller);
-    Object unmarshal = unmarshaller.unmarshal(reader);
+    var unmarshal = unmarshaller.unmarshal(reader);
     return (Fits) unmarshal;
   }
 
