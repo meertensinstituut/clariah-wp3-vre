@@ -65,7 +65,7 @@ public class FitsMimetypeService {
   }
 
   private String getMimetypeFoundByFits(XdmNode fitsDoc) throws SaxonApiException {
-    return xpath2string(fitsDoc, "/fits/identification/identity/@mimetype");
+    return xpath2string(fitsDoc, "/*:fits/*:identification/*:identity/@mimetype");
   }
 
   private boolean isMimetype(

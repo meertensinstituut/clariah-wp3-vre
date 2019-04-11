@@ -22,7 +22,21 @@ public class FitsMimetypeServiceTest {
     FileUtils.writeStringToFile(foliaTestPath.toFile(), folia, UTF_8);
 
     var result = service.determineFitsMimeType(fitsFoliaReport, foliaTestPath);
+
     assertThat(result).isEqualTo("text/folia+xml");
+  }
+
+  @Test
+  public void determineFitsMimeType_canDetectText() throws IOException {
+    var service = new FitsMimetypeService();
+    var fitsTextReport = getTestFileContent("fits-text-report.xml");
+    var text = getTestFileContent("text.txt");
+    var textTestPath = Path.of("/tmp/folia-" + UUID.randomUUID() + ".xml");
+    FileUtils.writeStringToFile(textTestPath.toFile(), text, UTF_8);
+
+    var result = service.determineFitsMimeType(fitsTextReport, textTestPath);
+
+    assertThat(result).isEqualTo("text/plain");
   }
 
 }
