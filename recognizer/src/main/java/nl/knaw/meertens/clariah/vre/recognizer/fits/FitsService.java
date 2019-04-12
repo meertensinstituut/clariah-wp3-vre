@@ -33,17 +33,14 @@ public class FitsService {
 
   public FitsService(String fitsUrl, String fitsFilesRoot) {
     this.fitsFilesRoot = fitsFilesRoot;
+
     try {
       this.fitsUrl = new URL(fitsUrl);
       var jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
       unmarshaller = jaxbContext.createUnmarshaller();
     } catch (MalformedURLException | JAXBException e) {
-      e.printStackTrace();
+      throw new RuntimeException("Could not instantiate FitsService", e);
     }
-  }
-
-  public static String getMimeType(Fits fits) {
-    return getIdentity(fits).getMimetype();
   }
 
   public static IdentificationType.Identity getIdentity(Fits fits) {

@@ -13,12 +13,14 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
 import nl.knaw.meertens.clariah.vre.recognizer.Report;
+import nl.knaw.meertens.clariah.vre.recognizer.fits.MimetypeService;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
@@ -35,8 +37,15 @@ public class ObjectsRepositoryService {
   private final String objectTable;
   private final ParseContext jsonPath;
   private final ObjectMapper mapper;
+  private final MimetypeService mimetypeService;
 
-  public ObjectsRepositoryService(String objectsDbUrl, String objectsDbKey, String objectTable) {
+  public ObjectsRepositoryService(
+    MimetypeService mimetypeService,
+    String objectsDbUrl,
+    String objectsDbKey,
+    String objectTable
+  ) {
+    this.mimetypeService = mimetypeService;
     this.objectsDbUrl = objectsDbUrl;
     this.objectsDbKey = objectsDbKey;
     this.objectTable = objectTable;
@@ -271,7 +280,7 @@ public class ObjectsRepositoryService {
     msg.filepath = report.getPath();
     msg.fits = report.getXml();
 
-    msg.mimetype = FitsService.getMimeType(report.getFits());
+    msg.mimetype = mimetypeService.getMimetype(report.getXml(), Path.of(report.getPath()));
     msg.format = FitsService.getIdentity(report.getFits()).getFormat();
 
     msg.timeChanged = LocalDateTime.now();

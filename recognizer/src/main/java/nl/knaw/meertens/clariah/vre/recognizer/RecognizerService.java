@@ -1,7 +1,7 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsResult;
+import nl.knaw.meertens.clariah.vre.recognizer.fits.MimetypeService;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaProducerService;
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static java.lang.String.format;
@@ -47,14 +48,16 @@ public class RecognizerService {
     new RecognizerKafkaProducer(KAFKA_SERVER),
     RECOGNIZER_TOPIC_NAME
   );
-  private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(
-    OBJECTS_DB_URL,
-    OBJECTS_DB_KEY,
-    OBJECT_TABLE
-  );
   private final FitsService fitsService = new FitsService(
     FITS_URL,
     FITS_FILES_ROOT
+  );
+  private final MimetypeService mimetypeService = new MimetypeService();
+  private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(
+    mimetypeService,
+    OBJECTS_DB_URL,
+    OBJECTS_DB_KEY,
+    OBJECT_TABLE
   );
 
   public void consumeOwncloud() {
@@ -112,7 +115,7 @@ public class RecognizerService {
   }
 
   private void checkFileType(Report report) throws IllegalArgumentException {
-    if (FitsService.getMimeType(report.getFits()).equals("inode/directory")) {
+    if (mimetypeService.getMimetype(report.getXml(), Path.of(report.getPath())).equals("inode/directory")) {
       throw new IllegalArgumentException("File is a directory");
     }
   }

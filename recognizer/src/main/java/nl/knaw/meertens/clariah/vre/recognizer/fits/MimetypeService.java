@@ -13,6 +13,7 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -27,15 +28,15 @@ import static nl.mpi.tla.util.Saxon.xpathList;
  * - fits xml report
  * - custom checks on the original file
  */
-public class FitsMimetypeService {
+public class MimetypeService {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private final Map<String, String> namespaces = new LinkedHashMap<>();
-  private final XdmNode mimeTypes;
+  private final List<XdmItem> mimetypes;
 
-  FitsMimetypeService() {
-    this.mimeTypes = readFitsMimetypesResource();
+  public MimetypeService() {
+    this.mimetypes = getMimetypesFromResources();
 
     namespaces.put("fits", "http://hul.harvard.edu/ois/xml/ns/fits/fits_output");
     namespaces.put("sx", "java:nl.mpi.tla.saxon");
@@ -43,10 +44,9 @@ public class FitsMimetypeService {
 
   }
 
-  String determineFitsMimeType(String fits, Path originalFile) {
+  public String getMimetype(String fits, Path originalFile) {
     try {
       var fitsDoc = buildDocument(new StreamSource(new StringReader(fits)));
-      var mimetypes = xpathList(this.mimeTypes, "/mimetypes/mimetype", null, namespaces);
 
       var xpathVars = new HashMap<String, XdmValue>();
       xpathVars.put("file", new XdmAtomicValue(originalFile.toString()));
@@ -65,7 +65,7 @@ public class FitsMimetypeService {
   }
 
   private String getMimetypeFoundByFits(XdmNode fitsDoc) throws SaxonApiException {
-    return xpath2string(fitsDoc, "/*:fits/*:identification/*:identity/@mimetype");
+    return xpath2string(fitsDoc, "/fits:fits/fits:identification/fits:identity/@mimetype", null, namespaces);
   }
 
   private boolean isMimetype(
@@ -122,14 +122,14 @@ public class FitsMimetypeService {
     return true;
   }
 
-  private XdmNode readFitsMimetypesResource() {
+  private List<XdmItem> getMimetypesFromResources() {
     var filename = FITS_MIMETYPES_RESOURCE;
     try {
-      return buildDocument(new StreamSource(Thread
+      return xpathList(buildDocument(new StreamSource(Thread
         .currentThread()
         .getContextClassLoader()
         .getResourceAsStream(filename)
-      ));
+      )), "/mimetypes/mimetype", null, namespaces);
     } catch (SaxonApiException e) {
       throw new RuntimeException(format("Could not load [%s]", filename), e);
     }
