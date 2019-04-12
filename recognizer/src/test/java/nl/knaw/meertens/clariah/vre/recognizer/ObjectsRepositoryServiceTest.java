@@ -1,6 +1,5 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
-import nl.knaw.meertens.clariah.vre.recognizer.fits.MimetypeService;
 import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;

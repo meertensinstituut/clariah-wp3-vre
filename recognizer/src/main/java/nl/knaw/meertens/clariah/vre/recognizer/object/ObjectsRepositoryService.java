@@ -13,7 +13,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
 import nl.knaw.meertens.clariah.vre.recognizer.Report;
-import nl.knaw.meertens.clariah.vre.recognizer.fits.MimetypeService;
+import nl.knaw.meertens.clariah.vre.recognizer.MimetypeService;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

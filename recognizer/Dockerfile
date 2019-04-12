@@ -25,4 +25,4 @@ ARG APP_KEY_OBJECTS
 
 RUN mvn clean install
 
-CMD java -jar ./target/recognizer-0.1-SNAPSHOT.jar
+CMD java -jar ./target/recognizer-0.1-SNAPSHOT-jar-with-dependencies.jar

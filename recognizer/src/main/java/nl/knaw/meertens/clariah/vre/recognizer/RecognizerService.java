@@ -1,7 +1,6 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.recognizer.fits.MimetypeService;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaProducerService;

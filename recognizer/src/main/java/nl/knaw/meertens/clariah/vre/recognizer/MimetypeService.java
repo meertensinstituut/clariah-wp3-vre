@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.recognizer.fits;
+package nl.knaw.meertens.clariah.vre.recognizer;
 
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmAtomicValue;
@@ -26,7 +26,9 @@ import static nl.mpi.tla.util.Saxon.xpathList;
 /**
  * Determine mimetype using:
  * - fits xml report
- * - custom checks on the original file
+ * - original file
+ * Rules to assert mimetypes are defined in:
+ *   fits-mimetypes.xml
  */
 public class MimetypeService {
 
@@ -99,10 +101,10 @@ public class MimetypeService {
     HashMap<String, XdmValue> xpathVars
   ) throws SaxonApiException {
     var mimetypeXpath = xpath2string(mimetype, "normalize-space(@xpath)");
-    if (mimetypeXpath.equals("")) {
-      throw new RuntimeException("No xpath available in mimetype");
+    if (mimetypeXpath.isEmpty()) {
+      throw new RuntimeException(String.format("No xpath available in mimetype [%s]", mimetype));
     }
-    return !xpath2boolean(fitsDoc, mimetypeXpath, xpathVars, namespaces);
+    return !isValidDoc(fitsDoc, mimetypeXpath, xpathVars);
   }
 
   private boolean checkAssertions(
@@ -113,13 +115,21 @@ public class MimetypeService {
     for (var assertion : assertionList) {
       var assertionXpath = xpath2string(assertion, "normalize-space(@xpath)");
       if (assertionXpath.isEmpty()) {
-        throw new RuntimeException("mismatch between fits report and mimetype rules");
+        throw new RuntimeException(format("No xpath available in assertion [%s]", assertion));
       }
-      if (!xpath2boolean(fitsDoc, assertionXpath, null, namespaces)) {
+      if (!isValidDoc(fitsDoc, assertionXpath, null)) {
         return false;
       }
     }
     return true;
+  }
+
+  private boolean isValidDoc(
+    XdmNode doc,
+    String assertionXpath,
+    HashMap<String, XdmValue> vars
+  ) throws SaxonApiException {
+    return xpath2boolean(doc, assertionXpath, vars, namespaces);
   }
 
   private List<XdmItem> getMimetypesFromResources() {
