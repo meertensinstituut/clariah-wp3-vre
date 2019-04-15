@@ -1,17 +1,16 @@
 #!/bin/bash
 set -e
 
-#source ./merge-containers.sh
+source ./merge-containers.sh
 
-#docker-compose pull
+docker-compose pull
+
 # force building java images
-#docker-compose build --no-cache \
-#  switchboard \
-#  deployment \
-#  recognizer \
-#  tagger
-
-#docker-compose build --no-cache recognizer
+docker-compose build --no-cache \
+  switchboard \
+  deployment \
+  recognizer \
+  tagger
 
 docker-compose  -p vre up -d
 
