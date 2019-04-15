@@ -27,7 +27,6 @@ services:
     extra_hosts:
     - moby:127.0.0.1
     environment:
-      KAFKA_BROKER: localhost
       FITS_FILES_ROOT: ${FITS_FILES_ROOT}
       KAFKA_PORT: ${KAFKA_PORT}
       NEXTCLOUD_TOPIC_NAME: ${NEXTCLOUD_TOPIC_NAME}
@@ -57,6 +56,7 @@ services:
       KAFKA_LISTENERS: DEFAULT_LISTENER://kafka:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DEFAULT_LISTENER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: DEFAULT_LISTENER
+
     extra_hosts:
     - moby:127.0.0.1
     ports:

@@ -1,0 +1,47 @@
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.2.0" timestamp="4/15/19 11:30 AM">
+  <identification status="CONFLICT">
+    <identity format="Hypertext Markup Language" mimetype="text/html" toolname="FITS" toolversion="1.2.0">
+      <tool toolname="Exiftool" toolversion="10.00" />
+      <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" />
+      <version toolname="NLNZ Metadata Extractor" toolversion="3.6GA">null</version>
+    </identity>
+    <identity format="ASCII text, with no line terminators" mimetype="text/html" toolname="FITS" toolversion="1.2.0">
+      <tool toolname="file utility" toolversion="5.30" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.16" status="CONFLICT">212</size>
+    <size toolname="OIS File Information" toolversion="0.2" status="CONFLICT">48</size>
+    <filepath toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">/tmp/recognizer/admin/files/test-80b3680e-8b0e-4cc7-a8ed-861590d5026e-20190415_113011.html</filepath>
+    <filename toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">test-80b3680e-8b0e-4cc7-a8ed-861590d5026e-20190415_113011.html</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">8239ddcf45e336f48fb3618f3cd48d68</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">1555327809000</fslastmodified>
+  </fileinfo>
+  <filestatus />
+  <metadata>
+    <text>
+      <markupBasis toolname="Exiftool" toolversion="10.00">HTML</markupBasis>
+      <markupBasisVersion toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="SINGLE_RESULT">null</markupBasisVersion>
+      <standard>
+        <textMD:textMD xmlns:textMD="info:lc/xmlns/textMD-v3">
+          <textMD:markup_basis version="null">HTML</textMD:markup_basis>
+        </textMD:textMD>
+      </standard>
+    </text>
+  </metadata>
+  <statistics fitsExecutionTime="902">
+    <tool toolname="MediaInfo" toolversion="0.7.75" status="did not run" />
+    <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+    <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+    <tool toolname="Droid" toolversion="6.3" executionTime="4" />
+    <tool toolname="Jhove" toolversion="1.16" executionTime="367" />
+    <tool toolname="file utility" toolversion="5.30" executionTime="775" />
+    <tool toolname="Exiftool" toolversion="10.00" executionTime="871" />
+    <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" executionTime="669" />
+    <tool toolname="OIS File Information" toolversion="0.2" executionTime="136" />
+    <tool toolname="OIS XML Metadata" toolversion="0.2" status="did not run" />
+    <tool toolname="ffident" toolversion="0.2" executionTime="176" />
+    <tool toolname="Tika" toolversion="1.10" executionTime="274" />
+  </statistics>
+</fits>

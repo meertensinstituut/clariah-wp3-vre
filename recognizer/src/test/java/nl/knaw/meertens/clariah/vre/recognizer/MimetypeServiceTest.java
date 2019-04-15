@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.recognizer.fits;
+package nl.knaw.meertens.clariah.vre.recognizer;
 
 import nl.knaw.meertens.clariah.vre.recognizer.MimetypeService;
 import org.apache.commons.io.FileUtils;
@@ -15,7 +15,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class MimetypeServiceTest {
 
   @Test
-  public void determineFitsMimeType_canDetectFolia() throws IOException {
+  public void getMimetype_canDetectFolia() throws IOException {
     var service = new MimetypeService();
     var fitsFoliaReport = getTestFileContent("fits-folia-report.xml");
     var folia = getTestFileContent("folia.xml");
@@ -28,7 +28,7 @@ public class MimetypeServiceTest {
   }
 
   @Test
-  public void determineFitsMimeType_canDetectText() throws IOException {
+  public void getMimetype_canDetectText() throws IOException {
     var service = new MimetypeService();
     var fitsTextReport = getTestFileContent("fits-text-report.xml");
     var text = getTestFileContent("text.txt");
@@ -38,6 +38,20 @@ public class MimetypeServiceTest {
     var result = service.getMimetype(fitsTextReport, textTestPath);
 
     assertThat(result).isEqualTo("text/plain");
+  }
+
+
+  @Test
+  public void getMimetype_canDetectHtml() throws IOException {
+    var service = new MimetypeService();
+    var fitsTextReport = getTestFileContent("fits-html-report-with-conflict.xml");
+    var text = getTestFileContent("test.html");
+    var textTestPath = Path.of("/tmp/folia-" + UUID.randomUUID() + ".html");
+    FileUtils.writeStringToFile(textTestPath.toFile(), text, UTF_8);
+
+    var result = service.getMimetype(fitsTextReport, textTestPath);
+
+    assertThat(result).isEqualTo("text/html");
   }
 
 }

@@ -35,8 +35,12 @@ services:
       - zookeeper
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.rmi.port=1099"
-      JMX_PORT: 1099
+      KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 1200000
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 1200000
+      KAFKA_ADVERTISED_LISTENERS: DEFAULT_LISTENER://kafka:9092
+      KAFKA_LISTENERS: DEFAULT_LISTENER://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DEFAULT_LISTENER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DEFAULT_LISTENER
     extra_hosts:
      - moby:127.0.0.1
     ports:

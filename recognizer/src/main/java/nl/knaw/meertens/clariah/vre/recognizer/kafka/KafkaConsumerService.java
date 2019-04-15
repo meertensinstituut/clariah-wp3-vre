@@ -39,33 +39,13 @@ public class KafkaConsumerService {
     props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
     props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
-    // ten minutes:
-    props.put("session.timeout.ms", "" + (10 * 60 * 1000));
+    var tenMinutes = 10 * 60 * 1000;
+    props.put("session.timeout.ms", "" + tenMinutes);
 
     // should be greater than session timeout:
-    props.put("request.timeout.ms", "" + (10 * 60 * 1000 + 1));
-    return tryToCreateKafkaServer(props, kafkaMaxAtempts);
-  }
+    props.put("request.timeout.ms", "" + (tenMinutes + 1));
 
-  private KafkaConsumer<String, String> tryToCreateKafkaServer(Properties props, int triesLeft) {
-    try {
-      return new KafkaConsumer<>(props);
-    } catch (KafkaException e) {
-      triesLeft --;
-      if (triesLeft <= 0) {
-        throw e;
-      }
-      try {
-        SECONDS.sleep(1);
-      } catch (InterruptedException e2) {
-        throw new RuntimeException("Sleep interrupted");
-      }
-      logger.info(format(
-        "Could not create kafka consumer: [%s] try again, [%d] seconds left",
-        e.getMessage(), triesLeft
-      ));
-      return tryToCreateKafkaServer(props, triesLeft);
-    }
+    return new KafkaConsumer<>(props);
   }
 
   public void consumeWith(Consumer<String> consumerFunction) {
