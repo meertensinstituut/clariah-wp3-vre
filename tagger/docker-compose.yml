@@ -33,13 +33,17 @@ services:
       TEST_PASSWORD: ${TEST_PASSWORD}
 
   kafka:
-    image: wurstmeister/kafka:1.0.0
+    image: wurstmeister/kafka:2.12-2.2.0
     depends_on:
     - zookeeper
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 1200000
       KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 1200000
+      KAFKA_ADVERTISED_LISTENERS: DEFAULT_LISTENER://kafka:9092
+      KAFKA_LISTENERS: DEFAULT_LISTENER://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DEFAULT_LISTENER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DEFAULT_LISTENER
     extra_hosts:
     - moby:127.0.0.1
     ports:
