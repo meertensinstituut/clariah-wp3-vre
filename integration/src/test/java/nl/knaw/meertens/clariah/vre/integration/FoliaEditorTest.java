@@ -47,7 +47,7 @@ public class FoliaEditorTest extends AbstractIntegrationTest {
 
     await().until(() -> fileHasContent(testFilename, foliaContent));
     logger.info(String.format("Test file name is [%s]", testFilename));
-    await().until(() -> fileExistsInRegistry(testFilename, "text/xml", "Extensible Markup Language"));
+    await().until(() -> fileExistsInRegistry(testFilename, "text/folia+xml", "Extensible Markup Language"));
 
     long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(testFilename));
     logger.info(String.format("input file has object id [%d]", inputFileId));
