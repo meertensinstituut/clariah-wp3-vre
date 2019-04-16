@@ -10,7 +10,8 @@ docker-compose build --no-cache \
   switchboard \
   deployment \
   recognizer \
-  tagger
+  tagger \
+  integration
 
 docker-compose  -p vre up -d
 
