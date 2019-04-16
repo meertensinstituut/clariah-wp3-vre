@@ -6,14 +6,14 @@ source ./merge-containers.sh
 docker-compose pull
 
 # force building java images
-docker-compose build --no-cache \
+docker-compose -p vre build --no-cache \
   switchboard \
   deployment \
   recognizer \
   tagger \
   integration
 
-docker-compose  -p vre up -d
+docker-compose -p vre up -d
 
 docker cp nextcloud/vre vre_nextcloud_1:/tmp/vre
 cp .env nextcloud/.env
