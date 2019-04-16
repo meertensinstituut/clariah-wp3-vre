@@ -9,6 +9,7 @@
 
   <properties>
     <java.version>11</java.version>
+    <main-class>nl.knaw.meertens.clariah.vre.recognizer.App</main-class>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -289,7 +290,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>nl.knaw.meertens.clariah.vre.recognizer.App</mainClass>
+              <mainClass>${main-class}</mainClass>
             </manifest>
           </archive>
         </configuration>

@@ -8,15 +8,15 @@
     <name>integration</name>
     <url>http://maven.apache.org</url>
     <properties>
-        <java.version>1.9</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>11</java.version>
         <main-class>nl.knaw.meertens.clariah.vre.integration.App</main-class>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <maven-failsafe-plugin.version>2.12</maven-failsafe-plugin.version>
         <maven-resources-plugin.version>3.0.2</maven-resources-plugin.version>
-        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <mavens-surefire-plugin.version>2.21.0</mavens-surefire-plugin.version>
         <assertj-core.version>3.9.0</assertj-core.version>
 
