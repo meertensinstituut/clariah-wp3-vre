@@ -4,15 +4,11 @@
     <Console name="console" target="SYSTEM_OUT">
       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
     </Console>
-    <File name="file" fileName="recognizer.log" immediateFlush="true" append="false">
+    <File name="file" fileName="deployment-api.log" immediateFlush="true" append="false">
       <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
     </File>
   </Appenders>
   <Loggers>
-    <Logger name="org.apache.kafka" level="warn">
-      <AppenderRef ref="console"/>
-      <AppenderRef ref="file"/>
-    </Logger>
     <Root level="info">
       <AppenderRef ref="console"/>
       <AppenderRef ref="file"/>
