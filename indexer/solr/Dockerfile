@@ -26,11 +26,9 @@ RUN mathurl=$(curl -s 'http://www.apache.org/dyn/closer.lua/commons/math/binarie
     fi && \ 
     tar xzf lib/commons-math3-3.6.1-bin.tar.gz -C lib commons-math3-3.6.1/commons-math3-3.6.1.jar --strip-components=1 && \
     rm lib/commons-math3-3.6.1-bin.tar.gz
-    
-RUN add-apt-repository -y ppa:webupd8team/java && \
-    apt-get update && \
-    echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
-    apt-get install -y oracle-java8-installer && \
+
+RUN add-apt-repository -y ppa:openjdk-r/ppa && \
+    apt-get update && apt-get install -y openjdk-8-jdk && \
     rm -rf /var/lib/apt/lists/*
 
 RUN solrurl=$(curl -s 'http://www.apache.org/dyn/closer.lua/lucene/solr/7.3.0/solr-7.3.0.tgz' |   grep -o '<strong>[^<]*</strong>' |   sed 's/<[^>]*>//g' |   head -1) && \
