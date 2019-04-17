@@ -37,9 +37,10 @@ public class FileUtil {
   }
 
   public static void createResultFile(String workDir, String resultFilename, String content) {
-    var path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, resultFilename.toString());
+    var path = Paths.get(DEPLOYMENT_VOLUME, workDir, OUTPUT_DIR, resultFilename);
     assertThat((path.toFile().getParentFile().mkdirs())).isTrue();
     path.toFile().getParentFile().mkdirs();
+    logger.info(String.format("Create result file stub [%s]", path));
     try {
       Files.write(path, newArrayList(content), UTF_8);
     } catch (IOException e) {
