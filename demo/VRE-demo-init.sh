@@ -5,9 +5,6 @@ docker cp frog.cmdi vre_postgres_1:/tmp/frog.xml
 # Viewer of folia files:
 docker cp folia.cmdi vre_postgres_1:/tmp/folia.xml
 
-# Editor of folia files, WIP:
-docker cp foliaeditor.cmdi vre_postgres_1:/tmp/foliaeditor.xml
-
 # Editor of deduplicate files, WIP:
 docker cp demo.cmdi vre_postgres_1:/tmp/demo.xml
 

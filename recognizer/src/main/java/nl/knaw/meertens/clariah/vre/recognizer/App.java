@@ -10,10 +10,6 @@ public class App {
   private static final RecognizerService recognizerService = new RecognizerService();
 
   public static void main(String[] args) {
-    startConsuming();
-  }
-
-  private static void startConsuming() {
     logger.info("Start consuming nextcloud topic...");
     recognizerService.consumeOwncloud();
   }
