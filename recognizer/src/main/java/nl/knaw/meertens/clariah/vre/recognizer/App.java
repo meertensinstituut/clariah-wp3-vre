@@ -5,11 +5,19 @@ import org.slf4j.LoggerFactory;
 
 public class App {
 
-  private static final Logger logger = LoggerFactory.getLogger(App.class);
+  private final static Logger logger = LoggerFactory.getLogger(App.class.getName());
 
   private static final RecognizerService recognizerService = new RecognizerService();
 
   public static void main(String[] args) {
+
+    var message = "logtest5";
+    logger.trace(message);
+    logger.debug(message);
+    logger.info(message);
+    logger.warn(message);
+    logger.error(message);
+
     startConsuming();
   }
 
