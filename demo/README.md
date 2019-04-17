@@ -3,9 +3,9 @@
 ## Prepare the demo
 
 0. Insert service recipes: 
-```sh
-./VRE-demo-init.sh
-```
+   `./VRE-demo-init.sh`
+1. Insert tika html recipe:
+   `cd tika && ./tika.sh`
 
 ## Scenario in the frontend
 
@@ -88,4 +88,6 @@ Replace `<id>` by the _id_ assigned to the file during upload.
   - goto `Data > Services VRE > Service`
   - click `Set Service`
   - enable all fields in the `Fields` tab
-  
+
+## Create your own recipe
+Want to wrap your own service in a VRE recipe? See `./tika/README.md` for an example.
