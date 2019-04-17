@@ -37,11 +37,12 @@
     <junit.version>4.12</junit.version>
     <kafka.version>2.0.0</kafka.version>
     <kafka-clients.version>2.0.0</kafka-clients.version>
+    <logback.version>1.3.0-alpha4</logback.version>
     <mockito.version>2.8.9</mockito.version>
     <mockito.version>2.21.0</mockito.version>
     <mockserver.version>5.4.1</mockserver.version>
     <powermock.version>1.7.1</powermock.version>
-    <slf4j.version>1.7.5</slf4j.version>
+    <slf4j-api.version>1.8.0-beta4</slf4j-api.version>
     <unirest-java.version>1.4.9</unirest-java.version>
   </properties>
   <dependencies>
@@ -133,17 +134,17 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.8.0-beta4</version>
+      <version>${slf4j-api.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.3.0-alpha4</version>
+      <version>${logback.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.3.0-alpha4</version>
+      <version>${logback.version}</version>
     </dependency>
 
     <!-- util -->
