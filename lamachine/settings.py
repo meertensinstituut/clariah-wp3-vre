@@ -45,11 +45,11 @@ DATABASES = {
 
 #This is the path to the document root directory, this is the same directory as specified when running foliadocserve.
 #If the document server is running on a different system, the remote root disk will have to be mounted and the mountpoint specified here.
-WORKDIR = "/path/to/document/root/"
+WORKDIR = "/usr/local/var/www-data/flat.docroot"
 
 #The path and port on which the FoLiA Document Server can be reached (these defaults suffice for a local connection)
-FOLIADOCSERVE_HOST = '127.0.0.1'
-FOLIADOCSERVE_PORT = 8080
+FOLIADOCSERVE_HOST = 'localhost'
+FOLIADOCSERVE_PORT = 3030
 
 # Make sure to start the document server when starting FLAT!
 #   $ foliadocserve -d /path/to/document/root -p 8080
