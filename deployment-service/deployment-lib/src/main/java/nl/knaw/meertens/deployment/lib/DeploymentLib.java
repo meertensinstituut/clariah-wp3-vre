@@ -121,7 +121,7 @@ public class DeploymentLib {
           parameterValueJson.put("parameterValueValue", parameterValueValue);
           parameterValueJson.put("parameterValueDescription", parameterValueDescription);
 
-          json.set("value" + Integer.toString(valueCounter), parameterValueJson);
+          json.set(String.format("value%s", valueCounter), parameterValueJson);
 
           valueCounter++;
         }
