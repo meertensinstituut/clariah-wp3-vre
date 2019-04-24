@@ -4,7 +4,7 @@
 
 0. Insert service recipes: 
    `./VRE-demo-init.sh`
-1. Insert tika html recipe:
+0. Insert tika html recipe:
    `cd tika && ./tika.sh`
 
 ## Scenario in the frontend
