@@ -4,14 +4,12 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
+import nl.knaw.meertens.deployment.lib.HandlerPluginException;
 import nl.knaw.meertens.deployment.lib.Queue;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
 import nl.knaw.meertens.deployment.lib.recipe.FoliaEditor;
-
-import nl.knaw.meertens.deployment.lib.HandlerPlugin;
-import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +31,24 @@ import static nl.knaw.meertens.deployment.lib.DeploymentStatus.NOT_FOUND;
 // TODO: extract all logic to services
 @Path("/exec")
 public class ExecController extends AbstractController {
-
   private Logger logger = LoggerFactory.getLogger(this.getClass());
+
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
+
+  @GET
+  @Path("/test")
+  @Produces(APPLICATION_JSON)
+  public Response test() throws ClassNotFoundException, NoSuchMethodException,
+      InvocationTargetException, InstantiationException, IllegalAccessException, HandlerPluginException {
+
+    String serviceName = "Docker";
+    String loc = "Docker:repo/image/tag/Http://{docker-container-ip}/orgpath";
+    String serviceLocation = DeploymentLib.invokeHandler(serviceName, loc); // http://192.3.4.5/frog
+
+    return Response
+        .ok(serviceLocation, APPLICATION_JSON)
+        .build();
+  }
 
   /**
    * @param workDir Project id also known as project name, key and working directory
@@ -46,8 +59,8 @@ public class ExecController extends AbstractController {
   @Path("/{service}/{workDir}")
   @Produces(APPLICATION_JSON)
   public Response poll(
-    @PathParam("service") String service,
-    @PathParam("workDir") String workDir
+      @PathParam("service") String service,
+      @PathParam("workDir") String workDir
   ) {
 
     Queue queue = new Queue();
@@ -56,10 +69,10 @@ public class ExecController extends AbstractController {
 
     if (isNull(plugin)) {
       return Response
-        .status(NOT_FOUND.getStatus())
-        .entity(NOT_FOUND.toResponse().getBody().toString())
-        .type(APPLICATION_JSON)
-        .build();
+          .status(NOT_FOUND.getStatus())
+          .entity(NOT_FOUND.toResponse().getBody().toString())
+          .type(APPLICATION_JSON)
+          .build();
     }
 
     try {
@@ -73,17 +86,18 @@ public class ExecController extends AbstractController {
 
     if (finished) {
       return Response
-        .ok(result.getBody().toString(), APPLICATION_JSON)
-        .build();
+          .ok(result.getBody().toString(), APPLICATION_JSON)
+          .build();
     } else {
       return Response
-        .status(202)
-        .entity(result.getBody().toString())
-        .type(APPLICATION_JSON)
-        .build();
+          .status(202)
+          .entity(result.getBody().toString())
+          .type(APPLICATION_JSON)
+          .build();
     }
 
   }
+
 
   /**
    * @param workDir     Working directory also knowns as key, project id and project name
@@ -93,8 +107,8 @@ public class ExecController extends AbstractController {
   @Path("/{service}/{workDir}")
   @Produces(APPLICATION_JSON)
   public Response exec(
-    @PathParam("workDir") String workDir,
-    @PathParam("service") String serviceName
+      @PathParam("workDir") String workDir,
+      @PathParam("service") String serviceName
   ) {
     try {
       logger.info(String.format("Get service [%s]", serviceName));
@@ -108,13 +122,11 @@ public class ExecController extends AbstractController {
       // get the serviceLocation
 
 
-      String loc = DeploymentLib.getServiceLocationFromJson(DeploymentLib.parseSemantics(service.getServiceSemantics())); // "nl.knaw.meertens.deployment.lib.handler.docker:vre-repository/lamachine/tag-1.0/http://{docker-container-ip}/frog";
+      String loc = DeploymentLib.getServiceLocationFromJson(DeploymentLib.parseSemantics(service
+          .getServiceSemantics())); // "nl.knaw.meertens.deployment.lib.handler.docker:vre-repository/lamachine/tag-1
+      // .0/http://{docker-container-ip}/frog";
 
-      String serviceLocation = DeploymentLib.invokeHandler(serviceName,loc); // http://192.3.4.5/frog
-
-
-
-
+      String serviceLocation = DeploymentLib.invokeHandler(serviceName, loc); // http://192.3.4.5/frog
 
 
       logger.info("Get recipe");
@@ -130,8 +142,8 @@ public class ExecController extends AbstractController {
       logger.info("Check user config against service record");
       String dbConfig = service.getServiceSemantics();
       boolean userConfigIsValid = this.checkUserConfig(
-        DeploymentLib.parseSemantics(dbConfig),
-        DeploymentLib.parseUserConfig(workDir)
+          DeploymentLib.parseSemantics(dbConfig),
+          DeploymentLib.parseUserConfig(workDir)
       );
 
       if (!userConfigIsValid) {
@@ -145,8 +157,8 @@ public class ExecController extends AbstractController {
       logger.info("Plugin invoked");
       ObjectNode json = queue.push(workDir, plugin);
       return Response
-        .ok(json.toString(), APPLICATION_JSON)
-        .build();
+          .ok(json.toString(), APPLICATION_JSON)
+          .build();
 
     } catch (Exception ex
     ) {
@@ -158,8 +170,8 @@ public class ExecController extends AbstractController {
   @Path("/{service}/{workDir}")
   @Produces(APPLICATION_JSON)
   public Response delete(
-    @PathParam("workDir") String workDir,
-    @PathParam("service") String service
+      @PathParam("workDir") String workDir,
+      @PathParam("service") String service
   ) throws RecipePluginException, IOException {
     Boolean deleteResult = false;
     logger.info(String.format("Saving folia file and downloading for service [%s]", service));

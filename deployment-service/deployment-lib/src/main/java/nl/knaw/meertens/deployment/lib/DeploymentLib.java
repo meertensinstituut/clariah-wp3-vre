@@ -84,17 +84,21 @@ public class DeploymentLib {
 
   public static String invokeHandler(String serviceName, String loc)
       throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException,
-      InstantiationException {
-    String[] handlerLoc = loc.split(":", 0);
+      InstantiationException, HandlerPluginException {
+
+    String[] handlerLoc = loc.split(":", 2);
     /* invocation 1 [0] = "nl.knaw.meertens.deployment.lib.handler.Docker"
     [1] = "vre-repository/lamachine/tag-1.0/nl.knaw.meertens.deployment.lib.handler.Http://{docker-container-ip}/frog"
 
     // invocation 2 [0] = "http" [1] = "//192.3.4.5/frog"
     */
+
     String className = handlerLoc[0];
     if (!className.contains(".")) {
       className = "nl.knaw.meertens.deployment.lib.handler." + className;
     }
+    logger.info(String.format("Class name for first handler is: [%s]", className));
+    logger.info(String.format("Remainder name for first handler is: [%s]", handlerLoc[1]));
     Class<?> loadedClass = Class.forName(className);
     Class<? extends HandlerPlugin> handlerClass = loadedClass.asSubclass(HandlerPlugin.class);
     HandlerPlugin handler;

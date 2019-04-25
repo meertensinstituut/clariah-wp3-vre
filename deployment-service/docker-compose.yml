@@ -7,4 +7,6 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile
+    ports:
+      - 9999:8080
     tty: true

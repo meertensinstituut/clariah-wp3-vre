@@ -1,6 +1,5 @@
 package nl.knaw.meertens.deployment.lib.handler;
 
-import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

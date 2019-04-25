@@ -47,6 +47,17 @@
   </repositories>
 
   <dependencies>
+<!--    <dependency>-->
+<!--      <groupId>com.spotify</groupId>-->
+<!--      <artifactId>docker-client</artifactId>-->
+<!--      <version>8.15.2</version>-->
+<!--    </dependency>-->
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java</artifactId>
+      <!-- use latest version https://github.com/docker-java/docker-java/releases -->
+      <version>3.1.1</version>
+    </dependency>
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
