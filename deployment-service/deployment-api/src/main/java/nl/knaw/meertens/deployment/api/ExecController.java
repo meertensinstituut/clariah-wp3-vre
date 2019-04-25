@@ -9,6 +9,8 @@ import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
 import nl.knaw.meertens.deployment.lib.recipe.FoliaEditor;
+
+import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,6 +104,19 @@ public class ExecController extends AbstractController {
         return handleException(msg);
       }
 
+      // get semantic info serviceName
+      // get the serviceLocation
+
+
+      String loc = DeploymentLib.getServiceLocationFromJson(DeploymentLib.parseSemantics(service.getServiceSemantics())); // "nl.knaw.meertens.deployment.lib.handler.docker:vre-repository/lamachine/tag-1.0/http://{docker-container-ip}/frog";
+
+      String serviceLocation = DeploymentLib.invokeHandler(serviceName,loc); // http://192.3.4.5/frog
+
+
+
+
+
+
       logger.info("Get recipe");
       String className = service.getRecipe();
 
@@ -172,6 +187,7 @@ public class ExecController extends AbstractController {
     }
 
   }
+
 
   private boolean checkUserConfig(ObjectNode dbSymantics, ObjectNode userSymantics) {
     // TODO: check if user config if valid instead of returning true

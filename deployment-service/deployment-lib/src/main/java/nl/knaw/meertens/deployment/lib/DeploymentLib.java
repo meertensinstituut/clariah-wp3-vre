@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequest;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
@@ -20,10 +19,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -59,11 +58,11 @@ public class DeploymentLib {
     HttpResponse<String> result;
     try {
       result = Unirest
-        .get(urlString)
-        .header("Content-Type", "application/json")
-        .header("accept", "application/json")
-        .header("X-DreamFactory-Api-Key", dbApiKey)
-        .asString();
+          .get(urlString)
+          .header("Content-Type", "application/json")
+          .header("accept", "application/json")
+          .header("X-DreamFactory-Api-Key", dbApiKey)
+          .asString();
     } catch (UnirestException e) {
       throw new RuntimeException(String.format("Could not get service by name [%s]", serviceName), e);
     }
@@ -83,6 +82,41 @@ public class DeploymentLib {
 
   }
 
+  public static String invokeHandler(String serviceName, String loc)
+      throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+      InstantiationException {
+    String[] handlerLoc = loc.split(":", 0);
+    /* invocation 1 [0] = "nl.knaw.meertens.deployment.lib.handler.Docker"
+    [1] = "vre-repository/lamachine/tag-1.0/nl.knaw.meertens.deployment.lib.handler.Http://{docker-container-ip}/frog"
+
+    // invocation 2 [0] = "http" [1] = "//192.3.4.5/frog"
+    */
+    String className = handlerLoc[0];
+    if (!className.contains(".")) {
+      className = "nl.knaw.meertens.deployment.lib.handler." + className;
+    }
+    Class<?> loadedClass = Class.forName(className);
+    Class<? extends HandlerPlugin> handlerClass = loadedClass.asSubclass(HandlerPlugin.class);
+    HandlerPlugin handler;
+    handler = handlerClass.getDeclaredConstructor().newInstance();
+    return handler.handle(serviceName, handlerLoc[1]);
+  }
+
+  public static String getServiceLocationFromJson(JsonNode json) {
+    String serviceLocation = json.get("serviceLocation").asText(null);
+    return serviceLocation;
+  }
+
+  public static ObjectNode parseSemantics(String symantics, String serviceLocation) throws RecipePluginException {
+    ObjectNode json = jsonFactory.objectNode();
+
+    json = parseSemantics(symantics);
+    json.remove("serviceLocation");
+    json.put("serviceLocation", serviceLocation);
+
+    return json;
+  }
+
   public static ObjectNode parseSemantics(String symantics) throws RecipePluginException {
     try {
       ObjectNode parametersJson = jsonFactory.objectNode();
@@ -97,7 +131,7 @@ public class DeploymentLib {
 
       int counter = 0;
       for (XdmItem param : Saxon
-        .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter", null, nameSpace)) {
+          .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter", null, nameSpace)) {
 
         ObjectNode json = jsonFactory.objectNode();
         String parameterName = Saxon.xpath2string(param, "cmdp:Name", null, nameSpace);
@@ -110,8 +144,8 @@ public class DeploymentLib {
 
         int valueCounter = 0;
         for (XdmItem paramValue : Saxon
-          .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter/cmdp:ParameterValue",
-            null, nameSpace)) {
+            .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter/cmdp:ParameterValue",
+                null, nameSpace)) {
 
           ObjectNode parameterValueJson = jsonFactory.objectNode();
 
@@ -135,7 +169,7 @@ public class DeploymentLib {
       String serviceName = Saxon.xpath2string(service, "cmdp:Name", null, nameSpace);
       String serviceDescription = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Description", null, nameSpace);
       String serviceLocation = Saxon.xpath2string(
-        service, "//cmdp:ServiceDescriptionLocation/cmdp:Location", null, nameSpace);
+          service, "//cmdp:ServiceDescriptionLocation/cmdp:Location", null, nameSpace);
 
       json.put("serviceName", serviceName);
       json.put("serviceDescription", serviceDescription);
@@ -155,8 +189,8 @@ public class DeploymentLib {
     }
 
     String path = Paths
-      .get(ROOT_WORK_DIR, workDir, USER_CONF_FILE)
-      .normalize().toString();
+        .get(ROOT_WORK_DIR, workDir, USER_CONF_FILE)
+        .normalize().toString();
 
     try {
       return (ObjectNode) parser.readTree(new FileReader(path));
@@ -167,18 +201,18 @@ public class DeploymentLib {
 
   public static String buildInputPath(String projectName, String inputFile) {
     return Paths.get(
-      ROOT_WORK_DIR,
-      projectName,
-      INPUT_DIR, inputFile
+        ROOT_WORK_DIR,
+        projectName,
+        INPUT_DIR, inputFile
     ).normalize().toString();
   }
 
   public static Path buildOutputFilePath(String workDir, String file) {
     return Paths.get(
-      ROOT_WORK_DIR,
-      workDir,
-      OUTPUT_DIR,
-      file
+        ROOT_WORK_DIR,
+        workDir,
+        OUTPUT_DIR,
+        file
     ).normalize();
   }
 
@@ -189,7 +223,6 @@ public class DeploymentLib {
       logger.info(format("created folder [%s]", outputFolder.toString()));
     }
   }
-
 
 
 }
