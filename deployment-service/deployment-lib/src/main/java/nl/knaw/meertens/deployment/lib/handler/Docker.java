@@ -3,9 +3,13 @@ package nl.knaw.meertens.deployment.lib.handler;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.DockerCmdExecFactory;
+import com.github.dockerjava.api.command.PullImageCmd;
+import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.api.model.SearchItem;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
@@ -14,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,21 +55,34 @@ public class Docker implements HandlerPlugin {
               "running the app ####");
       DockerClient dockerClient = getDockerClient("tcp://host.docker.internal:2375");
       logger.info("#### succeed in docker client ####");
-      // Info info = dockerClient.infoCmd().exec();
-      // logger.info(info.toString());
+      Info info = dockerClient.infoCmd().exec();
+      logger.info(String.format("Docker info [%s]", info.toString()));
       logger.info(String.format("Repo is: [%s]", dockerRepo));
       logger.info(String.format("Image is: [%s]", dockerImg));
       logger.info(String.format("Tag is: [%s]", dockerTag));
 
-      CreateContainerResponse container = dockerClient.createContainerCmd("busybox")
-                                                      .withCmd("touch", "/test")
-                                                      .exec();
+      List<SearchItem> dockerSearch =
+          dockerClient.searchImagesCmd("busybox").exec();
+      logger.info(String.format("Docker search on the container: [%s]", dockerSearch.toString()));
 
+      logger.info("Pulling");
+      PullImageCmd pullImageCmd = dockerClient.pullImageCmd("busybox")
+                                              .withAuthConfig(dockerClient.authConfig())
+                                              .withTag("latest");
+      try {
+        pullImageCmd.exec(new PullImageResultCallback()).awaitCompletion();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+      logger.info("After pulling");
+
+      CreateContainerResponse container = dockerClient.createContainerCmd("busybox")
+                                                      .withCmd("ls")
+                                                      .exec();
       dockerClient.startContainerCmd(container.getId()).exec();
+
       logger.info("#### container running ####");
-      // List<SearchItem> dockerSearch =
-      //     dockerClient.searchImagesCmd(String.format("%s/%s/%s", dockerRepo, dockerImg, dockerTag)).exec();
-      // logger.info(String.format("Docker search on the container: [%s]", dockerSearch.toString()));
 
       String remainder = matcher.group(4);// nl.knaw.meertens.deployment.lib.handler.http://{docker-container-ip}/frog
       if (remainder.trim().length() > 0) {
@@ -90,8 +108,8 @@ public class Docker implements HandlerPlugin {
 
     // using jaxrs/jersey implementation here (netty impl is also available)
     DockerCmdExecFactory dockerCmdExecFactory = new JerseyDockerCmdExecFactory()
-        .withReadTimeout(1000)
-        .withConnectTimeout(1000)
+        .withReadTimeout(10000)
+        .withConnectTimeout(10000)
         .withMaxTotalConnections(100)
         .withMaxPerRouteConnections(10);
 
