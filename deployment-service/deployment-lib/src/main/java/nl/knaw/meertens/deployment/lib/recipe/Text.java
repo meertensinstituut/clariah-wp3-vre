@@ -32,7 +32,7 @@ public class Text implements RecipePlugin {
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Override
-  public void init(String workDir, Service service) {
+  public void init(String workDir, Service service, String serviceLocation) {
     logger.info(format("init [%s]", workDir));
     this.projectName = workDir;
     this.serviceUrl = null;

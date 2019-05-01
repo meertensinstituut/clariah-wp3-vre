@@ -75,7 +75,7 @@ public class Demo implements RecipePlugin {
     Pattern.compile(".*PHPSESSID=(.*?);.*gcosvcauth=(.*?);.*");
 
   @Override
-  public void init(String workDir, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service, String serviceLocation) throws RecipePluginException {
     logger.info(format("init [%s]", workDir));
     this.workDir = workDir;
     this.service = service;

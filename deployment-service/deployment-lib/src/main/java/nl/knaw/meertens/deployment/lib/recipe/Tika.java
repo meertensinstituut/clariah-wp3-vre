@@ -38,7 +38,7 @@ public class Tika implements RecipePlugin {
   private DeploymentStatus status;
 
   @Override
-  public void init(String workDir, Service service) {
+  public void init(String workDir, Service service, String serviceLocation) {
     logger.info(format("init [%s]", workDir));
     this.workDir = workDir;
     this.service = service;

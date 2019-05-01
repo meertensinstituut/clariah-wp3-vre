@@ -76,7 +76,7 @@ public class Clam implements RecipePlugin {
    * @param service The recepie record in the registry known as service
    */
   @Override
-  public void init(String workDir, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service, String serviceLocation) throws RecipePluginException {
     status = CREATED;
 
     logger.info(format("init [%s]", workDir));
@@ -87,7 +87,10 @@ public class Clam implements RecipePlugin {
     final String serviceSemantics = service.getServiceSemantics();
     ObjectNode semantics = DeploymentLib.parseSemantics(serviceSemantics);
 
-    String serviceLocation = semantics.get("serviceLocation").asText();
+    if (isNull(serviceLocation)) {
+      serviceLocation = semantics.get("serviceLocation").asText();
+    }
+
     try {
       this.serviceUrl = new URL(serviceLocation);
     } catch (MalformedURLException e) {

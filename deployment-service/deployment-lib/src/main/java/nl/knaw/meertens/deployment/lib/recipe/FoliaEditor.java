@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.nio.charset.Charset.forName;
+import static java.util.Objects.isNull;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 
 
@@ -55,13 +56,18 @@ public class FoliaEditor implements RecipePlugin {
    * Initiate the recipe
    */
   @Override
-  public void init(String workDir, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service, String serviceLocation) throws RecipePluginException {
     logger.info(format("init [%s]", workDir));
     ObjectNode json = DeploymentLib.parseSemantics(service.getServiceSemantics());
     logger.info(format("loaded cmdi to json: [%s]", json.toString()));
     this.workDir = workDir;
+
+    if (isNull(serviceLocation)) {
+      serviceLocation = json.get("serviceLocation").asText();
+    }
+
     try {
-      this.serviceUrl = new URL(json.get("serviceLocation").asText());
+      this.serviceUrl = new URL(serviceLocation);
     } catch (MalformedURLException e) {
       logger.info(e.getMessage());
       throw new RecipePluginException(format("Url is not correct: [%s]", json.get("serviceLocation").asText()));

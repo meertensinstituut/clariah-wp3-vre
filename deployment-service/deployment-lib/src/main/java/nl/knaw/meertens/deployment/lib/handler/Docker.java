@@ -19,8 +19,13 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static nl.knaw.meertens.deployment.lib.SystemConf.DOCKER_CERT_PATH;
+import static nl.knaw.meertens.deployment.lib.SystemConf.DOCKER_SERVER;
+import static nl.knaw.meertens.deployment.lib.SystemConf.DOCKER_TLS_VERIFY;
 
 public class Docker implements HandlerPlugin {
   private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -53,7 +58,7 @@ public class Docker implements HandlerPlugin {
       logger.info(
           "#### run 'socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &' on docker host before " +
               "running the app ####");
-      DockerClient dockerClient = getDockerClient("tcp://host.docker.internal:2375");
+      DockerClient dockerClient = getDockerClient(DOCKER_SERVER, DOCKER_TLS_VERIFY, DOCKER_CERT_PATH);
       logger.info("#### succeed in docker client ####");
       Info info = dockerClient.infoCmd().exec();
       logger.info(String.format("Docker info [%s]", info.toString()));
@@ -85,20 +90,27 @@ public class Docker implements HandlerPlugin {
         logger.error(String.format("Cannot pull the image [%s/%s/%s]; ", dockerRepo, dockerImg, dockerTag), e);
       }
 
-      logger.info("After pulling");
+      logger.info("Image pulled; Running container");
+
+      String dockerHostName = UUID.randomUUID().toString();
 
       CreateContainerResponse container = dockerClient.createContainerCmd(dockerImg)
                                                       .withCmd("ls")
+                                                      .withHostName(dockerHostName)
+                                                      .withName(dockerHostName)
                                                       .exec();
+
       dockerClient.startContainerCmd(container.getId()).exec();
       dockerClient.stopContainerCmd(container.getId()).exec();
+
+      String dockerId = container.getId();
 
       logger.info("#### container running ####");
 
       String remainder = matcher.group(4);// nl.knaw.meertens.deployment.lib.handler.http://{docker-container-ip}/frog
       if (remainder.trim().length() > 0) {
         // replace variables
-        remainder = remainder.replace("{docker-container-ip}", "1.2.3.4/dockerip");
+        remainder = remainder.replace("{docker-container-ip}", dockerHostName);
         // String loc = remainder.replaceAll("\\{docker-container-ip\\}","1.2.3.4/dockerip"); // nl.knaw.meertens
         // .deployment.lib.handler.http://192.3.4.5/frog
         // loc = loc.replaceAll("{docker-container-id}", docker - container - id);
@@ -112,11 +124,27 @@ public class Docker implements HandlerPlugin {
     throw new HandlerPluginException("Invalid docker service location!");
   }
 
-  private DockerClient getDockerClient(String dockerHost) {
-    DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                                                         .withDockerHost(dockerHost)
-                                                         .build();
-
+  private DockerClient getDockerClient(String dockerHost, String dockerTls, String dockerTlsPath)
+      throws HandlerPluginException {
+    DockerClientConfig config;
+    if (dockerHost.length() > 1 && dockerTls.equals("1") && dockerTlsPath.length() > 0) {
+      config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                                        .withDockerHost(dockerHost)
+                                        .withDockerTlsVerify(true)
+                                        .withDockerCertPath(dockerTlsPath)
+                                        .build();
+    } else if (dockerHost.length() > 1 && dockerTls.equals("0")) {
+      config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                                        .withDockerHost(dockerHost)
+                                        .build();
+    } else {
+      throw new HandlerPluginException(String
+          .format(
+              "Cannot initialize Docker client with following configuration. dockerHost: [%s]; dockerTls: [%s]; " +
+                  "dockerTlsPath: [%s]",
+              dockerHost,
+              dockerTls, dockerTlsPath));
+    }
     // using jaxrs/jersey implementation here (netty impl is also available)
     DockerCmdExecFactory dockerCmdExecFactory = new JerseyDockerCmdExecFactory()
         .withReadTimeout(30000)

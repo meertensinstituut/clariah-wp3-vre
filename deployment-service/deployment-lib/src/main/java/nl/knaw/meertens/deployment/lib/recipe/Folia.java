@@ -43,7 +43,7 @@ public class Folia implements RecipePlugin {
   private URL url;
 
   @Override
-  public void init(String workDir, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service, String serviceLocation) throws RecipePluginException {
 
     try {
       url = new URL(

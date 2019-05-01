@@ -27,7 +27,7 @@ public class Test implements RecipePlugin {
   private String workDir;
 
   @Override
-  public void init(String workDir, Service service) {
+  public void init(String workDir, Service service, String serviceLocation) {
     logger.info(format("init [%s]", workDir));
     this.workDir = workDir;
     this.status = DeploymentStatus.CREATED;

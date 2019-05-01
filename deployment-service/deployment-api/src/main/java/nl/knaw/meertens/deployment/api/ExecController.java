@@ -22,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -121,14 +122,26 @@ public class ExecController extends AbstractController {
 
       // get semantic info serviceName
       // get the serviceLocation
-
-
       String loc = DeploymentLib.getServiceLocationFromJson(DeploymentLib.parseSemantics(service
           .getServiceSemantics())); // "nl.knaw.meertens.deployment.lib.handler.docker:vre-repository/lamachine/tag-1
       // .0/http://{docker-container-ip}/frog";
+      logger.info(String.format("Has loc [%s]", loc));
 
-      String serviceLocation = DeploymentLib.invokeHandler(serviceName, loc); // http://192.3.4.5/frog
+      String serviceLocation;
 
+      if (loc.equals("") || loc.toLowerCase().equals("none")) {
+        logger.info("loc is not necessary, set serviceLocation to null");
+        serviceLocation = null;
+      } else {
+        try {
+          logger.info("loc is valid URL, set serviceLocation to null");
+          URL url = new URL(loc);
+          serviceLocation = null;
+        } catch (Exception e) {
+          serviceLocation = DeploymentLib.invokeHandler(serviceName, loc); // http://192.3.4.5/frog
+          logger.info(String.format("loc is not valid, it presumably is cascaded [%s]", serviceLocation));
+        }
+      }
 
       logger.info("Get recipe");
       String className = service.getRecipe();
@@ -138,7 +151,7 @@ public class ExecController extends AbstractController {
       Class<? extends RecipePlugin> pluginClass = loadedClass.asSubclass(RecipePlugin.class);
       RecipePlugin plugin;
       plugin = pluginClass.getDeclaredConstructor().newInstance();
-      plugin.init(workDir, service);
+      plugin.init(workDir, service, serviceLocation);
 
       logger.info("Check user config against service record");
       String dbConfig = service.getServiceSemantics();

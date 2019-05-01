@@ -5,7 +5,7 @@ public interface RecipePlugin {
   /**
    * Set working directory and service
    */
-  void init(String workDir, Service service) throws RecipePluginException;
+  void init(String workDir, Service service, String serviceLocation) throws RecipePluginException;
 
   /**
    * Execute recipe and start deployment
