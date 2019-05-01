@@ -161,6 +161,11 @@
       <artifactId>unirest-java</artifactId>
       <version>${unirest-java.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>${json-path.version}</version>
+    </dependency>
 
     <!-- testing -->
     <dependency>
@@ -184,11 +189,6 @@
       <groupId>org.glassfish.jersey.test-framework.providers</groupId>
       <artifactId>jersey-test-framework-provider-jdk-http</artifactId>
       <version>${jersey.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.jayway.jsonpath</groupId>
-      <artifactId>json-path</artifactId>
-      <version>${json-path.version}</version>
     </dependency>
     <dependency>
       <groupId>net.javacrumbs.json-unit</groupId>
@@ -236,7 +236,6 @@
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-core</artifactId>
       <version>${jaxb-core.version}</version>
-
     </dependency>
 
   </dependencies>
