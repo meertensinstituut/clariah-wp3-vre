@@ -42,7 +42,8 @@ public class ExecController extends AbstractController {
       InvocationTargetException, InstantiationException, IllegalAccessException, HandlerPluginException {
 
     String serviceName = "Docker";
-    String loc = "Docker:repo/image/tag/Http://{docker-container-ip}/orgpath";
+    // String loc = "Docker:repo/image/tag/Http://{docker-container-ip}/orgpath";
+    String loc = "Docker:_/busybox/latest/Http://{docker-container-ip}/orgpath";
     String serviceLocation = DeploymentLib.invokeHandler(serviceName, loc); // http://192.3.4.5/frog
 
     return Response

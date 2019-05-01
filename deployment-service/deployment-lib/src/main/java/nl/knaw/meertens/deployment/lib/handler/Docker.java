@@ -62,25 +62,36 @@ public class Docker implements HandlerPlugin {
       logger.info(String.format("Tag is: [%s]", dockerTag));
 
       List<SearchItem> dockerSearch =
-          dockerClient.searchImagesCmd("busybox").exec();
+          dockerClient.searchImagesCmd(dockerImg).exec();
       logger.info(String.format("Docker search on the container: [%s]", dockerSearch.toString()));
 
       logger.info("Pulling");
-      PullImageCmd pullImageCmd = dockerClient.pullImageCmd("busybox")
-                                              .withAuthConfig(dockerClient.authConfig())
-                                              .withTag("latest");
+      PullImageCmd pullImageCmd = null;
+      if (dockerRepo.equals("_")) {
+        pullImageCmd = dockerClient.pullImageCmd(dockerImg)
+                                   .withTag(dockerTag)
+                                   .withAuthConfig(dockerClient.authConfig());
+      } else {
+        pullImageCmd = dockerClient.pullImageCmd(dockerImg)
+                                   .withTag(dockerTag)
+                                   .withRepository(dockerRepo)
+                                   .withAuthConfig(dockerClient.authConfig());
+      }
+
+
       try {
         pullImageCmd.exec(new PullImageResultCallback()).awaitCompletion();
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        logger.error(String.format("Cannot pull the image [%s/%s/%s]; ", dockerRepo, dockerImg, dockerTag), e);
       }
 
       logger.info("After pulling");
 
-      CreateContainerResponse container = dockerClient.createContainerCmd("busybox")
+      CreateContainerResponse container = dockerClient.createContainerCmd(dockerImg)
                                                       .withCmd("ls")
                                                       .exec();
       dockerClient.startContainerCmd(container.getId()).exec();
+      dockerClient.stopContainerCmd(container.getId()).exec();
 
       logger.info("#### container running ####");
 
@@ -108,8 +119,8 @@ public class Docker implements HandlerPlugin {
 
     // using jaxrs/jersey implementation here (netty impl is also available)
     DockerCmdExecFactory dockerCmdExecFactory = new JerseyDockerCmdExecFactory()
-        .withReadTimeout(10000)
-        .withConnectTimeout(10000)
+        .withReadTimeout(30000)
+        .withConnectTimeout(30000)
         .withMaxTotalConnections(100)
         .withMaxPerRouteConnections(10);
 
