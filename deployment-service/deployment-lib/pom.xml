@@ -11,41 +11,6 @@
   <artifactId>deployment-lib</artifactId>
   <packaging>jar</packaging>
 
-  <properties>
-    <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <mavens-surefire-plugin.version>2.18.1</mavens-surefire-plugin.version>
-    <mockserver.version>5.4.1</mockserver.version>
-    <assertj-core.version>3.9.0</assertj-core.version>
-    <jaxb-api.version>2.4.0-b180725.0427</jaxb-api.version>
-    <json-unit-fluent.version>1.28.1</json-unit-fluent.version>
-    <junit.version>4.12</junit.version>
-    <mockito-core.version>2.21.0</mockito-core.version>
-    <mockserver.version>5.4.1</mockserver.version>
-    <jackson-databind.version>2.9.8</jackson-databind.version>
-
-  </properties>
-
-  <repositories>
-    <repository>
-      <id>CLARIN</id>
-      <name>CLARIN Repository</name>
-      <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>CLARIN-Snapshot</id>
-      <name>CLARIN Snapshot Repository</name>
-      <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
   <dependencies>
     <dependency>
       <groupId>commons-configuration</groupId>
@@ -141,7 +106,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${mavens-surefire-plugin.version}</version>
+        <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <!-- java modules: -->
           <argLine>
