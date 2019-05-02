@@ -101,149 +101,167 @@ ALLOWREGISTRATION = True
 
 #These are the configurations, add new ones by copying the 'full' configuration and adapting it to your needs.
 CONFIGURATIONS = {
-'full':{
-    # This is the 'full' configuration, it will enable all available functionality and is not fine-tuned for any specific task
+    'full':{
+        # This is the 'full' configuration, it will enable all available functionality and is not fine-tuned for any specific task
 
-    # The name of the mode, this is what users will see in the login screen,
-    # make sure the name is indicative of your annotation project, if any
-    'name': "Full Editor",
+        # The name of the mode, this is what users will see in the login screen,
+        # make sure the name is indicative of your annotation project, if any
+        'name': "Full Editor",
 
-    # use the editor modes defined globally, or specify them explicitly per configuration here.
-    'modes': MODES,
+        # use the editor modes defined globally, or specify them explicitly per configuration here.
+        'modes': MODES,
 
-    # use the perspectives defined globally, or specify them explicitly per configuration here.
-    'perspectives': PERSPECTIVES,
-
-
-    # Allow users to upload FoLiA documents?
-    'allowupload': True, #boolean
-
-    #Automatically create namespaces for all the groups a user is in and has write permission for,
-    'creategroupnamespaces': True, #boolean
-
-    # The default annotation focus upon loading a document
-    # The annotation type that has is set as annotation focus will be
-    # visualised. Set to a valid FoLiA tag name (see the FoLiA documentation at
-    # https://proycon.github.io/folia) or None to start without a specific focus
-    'annotationfocustype': None,
-    # If you set the above, you will also need to set what FoLiA set to use
-    'annotationfocusset': None,
-
-    #EXAMPLES:
-    #'annotationfocustype': 'correction',
-    #'annotationfocusset': 'http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml',
-
-    #'annotationfocustype': 'entity',
-    #'annotationfocusset': 'https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml',
+        # use the perspectives defined globally, or specify them explicitly per configuration here.
+        'perspectives': PERSPECTIVES,
 
 
-    # Automatically enable the select span button for the annotation focus when opening the editor dialog
-    'autoselectspan': False,
+        # Allow users to upload FoLiA documents?
+        'allowupload': True, #boolean
+
+        #Automatically create namespaces for all the groups a user is in and has write permission for,
+        'creategroupnamespaces': True, #boolean
+
+        # The default annotation focus upon loading a document
+        # The annotation type that has is set as annotation focus will be
+        # visualised. Set to a valid FoLiA tag name (see the FoLiA documentation at
+        # https://proycon.github.io/folia) or None to start without a specific focus
+        'annotationfocustype': None,
+        # If you set the above, you will also need to set what FoLiA set to use
+        'annotationfocusset': None,
+
+        #EXAMPLES:
+        #'annotationfocustype': 'correction',
+        #'annotationfocusset': 'http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml',
+
+        #'annotationfocustype': 'entity',
+        #'annotationfocusset': 'https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml',
 
 
-    # List of FoLiA annotation types (xml tags) that are allowed as annotation focus, set to True to enable all.
-    # Users may switch annotation focus through the menu
-    # Here and everywhere else, the annotation type equals the FoLiA XML tag
-    # for the annotation, specific sets may be attached to annotation types using a slash, for example:
-    #     entity/https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml
-    'allowedannotationfocus': True,
-
-    #EXAMPLE:
-    #'allowedannotationfocus': ('entity/https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml'),
-
-    # List of FoLiA annotation types (xml tags) that are initially enabled in
-    # the local annotation viewer (the pop-up when the user hovers over elements)
-    # set to True to enable all
-    'initialviewannotations': True,
+        # Automatically enable the select span button for the annotation focus when opening the editor dialog
+        'autoselectspan': False,
 
 
-    # List of FoLiA annotation types (xml tags) that are initially enabled in
-    # the global annotation viewer (in the annotation box above the words)
-    'initialglobviewannotations': [],
+        # List of FoLiA annotation types (xml tags) that are allowed as annotation focus, set to True to enable all.
+        # Users may switch annotation focus through the menu
+        # Here and everywhere else, the annotation type equals the FoLiA XML tag
+        # for the annotation, specific sets may be attached to annotation types using a slash, for example:
+        #     entity/https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml
+        'allowedannotationfocus': True,
 
-    # List of FoLiA annotation types (xml tags) that are allowed to be viewed,
-    # a superset of initialviewannotations/initialglobviewannotations. Users can enable/disable each as
-    # they see fit. Set to True to enable all
-    'allowedviewannotations': True,
+        #EXAMPLE:
+        #'allowedannotationfocus': ('entity/https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml'),
 
-    # List of FoLiA annotation types (xml tags) that are initially enabled in the editor dialog (when users click an element for editing)
-    # set to True to enable all
-    'initialeditannotations': True,
-
-    # List of FoLiA annotation types (xml tags) that are allowed in the editor
-    # dialog (the user can enable/disable each as he/she sees fit), set to True
-    # to enable all
-    'allowededitannotations': True,
-
-    # Allow the user to add annotation types not yet present on a certain element?
-    # If set to False, users can only edit existing annotations, never add new ones
-    'allowaddfields': True, #boolean
+        # List of FoLiA annotation types (xml tags) that are initially enabled in
+        # the local annotation viewer (the pop-up when the user hovers over elements)
+        # set to True to enable all
+        'initialviewannotations': True,
 
 
-    # Allow the user to add annotation types not yet present in the document?
-    'allowdeclare': True, #boolean
+        # List of FoLiA annotation types (xml tags) that are initially enabled in
+        # the global annotation viewer (in the annotation box above the words)
+        'initialglobviewannotations': [],
+
+        # List of FoLiA annotation types (xml tags) that are allowed to be viewed,
+        # a superset of initialviewannotations/initialglobviewannotations. Users can enable/disable each as
+        # they see fit. Set to True to enable all
+        'allowedviewannotations': True,
+
+        # List of FoLiA annotation types (xml tags) that are initially enabled in the editor dialog (when users click an element for editing)
+        # set to True to enable all
+        'initialeditannotations': True,
+
+        # List of FoLiA annotation types (xml tags) that are allowed in the editor
+        # dialog (the user can enable/disable each as he/she sees fit), set to True
+        # to enable all
+        'allowededitannotations': True,
+
+        # Allow the user to add annotation types not yet present on a certain element?
+        # If set to False, users can only edit existing annotations, never add new ones
+        'allowaddfields': True, #boolean
 
 
-    # The following values correspond to edit forms,
-    # They are shown as a set of option buttons in the editor dialog, between
-    # which the user can choose. Each of these options enables a button (if
-    # only one is selected, no buttons appear). The edit forms can be
-    # enabled/disabled by the user from a menu.
-
-    #Enable direct editing (this is the default and most basic form of editing)
-    #It should be True unless you want to force other editing forms
-    'editformdirect': True, #boolean
-
-    #Enable editing as correction
-    'editformcorrection': True, #boolean
-
-    #Enable editing as alternative
-    'editformalternative': True, #boolean
-
-    #Enable editing as new, this allows for adding multiple or overlapping annotations of the same type
-    'editformnew': True, #boolean
+        # Allow the user to add annotation types not yet present in the document?
+        'allowdeclare': True, #boolean
 
 
-    #This defines what edit modes the user can enable/disable from the menu
-    'alloweditformdirect': True, #boolean
-    'alloweditformcorrection': True, #boolean
-    'alloweditformalternative': True, #boolean
-    'alloweditformnew': True, #boolean
+        # The following values correspond to edit forms,
+        # They are shown as a set of option buttons in the editor dialog, between
+        # which the user can choose. Each of these options enables a button (if
+        # only one is selected, no buttons appear). The edit forms can be
+        # enabled/disabled by the user from a menu.
 
-    #Allow confidence values to be set/edited?
-    'allowconfidence': True,
+        #Enable direct editing (this is the default and most basic form of editing)
+        #It should be True unless you want to force other editing forms
+        'editformdirect': True, #boolean
 
-    # FoLiA set to use for corrections
-    #'initialcorrectionset': 'http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml',
+        #Enable editing as correction
+        'editformcorrection': False, #boolean
 
-    # List of 2-tuples (tag,set) that specify what annotation types and with
-    # what sets to declare automatically for each document that is opened.
-    # (recall that FoLiA demands all annotations to be declared and that sets
-    # can be custom-made by anyone)
+        #Enable editing as alternative
+        'editformalternative': False, #boolean
 
-    #'autodeclare': [
-    #    ('correction', 'http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml')
-    #    ('entity', 'https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml')
-    #],
+        #Enable editing as new, this allows for adding multiple or overlapping annotations of the same type
+        'editformnew': True, #boolean
 
-    # List of 2-tuples (tag,set) that specify what annotation types and with
-    # what are required sets to be already present for each document that is
-    # opened. This is more or less the opposite of autodeclare
 
-    #'requiredeclaration': [
-    #    ('correction', 'http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml')
-    #    ('entity', 'https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml')
-    #],
+        #This defines what edit modes the user can enable/disable from the menu
+        'alloweditformdirect': True, #boolean
+        'alloweditformcorrection': True, #boolean
+        'alloweditformalternative': True, #boolean
+        'alloweditformnew': True, #boolean
 
-    #List of metadata keys (in  FoLiA's native metadata) to show in the
-    # document index.
-    #'metadataindex': ['status','language','title'],
+        #Allow confidence values to be set/edited?
+        'allowconfidence': True,
 
-    #Dictionary of metadata keys to lists of possible values, constrains the values in the metadata editor rather than offering a free-fill field. Example:
-    #'metadataconstraints': {'language': ['fr','en','es'], 'status':['completed','inprogress']},
+        # FoLiA set to use for corrections
+        #'initialcorrectionset': 'http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml',
 
-    #'searches': [{'query': 'SELECT entity WHERE annotatortype = "manual" FOR w RETURN target', 'label': "Highlight manually annotated entities"}]
-},
+        # List of 2-tuples (tag,set) that specify what annotation types and with
+        # what sets to declare automatically for each document that is opened.
+        # (recall that FoLiA demands all annotations to be declared and that sets
+        # can be custom-made by anyone)
+
+        #'autodeclare': [
+        #    ('correction', 'http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml')
+        #    ('entity', 'https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml')
+        #],
+
+        # List of 2-tuples (tag,set) that specify what annotation types and with
+        # what are required sets to be already present for each document that is
+        # opened. This is more or less the opposite of autodeclare
+
+        #'requiredeclaration': [
+        #    ('correction', 'http://raw.github.com/proycon/folia/master/setdefinitions/spellingcorrection.foliaset.xml')
+        #    ('entity', 'https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/namedentities.foliaset.xml')
+        #],
+
+        #List of metadata keys (in  FoLiA's native metadata) to show in the
+        # document index.
+        #'metadataindex': ['status','language','title'],
+
+        #Dictionary of metadata keys to lists of possible values, constrains the values in the metadata editor rather than offering a free-fill field. Example:
+        #'metadataconstraints': {'language': ['fr','en','es'], 'status':['completed','inprogress']},
+
+        #'searches': [{'query': 'SELECT entity WHERE annotatortype = "manual" FOR w RETURN target', 'label': "Highlight manually annotated entities"}]
+        'converters': [
+            { 'id': 'conllu2folia',
+              'module': 'foliatools.conllu2folia',
+              'function': 'flat_convert',
+              'name': "CONLL-U",
+              'parameter_help': 'Metadata. Set <em>"direction": "rtl"</em> for right-to left languages (JSON syntax without the envelopping curly braces)', #human readable help for parameters
+              'parameter_default': '', #default parameter, JSON syntax without the envelopping {}
+              'inputextensions': ['conllu','conll'],
+              },
+            { 'id': 'rst2folia',
+              'module': 'foliatools.rst2folia',
+              'function': 'flat_convert',
+              'name': "ReStructuredText",
+              'parameter_help': '', #human readable help for parameters
+              'parameter_default': '', #default parameter, JSON syntax without the envelopping {}
+              'inputextensions': ['rst'],
+              },
+        ]
+    },
 }
 
 
@@ -330,12 +348,16 @@ STATIC_URL = BASE_PREFIX + '/static/'
 STYLE_ROOT = BASE_DIR + '/flat/style/'
 STYLE_URL =  BASE_PREFIX + '/style/'
 
+SCRIPT_ROOT = BASE_DIR + '/flat/script/'
+SCRIPT_URL = BASE_PREFIX + '/script/'
+
 # Additional locations of static files
 STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     BASE_DIR + '/flat/style/',
+    BASE_DIR + '/flat/script/',
 )
 
 
@@ -344,7 +366,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 LOGIN_URL = BASE_PREFIX + "/login/"
@@ -356,7 +378,7 @@ LOGIN_URL = BASE_PREFIX + "/login/"
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    #     'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE = (
@@ -387,7 +409,7 @@ for mode,_ in MODES:
 TEMPLATE_DIRS = tuple(TEMPLATE_DIRS)
 
 if DJANGOVERSION[0] > 1 or DJANGOVERSION[1] >=8: #Django 1.8 and above
-   TEMPLATES = [{
+    TEMPLATES = [{
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'APP_DIRS': True,
         'DIRS': TEMPLATE_DIRS,
@@ -400,17 +422,15 @@ if DJANGOVERSION[0] > 1 or DJANGOVERSION[1] >=8: #Django 1.8 and above
             ],
         },
     },]
-   del TEMPLATE_DIRS
+    del TEMPLATE_DIRS
 else:
     # List of callables that know how to import templates from various sources.
     TEMPLATE_LOADERS = (
         'django.template.loaders.filesystem.Loader',
         'django.template.loaders.app_directories.Loader',
-    #     'django.template.loaders.eggs.Loader',
+        #     'django.template.loaders.eggs.Loader',
     )
     TEMPLATE_DEBUG = DEBUG
-
-
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',

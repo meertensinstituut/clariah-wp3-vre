@@ -71,27 +71,7 @@ public class FoliaEditorTest extends AbstractIntegrationTest {
 
     awaitOcc();
     SECONDS.sleep(5);
-    await().until(() -> filesAreUnlockedAfterEdit(testFilename, "<folia:text xml:id=\"untitled.text\">\n" +
-        "    <folia:p xml:id=\"untitled.p.1\">\n" +
-        "      <folia:s xml:id=\"untitled.p.1.s.1\">\n" +
-        "        <folia:w folia:class=\"WORD\" xml:id=\"untitled.p.1.s.1.w.1\">\n" +
-        "          <folia:t>aaa</folia:t>\n" +
-        "        </folia:w>\n" +
-        "        <folia:w folia:class=\"WORD\" xml:id=\"untitled.p.1.s.1.w.2\">\n" +
-        "          <folia:t>is</folia:t>\n" +
-        "        </folia:w>\n" +
-        "        <folia:w folia:class=\"WORD\" xml:id=\"untitled.p.1.s.1.w.3\">\n" +
-        "          <folia:t>not</folia:t>\n" +
-        "        </folia:w>\n" +
-        "        <folia:w space=\"no\" folia:class=\"WORD\" xml:id=\"untitled.p.1.s.1.w.4\">\n" +
-        "          <folia:t>bbb</folia:t>\n" +
-        "        </folia:w>\n" +
-        "        <folia:w folia:class=\"PUNCTUATION\" xml:id=\"untitled.p.1.s.1.w.5\">\n" +
-        "          <folia:t>.</folia:t>\n" +
-        "        </folia:w>\n" +
-        "      </folia:s>\n" +
-        "    </folia:p>\n" +
-        "  </folia:text>"));
+    await().until(() -> filesAreUnlockedAfterEdit(testFilename));
 
     String secondNewInputFile = uploadTestFile(foliaContent);
     await().until(() -> newObjectIsAdded(secondNewInputFile));

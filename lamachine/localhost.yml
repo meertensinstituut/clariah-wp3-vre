@@ -40,5 +40,9 @@ mapped_http_port: 8080 #mapped webserver port on host system (for VM or docker o
 services: [ all ]  #List of services to provide, if set to [ all ], all possible services from the software categories you install will be provided. You can remove this and list specific services you want to enable. This is especially needed in case of a LaMachine installation that intends to only provide a single service.
 webservertype: nginx #If set to anything different, the internal webserver will not be enabled/provided by LaMachine (which allows you to run your own external one), do leave webserver: true set as is though.
 
+lab: true #Enable Jupyter Lab environment, note that this opens the system to arbitrary code execution and file system access! (provided the below password is known)
+lab_password_sha1: "sha1:fa40baddab88:c498070b5885ee26ed851104ddef37926459b0c4" #default password for Jupyter Lab: lamachine, change this with 'lamachine-passwd lab'
+lab_allow_origin: "*" #hosts that may access the lab environment
+flat_password: "flat" #initial password for the FLAT administrator (if installed; username 'flat'), updating this later has no effect (edit in FLAT itself)!
 web_user: "www-data" #The user for the webserver, change this on first install if needed!!!
 web_group: "www-data" #The group for the webserver, change this on first install if needed!!!
