@@ -44,6 +44,7 @@ import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamService.getPar
 import static nl.knaw.meertens.clariah.vre.switchboard.param.ParamType.STRING;
 import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.apache.commons.io.FilenameUtils.getPath;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * ExecService:
@@ -292,6 +293,9 @@ public class ExecService {
       if (param.type.equals(ParamType.FILE)) {
         var objectId = Long.valueOf(param.value);
         var record = objectsRegistryService.getObjectById(objectId);
+        if (isBlank(record.filepath)) {
+          throw new RuntimeException(format("Object id [%d] gave an empty filepath", objectId));
+        }
         files.put(objectId, ObjectPath.of(record.filepath));
       }
     }
