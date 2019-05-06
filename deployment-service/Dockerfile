@@ -5,7 +5,7 @@
 
 FROM knawhuc/clariah-wp3-vre-deployment AS old
 
-FROM tomcat:9-jre11
+FROM knawhuc/clariah-wp3-vre-switchboard-builder
 COPY --from=old /root/.m2/repository /root/.m2/repository
 
 RUN apt-get update && \
@@ -20,6 +20,8 @@ ADD logging.properties /usr/local/tomcat/conf/logging.properties
 RUN rm -rf /user/local/deployment
 COPY ./ /usr/local/deployment
 WORKDIR /usr/local/deployment
+
+RUN echo "remove duplicate plexus" && rm /usr/share/maven/boot/plexus-classworlds-2.5.2.jar
 
 # api.war contains both api and lib; hence the rename to service.war:
 RUN mvn clean install && \

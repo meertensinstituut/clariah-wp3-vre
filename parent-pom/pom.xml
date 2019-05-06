@@ -38,7 +38,7 @@
     <jaxb2-maven-plugin.version>2.3.1</jaxb2-maven-plugin.version>
     <jaxrs.version>2.1</jaxrs.version>
     <jdom.version>2.0.2</jdom.version>
-    <jersey.version>2.26</jersey.version>
+    <jersey.version>2.27</jersey.version>
     <json-path.version>2.3.0</json-path.version>
     <json-unit-fluent.version>1.28.1</json-unit-fluent.version>
     <jsoup.version>1.8.3</jsoup.version>

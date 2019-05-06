@@ -3,15 +3,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
          xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
+  <artifactId>deployment-api</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+  <name>deployment-api</name>
+  <url>http://maven.apache.org</url>
+
   <parent>
     <groupId>nl.knaw.meertens.deployment</groupId>
     <artifactId>deployment-service</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>deployment-api</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>war</packaging>
-  <name>deployment-api</name>
 
   <properties>
     <deployment-lib.version>1.0-SNAPSHOT</deployment-lib.version>
@@ -37,13 +39,15 @@
   <build>
     <finalName>deployment-api</finalName>
     <plugins>
+      <!-- compile -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
-        <inherited>true</inherited>
         <configuration>
-          <source>1.9</source>
-          <target>1.9</target>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <fork>true</fork>
         </configuration>
       </plugin>
     </plugins>
