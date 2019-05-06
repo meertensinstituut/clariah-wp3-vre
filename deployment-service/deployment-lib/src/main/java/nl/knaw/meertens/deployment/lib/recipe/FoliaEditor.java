@@ -25,7 +25,6 @@ import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Null;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.IOException;
@@ -280,10 +279,11 @@ public class FoliaEditor implements RecipePlugin {
         .field("file", file)
         .asString();
 
-    logger.info(format("Response code: %s", jsonResponse.getCode()));
+    logger.info(format("Response code: %s", jsonResponse.getStatus()));
 
     Headers headers = jsonResponse.getHeaders();
-    String responseUrl = headers.get("location").get(0);
+    logger.info("headersToString" + headers.toString());
+    String responseUrl = headers.get("Location").get(0);
     logger.info(format("Response url: %s", responseUrl));
 
     URI docIdUri = new URI(responseUrl);
@@ -300,7 +300,7 @@ public class FoliaEditor implements RecipePlugin {
     );
     logger.info(format("returnUrl: %s", returnUrl.toString()));
 
-    URL devReturnUrl = new URL("http://localhost:9998" + headers.get("location").get(0));
+    URL devReturnUrl = new URL("http://localhost:9998" + headers.get("Location").get(0));
 
     logger.info(format("Hacking returnUrl for dev environment: %s", devReturnUrl.toString()));
     jsonResult.put("url", devReturnUrl.toString());

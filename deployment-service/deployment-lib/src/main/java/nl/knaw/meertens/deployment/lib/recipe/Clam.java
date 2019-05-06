@@ -184,7 +184,7 @@ public class Clam implements RecipePlugin {
       throw new RuntimeException(String.format("Could not create clam project with url [%s]", url.toString()), e);
     }
 
-    json.put("status", response.getCode());
+    json.put("status", response.getStatus());
     json.put("message", response.getBody());
 
   }
@@ -265,7 +265,7 @@ public class Clam implements RecipePlugin {
         .asString();
       json = (ObjectNode) parser.readTree(response.getBody());
 
-      json.put("status", response.getCode());
+      json.put("status", response.getStatus());
       json.put("message", response.getBody());
       json.put("finished", this.status.getStatus());
 
