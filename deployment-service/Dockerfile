@@ -21,6 +21,7 @@ RUN rm -rf /user/local/deployment
 COPY ./ /usr/local/deployment
 WORKDIR /usr/local/deployment
 
+# api.war contains both api and lib; hence the rename to service.war:
 RUN mvn clean install && \
     cp deployment-api/target/deployment-api.war /usr/local/tomcat/webapps/deployment-service.war
 

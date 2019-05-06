@@ -37,4 +37,12 @@
     </repository>
   </repositories>
 
+  <dependencies>
+    <dependency>
+      <groupId>com.github.tomcat-slf4j-logback</groupId>
+      <artifactId>tomcat9-slf4j-logback</artifactId>
+      <version>9.0.17</version>
+    </dependency>
+  </dependencies>
+
 </project>

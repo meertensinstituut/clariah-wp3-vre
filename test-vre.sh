@@ -6,12 +6,14 @@ source ./merge-containers.sh
 docker-compose pull
 
 # force building java images
-docker-compose -p vre build --no-cache \
-  switchboard \
-  deployment \
-  recognizer \
-  tagger \
-  integration
+#docker-compose -p vre build --no-cache \
+#  switchboard \
+#  deployment \
+#  recognizer \
+#  tagger \
+#  integration
+
+docker-compose -p vre build --no-cache deployment
 
 docker-compose -p vre up -d
 
