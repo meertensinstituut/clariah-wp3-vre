@@ -280,8 +280,8 @@ public class FoliaEditor implements RecipePlugin {
         .field("file", file)
         .asString();
 
-    logger.info(format("Response code: %s", jsonResponse.getStatus()));
-    assert jsonResponse.getStatus() == 200 : "Upload failed";
+    logger.info(format("Response code: %s", jsonResponse.getCode()));
+    assert jsonResponse.getCode() == 200 : "Upload failed";
 
     Headers headers = jsonResponse.getHeaders();
     String responseUrl = headers.get("location").get(0);
