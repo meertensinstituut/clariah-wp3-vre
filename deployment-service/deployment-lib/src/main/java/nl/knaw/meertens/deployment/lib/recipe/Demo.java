@@ -16,8 +16,6 @@ import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.json.JsonArray;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,9 +33,6 @@ import static nl.knaw.meertens.deployment.lib.DeploymentLib.buildOutputFilePath;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.createOutputFolder;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.RUNNING;
-import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
