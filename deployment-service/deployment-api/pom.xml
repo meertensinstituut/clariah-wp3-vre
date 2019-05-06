@@ -17,36 +17,6 @@
     <deployment-lib.version>1.0-SNAPSHOT</deployment-lib.version>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>CLARIN</id>
-      <name>CLARIN Repository</name>
-      <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>CLARIN-Snapshot</id>
-      <name>CLARIN Snapshot Repository</name>
-      <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.glassfish.jersey</groupId>
-        <artifactId>jersey-bom</artifactId>
-        <version>${jersey.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>nl.knaw.meertens.deployment</groupId>
