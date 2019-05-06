@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.Service;
-import org.apache.commons.configuration.ConfigurationException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -25,7 +24,7 @@ public class ServiceController extends AbstractController {
   @GET
   @Path("/{service}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getService(@PathParam("service") String serviceName) throws ConfigurationException {
+  public Response getService(@PathParam("service") String serviceName) {
     DeploymentLib dplib = new DeploymentLib();
     try {
       Service service = dplib.getServiceByName(serviceName);

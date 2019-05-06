@@ -33,7 +33,7 @@ import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class Folia implements RecipePlugin {
   private static Logger logger = LoggerFactory.getLogger(RecipePlugin.class);

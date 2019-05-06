@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequest;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import net.sf.saxon.s9api.XdmNode;
@@ -23,7 +22,6 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -32,7 +30,7 @@ import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class DeploymentLib {
 

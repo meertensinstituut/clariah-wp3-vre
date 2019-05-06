@@ -15,7 +15,6 @@
 
   <properties>
     <deployment-lib.version>1.0-SNAPSHOT</deployment-lib.version>
-    <httpclient.version>4.5.2</httpclient.version>
   </properties>
 
   <repositories>
@@ -56,40 +55,6 @@
       <type>jar</type>
     </dependency>
 
-    <dependency>
-      <groupId>org.jdom</groupId>
-      <artifactId>jdom</artifactId>
-      <version>${jdom.version}</version>
-      <type>jar</type>
-    </dependency>
-
-    <!-- rest api -->
-    <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-servlet-core</artifactId>
-      <version>${jersey.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-grizzly2-http</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.inject</groupId>
-      <artifactId>jersey-hk2</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-configuration2</artifactId>
-      <version>${commons-configuration.version}</version>
-      <type>jar</type>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>${httpclient.version}</version>
-      <type>jar</type>
-    </dependency>
     <dependency>
       <groupId>net.sf.saxon</groupId>
       <artifactId>Saxon-HE</artifactId>

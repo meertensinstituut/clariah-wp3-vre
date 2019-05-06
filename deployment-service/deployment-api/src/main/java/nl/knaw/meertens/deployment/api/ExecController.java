@@ -9,7 +9,6 @@ import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
 import nl.knaw.meertens.deployment.lib.recipe.FoliaEditor;
-import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -18,6 +18,12 @@
     <module>deployment-api</module>
   </modules>
 
+  <properties>
+    <commons-collections.version>3.2.2</commons-collections.version>
+    <commons-configuration.version>1.10</commons-configuration.version>
+    <httpclient.version>4.5.2</httpclient.version>
+  </properties>
+
   <repositories>
     <repository>
       <id>CLARIN</id>
@@ -37,4 +43,32 @@
     </repository>
   </repositories>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>${httpclient.version}</version>
+      <type>jar</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jdom</groupId>
+      <artifactId>jdom</artifactId>
+      <version>${jdom.version}</version>
+      <type>jar</type>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
+      <version>${commons-configuration.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>${commons-collections.version}</version>
+    </dependency>
+
+  </dependencies>
 </project>

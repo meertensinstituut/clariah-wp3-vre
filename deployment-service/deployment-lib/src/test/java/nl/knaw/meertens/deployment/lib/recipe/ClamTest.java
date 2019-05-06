@@ -4,7 +4,7 @@ import nl.knaw.meertens.deployment.lib.AbstractDeploymentTest;
 import nl.knaw.meertens.deployment.lib.FileUtil;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
