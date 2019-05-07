@@ -9,13 +9,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.UUID;
 
-import static java.lang.Thread.sleep;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentWithStatus;
@@ -56,9 +51,7 @@ public class FoliaEditorTest extends AbstractIntegrationTest {
     logger.info(String.format("deployment has workdir [%s]", workDir));
 
     await().until(() -> deploymentHasStatus(workDir, "RUNNING"));
-    logger.info("#### before");
     HttpResponse<String> result = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
-    logger.info("#### after");
     String body = result.getBody();
     String view = JsonPath.parse(body).read("$.viewerFileContent");
     assertThat(view).isEqualTo("<iframe src=\"http://localhost:9998/flat/editor/pub/full/untitled\" width=\"100%\" " +
@@ -72,20 +65,7 @@ public class FoliaEditorTest extends AbstractIntegrationTest {
     awaitOcc();
     SECONDS.sleep(5);
     await().until(() -> filesAreUnlockedAfterEdit(testFilename, "<?xml version='1.0' encoding='utf-8'?>\n" +
-        "<FoLiA xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns=\"http://ilk.uvt.nl/folia\" generator=\"foliapy-v2" +
-        ".0.8\" xml:id=\"untitled\" version=\"2.0.3\">\n" +
-        "  <metadata type=\"native\">\n" +
-        "    <annotations>\n" +
-        "      <text-annotation set=\"https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/text" +
-        ".foliaset.ttl\"/>\n" +
-        "      <phon-annotation set=\"https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/phon" +
-        ".foliaset.ttl\"/>\n" +
-        "      <token-annotation set=\"tokconfig-eng\">\n" +
-        "        <annotator processor=\"proc.ucto.e3829676\"/>\n" +
-        "      </token-annotation>\n" +
-        "      <sentence-annotation/>\n" +
-        "      <paragraph-annotation/>\n" +
-        "    </annotations>\n"));
+        "<FoLiA xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns=\"http://ilk.uvt.nl/folia\" generator"));
 
     String secondNewInputFile = uploadTestFile(foliaContent);
     await().until(() -> newObjectIsAdded(secondNewInputFile));
