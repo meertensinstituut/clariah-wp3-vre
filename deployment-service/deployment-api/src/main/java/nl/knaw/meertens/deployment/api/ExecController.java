@@ -37,14 +37,21 @@ public class ExecController extends AbstractController {
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
 
   @GET
-  @Path("/test")
+  @Path("/test/{dockerRepo}/{dockerImage}/{dockerTag}")
   @Produces(APPLICATION_JSON)
-  public Response test() throws ClassNotFoundException, NoSuchMethodException,
+  public Response test(
+      @PathParam("dockerRepo") String dockerRepo,
+      @PathParam("dockerImage") String dockerImage,
+      @PathParam("dockerTag") String dockerTag
+  ) throws ClassNotFoundException, NoSuchMethodException,
       InvocationTargetException, InstantiationException, IllegalAccessException, HandlerPluginException {
 
     String serviceName = "Docker";
     // String loc = "Docker:repo/image/tag/Http://{docker-container-ip}/orgpath";
-    String loc = "Docker:_/busybox/latest/Http://{docker-container-ip}/orgpath";
+    // String loc = "Docker:_/busybox/latest/Http://{docker-container-ip}/orgpath";
+    String loc = String.format("Docker:%s/%s/%s/Http://{docker-container-ip}/", dockerRepo, dockerImage, dockerTag);
+    logger.info(String.format("Given loc is: [%s]", loc));
+
     String serviceLocation = DeploymentLib.invokeHandler(serviceName, loc); // http://192.3.4.5/frog
 
     return Response

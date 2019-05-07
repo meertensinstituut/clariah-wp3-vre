@@ -72,8 +72,20 @@ public class FoliaEditorTest extends AbstractIntegrationTest {
     awaitOcc();
     SECONDS.sleep(5);
     await().until(() -> filesAreUnlockedAfterEdit(testFilename, "<?xml version='1.0' encoding='utf-8'?>\n" +
-        "<FoLiA xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns=\"http://ilk.uvt.nl/folia\" xml:id=\"untitled\" " +
-        "generator"));
+        "<FoLiA xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns=\"http://ilk.uvt.nl/folia\" generator=\"foliapy-v2" +
+        ".0.8\" xml:id=\"untitled\" version=\"2.0.3\">\n" +
+        "  <metadata type=\"native\">\n" +
+        "    <annotations>\n" +
+        "      <text-annotation set=\"https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/text" +
+        ".foliaset.ttl\"/>\n" +
+        "      <phon-annotation set=\"https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/phon" +
+        ".foliaset.ttl\"/>\n" +
+        "      <token-annotation set=\"tokconfig-eng\">\n" +
+        "        <annotator processor=\"proc.ucto.e3829676\"/>\n" +
+        "      </token-annotation>\n" +
+        "      <sentence-annotation/>\n" +
+        "      <paragraph-annotation/>\n" +
+        "    </annotations>\n"));
 
     String secondNewInputFile = uploadTestFile(foliaContent);
     await().until(() -> newObjectIsAdded(secondNewInputFile));

@@ -158,6 +158,9 @@ public class DeployUtils {
 
   public static boolean filesAreUnlockedAfterEdit(String inputFile, String testFileContent) {
     try {
+      boolean put = false;
+      boolean delete = false;
+
       HttpResponse<String> downloadResult = downloadFile(inputFile);
       List expected = newArrayList(200, 202);
       logger.info(String.format("input file content is: [%s]", downloadResult.getBody()));
@@ -165,15 +168,17 @@ public class DeployUtils {
       boolean get = downloadResult.getBody().contains(testFileContent)
         && expected.contains(downloadResult.getStatus());
 
-      HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-      boolean put = putAfterDeployment.getStatus() == 204;
+      if (get) {
+        HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
+        put = putAfterDeployment.getStatus() == 204;
 
-      HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-      boolean delete = deleteInputFile.getStatus() == 204;
+        HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
+        delete = deleteInputFile.getStatus() == 204;
+      }
 
       logger.info(format(
         "check file [%s][content result: %s; download status is: %s] is unlocked: get [%s], put [%s], delete [%s]",
-        inputFile, get, downloadResult.getBody().contains(testFileContent), downloadResult.getStatus(), put, delete
+        inputFile, downloadResult.getBody().contains(testFileContent), downloadResult.getStatus(), get, put, delete
       ));
 
       return get && put && delete;
