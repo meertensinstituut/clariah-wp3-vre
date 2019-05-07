@@ -40,7 +40,7 @@ public class ClamTest extends AbstractDeploymentTest {
     final String serviceSemantics = FileUtil.getTestFileContent("ucto.cmdi");
     Service service = new Service("0", "UCTO", "CLAM", serviceSemantics, "<xml></xml>");
 
-    clam.init(workDir, service, null);
+    clam.init(workDir, service, null, null);
   }
 
   @Test
@@ -62,7 +62,7 @@ public class ClamTest extends AbstractDeploymentTest {
     final String serviceSemantics = FileUtil.getTestFileContent("ucto.cmdi");
     Service service = new Service("0", "UCTO", "CLAM", serviceSemantics, "<xml></xml>");
     Clam clam = new Clam();
-    clam.init(workDir, service, null);
+    clam.init(workDir, service, null, null);
 
     // mock service calls:
     createProjectMock(clamProjectName, 1);

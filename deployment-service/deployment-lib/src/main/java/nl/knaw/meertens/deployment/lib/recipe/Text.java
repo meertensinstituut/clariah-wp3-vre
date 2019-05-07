@@ -6,8 +6,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
+import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.RecipePluginImpl;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Stack;
 
 import static java.lang.String.format;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
@@ -25,15 +28,17 @@ import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 
-public class Text implements RecipePlugin {
+public class Text extends RecipePluginImpl {
   public URL serviceUrl;
   protected DeploymentStatus status;
   protected String projectName;
+  private Stack<HandlerPlugin> handlers;
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Override
-  public void init(String workDir, Service service, String serviceLocation) {
+  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers) {
     logger.info(format("init [%s]", workDir));
+    this.handlers = handlers;
     this.projectName = workDir;
     this.serviceUrl = null;
     logger.info("finish init Text plugin");
@@ -69,6 +74,7 @@ public class Text implements RecipePlugin {
     }
 
     this.status = FINISHED;
+    DeploymentLib.invokeHandlerCleanup(handlers);
     return status.toResponse();
   }
 

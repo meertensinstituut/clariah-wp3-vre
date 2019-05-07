@@ -2,10 +2,13 @@ package nl.knaw.meertens.deployment.lib.recipe;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
+import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.RecipePluginImpl;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +27,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Stack;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -35,15 +39,18 @@ import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
-public class Folia implements RecipePlugin {
+public class Folia extends RecipePluginImpl {
   private static Logger logger = LoggerFactory.getLogger(RecipePlugin.class);
   private DeploymentStatus status;
   private String workDir;
 
   private URL url;
 
+  private Stack<HandlerPlugin> handlers;
+
   @Override
-  public void init(String workDir, Service service, String serviceLocation) throws RecipePluginException {
+  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
+      throws RecipePluginException {
 
     try {
       url = new URL(
@@ -57,6 +64,7 @@ public class Folia implements RecipePlugin {
     if (isEmpty(workDir)) {
       throw new RecipePluginException("work dir should not be empty");
     }
+    this.handlers = handlers;
     this.workDir = workDir;
     this.status = DeploymentStatus.CREATED;
   }
@@ -87,7 +95,7 @@ public class Folia implements RecipePlugin {
       }
 
       this.status = FINISHED;
-
+      DeploymentLib.invokeHandlerCleanup(handlers);
     } catch (IOException | InterruptedException ex) {
       throw new RecipePluginException(ex.getMessage(), ex);
     }

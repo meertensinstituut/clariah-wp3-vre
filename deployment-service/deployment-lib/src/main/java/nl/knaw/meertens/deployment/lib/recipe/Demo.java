@@ -8,8 +8,10 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
+import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.RecipePluginImpl;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.http.impl.client.HttpClients;
 import org.jsoup.Jsoup;
@@ -24,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,7 +48,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * Demo recipe duplicates words using service:
  * tools.digitalmethods.net/beta/deduplicate/
  */
-public class Demo implements RecipePlugin {
+public class Demo extends RecipePluginImpl {
   private static Logger logger = LoggerFactory.getLogger(Demo.class);
 
   private static final String SERVICE_URL = "https://tools.digitalmethods.net/beta/deduplicate/";
@@ -66,6 +69,7 @@ public class Demo implements RecipePlugin {
    */
   private static LocalDateTime cookieExpireDate;
 
+  private Stack<HandlerPlugin> handlers;
   /**
    * Expire interval
    */
@@ -75,8 +79,10 @@ public class Demo implements RecipePlugin {
     Pattern.compile(".*PHPSESSID=(.*?);.*gcosvcauth=(.*?);.*");
 
   @Override
-  public void init(String workDir, Service service, String serviceLocation) throws RecipePluginException {
+  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
+      throws RecipePluginException {
     logger.info(format("init [%s]", workDir));
+    this.handlers = handlers;
     this.workDir = workDir;
     this.service = service;
     this.status = DeploymentStatus.CREATED;
@@ -87,6 +93,7 @@ public class Demo implements RecipePlugin {
     logger.info(format("execute [%s][%s]", service.getName(), workDir));
     status = RUNNING;
     this.runProject(workDir);
+    DeploymentLib.invokeHandlerCleanup(handlers);
     return status.toResponse();
   }
 

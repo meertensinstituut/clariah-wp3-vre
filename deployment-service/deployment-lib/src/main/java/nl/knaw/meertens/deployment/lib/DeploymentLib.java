@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -47,6 +48,31 @@ public class DeploymentLib {
     if (!file.exists()) {
       throw new RecipePluginException("work dir does not exist");
     }
+  }
+
+  public static ObjectNode invokeService(String workDir, Service service, String serviceLocation,
+                                         Stack<HandlerPlugin> handlers)
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException,
+      ClassNotFoundException, RecipePluginException {
+
+    logger.info("Get recipe");
+    String className = service.getRecipe();
+
+    logger.info("Loading plugin");
+    Class<?> loadedClass = Class.forName(className);
+    Class<? extends RecipePlugin> pluginClass = loadedClass.asSubclass(RecipePlugin.class);
+    RecipePlugin plugin;
+    plugin = pluginClass.getDeclaredConstructor().newInstance();
+    plugin.init(workDir, service, serviceLocation, handlers);
+
+    logger.info("Check user config against service record");
+    String dbConfig = service.getServiceSemantics();
+
+    Queue queue = new Queue();
+    logger.info("Plugin invoked");
+
+    ObjectNode json = queue.push(workDir, plugin);
+    return json;
   }
 
   public Service getServiceByName(String serviceName) throws IOException {
@@ -82,9 +108,15 @@ public class DeploymentLib {
 
   }
 
-  public static String invokeHandler(String serviceName, String loc)
+  public static ObjectNode invokeHandler(String workDir, Service service, String loc)
       throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException,
-      InstantiationException, HandlerPluginException {
+      InstantiationException, HandlerPluginException, RecipePluginException {
+    return invokeHandler(workDir, service, loc, new Stack());
+  }
+
+  public static ObjectNode invokeHandler(String workDir, Service service, String loc, Stack<HandlerPlugin> handlers)
+      throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+      InstantiationException, HandlerPluginException, RecipePluginException {
 
     String[] handlerLoc = loc.split(":", 2);
     /* invocation 1 [0] = "nl.knaw.meertens.deployment.lib.handler.Docker"
@@ -103,12 +135,22 @@ public class DeploymentLib {
     Class<? extends HandlerPlugin> handlerClass = loadedClass.asSubclass(HandlerPlugin.class);
     HandlerPlugin handler;
     handler = handlerClass.getDeclaredConstructor().newInstance();
-    return handler.handle(serviceName, handlerLoc[1]);
+    return handler.handle(workDir, service, handlerLoc[1], handlers);
+  }
+
+  public static void invokeHandlerCleanup(Stack<HandlerPlugin> handlers) {
+    if (!isNull(handlers)) {
+      while (!handlers.isEmpty()) {
+        handlers.pop().cleanup();
+      }
+    }
   }
 
   public static String getServiceLocationFromJson(JsonNode json) {
+
     String serviceLocation = json.get("serviceLocation").asText(null);
     return serviceLocation;
+
   }
 
   public static ObjectNode parseSemantics(String symantics, String serviceLocation) throws RecipePluginException {

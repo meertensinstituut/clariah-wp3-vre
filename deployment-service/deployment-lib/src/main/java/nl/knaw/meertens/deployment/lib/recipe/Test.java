@@ -1,8 +1,11 @@
 package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
+import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
+import nl.knaw.meertens.deployment.lib.RecipePluginImpl;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
@@ -12,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -19,16 +23,18 @@ import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.RUNNING;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 
-public class Test implements RecipePlugin {
+public class Test extends RecipePluginImpl {
 
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private DeploymentStatus status;
   private String workDir;
+  private Stack<HandlerPlugin> handlers;
 
   @Override
-  public void init(String workDir, Service service, String serviceLocation) {
+  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers) {
     logger.info(format("init [%s]", workDir));
+    this.handlers = handlers;
     this.workDir = workDir;
     this.status = DeploymentStatus.CREATED;
   }
@@ -38,6 +44,7 @@ public class Test implements RecipePlugin {
     logger.info(format("execute [%s]", workDir));
     this.status = RUNNING;
     new Thread(this::finishDeployment).start();
+    DeploymentLib.invokeHandlerCleanup(handlers);
     return status.toResponse();
   }
 

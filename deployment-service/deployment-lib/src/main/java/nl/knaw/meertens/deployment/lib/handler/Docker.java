@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.lib.handler;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.DockerCmdExecFactory;
@@ -14,11 +15,15 @@ import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.HandlerPluginException;
+import nl.knaw.meertens.deployment.lib.Queue;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Stack;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,9 +41,10 @@ public class Docker implements HandlerPlugin {
   }
 
   @Override
-  public String handle(String serviceName, String serviceLocation)
+  public ObjectNode handle(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
       throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException,
-      IllegalAccessException, HandlerPluginException {
+      IllegalAccessException, HandlerPluginException, RecipePluginException {
+    handlers.push(this);
     // TODO: make the handle work with docker
     logger.info(String.format("Service location before Docker [%s]", serviceLocation));
     // docker handler
@@ -115,13 +121,18 @@ public class Docker implements HandlerPlugin {
         // .deployment.lib.handler.http://192.3.4.5/frog
         // loc = loc.replaceAll("{docker-container-id}", docker - container - id);
         // invoke next handler
-        return DeploymentLib.invokeHandler(serviceName, remainder);
+        return DeploymentLib.invokeHandler(workDir, service, remainder, handlers);
 
         // do all the docker shutdown magic
       }
       throw new HandlerPluginException("docker handler can't be used on its own!");
     }
     throw new HandlerPluginException("Invalid docker service location!");
+  }
+
+  @Override
+  public void cleanup() {
+    // TODO: stop and remove the docker container
   }
 
   private DockerClient getDockerClient(String dockerHost, String dockerTls, String dockerTlsPath)

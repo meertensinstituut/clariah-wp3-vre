@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
+import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.HandlerPluginException;
 import nl.knaw.meertens.deployment.lib.Queue;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
@@ -35,29 +36,6 @@ public class ExecController extends AbstractController {
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
-
-  @GET
-  @Path("/test/{dockerRepo}/{dockerImage}/{dockerTag}")
-  @Produces(APPLICATION_JSON)
-  public Response test(
-      @PathParam("dockerRepo") String dockerRepo,
-      @PathParam("dockerImage") String dockerImage,
-      @PathParam("dockerTag") String dockerTag
-  ) throws ClassNotFoundException, NoSuchMethodException,
-      InvocationTargetException, InstantiationException, IllegalAccessException, HandlerPluginException {
-
-    String serviceName = "Docker";
-    // String loc = "Docker:repo/image/tag/Http://{docker-container-ip}/orgpath";
-    // String loc = "Docker:_/busybox/latest/Http://{docker-container-ip}/orgpath";
-    String loc = String.format("Docker:%s/%s/%s/Http://{docker-container-ip}/", dockerRepo, dockerImage, dockerTag);
-    logger.info(String.format("Given loc is: [%s]", loc));
-
-    String serviceLocation = DeploymentLib.invokeHandler(serviceName, loc); // http://192.3.4.5/frog
-
-    return Response
-        .ok(serviceLocation, APPLICATION_JSON)
-        .build();
-  }
 
   /**
    * @param workDir Project id also known as project name, key and working directory
@@ -134,49 +112,24 @@ public class ExecController extends AbstractController {
       // .0/http://{docker-container-ip}/frog";
       logger.info(String.format("Has loc [%s]", loc));
 
-      String serviceLocation;
+      ObjectNode json = null;
 
       if (loc.equals("") || loc.toLowerCase().equals("none")) {
-        logger.info("loc is not necessary, set serviceLocation to null");
-        serviceLocation = null;
+        logger.info("loc is empty, no loc handlers needed");
       } else {
         try {
-          logger.info("loc is valid URL, set serviceLocation to null");
+          logger.info("loc is valid URL, no loc handlers needed");
           URL url = new URL(loc);
-          serviceLocation = null;
         } catch (Exception e) {
-          serviceLocation = DeploymentLib.invokeHandler(serviceName, loc); // http://192.3.4.5/frog
-          logger.info(String.format("loc is not valid, it presumably is cascaded [%s]", serviceLocation));
+          json = DeploymentLib.invokeHandler(workDir, service, loc); // http://192.3.4.5/frog
+          //logger.info(String.format("loc is not valid, it presumably is cascaded [%s]", serviceLocation));
         }
       }
 
-      logger.info("Get recipe");
-      String className = service.getRecipe();
-
-      logger.info("Loading plugin");
-      Class<?> loadedClass = Class.forName(className);
-      Class<? extends RecipePlugin> pluginClass = loadedClass.asSubclass(RecipePlugin.class);
-      RecipePlugin plugin;
-      plugin = pluginClass.getDeclaredConstructor().newInstance();
-      plugin.init(workDir, service, serviceLocation);
-
-      logger.info("Check user config against service record");
-      String dbConfig = service.getServiceSemantics();
-      boolean userConfigIsValid = this.checkUserConfig(
-          DeploymentLib.parseSemantics(dbConfig),
-          DeploymentLib.parseUserConfig(workDir)
-      );
-
-      if (!userConfigIsValid) {
-        String msg = "user config is invalid";
-        ObjectNode status = jsonFactory.objectNode();
-        status.put("finished", false);
-        return handleException("", new IllegalStateException());
+      if (isNull(json)) {
+        json = DeploymentLib.invokeService(workDir, service, null, null);
       }
 
-      Queue queue = new Queue();
-      logger.info("Plugin invoked");
-      ObjectNode json = queue.push(workDir, plugin);
       return Response
           .ok(json.toString(), APPLICATION_JSON)
           .build();
@@ -219,14 +172,6 @@ public class ExecController extends AbstractController {
 
     }
 
-  }
-
-
-  private boolean checkUserConfig(ObjectNode dbSymantics, ObjectNode userSymantics) {
-    // TODO: check if user config if valid instead of returning true
-    logger.info(format("userConfig: %s", userSymantics.toString()));
-    logger.info(format("dbConfig: %s", dbSymantics.toString()));
-    return true;
   }
 
 }
