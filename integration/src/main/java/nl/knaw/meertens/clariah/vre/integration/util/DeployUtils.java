@@ -181,30 +181,7 @@ public class DeployUtils {
       throw new RuntimeException("Could not check files are unlocked", e);
     }
   }
-
-  public static boolean filesAreUnlockedAfterEdit(String inputFile) {
-    try {
-      HttpResponse<String> downloadResult = downloadFile(inputFile);
-      List expected = newArrayList(200, 202);
-      boolean get = expected.contains(downloadResult.getStatus());
-
-      HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-      boolean put = putAfterDeployment.getStatus() == 204;
-
-      HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-      boolean delete = deleteInputFile.getStatus() == 204;
-
-      logger.info(format(
-        "check file [%s] is unlocked: get [%s], put [%s], delete [%s]",
-        inputFile, get, put, delete
-      ));
-
-      return get && put && delete;
-    } catch (UnirestException e) {
-      throw new RuntimeException("Could not check files are unlocked", e);
-    }
-  }
-
+  
   private static HttpResponse<String> getDeploymentStatus(String workDir) {
     try {
       return Unirest
