@@ -65,7 +65,7 @@ public class FoliaEditorTest extends AbstractIntegrationTest {
     awaitOcc();
     SECONDS.sleep(5);
     await().until(() -> filesAreUnlockedAfterEdit(testFilename, "<?xml version='1.0' encoding='utf-8'?>\n" +
-        "<FoLiA xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns=\"http://ilk.uvt.nl/folia\" generator"));
+        "<FoLiA xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns=\"http://ilk.uvt.nl/folia\""));
 
     String secondNewInputFile = uploadTestFile(foliaContent);
     await().until(() -> newObjectIsAdded(secondNewInputFile));
