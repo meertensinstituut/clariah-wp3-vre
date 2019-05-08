@@ -13,6 +13,7 @@ import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
+import nl.knaw.meertens.deployment.lib.DockerException;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.HandlerPluginException;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
@@ -41,17 +42,19 @@ public class Docker implements HandlerPlugin {
   Matcher matcher;
 
   @Override
-  public void init() throws HandlerPluginException {
+  public void init() throws HandlerPluginException, DockerException {
     logger.info("initializing!");
     logger.info("#### creating docker client ####");
     logger.info(
         "#### run 'socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &' on docker host before " +
             "running the app ####");
     this.dockerClient = this.getDockerClient(DOCKER_SERVER, DOCKER_TLS_VERIFY, DOCKER_CERT_PATH);
+
     logger.info("#### succeed in docker client ####");
     Info info = dockerClient.infoCmd().exec();
     logger.info(String.format("Docker info [%s]", info.toString()));
     logger.info("initialized!");
+
   }
 
   public boolean runDockerContainer(String serviceLocation, Stack<HandlerPlugin> handlers)
@@ -146,7 +149,7 @@ public class Docker implements HandlerPlugin {
   }
 
   private DockerClient getDockerClient(String dockerHost, String dockerTls, String dockerTlsPath)
-      throws HandlerPluginException {
+      throws HandlerPluginException, DockerException {
     DockerClientConfig config;
     if (dockerHost.length() > 1 && dockerTls.equals("1") && dockerTlsPath.length() > 0) {
       config = DefaultDockerClientConfig.createDefaultConfigBuilder()
@@ -162,9 +165,7 @@ public class Docker implements HandlerPlugin {
       throw new HandlerPluginException(String
           .format(
               "Cannot initialize Docker client with following configuration. dockerHost: [%s]; dockerTls: [%s]; " +
-                  "dockerTlsPath: [%s]",
-              dockerHost,
-              dockerTls, dockerTlsPath));
+                  "dockerTlsPath: [%s]", dockerHost, dockerTls, dockerTlsPath));
     }
     // using jaxrs/jersey implementation here (netty impl is also available)
     DockerCmdExecFactory dockerCmdExecFactory = new JerseyDockerCmdExecFactory()
@@ -173,8 +174,18 @@ public class Docker implements HandlerPlugin {
         .withMaxTotalConnections(100)
         .withMaxPerRouteConnections(10);
 
+    try {
+      DockerClient dockerClient;
+      dockerClient = DockerClientBuilder.getInstance(config).withDockerCmdExecFactory(dockerCmdExecFactory).build();
+      if (isNull(dockerClient)) {
+        throw new DockerException("Failure when getting docker client, dockerClient is null");
+      } else {
+        return dockerClient;
+      }
+    } catch (Exception e) {
+      throw new DockerException("Failure when getting docker client", e);
+    }
 
-    return DockerClientBuilder.getInstance(config).withDockerCmdExecFactory(dockerCmdExecFactory).build();
   }
 }
 
