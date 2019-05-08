@@ -36,12 +36,11 @@ import static org.awaitility.Awaitility.await;
 
 public class CrudObjectTest extends AbstractIntegrationTest {
 
+  private static final String html = "test.html";
   private Logger logger = LoggerFactory.getLogger(this.getClass());
   private ObjectsRepositoryService objectsRepositoryService = new ObjectsRepositoryService(
     Config.DB_OBJECTS_DATABASE, Config.DB_OBJECTS_USER, Config.DB_OBJECTS_PASSWORD
   );
-
-  private static final String html = "test.html";
   private long id;
 
   @Test

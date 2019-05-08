@@ -7,5 +7,5 @@ if [ "$1" = "debug" ]; then
   sed -i -e 's/8000/*:8085/g' /usr/share/maven/bin/mvnDebug
   mvnDebug test
 else
-  mvn clean test
+  mvn clean test -X
 fi

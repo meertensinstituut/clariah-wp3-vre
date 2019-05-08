@@ -19,12 +19,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class Initializer {
 
-  private Logger logger = LoggerFactory.getLogger(Initializer.class);
-
   private static final int MAX_WAITING_PERIOD = 300; // seconds
-
   String onIntegration = "It is not easy to describe lucidly " +
     "in short notes to a poem the various approaches to a fortified castle.";
+  private Logger logger = LoggerFactory.getLogger(Initializer.class);
 
   public void init() {
     logger.info("Initialize VRE components");
@@ -76,7 +74,8 @@ public class Initializer {
       try {
         response = getHealthRequest.asString();
         status = response.getStatus();
-      } catch (UnirestException ignored) {
+      } catch (UnirestException exception) {
+        logger.error("Could not check health of switchboard", exception);
       }
       logger.info((MAX_WAITING_PERIOD - waited) + " Switchboard not up yet...");
     } while (status != 200 && waited < MAX_WAITING_PERIOD);
@@ -87,7 +86,7 @@ public class Initializer {
   private void sleepSeconds(int timeout) {
     try {
       TimeUnit.SECONDS.sleep(timeout);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException exception) {
       logger.error("Could not sleepSeconds");
     }
   }
@@ -107,9 +106,11 @@ public class Initializer {
       try {
         response = getHealthRequest.asString();
         status = response.getStatus();
-      } catch (UnirestException ignored) {
+      } catch (UnirestException exception) {
+        logger.error("Could not check health of lamachine", exception);
       }
-      logger.info(String.format("[%d] Lamachine [%s] not up yet...; status is [%d]", MAX_WAITING_PERIOD - waited, Config.LAMACHINE_ENDPOINT,status));
+      logger.info(String.format("[%d] Lamachine [%s] not up yet...; status is [%d]", MAX_WAITING_PERIOD - waited,
+        Config.LAMACHINE_ENDPOINT, status));
     } while (status != 200 && waited < MAX_WAITING_PERIOD);
     AssertionsForClassTypes.assertThat(waited).isLessThan(MAX_WAITING_PERIOD);
     logger.info("Lamachine is up");

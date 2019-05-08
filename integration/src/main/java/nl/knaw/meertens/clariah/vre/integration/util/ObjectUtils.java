@@ -2,16 +2,12 @@ package nl.knaw.meertens.clariah.vre.integration.util;
 
 import nl.knaw.meertens.clariah.vre.integration.Config;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-@Ignore
 public class ObjectUtils {
 
   private static Logger logger = LoggerFactory.getLogger(ObjectUtils.class);
@@ -51,10 +47,10 @@ public class ObjectUtils {
         boolean fileExists = false;
         while (rs.next()) {
           int id = rs.getInt("id");
-          fileExists = id != 0
-            && rs.getString("filepath").contains(expectedFilename)
-            && rs.getString("format").equals(fileFormat)
-            && rs.getString("mimetype").equals(mimeType);
+          fileExists = id != 0 &&
+            rs.getString("filepath").contains(expectedFilename) &&
+            rs.getString("format").equals(fileFormat) &&
+            rs.getString("mimetype").equals(mimeType);
         }
         return fileExists;
       });

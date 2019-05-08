@@ -4,8 +4,6 @@ import java.util.function.Function;
 
 /**
  * Consumer that allows its method to throw an exception
- *
- * @param <T>
  */
 @FunctionalInterface
 public interface ExceptionalFunction<T, R> extends Function<T, R> {

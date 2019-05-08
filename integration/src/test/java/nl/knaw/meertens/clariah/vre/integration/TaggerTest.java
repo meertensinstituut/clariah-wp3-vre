@@ -39,168 +39,168 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TaggerTest extends AbstractIntegrationTest {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private KafkaConsumerService taggerTopic;
+  private KafkaConsumerService taggerTopic;
 
-    private ObjectsRepositoryService objectsRepositoryService = new ObjectsRepositoryService(
-            Config.DB_OBJECTS_DATABASE, Config.DB_OBJECTS_USER, Config.DB_OBJECTS_PASSWORD
-    );
+  private ObjectsRepositoryService objectsRepositoryService = new ObjectsRepositoryService(
+    Config.DB_OBJECTS_DATABASE, Config.DB_OBJECTS_USER, Config.DB_OBJECTS_PASSWORD
+  );
 
-    private long id;
+  private long id;
 
-    @Before
-    public void setUp() {
-        taggerTopic = getTaggerTopic();
-    }
+  @Before
+  public void setUp() {
+    taggerTopic = getTaggerTopic();
+  }
 
-    @Test
-    public void generateSystemTags_afterUploadNewFile() throws Exception {
-        // Create object:
-        String oldDir = "test-dir-" + RandomStringUtils.randomAlphabetic(8).toLowerCase();
-        createDir(oldDir);
-        final String expectedFilename = uploadTestFile(oldDir + "/" + getRandomFilenameWithTime(), getTestFileContent());
-        id = awaitAndGet(() -> getNonNullObjectIdFromRegistry(expectedFilename));
+  @Test
+  public void generateSystemTags_afterUploadNewFile() throws Exception {
+    // Create object:
+    String oldDir = "test-dir-" + RandomStringUtils.randomAlphabetic(8).toLowerCase();
+    createDir(oldDir);
+    final String expectedFilename = uploadTestFile(oldDir + "/" + getRandomFilenameWithTime(), getTestFileContent());
+    id = awaitAndGet(() -> getNonNullObjectIdFromRegistry(expectedFilename));
 
-        taggerTopic.consumeAll(records -> {
-            ArrayList<String> expectedTypes = newArrayList(
-                    "creation-time-ymdhm",
-                    "creation-time-ymd",
-                    "creation-time-ym",
-                    "creation-time-y",
-                    "modification-time-ymdhm",
-                    "modification-time-ymd",
-                    "modification-time-ym",
-                    "modification-time-y",
-                    "path",
-                    "dir"
-            );
-            assertThat(records.size()).isGreaterThanOrEqualTo(expectedTypes.size());
-            ArrayList<String> allTypes = new ArrayList<>();
-            records.forEach(record -> {
-                String msg = JsonPath.parse(record.value()).read("$.msg");
-                assertThat(msg).isEqualTo("Created new object tag");
-                assertThatJson(record.value()).node("owner")
-                        .isPresent()
-                        .isEqualTo("system");
-                assertThatJson(record.value()).node("object")
-                        .isPresent();
-                assertThatJson(record.value()).node("tag")
-                        .isPresent();
-                Integer tagId = JsonPath.parse(record.value()).read("$.tag");
-                allTypes.add(getTagType(tagId));
-            });
-            assertThat(allTypes).containsAll(expectedTypes);
-        });
+    taggerTopic.consumeAll(records -> {
+      ArrayList<String> expectedTypes = newArrayList(
+        "creation-time-ymdhm",
+        "creation-time-ymd",
+        "creation-time-ym",
+        "creation-time-y",
+        "modification-time-ymdhm",
+        "modification-time-ymd",
+        "modification-time-ym",
+        "modification-time-y",
+        "path",
+        "dir"
+      );
+      assertThat(records.size()).isGreaterThanOrEqualTo(expectedTypes.size());
+      ArrayList<String> allTypes = new ArrayList<>();
+      records.forEach(record -> {
+        String msg = JsonPath.parse(record.value()).read("$.msg");
+        assertThat(msg).isEqualTo("Created new object tag");
+        assertThatJson(record.value()).node("owner")
+                                      .isPresent()
+                                      .isEqualTo("system");
+        assertThatJson(record.value()).node("object")
+                                      .isPresent();
+        assertThatJson(record.value()).node("tag")
+                                      .isPresent();
+        Integer tagId = JsonPath.parse(record.value()).read("$.tag");
+        allTypes.add(getTagType(tagId));
+      });
+      assertThat(allTypes).containsAll(expectedTypes);
+    });
 
-        String newDir = "test-dir-" + RandomStringUtils.randomAlphabetic(8).toLowerCase();
-        createDir(newDir);
-        String newFileName = expectedFilename.replace(oldDir, newDir);
-        moveTestFileToNewDir(expectedFilename, newFileName);
+    String newDir = "test-dir-" + RandomStringUtils.randomAlphabetic(8).toLowerCase();
+    createDir(newDir);
+    String newFileName = expectedFilename.replace(oldDir, newDir);
+    moveTestFileToNewDir(expectedFilename, newFileName);
 
-        taggerTopic.consumeAll(records -> {
-            ArrayList<String> expectedTypes = newArrayList(
-                    "modification-time-ymdhm",
-                    "modification-time-ymd",
-                    "modification-time-ym",
-                    "modification-time-y",
-                    "path",
-                    "dir"
-            );
-            logger.info("tagger tags: " + Arrays.toString(expectedTypes.toArray()));
+    taggerTopic.consumeAll(records -> {
+      ArrayList<String> expectedTypes = newArrayList(
+        "modification-time-ymdhm",
+        "modification-time-ymd",
+        "modification-time-ym",
+        "modification-time-y",
+        "path",
+        "dir"
+      );
+      logger.info("tagger tags: " + Arrays.toString(expectedTypes.toArray()));
 
-            assertThat(records.size()).isGreaterThanOrEqualTo(6);
-            ArrayList<String> allTypes = new ArrayList<>();
-            records.forEach(record -> {
-                assertThatJson(record.value()).node("owner")
-                        .isPresent()
-                        .isEqualTo("system");
-                assertThatJson(record.value()).node("object")
-                        .isPresent();
-                assertThatJson(record.value()).node("tag")
-                        .isPresent();
-                Integer tagId = JsonPath.parse(record.value()).read("$.tag");
-                allTypes.add(getTagType(tagId));
-            });
+      assertThat(records.size()).isGreaterThanOrEqualTo(6);
+      ArrayList<String> allTypes = new ArrayList<>();
+      records.forEach(record -> {
+        assertThatJson(record.value()).node("owner")
+                                      .isPresent()
+                                      .isEqualTo("system");
+        assertThatJson(record.value()).node("object")
+                                      .isPresent();
+        assertThatJson(record.value()).node("tag")
+                                      .isPresent();
+        Integer tagId = JsonPath.parse(record.value()).read("$.tag");
+        allTypes.add(getTagType(tagId));
+      });
 
-            assertThat(allTypes).containsAll(expectedTypes);
-        });
-    }
+      assertThat(allTypes).containsAll(expectedTypes);
+    });
+  }
 
-    private String getTagType(Integer tagId) {
-        final String[] type = new String[1];
-        String query = "select * from tag WHERE id =" + tagId + ";";
-        try {
-            objectsRepositoryService.processQuery(query, (ResultSet rs) -> {
-                while (rs.next()) {
-                    type[0] = rs.getString("type");
-                }
-                // When zero, no object has been found:
-                assertThat(id).isNotZero();
-            });
-            logger.info(String.format("tag [%d] has type [%s]", tagId, type[0]));
-            return type[0];
-        } catch (SQLException e) {
-            throw new RuntimeException("Could not get type of tag in registry", e);
+  private String getTagType(Integer tagId) {
+    final String[] type = new String[1];
+    String query = "select * from tag WHERE id =" + tagId + ";";
+    try {
+      objectsRepositoryService.processQuery(query, (ResultSet rs) -> {
+        while (rs.next()) {
+          type[0] = rs.getString("type");
         }
-
+        // When zero, no object has been found:
+        assertThat(id).isNotZero();
+      });
+      logger.info(String.format("tag [%d] has type [%s]", tagId, type[0]));
+      return type[0];
+    } catch (SQLException e) {
+      throw new RuntimeException("Could not get type of tag in registry", e);
     }
 
-    private void createDir(String originalDir) throws IOException, InterruptedException {
-        logger.info(String.format("Create directory [%s]", originalDir));
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope(ANY_HOST, ANY_PORT),
-                new UsernamePasswordCredentials(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
-        );
-        CloseableHttpClient httpclient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider)
-                .build();
-        HttpUriRequest moveRequest = RequestBuilder
-                .create("MKCOL")
-                .setUri(Config.NEXTCLOUD_ENDPOINT + originalDir)
-                .build();
+  }
 
-        CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
-        int status = httpResponse.getStatusLine().getStatusCode();
-        assertThat(status).isEqualTo(201);
+  private void createDir(String originalDir) throws IOException, InterruptedException {
+    logger.info(String.format("Create directory [%s]", originalDir));
+    CredentialsProvider credsProvider = new BasicCredentialsProvider();
+    credsProvider.setCredentials(
+      new AuthScope(ANY_HOST, ANY_PORT),
+      new UsernamePasswordCredentials(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
+    );
+    CloseableHttpClient httpclient = HttpClients.custom()
+                                                .setDefaultCredentialsProvider(credsProvider)
+                                                .build();
+    HttpUriRequest moveRequest = RequestBuilder
+      .create("MKCOL")
+      .setUri(Config.NEXTCLOUD_ENDPOINT + originalDir)
+      .build();
 
-        // Consume msgs, because sometimes Nextcloud/Fits
-        // marks a new dir as a txt file, which results in tags:
-        TimeUnit.SECONDS.sleep(4);
-        taggerTopic.findNewMessages(new ArrayList<>());
-    }
+    CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
+    int status = httpResponse.getStatusLine().getStatusCode();
+    assertThat(status).isEqualTo(201);
 
-    private void moveTestFileToNewDir(String oldFilename, String newFileName) throws IOException {
-        logger.info(String.format("Rename file [%s] to [%s]", oldFilename, newFileName));
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope(ANY_HOST, ANY_PORT),
-                new UsernamePasswordCredentials(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
-        );
-        CloseableHttpClient httpclient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider)
-                .build();
-        HttpUriRequest moveRequest = RequestBuilder
-                .create("MOVE")
-                .setUri(Config.NEXTCLOUD_ENDPOINT + oldFilename)
-                .addHeader(HttpHeaders.DESTINATION, Config.NEXTCLOUD_ENDPOINT + newFileName)
-                .build();
+    // Consume msgs, because sometimes Nextcloud/Fits
+    // marks a new dir as a txt file, which results in tags:
+    TimeUnit.SECONDS.sleep(4);
+    taggerTopic.findNewMessages(new ArrayList<>());
+  }
 
-        CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
-        int status = httpResponse.getStatusLine().getStatusCode();
-        assertThat(status).isEqualTo(201);
-    }
+  private void moveTestFileToNewDir(String oldFilename, String newFileName) throws IOException {
+    logger.info(String.format("Rename file [%s] to [%s]", oldFilename, newFileName));
+    CredentialsProvider credsProvider = new BasicCredentialsProvider();
+    credsProvider.setCredentials(
+      new AuthScope(ANY_HOST, ANY_PORT),
+      new UsernamePasswordCredentials(Config.NEXTCLOUD_ADMIN_NAME, Config.NEXTCLOUD_ADMIN_PASSWORD)
+    );
+    CloseableHttpClient httpclient = HttpClients.custom()
+                                                .setDefaultCredentialsProvider(credsProvider)
+                                                .build();
+    HttpUriRequest moveRequest = RequestBuilder
+      .create("MOVE")
+      .setUri(Config.NEXTCLOUD_ENDPOINT + oldFilename)
+      .addHeader(HttpHeaders.DESTINATION, Config.NEXTCLOUD_ENDPOINT + newFileName)
+      .build();
 
-    private KafkaConsumerService getTaggerTopic() {
-        KafkaConsumerService taggerKafkaConsumer = new KafkaConsumerService(
-                Config.KAFKA_ENDPOINT,
-                Config.TAGGER_TOPIC_NAME,
-                getRandomGroupName()
-        );
-        taggerKafkaConsumer.subscribe();
-        taggerKafkaConsumer.pollOnce();
-        return taggerKafkaConsumer;
-    }
+    CloseableHttpResponse httpResponse = httpclient.execute(moveRequest);
+    int status = httpResponse.getStatusLine().getStatusCode();
+    assertThat(status).isEqualTo(201);
+  }
+
+  private KafkaConsumerService getTaggerTopic() {
+    KafkaConsumerService taggerKafkaConsumer = new KafkaConsumerService(
+      Config.KAFKA_ENDPOINT,
+      Config.TAGGER_TOPIC_NAME,
+      getRandomGroupName()
+    );
+    taggerKafkaConsumer.subscribe();
+    taggerKafkaConsumer.pollOnce();
+    return taggerKafkaConsumer;
+  }
 
 }
