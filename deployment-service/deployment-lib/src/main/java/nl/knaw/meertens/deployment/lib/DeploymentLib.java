@@ -75,7 +75,7 @@ public class DeploymentLib {
     return json;
   }
 
-  public Service getServiceByName(String serviceName) throws IOException {
+  public static Service getServiceByName(String serviceName) throws IOException {
     String dbApiKey = System.getenv("APP_KEY_SERVICES");
     String servicesDatabase = "http://dreamfactory:80/api/v2/services";
     String urlString = servicesDatabase + "/_table/service/?filter=name%3D" + serviceName;
@@ -119,11 +119,6 @@ public class DeploymentLib {
       InstantiationException, HandlerPluginException, RecipePluginException {
 
     String[] handlerLoc = loc.split(":", 2);
-    /* invocation 1 [0] = "nl.knaw.meertens.deployment.lib.handler.Docker"
-    [1] = "vre-repository/lamachine/tag-1.0/nl.knaw.meertens.deployment.lib.handler.Http://{docker-container-ip}/frog"
-
-    // invocation 2 [0] = "http" [1] = "//192.3.4.5/frog"
-    */
 
     String className = handlerLoc[0];
     if (!className.contains(".")) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
+import nl.knaw.meertens.deployment.lib.EditorPluginImpl;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.HandlerPluginException;
 import nl.knaw.meertens.deployment.lib.Queue;
@@ -98,7 +99,7 @@ public class ExecController extends AbstractController {
   ) {
     try {
       logger.info(String.format("Get service [%s]", serviceName));
-      Service service = new DeploymentLib().getServiceByName(serviceName);
+      Service service = DeploymentLib.getServiceByName(serviceName);
       if (isNull(service)) {
         String msg = "invalid service";
         return handleException(msg);
@@ -143,16 +144,11 @@ public class ExecController extends AbstractController {
       @PathParam("service") String service
   ) throws RecipePluginException, IOException {
     Boolean deleteResult = false;
-    logger.info(String.format("Saving folia file and downloading for service [%s]", service));
+    logger.info(String.format("Saving file from editor and downloading for service [%s]", service));
 
-    // is service is FOLIAEDITOR save file first before closing
-    if (service.equals("FOLIAEDITOR")) {
-      logger.info("Service is FOLIAEDITOR");
-      RecipePlugin plugin = Queue.getPlugin(workDir);
-
-      FoliaEditor editor = (FoliaEditor) plugin;
-      deleteResult = editor.saveFoliaFileFromEditor();
-
+    RecipePlugin plugin = Queue.getPlugin(workDir);
+    if (plugin instanceof EditorPluginImpl) {
+      deleteResult = ((EditorPluginImpl) plugin).saveFileFromEditor();
     }
 
     Queue.removeTask(workDir);

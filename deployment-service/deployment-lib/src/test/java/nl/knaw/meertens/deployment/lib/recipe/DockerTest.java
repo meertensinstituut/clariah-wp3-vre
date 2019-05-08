@@ -36,9 +36,9 @@ public class DockerTest extends AbstractDeploymentTest {
 
     assertThat(docker.runDockerContainer(handlerLoc[1], handlers));
 
-    logger.info("before cleanup");
+    logger.info("before cleanup test");
     docker.cleanup();
-    logger.info("after cleanup");
+    logger.info("after cleanup test");
 
   }
 

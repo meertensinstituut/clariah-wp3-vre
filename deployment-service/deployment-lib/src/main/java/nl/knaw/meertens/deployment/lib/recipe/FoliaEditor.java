@@ -13,6 +13,7 @@ import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
+import nl.knaw.meertens.deployment.lib.EditorPluginImpl;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
@@ -46,7 +47,7 @@ import static java.util.Objects.isNull;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 
 
-public class FoliaEditor extends RecipePluginImpl {
+public class FoliaEditor extends EditorPluginImpl {
   private URL serviceUrl;
   protected DeploymentStatus status;
   protected String workDir;
@@ -328,7 +329,12 @@ public class FoliaEditor extends RecipePluginImpl {
     logger.info("Generated successfully");
   }
 
-  public Boolean saveFoliaFileFromEditor() throws RecipePluginException, IOException {
+  @Override
+  public boolean saveFileFromEditor() throws RecipePluginException, IOException {
+    return saveFoliaFileFromEditor();
+  }
+
+  public boolean saveFoliaFileFromEditor() throws RecipePluginException, IOException {
 
     URL url = new URL(
         this.serviceUrl.getProtocol(),
