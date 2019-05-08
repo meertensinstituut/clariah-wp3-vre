@@ -15,7 +15,6 @@ import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.HandlerPluginException;
-import nl.knaw.meertens.deployment.lib.Queue;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.slf4j.Logger;
@@ -34,10 +33,20 @@ import static nl.knaw.meertens.deployment.lib.SystemConf.DOCKER_TLS_VERIFY;
 
 public class Docker implements HandlerPlugin {
   private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private String dockerId;
+  private DockerClient dockerClient;
 
   @Override
-  public void init() {
+  public void init() throws HandlerPluginException {
     logger.info("initialized!");
+    logger.info("#### creating docker client ####");
+    logger.info(
+        "#### run 'socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &' on docker host before " +
+            "running the app ####");
+    DockerClient dockerClient = this.getDockerClient(DOCKER_SERVER, DOCKER_TLS_VERIFY, DOCKER_CERT_PATH);
+    logger.info("#### succeed in docker client ####");
+    Info info = dockerClient.infoCmd().exec();
+    logger.info(String.format("Docker info [%s]", info.toString()));
   }
 
   @Override
@@ -45,7 +54,7 @@ public class Docker implements HandlerPlugin {
       throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException,
       IllegalAccessException, HandlerPluginException, RecipePluginException {
     handlers.push(this);
-    // TODO: make the handle work with docker
+
     logger.info(String.format("Service location before Docker [%s]", serviceLocation));
     // docker handler
     Pattern pattern = Pattern.compile("^([^/]+)/([^/]+)/([^/]+)/(.*)$");
@@ -55,25 +64,12 @@ public class Docker implements HandlerPlugin {
       String dockerRepo = matcher.group(1); // vre-repository
       String dockerImg = matcher.group(2); // lamachine
       String dockerTag = matcher.group(3); // tag-1.0
-      // do all the docker magic
-      // which results in the following variables to be known
-      // - docker-container-id
-      // - docker-container-ip = 192.3.4.5
 
-      logger.info("#### creating docker client ####");
-      logger.info(
-          "#### run 'socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &' on docker host before " +
-              "running the app ####");
-      DockerClient dockerClient = getDockerClient(DOCKER_SERVER, DOCKER_TLS_VERIFY, DOCKER_CERT_PATH);
-      logger.info("#### succeed in docker client ####");
-      Info info = dockerClient.infoCmd().exec();
-      logger.info(String.format("Docker info [%s]", info.toString()));
       logger.info(String.format("Repo is: [%s]", dockerRepo));
       logger.info(String.format("Image is: [%s]", dockerImg));
       logger.info(String.format("Tag is: [%s]", dockerTag));
 
-      List<SearchItem> dockerSearch =
-          dockerClient.searchImagesCmd(dockerImg).exec();
+      List<SearchItem> dockerSearch = dockerClient.searchImagesCmd(dockerImg).exec();
       logger.info(String.format("Docker search on the container: [%s]", dockerSearch.toString()));
 
       logger.info("Pulling");
@@ -106,11 +102,8 @@ public class Docker implements HandlerPlugin {
                                                       .withName(dockerHostName)
                                                       .exec();
 
-      dockerClient.startContainerCmd(container.getId()).exec();
-      dockerClient.stopContainerCmd(container.getId()).exec();
-
-      String dockerId = container.getId();
-
+      this.dockerId = container.getId();
+      dockerClient.startContainerCmd(this.dockerId).exec();
       logger.info("#### container running ####");
 
       String remainder = matcher.group(4);// nl.knaw.meertens.deployment.lib.handler.http://{docker-container-ip}/frog
@@ -132,7 +125,13 @@ public class Docker implements HandlerPlugin {
 
   @Override
   public void cleanup() {
-    // TODO: stop and remove the docker container
+    try {
+      dockerClient.stopContainerCmd(this.dockerId).exec();
+      dockerClient.removeContainerCmd(this.dockerId).exec();
+      logger.info("Cleanup docker handler done");
+    } catch (Exception e) {
+      logger.error(String.format("Cannot cleanup docker handler; [%s]", e));
+    }
   }
 
   private DockerClient getDockerClient(String dockerHost, String dockerTls, String dockerTlsPath)

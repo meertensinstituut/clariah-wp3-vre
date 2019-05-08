@@ -67,11 +67,11 @@ public class DeploymentLib {
 
     logger.info("Check user config against service record");
     String dbConfig = service.getServiceSemantics();
+    // TODO: check user config against dbconfig
 
-    Queue queue = new Queue();
     logger.info("Plugin invoked");
 
-    ObjectNode json = queue.push(workDir, plugin);
+    ObjectNode json = Queue.push(workDir, plugin);
     return json;
   }
 
@@ -141,7 +141,9 @@ public class DeploymentLib {
   public static void invokeHandlerCleanup(Stack<HandlerPlugin> handlers) {
     if (!isNull(handlers)) {
       while (!handlers.isEmpty()) {
-        handlers.pop().cleanup();
+        HandlerPlugin handler = handlers.pop();
+        logger.info(String.format("Cleanup [%s]", handler.toString()));
+        handler.cleanup();
       }
     }
   }

@@ -67,8 +67,6 @@ public class Clam extends RecipePluginImpl {
 
   private String workDir;
 
-  private Stack<HandlerPlugin> handlers;
-
   /**
    * Clam needs an alphanumeric string without dashes
    */
@@ -83,7 +81,7 @@ public class Clam extends RecipePluginImpl {
   @Override
   public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
       throws RecipePluginException {
-    this.handlers = handlers;
+    super.init(workDir, service, serviceLocation, handlers);
 
     status = CREATED;
 
@@ -140,7 +138,6 @@ public class Clam extends RecipePluginImpl {
       logger.error(format("execution of [%s] failed", workDir), ex);
     }
 
-    DeploymentLib.invokeHandlerCleanup(handlers);
     return status.toResponse();
   }
 

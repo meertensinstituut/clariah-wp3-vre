@@ -53,7 +53,6 @@ public class FoliaEditor extends RecipePluginImpl {
   private static Logger logger = LoggerFactory.getLogger(RecipePlugin.class);
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
   private String docId = "";
-  private Stack<HandlerPlugin> handlers;
 
   /**
    * Initiate the recipe
@@ -61,11 +60,11 @@ public class FoliaEditor extends RecipePluginImpl {
   @Override
   public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
       throws RecipePluginException {
+    super.init(workDir, service, serviceLocation, handlers);
     logger.info(format("init [%s]", workDir));
     ObjectNode json = DeploymentLib.parseSemantics(service.getServiceSemantics());
     logger.info(format("loaded cmdi to json: [%s]", json.toString()));
     this.workDir = workDir;
-    this.handlers = handlers;
 
     if (isNull(serviceLocation)) {
       serviceLocation = json.get("serviceLocation").asText();
@@ -101,7 +100,6 @@ public class FoliaEditor extends RecipePluginImpl {
       }
 
       this.status = FINISHED;
-      DeploymentLib.invokeHandlerCleanup(handlers);
     } catch (IOException | InterruptedException | UnirestException ex) {
       throw new RecipePluginException("Could not execute recipe", ex);
     } catch (URISyntaxException e) {

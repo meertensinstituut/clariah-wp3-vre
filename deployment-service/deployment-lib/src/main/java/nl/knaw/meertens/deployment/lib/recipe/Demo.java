@@ -69,7 +69,6 @@ public class Demo extends RecipePluginImpl {
    */
   private static LocalDateTime cookieExpireDate;
 
-  private Stack<HandlerPlugin> handlers;
   /**
    * Expire interval
    */
@@ -82,7 +81,7 @@ public class Demo extends RecipePluginImpl {
   public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
       throws RecipePluginException {
     logger.info(format("init [%s]", workDir));
-    this.handlers = handlers;
+    super.init(workDir, service, serviceLocation, handlers);
     this.workDir = workDir;
     this.service = service;
     this.status = DeploymentStatus.CREATED;
@@ -93,7 +92,6 @@ public class Demo extends RecipePluginImpl {
     logger.info(format("execute [%s][%s]", service.getName(), workDir));
     status = RUNNING;
     this.runProject(workDir);
-    DeploymentLib.invokeHandlerCleanup(handlers);
     return status.toResponse();
   }
 

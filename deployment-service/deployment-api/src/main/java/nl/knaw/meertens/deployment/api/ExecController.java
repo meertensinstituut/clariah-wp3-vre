@@ -34,7 +34,6 @@ import static nl.knaw.meertens.deployment.lib.DeploymentStatus.NOT_FOUND;
 @Path("/exec")
 public class ExecController extends AbstractController {
   private Logger logger = LoggerFactory.getLogger(this.getClass());
-
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
 
   /**
@@ -50,9 +49,8 @@ public class ExecController extends AbstractController {
       @PathParam("workDir") String workDir
   ) {
 
-    Queue queue = new Queue();
     DeploymentResponse result;
-    RecipePlugin plugin = queue.getPlugin(workDir);
+    RecipePlugin plugin = Queue.getPlugin(workDir);
 
     if (isNull(plugin)) {
       return Response
@@ -72,6 +70,7 @@ public class ExecController extends AbstractController {
     boolean finished = result.getStatus().isFinished();
 
     if (finished) {
+      plugin.cleanup();
       return Response
           .ok(result.getBody().toString(), APPLICATION_JSON)
           .build();
@@ -105,11 +104,8 @@ public class ExecController extends AbstractController {
         return handleException(msg);
       }
 
-      // get semantic info serviceName
-      // get the serviceLocation
       String loc = DeploymentLib.getServiceLocationFromJson(DeploymentLib.parseSemantics(service
-          .getServiceSemantics())); // "nl.knaw.meertens.deployment.lib.handler.docker:vre-repository/lamachine/tag-1
-      // .0/http://{docker-container-ip}/frog";
+          .getServiceSemantics()));
       logger.info(String.format("Has loc [%s]", loc));
 
       ObjectNode json = null;
@@ -121,8 +117,7 @@ public class ExecController extends AbstractController {
           logger.info("loc is valid URL, no loc handlers needed");
           URL url = new URL(loc);
         } catch (Exception e) {
-          json = DeploymentLib.invokeHandler(workDir, service, loc); // http://192.3.4.5/frog
-          //logger.info(String.format("loc is not valid, it presumably is cascaded [%s]", serviceLocation));
+          json = DeploymentLib.invokeHandler(workDir, service, loc);
         }
       }
 
@@ -149,20 +144,18 @@ public class ExecController extends AbstractController {
   ) throws RecipePluginException, IOException {
     Boolean deleteResult = false;
     logger.info(String.format("Saving folia file and downloading for service [%s]", service));
-    // TODO: Queues are created at three different places atm, shouldn't there be just one queue?
-    Queue queue = new Queue();
 
     // is service is FOLIAEDITOR save file first before closing
     if (service.equals("FOLIAEDITOR")) {
       logger.info("Service is FOLIAEDITOR");
-      RecipePlugin plugin = queue.getPlugin(workDir);
+      RecipePlugin plugin = Queue.getPlugin(workDir);
 
       FoliaEditor editor = (FoliaEditor) plugin;
       deleteResult = editor.saveFoliaFileFromEditor();
 
     }
 
-    queue.removeTask(workDir);
+    Queue.removeTask(workDir);
     if (deleteResult) {
       return Response
           .ok("deleted", APPLICATION_JSON)
