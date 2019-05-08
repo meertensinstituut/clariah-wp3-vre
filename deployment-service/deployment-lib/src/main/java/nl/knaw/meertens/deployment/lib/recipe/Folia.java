@@ -46,12 +46,11 @@ public class Folia extends RecipePluginImpl {
 
   private URL url;
 
-  private Stack<HandlerPlugin> handlers;
-
   @Override
   public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
       throws RecipePluginException {
 
+    super.init(workDir, service, serviceLocation, handlers);
     try {
       url = new URL(
           "https://gist.githubusercontent.com/vicding-mi/a2f1733240867433b4fdb24ca3fa4e29/raw" +
@@ -64,7 +63,7 @@ public class Folia extends RecipePluginImpl {
     if (isEmpty(workDir)) {
       throw new RecipePluginException("work dir should not be empty");
     }
-    this.handlers = handlers;
+
     this.workDir = workDir;
     this.status = DeploymentStatus.CREATED;
   }
@@ -95,7 +94,6 @@ public class Folia extends RecipePluginImpl {
       }
 
       this.status = FINISHED;
-      DeploymentLib.invokeHandlerCleanup(handlers);
     } catch (IOException | InterruptedException ex) {
       throw new RecipePluginException(ex.getMessage(), ex);
     }

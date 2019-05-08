@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class Queue {
 
-  private Logger logger = LoggerFactory.getLogger(this.getClass());
+  private static Logger logger = LoggerFactory.getLogger(Queue.class);
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
 
   protected static LinkedHashMap<String, RecipePlugin> executed = new LinkedHashMap<>() {
@@ -27,7 +27,7 @@ public class Queue {
     }
   };
 
-  public ObjectNode push(String key, RecipePlugin plugin) {
+  public static ObjectNode push(String key, RecipePlugin plugin) {
     ObjectNode json = jsonFactory.objectNode();
     json.put("id", key);
 
@@ -55,7 +55,7 @@ public class Queue {
     return json;
   }
 
-  public RecipePlugin getPlugin(String key) {
+  public static RecipePlugin getPlugin(String key) {
 
     if (executed.containsKey(key)) {
       return executed.get(key);
@@ -64,7 +64,7 @@ public class Queue {
     }
   }
 
-  public void removeTask(String key) {
+  public static void removeTask(String key) {
     executed.remove(key);
   }
 

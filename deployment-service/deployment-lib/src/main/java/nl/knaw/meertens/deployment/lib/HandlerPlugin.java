@@ -6,7 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Stack;
 
 public interface HandlerPlugin {
-  void init();
+  void init() throws HandlerPluginException, DockerException;
 
   ObjectNode handle(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
       throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException,
