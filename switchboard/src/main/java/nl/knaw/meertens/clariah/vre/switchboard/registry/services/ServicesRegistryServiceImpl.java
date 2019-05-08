@@ -14,6 +14,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,16 +47,16 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
 
   @Override
   public ServiceRecord getService(Long id) {
-    String body = "";
+    var body = "";
     try {
-      String service = "_table/service";
-      String url = format(
+      var service = "_table/service";
+      var url = format(
         "%s/%s/%d",
         serviceDbUrl,
         service,
         id
       );
-      HttpResponse<String> response = requestServiceDb(url);
+      var response = requestServiceDb(url);
       body = response.getBody();
       return mapper.readValue(body, ServiceRecord.class);
     } catch (UnirestException | IOException | IllegalStateException e) {
@@ -94,13 +95,22 @@ public class ServicesRegistryServiceImpl implements ServicesRegistryService {
       "%s/%s?filter=(mimetype%%20%%3D%%20%s)%%20and%%20(kind%%20like%%20%s)",
       serviceDbUrl,
       serviceWithMimetypeView,
-      mimetype,
+      sanitizeDreamfactoryQueryParam(mimetype),
       kind.getKind()
     );
     return getServices(url)
       .stream()
       .filter(this::isValidCmdi)
       .collect(toList());
+  }
+
+  private String sanitizeDreamfactoryQueryParam(String mimetype) {
+    var forbiddenChars = new HashMap<String, String>();
+    forbiddenChars.put("+", "%2B");
+    for (var es : forbiddenChars.entrySet()) {
+      mimetype = mimetype.replace(es.getKey(), es.getValue());
+    }
+    return mimetype;
   }
 
   private boolean isValidCmdi(ServiceRecord serviceRecord) {

@@ -12,6 +12,9 @@ public class SystemConf {
   public static final String INPUT_DIR;
   public static final String USER_CONF_FILE;
   public static final String QUEUE_LENGTH;
+  public static final String DOCKER_SERVER;
+  public static final String DOCKER_TLS_VERIFY;
+  public static final String DOCKER_CERT_PATH;
 
   static  {
     XMLConfiguration xml;
@@ -28,6 +31,9 @@ public class SystemConf {
     INPUT_DIR = xml.getString("inputDirectory");
     OUTPUT_DIR = xml.getString("outputDirectory");
     QUEUE_LENGTH = xml.getString("configLength");
+    DOCKER_SERVER = xml.getString("dockerServer");
+    DOCKER_TLS_VERIFY = xml.getString("dockerTlsVerify");
+    DOCKER_CERT_PATH = xml.getString("dockerCertPath");
   }
 
 }

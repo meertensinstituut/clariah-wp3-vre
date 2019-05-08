@@ -14,8 +14,10 @@ import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
+import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.RecipePluginImpl;
 import nl.knaw.meertens.deployment.lib.Service;
 import nl.mpi.tla.util.Saxon;
 import org.apache.commons.io.FileUtils;
@@ -45,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.Stack;
 
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
@@ -56,13 +59,15 @@ import static nl.knaw.meertens.deployment.lib.SystemConf.INPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.OUTPUT_DIR;
 import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
 
-public class Clam implements RecipePlugin {
+public class Clam extends RecipePluginImpl {
   private URL serviceUrl;
   private DeploymentStatus status;
   private Logger logger = LoggerFactory.getLogger(this.getClass());
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
 
   private String workDir;
+
+  private Stack<HandlerPlugin> handlers;
 
   /**
    * Clam needs an alphanumeric string without dashes
@@ -76,7 +81,10 @@ public class Clam implements RecipePlugin {
    * @param service The recepie record in the registry known as service
    */
   @Override
-  public void init(String workDir, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
+      throws RecipePluginException {
+    this.handlers = handlers;
+
     status = CREATED;
 
     logger.info(format("init [%s]", workDir));
@@ -87,7 +95,10 @@ public class Clam implements RecipePlugin {
     final String serviceSemantics = service.getServiceSemantics();
     ObjectNode semantics = DeploymentLib.parseSemantics(serviceSemantics);
 
-    String serviceLocation = semantics.get("serviceLocation").asText();
+    if (isNull(serviceLocation)) {
+      serviceLocation = semantics.get("serviceLocation").asText();
+    }
+
     try {
       this.serviceUrl = new URL(serviceLocation);
     } catch (MalformedURLException e) {
@@ -129,6 +140,7 @@ public class Clam implements RecipePlugin {
       logger.error(format("execution of [%s] failed", workDir), ex);
     }
 
+    DeploymentLib.invokeHandlerCleanup(handlers);
     return status.toResponse();
   }
 
@@ -166,20 +178,20 @@ public class Clam implements RecipePlugin {
     }
 
     URL url = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/" + projectName + "/?user=" + user + "&accesstoken=" + accessToken,
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/" + projectName + "/?user=" + user + "&accesstoken=" + accessToken,
+        null
     );
     HttpResponse<String> response;
     try {
       response = Unirest
-        .post(url.toString())
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .header("Accept", "application/json")
-        .body(postData.toString())
-        .asString();
+          .post(url.toString())
+          .header("Content-Type", "application/x-www-form-urlencoded")
+          .header("Accept", "application/json")
+          .body(postData.toString())
+          .asString();
     } catch (UnirestException e) {
       throw new RuntimeException(String.format("Could not create clam project with url [%s]", url.toString()), e);
     }
@@ -252,17 +264,17 @@ public class Clam implements RecipePlugin {
 
       URL clamProjectUrl;
       clamProjectUrl = new URL(
-        this.serviceUrl.getProtocol(),
-        this.serviceUrl.getHost(),
-        this.serviceUrl.getPort(),
-        this.serviceUrl.getFile() + "/" + projectName + "/status/?user=" + user + "&accesstoken=" + accessToken,
-        null
+          this.serviceUrl.getProtocol(),
+          this.serviceUrl.getHost(),
+          this.serviceUrl.getPort(),
+          this.serviceUrl.getFile() + "/" + projectName + "/status/?user=" + user + "&accesstoken=" + accessToken,
+          null
       );
 
       ObjectMapper parser = new ObjectMapper();
       HttpResponse<String> response = Unirest
-        .get(clamProjectUrl.toString())
-        .asString();
+          .get(clamProjectUrl.toString())
+          .asString();
       json = (ObjectNode) parser.readTree(response.getBody());
 
       json.put("status", response.getStatus());
@@ -279,11 +291,11 @@ public class Clam implements RecipePlugin {
     ObjectNode json = jsonFactory.objectNode();
 
     URL url = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/" + projectName,
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/" + projectName,
+        null
     );
     String xmlString = readStringFromUrl(url);
 
@@ -301,25 +313,25 @@ public class Clam implements RecipePlugin {
 
   private static String readStringFromUrl(URL requestUrl) throws IOException {
     try (Scanner scanner = new Scanner(requestUrl.openStream(),
-      StandardCharsets.UTF_8.toString())) {
+        StandardCharsets.UTF_8.toString())) {
       scanner.useDelimiter("\\A");
       return scanner.hasNext() ? scanner.next() : "";
     }
   }
 
   private ObjectNode uploadFile(
-    String filename,
-    String language,
-    String inputTemplate,
-    String author
+      String filename,
+      String language,
+      String inputTemplate,
+      String author
   ) throws IOException {
     ObjectNode jsonResult = jsonFactory.objectNode();
 
     String path = Paths.get(
-      ROOT_WORK_DIR,
-      workDir,
-      INPUT_DIR,
-      filename
+        ROOT_WORK_DIR,
+        workDir,
+        INPUT_DIR,
+        filename
     ).normalize().toString();
     jsonResult.put("pathUploadFile", path);
 
@@ -328,13 +340,13 @@ public class Clam implements RecipePlugin {
     jsonResult.put("filenameOnly", filenameOnly);
 
     URL url = new URL(
-      this.serviceUrl.getProtocol(),
-      this.serviceUrl.getHost(),
-      this.serviceUrl.getPort(),
-      this.serviceUrl.getFile() + "/" +
-        projectName + "/input/" + filenameOnly + "?inputtemplate=" + inputTemplate +
-        "&language=" + language + "&documentid=&author=" + author + "&filename=" + filenameOnly,
-      null
+        this.serviceUrl.getProtocol(),
+        this.serviceUrl.getHost(),
+        this.serviceUrl.getPort(),
+        this.serviceUrl.getFile() + "/" +
+            projectName + "/input/" + filenameOnly + "?inputtemplate=" + inputTemplate +
+            "&language=" + language + "&documentid=&author=" + author + "&filename=" + filenameOnly,
+        null
     );
 
     logger.info(format("upload [%s]", url.toString()));
@@ -350,8 +362,8 @@ public class Clam implements RecipePlugin {
       connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
 
       PrintWriter writer = new PrintWriter(new OutputStreamWriter(
-        connection.getOutputStream(),
-        StandardCharsets.UTF_8
+          connection.getOutputStream(),
+          StandardCharsets.UTF_8
       ));
 
       String lineFeed = "\r\n";
@@ -361,7 +373,7 @@ public class Clam implements RecipePlugin {
       writer.append("Content-Type: text/plain").append(lineFeed);
       writer.append(lineFeed);
       try (BufferedReader reader = new BufferedReader(
-        new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+          new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
         for (String line; (line = reader.readLine()) != null; ) {
           writer.append(line).append(lineFeed);
         }
@@ -375,8 +387,8 @@ public class Clam implements RecipePlugin {
 
       connection.disconnect();
       logger.info(format(
-        "File uploaded; response: [%d][%s]",
-        connection.getResponseCode(), connection.getResponseMessage()
+          "File uploaded; response: [%d][%s]",
+          connection.getResponseCode(), connection.getResponseMessage()
       ));
 
     } catch (Exception e) {
@@ -392,11 +404,11 @@ public class Clam implements RecipePlugin {
       ObjectNode json = jsonFactory.objectNode();
 
       URL url = new URL(
-        this.serviceUrl.getProtocol(),
-        this.serviceUrl.getHost(),
-        this.serviceUrl.getPort(),
-        this.serviceUrl.getFile() + "/" + projectName,
-        null
+          this.serviceUrl.getProtocol(),
+          this.serviceUrl.getHost(),
+          this.serviceUrl.getPort(),
+          this.serviceUrl.getFile() + "/" + projectName,
+          null
       );
 
       String urlString = url.toString();
@@ -457,11 +469,11 @@ public class Clam implements RecipePlugin {
     String errorMsg = "Could not create project";
     try {
       URL url = new URL(
-        this.serviceUrl.getProtocol(),
-        this.serviceUrl.getHost(),
-        this.serviceUrl.getPort(),
-        this.serviceUrl.getFile() + "/" + projectName,
-        null
+          this.serviceUrl.getProtocol(),
+          this.serviceUrl.getHost(),
+          this.serviceUrl.getPort(),
+          this.serviceUrl.getFile() + "/" + projectName,
+          null
       );
 
       HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
@@ -480,7 +492,7 @@ public class Clam implements RecipePlugin {
       httpCon.disconnect();
       if (responseCode / 100 != 2) {
         throw new RecipePluginException(format(
-          "%s: [%d][%s]", errorMsg, responseCode, responseMessage
+            "%s: [%d][%s]", errorMsg, responseCode, responseMessage
         ));
       }
     } catch (IOException ex) {

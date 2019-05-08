@@ -13,8 +13,10 @@ import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
+import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
+import nl.knaw.meertens.deployment.lib.RecipePluginImpl;
 import nl.knaw.meertens.deployment.lib.Service;
 import nl.knaw.meertens.deployment.lib.SystemConf;
 import nl.mpi.tla.util.Saxon;
@@ -34,32 +36,42 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static java.nio.charset.Charset.forName;
+import static java.util.Objects.isNull;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 
 
-public class FoliaEditor implements RecipePlugin {
+public class FoliaEditor extends RecipePluginImpl {
   private URL serviceUrl;
   protected DeploymentStatus status;
   protected String workDir;
   private static Logger logger = LoggerFactory.getLogger(RecipePlugin.class);
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
   private String docId = "";
+  private Stack<HandlerPlugin> handlers;
 
   /**
    * Initiate the recipe
    */
   @Override
-  public void init(String workDir, Service service) throws RecipePluginException {
+  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
+      throws RecipePluginException {
     logger.info(format("init [%s]", workDir));
     ObjectNode json = DeploymentLib.parseSemantics(service.getServiceSemantics());
     logger.info(format("loaded cmdi to json: [%s]", json.toString()));
     this.workDir = workDir;
+    this.handlers = handlers;
+
+    if (isNull(serviceLocation)) {
+      serviceLocation = json.get("serviceLocation").asText();
+    }
+
     try {
-      this.serviceUrl = new URL(json.get("serviceLocation").asText());
+      this.serviceUrl = new URL(serviceLocation);
     } catch (MalformedURLException e) {
       logger.info(e.getMessage());
       throw new RecipePluginException(format("Url is not correct: [%s]", json.get("serviceLocation").asText()));
@@ -88,6 +100,7 @@ public class FoliaEditor implements RecipePlugin {
       }
 
       this.status = FINISHED;
+      DeploymentLib.invokeHandlerCleanup(handlers);
     } catch (IOException | InterruptedException | UnirestException ex) {
       throw new RecipePluginException("Could not execute recipe", ex);
     } catch (URISyntaxException e) {
@@ -255,8 +268,8 @@ public class FoliaEditor implements RecipePlugin {
     return uploadFile(workDir, filename);
   }
 
-  public ObjectNode uploadFile(String projectName, String filename)
-    throws IOException, UnirestException, URISyntaxException {
+  public ObjectNode uploadFile(String projectName, String filename
+  ) throws IOException, UnirestException, URISyntaxException {
     ObjectNode jsonResult = jsonFactory.objectNode();
 
     String path = filename;
@@ -286,7 +299,7 @@ public class FoliaEditor implements RecipePlugin {
     logger.info(format("Response code: %s", jsonResponse.getStatus()));
 
     Headers headers = jsonResponse.getHeaders();
-    logger.info("headersToString" + headers.toString());
+    logger.info(String.format("header is: [%s]", headers));
     String responseUrl = headers.get("Location").get(0);
     logger.info(format("Response url: %s", responseUrl));
 
