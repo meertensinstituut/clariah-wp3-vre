@@ -32,13 +32,13 @@ public class Text extends RecipePluginImpl {
   public URL serviceUrl;
   protected DeploymentStatus status;
   protected String projectName;
-  private Stack<HandlerPlugin> handlers;
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Override
-  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers) {
+  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
+      throws RecipePluginException {
+    super.init(workDir, service, serviceLocation, handlers);
     logger.info(format("init [%s]", workDir));
-    this.handlers = handlers;
     this.projectName = workDir;
     this.serviceUrl = null;
     logger.info("finish init Text plugin");
@@ -74,7 +74,6 @@ public class Text extends RecipePluginImpl {
     }
 
     this.status = FINISHED;
-    DeploymentLib.invokeHandlerCleanup(handlers);
     return status.toResponse();
   }
 

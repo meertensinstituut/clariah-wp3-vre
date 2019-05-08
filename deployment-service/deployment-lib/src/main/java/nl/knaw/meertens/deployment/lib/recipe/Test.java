@@ -5,6 +5,7 @@ import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
+import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.RecipePluginImpl;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.apache.commons.io.Charsets;
@@ -31,12 +32,12 @@ public class Test extends RecipePluginImpl {
 
   private DeploymentStatus status;
   private String workDir;
-  private Stack<HandlerPlugin> handlers;
 
   @Override
-  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers) {
+  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
+      throws RecipePluginException {
+    super.init(workDir, service, serviceLocation, handlers);
     logger.info(format("init [%s]", workDir));
-    this.handlers = handlers;
     this.workDir = workDir;
     this.status = DeploymentStatus.CREATED;
   }
@@ -46,7 +47,6 @@ public class Test extends RecipePluginImpl {
     logger.info(format("execute [%s]", workDir));
     this.status = RUNNING;
     new Thread(this::finishDeployment).start();
-    DeploymentLib.invokeHandlerCleanup(handlers);
     return status.toResponse();
   }
 

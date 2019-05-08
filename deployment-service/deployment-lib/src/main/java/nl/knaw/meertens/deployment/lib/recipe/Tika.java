@@ -39,12 +39,12 @@ public class Tika extends RecipePluginImpl {
   private String workDir;
   private Service service;
   private DeploymentStatus status;
-  private Stack<HandlerPlugin> handlers;
 
   @Override
-  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers) {
+  public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
+      throws RecipePluginException {
+    super.init(workDir, service, serviceLocation, handlers);
     logger.info(format("init [%s]", workDir));
-    this.handlers = handlers;
     this.workDir = workDir;
     this.service = service;
     this.status = DeploymentStatus.CREATED;
@@ -55,7 +55,6 @@ public class Tika extends RecipePluginImpl {
     logger.info(format("execute [%s][%s]", service.getName(), workDir));
     status = RUNNING;
     runProject(workDir);
-    DeploymentLib.invokeHandlerCleanup(handlers);
     return status.toResponse();
   }
 

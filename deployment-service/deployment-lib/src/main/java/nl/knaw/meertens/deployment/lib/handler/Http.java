@@ -31,7 +31,7 @@ public class Http implements HandlerPlugin {
 
   @Override
   public void cleanup() {
-    // NOOP
+    logger.info(String.format("HTTP handler does not need cleanup"));
   }
 
 }

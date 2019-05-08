@@ -1,8 +1,9 @@
 package nl.knaw.meertens.deployment.lib;
 
+import java.io.IOException;
 import java.util.Stack;
 
-public abstract class RecipePluginImpl implements RecipePlugin {
+public abstract class EditorPluginImpl extends RecipePluginImpl {
 
   private Stack<HandlerPlugin> handlers;
 
@@ -22,4 +23,6 @@ public abstract class RecipePluginImpl implements RecipePlugin {
   public void cleanup() {
     DeploymentLib.invokeHandlerCleanup(handlers);
   }
+
+  public abstract boolean saveFileFromEditor() throws RecipePluginException, IOException;
 }

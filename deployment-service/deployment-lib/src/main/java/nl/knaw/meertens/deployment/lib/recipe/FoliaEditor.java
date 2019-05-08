@@ -13,6 +13,7 @@ import net.sf.saxon.s9api.XdmNode;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DeploymentResponse;
 import nl.knaw.meertens.deployment.lib.DeploymentStatus;
+import nl.knaw.meertens.deployment.lib.EditorPluginImpl;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.RecipePlugin;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
@@ -45,14 +46,13 @@ import static java.util.Objects.isNull;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 
 
-public class FoliaEditor extends RecipePluginImpl {
+public class FoliaEditor extends EditorPluginImpl {
   private URL serviceUrl;
   protected DeploymentStatus status;
   protected String workDir;
   private static Logger logger = LoggerFactory.getLogger(RecipePlugin.class);
   private static JsonNodeFactory jsonFactory = new JsonNodeFactory(false);
   private String docId = "";
-  private Stack<HandlerPlugin> handlers;
 
   /**
    * Initiate the recipe
@@ -60,11 +60,11 @@ public class FoliaEditor extends RecipePluginImpl {
   @Override
   public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
       throws RecipePluginException {
+    super.init(workDir, service, serviceLocation, handlers);
     logger.info(format("init [%s]", workDir));
     ObjectNode json = DeploymentLib.parseSemantics(service.getServiceSemantics());
     logger.info(format("loaded cmdi to json: [%s]", json.toString()));
     this.workDir = workDir;
-    this.handlers = handlers;
 
     if (isNull(serviceLocation)) {
       serviceLocation = json.get("serviceLocation").asText();
@@ -100,7 +100,6 @@ public class FoliaEditor extends RecipePluginImpl {
       }
 
       this.status = FINISHED;
-      DeploymentLib.invokeHandlerCleanup(handlers);
     } catch (IOException | InterruptedException | UnirestException ex) {
       throw new RecipePluginException("Could not execute recipe", ex);
     } catch (URISyntaxException e) {
@@ -333,7 +332,12 @@ public class FoliaEditor extends RecipePluginImpl {
     logger.info("Generated successfully");
   }
 
-  public Boolean saveFoliaFileFromEditor() throws RecipePluginException, IOException {
+  @Override
+  public boolean saveFileFromEditor() throws RecipePluginException, IOException {
+    return saveFoliaFileFromEditor();
+  }
+
+  public boolean saveFoliaFileFromEditor() throws RecipePluginException, IOException {
 
     URL url = new URL(
       this.serviceUrl.getProtocol(),
