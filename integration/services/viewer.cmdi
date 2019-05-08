@@ -16,9 +16,7 @@
             <cmdp:Service CoreVersion="1.0">
                 <cmdp:Name>Text viewer</cmdp:Name>
                 <cmdp:Description xml:lang="en">Previewer of text file</cmdp:Description>
-                <cmdp:ServiceDescriptionLocation>
-                    <cmdp:Location>none</cmdp:Location>
-                </cmdp:ServiceDescriptionLocation>
+                <cmdp:ServiceDescriptionLocation/>
                 <cmdp:Operations>
                     <cmdp:Operation>
                         <cmdp:Name>main</cmdp:Name>

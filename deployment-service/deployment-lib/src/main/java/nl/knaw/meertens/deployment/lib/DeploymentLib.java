@@ -19,10 +19,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -48,6 +50,31 @@ public class DeploymentLib {
     }
   }
 
+  public static ObjectNode invokeService(String workDir, Service service, String serviceLocation,
+                                         Stack<HandlerPlugin> handlers)
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException,
+      ClassNotFoundException, RecipePluginException {
+
+    logger.info("Get recipe");
+    String className = service.getRecipe();
+
+    logger.info("Loading plugin");
+    Class<?> loadedClass = Class.forName(className);
+    Class<? extends RecipePlugin> pluginClass = loadedClass.asSubclass(RecipePlugin.class);
+    RecipePlugin plugin;
+    plugin = pluginClass.getDeclaredConstructor().newInstance();
+    plugin.init(workDir, service, serviceLocation, handlers);
+
+    logger.info("Check user config against service record");
+    String dbConfig = service.getServiceSemantics();
+
+    Queue queue = new Queue();
+    logger.info("Plugin invoked");
+
+    ObjectNode json = queue.push(workDir, plugin);
+    return json;
+  }
+
   public Service getServiceByName(String serviceName) throws IOException {
     String dbApiKey = System.getenv("APP_KEY_SERVICES");
     String servicesDatabase = "http://dreamfactory:80/api/v2/services";
@@ -57,11 +84,11 @@ public class DeploymentLib {
     HttpResponse<String> result;
     try {
       result = Unirest
-        .get(urlString)
-        .header("Content-Type", "application/json")
-        .header("accept", "application/json")
-        .header("X-DreamFactory-Api-Key", dbApiKey)
-        .asString();
+          .get(urlString)
+          .header("Content-Type", "application/json")
+          .header("accept", "application/json")
+          .header("X-DreamFactory-Api-Key", dbApiKey)
+          .asString();
     } catch (UnirestException e) {
       throw new RuntimeException(String.format("Could not get service by name [%s]", serviceName), e);
     }
@@ -81,6 +108,61 @@ public class DeploymentLib {
 
   }
 
+  public static ObjectNode invokeHandler(String workDir, Service service, String loc)
+      throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+      InstantiationException, HandlerPluginException, RecipePluginException {
+    return invokeHandler(workDir, service, loc, new Stack());
+  }
+
+  public static ObjectNode invokeHandler(String workDir, Service service, String loc, Stack<HandlerPlugin> handlers)
+      throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+      InstantiationException, HandlerPluginException, RecipePluginException {
+
+    String[] handlerLoc = loc.split(":", 2);
+    /* invocation 1 [0] = "nl.knaw.meertens.deployment.lib.handler.Docker"
+    [1] = "vre-repository/lamachine/tag-1.0/nl.knaw.meertens.deployment.lib.handler.Http://{docker-container-ip}/frog"
+
+    // invocation 2 [0] = "http" [1] = "//192.3.4.5/frog"
+    */
+
+    String className = handlerLoc[0];
+    if (!className.contains(".")) {
+      className = "nl.knaw.meertens.deployment.lib.handler." + className;
+    }
+    logger.info(String.format("Class name for first handler is: [%s]", className));
+    logger.info(String.format("Remainder name for first handler is: [%s]", handlerLoc[1]));
+    Class<?> loadedClass = Class.forName(className);
+    Class<? extends HandlerPlugin> handlerClass = loadedClass.asSubclass(HandlerPlugin.class);
+    HandlerPlugin handler;
+    handler = handlerClass.getDeclaredConstructor().newInstance();
+    return handler.handle(workDir, service, handlerLoc[1], handlers);
+  }
+
+  public static void invokeHandlerCleanup(Stack<HandlerPlugin> handlers) {
+    if (!isNull(handlers)) {
+      while (!handlers.isEmpty()) {
+        handlers.pop().cleanup();
+      }
+    }
+  }
+
+  public static String getServiceLocationFromJson(JsonNode json) {
+
+    String serviceLocation = json.get("serviceLocation").asText(null);
+    return serviceLocation;
+
+  }
+
+  public static ObjectNode parseSemantics(String symantics, String serviceLocation) throws RecipePluginException {
+    ObjectNode json = jsonFactory.objectNode();
+
+    json = parseSemantics(symantics);
+    json.remove("serviceLocation");
+    json.put("serviceLocation", serviceLocation);
+
+    return json;
+  }
+
   public static ObjectNode parseSemantics(String symantics) throws RecipePluginException {
     try {
       ObjectNode parametersJson = jsonFactory.objectNode();
@@ -95,7 +177,7 @@ public class DeploymentLib {
 
       int counter = 0;
       for (XdmItem param : Saxon
-        .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter", null, nameSpace)) {
+          .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter", null, nameSpace)) {
 
         ObjectNode json = jsonFactory.objectNode();
         String parameterName = Saxon.xpath2string(param, "cmdp:Name", null, nameSpace);
@@ -108,8 +190,8 @@ public class DeploymentLib {
 
         int valueCounter = 0;
         for (XdmItem paramValue : Saxon
-          .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter/cmdp:ParameterValue",
-            null, nameSpace)) {
+            .xpath(service, "//cmdp:Operation[cmdp:Name='main']/cmdp:Input/cmdp:Parameter/cmdp:ParameterValue",
+                null, nameSpace)) {
 
           ObjectNode parameterValueJson = jsonFactory.objectNode();
 
@@ -119,7 +201,7 @@ public class DeploymentLib {
           parameterValueJson.put("parameterValueValue", parameterValueValue);
           parameterValueJson.put("parameterValueDescription", parameterValueDescription);
 
-          json.set("value" + Integer.toString(valueCounter), parameterValueJson);
+          json.set(String.format("value%s", valueCounter), parameterValueJson);
 
           valueCounter++;
         }
@@ -133,7 +215,7 @@ public class DeploymentLib {
       String serviceName = Saxon.xpath2string(service, "cmdp:Name", null, nameSpace);
       String serviceDescription = Saxon.xpath2string(service, "//cmdp:Service/cmdp:Description", null, nameSpace);
       String serviceLocation = Saxon.xpath2string(
-        service, "//cmdp:ServiceDescriptionLocation/cmdp:Location", null, nameSpace);
+          service, "//cmdp:ServiceDescriptionLocation/cmdp:Location", null, nameSpace);
 
       json.put("serviceName", serviceName);
       json.put("serviceDescription", serviceDescription);
@@ -153,8 +235,8 @@ public class DeploymentLib {
     }
 
     String path = Paths
-      .get(ROOT_WORK_DIR, workDir, USER_CONF_FILE)
-      .normalize().toString();
+        .get(ROOT_WORK_DIR, workDir, USER_CONF_FILE)
+        .normalize().toString();
 
     try {
       return (ObjectNode) parser.readTree(new FileReader(path));
@@ -165,18 +247,18 @@ public class DeploymentLib {
 
   public static String buildInputPath(String projectName, String inputFile) {
     return Paths.get(
-      ROOT_WORK_DIR,
-      projectName,
-      INPUT_DIR, inputFile
+        ROOT_WORK_DIR,
+        projectName,
+        INPUT_DIR, inputFile
     ).normalize().toString();
   }
 
   public static Path buildOutputFilePath(String workDir, String file) {
     return Paths.get(
-      ROOT_WORK_DIR,
-      workDir,
-      OUTPUT_DIR,
-      file
+        ROOT_WORK_DIR,
+        workDir,
+        OUTPUT_DIR,
+        file
     ).normalize();
   }
 
@@ -187,7 +269,6 @@ public class DeploymentLib {
       logger.info(format("created folder [%s]", outputFolder.toString()));
     }
   }
-
 
 
 }

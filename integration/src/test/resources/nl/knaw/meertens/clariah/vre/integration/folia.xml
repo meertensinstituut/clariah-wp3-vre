@@ -1,27 +1,41 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" xml:id="untitled" generator="libfolia-v1.15" version="1.5.1">
+<?xml version='1.0' encoding='utf-8'?>
+<FoLiA xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://ilk.uvt.nl/folia" generator="foliapy-v2.0.8" xml:id="untitled" version="2.0.3">
   <metadata type="native">
     <annotations>
-      <token-annotation annotator="ucto" annotatortype="auto" datetime="2019-04-03T10:05:20" set="tokconfig-eng"/>
+      <text-annotation set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/text.foliaset.ttl"/>
+      <phon-annotation set="https://raw.githubusercontent.com/proycon/folia/master/setdefinitions/phon.foliaset.ttl"/>
+      <token-annotation set="tokconfig-eng">
+        <annotator processor="proc.ucto.e3829676"/>
+      </token-annotation>
+      <sentence-annotation/>
+      <paragraph-annotation/>
     </annotations>
+    <provenance>
+      <processor host="62253f58578c" version="0.7.0" begindatetime="2019-05-07T10:45:21" name="foliadocserve" command="foliadocserve -d /usr/local/var/www-data/flat.docroot -l /usr/local/var/log/foliadocserve/foliadocserve.log --git --expirationtime 120 -p 3030" src="https://github.com/proycon/foliadocserve" folia_version="2.0.3" type="auto" xml:id="proc.foliadocserve.e85338a1">
+        <processor src="https://github.com/proycon/foliapy" name="foliapy" folia_version="2.0.3" version="2.0.8" xml:id="proc.foliadocserve.e85338a1.generator" type="generator"/>
+        <processor name="foliaupgrade" version="2.0.7" xml:id="proc.foliaupgrade.04f2d2b8" type="auto" src="https://github.com/proycon/foliatools">
+          <processor name="ucto" xml:id="proc.ucto.e3829676" type="auto" begindatetime="2019-04-03T10:05:20"/>
+        </processor>
+      </processor>
+    </provenance>
     <meta id="language">eng</meta>
   </metadata>
   <text xml:id="untitled.text">
     <p xml:id="untitled.p.1">
       <s xml:id="untitled.p.1.s.1">
-        <w xml:id="untitled.p.1.s.1.w.1" class="WORD">
+        <w datetime="2019-04-03T10:05:20" class="WORD" xml:id="untitled.p.1.s.1.w.1">
           <t>aaa</t>
         </w>
-        <w xml:id="untitled.p.1.s.1.w.2" class="WORD">
+        <w datetime="2019-04-03T10:05:20" class="WORD" xml:id="untitled.p.1.s.1.w.2">
           <t>is</t>
         </w>
-        <w xml:id="untitled.p.1.s.1.w.3" class="WORD">
+        <w datetime="2019-04-03T10:05:20" class="WORD" xml:id="untitled.p.1.s.1.w.3">
           <t>not</t>
         </w>
-        <w xml:id="untitled.p.1.s.1.w.4" class="WORD" space="no">
+        <w datetime="2019-04-03T10:05:20" class="WORD" xml:id="untitled.p.1.s.1.w.4" space="no">
           <t>bbb</t>
         </w>
-        <w xml:id="untitled.p.1.s.1.w.5" class="PUNCTUATION">
+        <w datetime="2019-04-03T10:05:20" class="PUNCTUATION" xml:id="untitled.p.1.s.1.w.5">
           <t>.</t>
         </w>
       </s>

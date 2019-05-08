@@ -19,6 +19,17 @@
   </properties>
 
   <dependencies>
+<!--    <dependency>-->
+<!--      <groupId>com.spotify</groupId>-->
+<!--      <artifactId>docker-client</artifactId>-->
+<!--      <version>8.15.2</version>-->
+<!--    </dependency>-->
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java</artifactId>
+      <!-- use latest version https://github.com/docker-java/docker-java/releases -->
+      <version>3.1.1</version>
+    </dependency>
     <dependency>
       <groupId>nl.mpi.tla</groupId>
       <artifactId>SaxonUtils</artifactId>

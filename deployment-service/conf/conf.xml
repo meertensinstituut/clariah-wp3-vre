@@ -4,4 +4,7 @@
   <inputDirectory>input</inputDirectory>
   <outputDirectory>output</outputDirectory>
   <queueLength>100</queueLength>
+  <dockerServer>tcp://host.docker.internal:2375</dockerServer>
+  <dockerTlsVerify>0</dockerTlsVerify>
+  <dockerCertPath>/</dockerCertPath>
 </deploymentService>

@@ -63,7 +63,9 @@ public class DeployUtils {
       deploymentStatusFound = true;
     }
 
-    logger.info(String.format("httpStatusSuccess is [%s]; deploymentStatusFound is [%s]; deploymentStatus is [%s]", httpStatusSuccess, deploymentStatusFound, deploymentStatus));
+    logger.info(String
+      .format("httpStatusSuccess is [%s]; deploymentStatusFound is [%s]; deploymentStatus is [%s]", httpStatusSuccess,
+        deploymentStatusFound, deploymentStatus));
 
     assertThat(httpStatusSuccess).isTrue();
     assertThat(deploymentStatusFound).isTrue();
@@ -134,16 +136,22 @@ public class DeployUtils {
 
   public static boolean filesAreUnlocked(String inputFile, String testFileContent) {
     try {
-      HttpResponse<String> downloadResult = downloadFile(inputFile);
+      var put = false;
+      var delete = false;
+
+      var downloadResult = downloadFile(inputFile);
       List expected = newArrayList(200, 202);
-      boolean get = downloadResult.getBody().equals(testFileContent)
+      var get = downloadResult.getBody().equals(testFileContent)
         && expected.contains(downloadResult.getStatus());
 
-      HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-      boolean put = putAfterDeployment.getStatus() == 204;
+      if (get) {
 
-      HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-      boolean delete = deleteInputFile.getStatus() == 204;
+        var putAfterDeployment = putInputFile(inputFile);
+        put = putAfterDeployment.getStatus() == 204;
+
+        var deleteInputFile = deleteInputFile(inputFile);
+        delete = deleteInputFile.getStatus() == 204;
+      }
 
       logger.info(format(
         "check file [%s] is unlocked: get [%s], put [%s], delete [%s]",
@@ -158,22 +166,30 @@ public class DeployUtils {
 
   public static boolean filesAreUnlockedAfterEdit(String inputFile, String testFileContent) {
     try {
-      HttpResponse<String> downloadResult = downloadFile(inputFile);
+      var put = false;
+      var delete = false;
+
+      var downloadResult = downloadFile(inputFile);
       List expected = newArrayList(200, 202);
       logger.info(String.format("input file content is: [%s]", downloadResult.getBody()));
-      logger.info(String.format("output file content is: [%s]", testFileContent));
-      boolean get = downloadResult.getBody().contains(testFileContent)
-        && expected.contains(downloadResult.getStatus());
+      logger.info(String.format("output file content should contain: [%s]", testFileContent));
 
-      HttpResponse<String> putAfterDeployment = putInputFile(inputFile);
-      boolean put = putAfterDeployment.getStatus() == 204;
+      var expectedContent = downloadResult.getBody().contains(testFileContent);
+      var expectedStatus = expected.contains(downloadResult.getStatus());
 
-      HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-      boolean delete = deleteInputFile.getStatus() == 204;
+      var get = expectedContent && expectedStatus;
+
+      if (get) {
+        var putAfterDeployment = putInputFile(inputFile);
+        put = putAfterDeployment.getStatus() == 204;
+
+        var deleteInputFile = deleteInputFile(inputFile);
+        delete = deleteInputFile.getStatus() == 204;
+      }
 
       logger.info(format(
-        "check file [%s] is unlocked: get [%s], put [%s], delete [%s]",
-        inputFile, get, put, delete
+        "checks: get status [%b], get content [%b], put [%b], delete [%b]",
+        expectedStatus, expectedContent, put, delete
       ));
 
       return get && put && delete;
