@@ -31,8 +31,8 @@ public class FileUtils {
   public static boolean fileHasContent(String inputFile, String someContent) {
     logger.info(format("check file [%s] can be downloaded", inputFile));
     HttpResponse<String> downloadResult = downloadFile(inputFile);
-    return downloadResult.getStatus() == 200
-      && downloadResult.getBody().equals(someContent);
+    return downloadResult.getStatus() == 200 &&
+      downloadResult.getBody().equals(someContent);
   }
 
   public static HttpResponse<String> downloadFile(String inputFile) {
@@ -56,8 +56,8 @@ public class FileUtils {
       List deleteStatus = newArrayList(403, 423);
 
       HttpResponse<String> deleteInputFile = deleteInputFile(inputFile);
-      return lockedStatus.contains(putAfterDeployment.getStatus())
-        && deleteStatus.contains(deleteInputFile.getStatus());
+      return lockedStatus.contains(putAfterDeployment.getStatus()) &&
+        deleteStatus.contains(deleteInputFile.getStatus());
     } catch (UnirestException e) {
       throw new RuntimeException(e);
     }

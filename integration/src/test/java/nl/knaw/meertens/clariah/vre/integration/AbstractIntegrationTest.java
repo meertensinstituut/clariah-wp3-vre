@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -19,13 +18,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  */
 public abstract class AbstractIntegrationTest {
 
-  private Logger logger = LoggerFactory.getLogger(UploadingNewFileTest.class);
   private final static int maxPollPeriod = 20;
 
   static {
     Awaitility.setDefaultTimeout(maxPollPeriod, SECONDS);
   }
 
+  private Logger logger = LoggerFactory.getLogger(UploadingNewFileTest.class);
   @Rule
   public TestRule watcher = new TestWatcher() {
     protected void starting(Description description) {

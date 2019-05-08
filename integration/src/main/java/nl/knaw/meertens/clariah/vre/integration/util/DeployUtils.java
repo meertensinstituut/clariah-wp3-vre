@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
@@ -44,7 +45,6 @@ public class DeployUtils {
     HttpResponse<String> deploymentStatusResponse = null;
     deploymentStatusResponse = getDeploymentStatus(workDir);
     String body = deploymentStatusResponse.getBody();
-    String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
     int responseStatus = deploymentStatusResponse.getStatus();
     logger.info(format("Http status was [%s] and response body was [%s]",
       responseStatus, body
@@ -59,13 +59,16 @@ public class DeployUtils {
     if (asList(success).contains(responseStatus)) {
       httpStatusSuccess = true;
     }
+
+    String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
     if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {
       deploymentStatusFound = true;
     }
 
-    logger.info(String
-      .format("httpStatusSuccess is [%s]; deploymentStatusFound is [%s]; deploymentStatus is [%s]", httpStatusSuccess,
-        deploymentStatusFound, deploymentStatus));
+    logger.info(format(
+      "httpStatusSuccess is [%s]; deploymentStatusFound is [%s]; deploymentStatus is [%s]",
+      httpStatusSuccess, deploymentStatusFound, deploymentStatus
+    ));
 
     assertThat(httpStatusSuccess).isTrue();
     assertThat(deploymentStatusFound).isTrue();
@@ -82,7 +85,6 @@ public class DeployUtils {
     HttpResponse<String> deploymentStatusResponse = null;
     deploymentStatusResponse = getDeploymentStatus(workDir);
     String body = deploymentStatusResponse.getBody();
-    String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
     int responseStatus = deploymentStatusResponse.getStatus();
     logger.info(format("Http status was [%s] and response body was [%s]",
       responseStatus, body
@@ -97,6 +99,7 @@ public class DeployUtils {
     if (asList(success).contains(responseStatus)) {
       httpStatusSuccess = true;
     }
+    String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
     if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {
       deploymentStatusFound = true;
     }
@@ -134,49 +137,44 @@ public class DeployUtils {
     return outputPath;
   }
 
-  public static boolean filesAreUnlocked(String inputFile, String testFileContent) {
-    try {
-      var put = false;
-      var delete = false;
-
-      var downloadResult = downloadFile(inputFile);
-      List expected = newArrayList(200, 202);
-      var get = downloadResult.getBody().equals(testFileContent)
-        && expected.contains(downloadResult.getStatus());
-
-      if (get) {
-
-        var putAfterDeployment = putInputFile(inputFile);
-        put = putAfterDeployment.getStatus() == 204;
-
-        var deleteInputFile = deleteInputFile(inputFile);
-        delete = deleteInputFile.getStatus() == 204;
-      }
-
-      logger.info(format(
-        "check file [%s] is unlocked: get [%s], put [%s], delete [%s]",
-        inputFile, get, put, delete
-      ));
-
-      return get && put && delete;
-    } catch (UnirestException e) {
-      throw new RuntimeException("Could not check files are unlocked", e);
-    }
+  public static boolean filesAreUnlockedAfterEdit(
+    String inputFile,
+    String testFileContent
+  ) {
+    return filesAreUnlocked(
+      inputFile,
+      testFileContent,
+      (String content) -> content.contains(testFileContent)
+    );
   }
 
-  public static boolean filesAreUnlockedAfterEdit(String inputFile, String testFileContent) {
+  public static boolean filesAreUnlocked(
+    String inputFile,
+    String testFileContent
+  ) {
+    return filesAreUnlocked(
+      inputFile,
+      testFileContent,
+      (String content) -> content.equals(testFileContent)
+    );
+  }
+
+  private static boolean filesAreUnlocked(
+    String inputFile,
+    String testFileContent,
+    Function<String, Boolean> contentOfFileTester
+  ) {
     try {
       var put = false;
       var delete = false;
 
       var downloadResult = downloadFile(inputFile);
       List expected = newArrayList(200, 202);
-      logger.info(String.format("input file content is: [%s]", downloadResult.getBody()));
-      logger.info(String.format("output file content should contain: [%s]", testFileContent));
+      logger.info(format("input file content is: [%s]", downloadResult.getBody()));
+      logger.info(format("output file content should contain: [%s]", testFileContent));
 
-      var expectedContent = downloadResult.getBody().contains(testFileContent);
+      var expectedContent = contentOfFileTester.apply(downloadResult.getBody());
       var expectedStatus = expected.contains(downloadResult.getStatus());
-
       var get = expectedContent && expectedStatus;
 
       if (get) {
@@ -196,6 +194,7 @@ public class DeployUtils {
     } catch (UnirestException e) {
       throw new RuntimeException("Could not check files are unlocked", e);
     }
+
   }
 
   private static HttpResponse<String> getDeploymentStatus(String workDir) {

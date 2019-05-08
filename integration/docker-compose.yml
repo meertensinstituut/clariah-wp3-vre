@@ -12,19 +12,19 @@ services:
     tty: true
     working_dir: /usr/local/integration/
     depends_on:
-      - recognizer
-      - nextcloud
-      - postgres
-      - kafka
-      - switchboard
-      - deployment
-      - lamachine
+    - recognizer
+    - nextcloud
+    - postgres
+    - kafka
+    - switchboard
+    - deployment
+    - lamachine
     volumes:
-      - ./:/usr/local/integration
-      # share maven repository of host:
-      - ${HOME}/.m2/repository:/root/.m2/repository
+    - ./:/usr/local/integration
+    # share maven repository of host:
+    - ${HOME}/.m2/repository:/root/.m2/repository
     extra_hosts:
-     - moby:127.0.0.1
+    - moby:127.0.0.1
     environment:
       KAFKA_PORT: ${KAFKA_PORT}
       NEXTCLOUD_TOPIC_NAME: ${NEXTCLOUD_TOPIC_NAME}
@@ -45,4 +45,4 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DEFAULT_LISTENER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: DEFAULT_LISTENER
     ports:
-      - "8085:8085"
+    - "8085:8085"
