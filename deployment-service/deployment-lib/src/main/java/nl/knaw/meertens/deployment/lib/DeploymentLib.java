@@ -145,6 +145,8 @@ public class DeploymentLib {
         logger.info(String.format("Cleanup [%s]", handler.toString()));
         handler.cleanup();
       }
+    } else {
+      logger.info("Nothing to cleanup");
     }
   }
 
