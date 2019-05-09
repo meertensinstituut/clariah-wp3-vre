@@ -50,6 +50,13 @@
           <fork>true</fork>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>de.qaware.maven</groupId>
+        <artifactId>go-offline-maven-plugin</artifactId>
+        <version>1.1.0</version>
+      </plugin>
+
     </plugins>
   </build>
 </project>

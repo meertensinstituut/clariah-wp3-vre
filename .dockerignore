@@ -1,0 +1,6 @@
+# to speed up build, ignore files in (sub-)subfolders which are not poms:
+/*/*.*
+!/*/pom.xml
+/*/*/*.*
+!/*/*/pom.xml
+/*/*/*/*
