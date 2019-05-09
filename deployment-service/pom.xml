@@ -19,12 +19,6 @@
     <module>deployment-api</module>
   </modules>
 
-  <properties>
-    <commons-collections.version>3.2.2</commons-collections.version>
-    <commons-configuration.version>1.10</commons-configuration.version>
-    <httpclient.version>4.5.2</httpclient.version>
-  </properties>
-
   <repositories>
     <repository>
       <id>CLARIN</id>
