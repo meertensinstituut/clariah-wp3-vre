@@ -5,7 +5,7 @@
 
 FROM knawhuc/clariah-wp3-vre-deployment AS old
 
-FROM knawhuc/clariah-wp3-vre-switchboard-builder
+FROM knawhuc/clariah-wp3-vre-switchboard-builder as builder
 COPY --from=old /root/.m2/repository /root/.m2/repository
 
 RUN apt-get update && \
@@ -23,8 +23,11 @@ WORKDIR /usr/local/deployment
 
 RUN echo "remove duplicate plexus" && rm /usr/share/maven/boot/plexus-classworlds-2.5.2.jar
 
+RUN mvn clean install
+
+FROM tomcat:9-jre11-slim
+
 # api.war contains both api and lib; hence the rename to service.war:
-RUN mvn clean install && \
-    cp deployment-api/target/deployment-api.war /usr/local/tomcat/webapps/deployment-service.war
+COPY --from=builder /usr/local/deployment/deployment-api/target/deployment-api.war /usr/local/tomcat/webapps/deployment-service.war
 
 CMD catalina.sh run

@@ -24,6 +24,12 @@ RUN rm -rf /user/local/switchboard
 COPY ./ /usr/local/switchboard
 WORKDIR /usr/local/switchboard
 
+# Add tomcat filters to allow CORS:
+COPY ./docker/web.xml /usr/local/tomcat/conf/web.xml
+
+# Create user for locking nextcloud files:
+RUN useradd --create-home --shell /bin/bash locker
+
 RUN echo "add test user..." && \
     chmod +x /usr/local/switchboard/set-test-user.sh && \
     /usr/local/switchboard/set-test-user.sh
