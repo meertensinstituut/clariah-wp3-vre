@@ -30,13 +30,14 @@ RUN echo "build switchboard..." && \
 
 FROM tomcat:9-jre11-slim
 
+COPY --from=builder /usr/local/switchboard/target/switchboard-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/switchboard.war
+
 # Add tomcat filters to allow CORS:
 COPY ./docker/web.xml /usr/local/tomcat/conf/web.xml
 
 # Create user for locking nextcloud files:
 RUN useradd --create-home --shell /bin/bash locker
 
-COPY --from=builder /usr/local/switchboard/target/switchboard-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/switchboard.war
 
 # tail to keep docker running when redeploying jar:
 CMD export CATALINA_OPTS="-Xmx700m --add-exports java.base/jdk.internal.ref=ALL-UNNAMED" && \
