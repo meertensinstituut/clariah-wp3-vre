@@ -9,7 +9,7 @@ RUN rm -rf /user/local/deployment
 COPY ./ /usr/local/deployment
 WORKDIR /usr/local/deployment
 
-RUN mvn -U clean install
+RUN mvn clean install
 
 FROM tomcat:9-jre11-slim
 
