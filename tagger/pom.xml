@@ -113,7 +113,7 @@
           </descriptorRefs>
           <archive>
             <manifest>
-              <mainClass>nl.knaw.meertens.clariah.vre.recognizer.App</mainClass>
+              <mainClass>nl.knaw.meertens.clariah.vre.tagger.App</mainClass>
             </manifest>
           </archive>
         </configuration>

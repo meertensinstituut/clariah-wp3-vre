@@ -18,4 +18,4 @@ RUN mvn clean install
 FROM openjdk:11-jre-slim-stretch
 COPY --from=builder /usr/local/tagger/target/tagger-0.1-SNAPSHOT-jar-with-dependencies.jar /usr/local/tagger/tagger.jar
 
-CMD java -jar ./tagger.jar
+CMD java -jar /usr/local/tagger/tagger.jar

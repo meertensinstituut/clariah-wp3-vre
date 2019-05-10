@@ -20,4 +20,4 @@ RUN mvn clean install
 FROM openjdk:11-jre-slim-stretch
 COPY --from=builder /usr/local/recognizer/target/recognizer-0.1-SNAPSHOT-jar-with-dependencies.jar /usr/local/recognizer/recognizer.jar
 
-CMD java -jar ./recognizer.jar
+CMD java -jar /usr/local/recognizer/recognizer.jar
