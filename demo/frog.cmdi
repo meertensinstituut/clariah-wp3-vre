@@ -25,7 +25,8 @@
             <cmdp:Input>
               <cmdp:Parameter>
                 <cmdp:Name>foliainput</cmdp:Name>
-                <cmdp:MIMEType>text/xml</cmdp:MIMEType>
+                <cmdp:MIMEType>text/folia+xml</cmdp:MIMEType>
+                <cmdp:SemanticType>folia.token</cmdp:SemanticType>
                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
                 <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
               </cmdp:Parameter>
@@ -35,6 +36,7 @@
                 <cmdp:Name>foliaoutput</cmdp:Name>
                 <cmdp:Description>Tokenised Text Document (FoLiA XML)</cmdp:Description>
                 <cmdp:MIMEType>text/xml</cmdp:MIMEType>
+                <cmdp:SemanticType>folia.pos.cgn</cmdp:SemanticType>
                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
                 <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
               </cmdp:Parameter>
