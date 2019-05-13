@@ -26,6 +26,7 @@ public class Http implements HandlerPlugin {
       IllegalAccessException, HandlerPluginException, RecipePluginException {
     handlers.push(this);
     String httpLoc = "http:" + serviceLocation;
+    logger.info(String.format("Final http url is [%s]", httpLoc));
     return DeploymentLib.invokeService(workDir, service, httpLoc, handlers);
   }
 

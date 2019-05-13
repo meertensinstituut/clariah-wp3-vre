@@ -80,7 +80,7 @@ public class Docker implements HandlerPlugin {
       logger.info(String.format("Docker search on the container: [%s]", dockerSearch.toString()));
 
       logger.info("Pulling");
-      PullImageCmd pullImageCmd = null;
+      PullImageCmd pullImageCmd;
       if (dockerRepo.equals("_") || dockerRepo.toLowerCase().equals("none")) {
         pullImageCmd = dockerClient.pullImageCmd(dockerImg)
                                    .withTag(dockerTag)
@@ -99,7 +99,7 @@ public class Docker implements HandlerPlugin {
         logger.error(String.format("Cannot pull the image [%s/%s/%s]; ", dockerRepo, dockerImg, dockerTag), e);
       }
 
-      logger.info("Image pulled; Running container");
+      logger.info("Image pulled; Running container; ls command will be running");
 
       CreateContainerResponse container = dockerClient.createContainerCmd(dockerImg)
                                                       .withCmd("ls")
