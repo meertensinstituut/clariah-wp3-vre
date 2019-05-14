@@ -1,0 +1,4 @@
+hostname: vupipeline
+root: /vurm/vupipeline
+port: 8080
+host: vupipeline
