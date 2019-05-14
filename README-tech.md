@@ -47,6 +47,9 @@ Using:
 
 Each component runs in its own container. The images of switchboard, recognizer, tagger and deployment are build automatically on docker hub.
 
+### Builder image
+To use the builder image, make sure pom of new component is added to `./Dockefile.buildfile`
+
 Demo
 ---
 

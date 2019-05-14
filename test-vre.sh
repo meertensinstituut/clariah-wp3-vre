@@ -3,6 +3,8 @@ set -e
 
 source ./merge-containers.sh
 
+docker pull knawhuc/clariah-wp3-vre-builder
+
 docker-compose pull
 
 # build java images
