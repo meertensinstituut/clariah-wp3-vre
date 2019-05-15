@@ -51,9 +51,13 @@ public class RecognizerService {
     FITS_URL,
     FITS_FILES_ROOT
   );
+
   private final MimetypeService mimetypeService = new MimetypeService();
+  private final SemanticTypeService semanticTypeService = new SemanticTypeService(mimetypeService);
+
   private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(
     mimetypeService,
+    semanticTypeService,
     OBJECTS_DB_URL,
     OBJECTS_DB_KEY,
     OBJECT_TABLE

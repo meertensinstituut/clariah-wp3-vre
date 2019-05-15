@@ -14,6 +14,7 @@ import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
 import nl.knaw.meertens.clariah.vre.recognizer.Report;
 import nl.knaw.meertens.clariah.vre.recognizer.MimetypeService;
+import nl.knaw.meertens.clariah.vre.recognizer.SemanticTypeService;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
@@ -38,14 +40,19 @@ public class ObjectsRepositoryService {
   private final ParseContext jsonPath;
   private final ObjectMapper mapper;
   private final MimetypeService mimetypeService;
+  private final SemanticTypeService semanticTypeService;
 
   public ObjectsRepositoryService(
     MimetypeService mimetypeService,
+    SemanticTypeService semanticTypeService,
     String objectsDbUrl,
     String objectsDbKey,
     String objectTable
   ) {
+
     this.mimetypeService = mimetypeService;
+    this.semanticTypeService = semanticTypeService;
+
     this.objectsDbUrl = objectsDbUrl;
     this.objectsDbKey = objectsDbKey;
     this.objectTable = objectTable;
@@ -68,12 +75,24 @@ public class ObjectsRepositoryService {
    * @return objectId
    */
   public Long create(Report report) {
-    var recordJson = createObjectRecordJson(report);
-    var persistResult = persistRecord(recordJson, null);
-    return jsonPath
+    var objectRecord = createObjectRecordDto(report);
+    objectRecord.mimetype = mimetypeService.getMimetype(
+      report.getXml(),
+      Paths.get(report.getPath())
+    );
+
+    var persistResult = persistRecord(objectRecord, null);
+    var objectRecordId = jsonPath
       .parse(persistResult)
       .read("$.resource[0].id", Integer.class)
       .longValue();
+
+    var semanticTypes = semanticTypeService.detectSemanticTypes(
+      objectRecord.mimetype,
+      Paths.get(report.getPath())
+    );
+
+    return objectRecordId;
   }
 
   /**
@@ -83,7 +102,7 @@ public class ObjectsRepositoryService {
    */
   public Long update(Report report) {
     var id = getObjectIdByPath(report.getPath());
-    var recordJson = createObjectRecordJson(report);
+    var recordJson = createObjectRecordDto(report);
     var persistResult = persistRecord(recordJson, id);
     return Long.valueOf(jsonPath
       .parse(persistResult)
@@ -211,22 +230,20 @@ public class ObjectsRepositoryService {
     }
   }
 
-  public String createObjectRecordJson(Report report) {
-    var record = createObjectsRecordDto(report);
-    try {
-      return mapper.writeValueAsString(record);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(format("Could not create json from [%s]", report.getPath()), e);
-    }
-  }
-
   /**
    * Update or create record
    */
-  private String persistRecord(String recordJson, Long id) {
+  private String persistRecord(ObjectsRecordDto dto, Long id) {
     if (!hasAllObjectsDbDetails()) {
       return null;
     }
+    var recordJson = "";
+    try {
+      recordJson = mapper.writeValueAsString(dto);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(format("Could not create record json for [%s]", dto.filepath), e);
+    }
+
     HttpResponse<String> response;
     try {
       var body = createPostOrPut(recordJson, id);
@@ -275,12 +292,13 @@ public class ObjectsRepositoryService {
     return response.getStatus() / 100 == 2;
   }
 
-  private ObjectsRecordDto createObjectsRecordDto(Report report) {
+  private ObjectsRecordDto createObjectRecordDto(Report report) {
     var msg = new ObjectsRecordDto();
     msg.filepath = report.getPath();
     msg.fits = report.getXml();
 
-    msg.mimetype = mimetypeService.getMimetype(report.getXml(), Path.of(report.getPath()));
+    Path originalFile = Path.of(report.getPath());
+
     msg.format = FitsService.getIdentity(report.getFits()).getFormat();
 
     msg.timeChanged = LocalDateTime.now();

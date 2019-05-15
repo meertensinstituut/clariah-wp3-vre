@@ -32,8 +32,11 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
   @Before
   public void setup() {
     setupAbstract();
+    MimetypeService mimetypeService = new MimetypeService();
+
     objectsRepositoryService = new ObjectsRepositoryService(
-      new MimetypeService(),
+      mimetypeService,
+      new SemanticTypeService(mimetypeService),
       mockUrl,
       "",
       OBJECT_TABLE
