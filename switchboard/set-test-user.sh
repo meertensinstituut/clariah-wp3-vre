@@ -5,10 +5,10 @@ mkdir -p /usr/local/tomcat/conf/Catalina/localhost && \
   touch /usr/local/tomcat/conf/Catalina/localhost/static.xml
 
 # add static files dir:
-echo '<Context path="/static" docBase="/usr/local/switchboard/static_files/"></Context>' \
+echo '<Context path="/static" docBase="/usr/local/tomcat/static_files/"></Context>' \
   > /usr/local/tomcat/conf/Catalina/localhost/static.xml
 
 # add test user:
-mkdir -p ./static_files && \
-  touch ./static_files/test-user.json
-echo "{\"user\": \"$TEST_USER\"}" > ./static_files/test-user.json
+mkdir -p /usr/local/tomcat/static_files && \
+  touch /usr/local/tomcat/static_files/test-user.json
+echo "{\"user\": \"$TEST_USER\"}" > /usr/local/tomcat/static_files/test-user.json

@@ -8,17 +8,10 @@ services:
       context: ./
       dockerfile: ./Dockerfile
       args:
-        SWITCHBOARD_TOPIC_NAME: ${SWITCHBOARD_TOPIC_NAME}
-        NEXTCLOUD_TOPIC_NAME: ${NEXTCLOUD_TOPIC_NAME}
-        KAFKA_PORT: ${KAFKA_PORT}
-        NEXTCLOUD_VOLUME: ${SWITCHBOARD_NEXTCLOUD_VOLUME}
         DEPLOYMENT_VOLUME: ${SWITCHBOARD_DEPLOYMENT_VOLUME}
         TEST_USER: ${TEST_USER}
-        TEST_PASSWORD: ${TEST_PASSWORD}
         USER_TO_LOCK_WITH: ${SWITCHBOARD_USER_TO_LOCK_WITH}
         USER_TO_UNLOCK_WITH: ${SWITCHBOARD_USER_TO_UNLOCK_WITH}
-        APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
-        APP_KEY_SERVICES: ${APP_KEY_SERVICES}
     tty: true
     extra_hosts:
     - moby:127.0.0.1
@@ -27,7 +20,6 @@ services:
     depends_on:
     - kafka
     volumes:
-    - ./static_files:/user/local/switchboard/static_files
     - data-volume:/usr/local/nextcloud
     - deployment-volume:/tmp/deployment
     - mvn-repo-volume:/usr/local/mvn-repo-volume
