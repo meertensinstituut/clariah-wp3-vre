@@ -27,11 +27,11 @@
                         <cmdp:Name>main</cmdp:Name>
                         <cmdp:Input>
                             <cmdp:ParameterGroup>
-                                <cmdp:Name>untokinput</cmdp:Name>
+                                <cmdp:Name>uvpipeline-txt-input</cmdp:Name>
                                 <cmdp:Label xml:lang="en">Input text</cmdp:Label>
                                 <cmdp:MIMEType>text/plain</cmdp:MIMEType>
                                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
-                                <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
+                                <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
                                 <cmdp:Parameters>
                                     <cmdp:Parameter>
                                         <cmdp:Name>language</cmdp:Name>
@@ -86,22 +86,16 @@
                                             </cmdp:ParameterValue>
                                         </cmdp:Values>
                                     </cmdp:Parameter>
-                                    <cmdp:Parameter>
-                                        <cmdp:Name>author</cmdp:Name>
-                                        <cmdp:DataType>string</cmdp:DataType>
-                                        <cmdp:MinimumCardinality>0</cmdp:MinimumCardinality>
-                                        <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
-                                    </cmdp:Parameter>
                                 </cmdp:Parameters>
                             </cmdp:ParameterGroup>
                         </cmdp:Input>
                         <cmdp:Output>
                             <cmdp:Parameter>
-                                <cmdp:Name>foliatokoutput</cmdp:Name>
-                                <cmdp:Description>Tokenised Text Document (FoLiA XML)</cmdp:Description>
+                                <cmdp:Name>uvpipeline-naf-output</cmdp:Name>
+                                <cmdp:Description>Naf NLP file</cmdp:Description>
                                 <cmdp:MIMEType>text/xml</cmdp:MIMEType>
                                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
-                                <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
+                                <cmdp:MaximumCardinality>1</cmdp:MaximumCardinality>
                             </cmdp:Parameter>
                         </cmdp:Output>
                     </cmdp:Operation>

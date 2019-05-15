@@ -41,20 +41,26 @@ public class Docker implements HandlerPlugin {
   Pattern pattern = Pattern.compile("^([^/]+)/([^/]+)/([^/]+)/(.*)$");
   Matcher matcher;
 
-  @Override
-  public void init() throws HandlerPluginException, DockerException {
+  public Docker() {
     logger.info("initializing!");
     logger.info("#### creating docker client ####");
     logger.info(
         "#### run 'socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &' on docker host before " +
             "running the app ####");
-    this.dockerClient = this.getDockerClient(DOCKER_SERVER, DOCKER_TLS_VERIFY, DOCKER_CERT_PATH);
+    try {
+      this.dockerClient = this.getDockerClient(DOCKER_SERVER, DOCKER_TLS_VERIFY, DOCKER_CERT_PATH);
+    } catch (DockerException | HandlerPluginException e) {
+      logger.error(String.format("Could not init docker client [%s]", e));
+    }
 
     logger.info("#### succeed in docker client ####");
     Info info = dockerClient.infoCmd().exec();
     logger.info(String.format("Docker info [%s]", info.toString()));
     logger.info("initialized!");
+  }
 
+  public void setDockerClient(DockerClient dockerClient) {
+    this.dockerClient = dockerClient;
   }
 
   public boolean runDockerContainer(String serviceLocation, Stack<HandlerPlugin> handlers)

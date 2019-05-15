@@ -16,11 +16,6 @@ public class Http implements HandlerPlugin {
   private Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Override
-  public void init() {
-    logger.info("initialized!");
-  }
-
-  @Override
   public ObjectNode handle(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
       throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException,
       IllegalAccessException, HandlerPluginException, RecipePluginException {
