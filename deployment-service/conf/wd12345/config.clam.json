@@ -1,15 +1,10 @@
 {
   "params": [
     {
-      "name": "untokinput",
+      "name": "uvpipeline-txt-input",
       "type": "file",
       "value": "/test.txt",
-      "params": [
-        {
-          "language": "nld",
-          "author": "blarp"
-        }
-      ]
+
     }
   ]
 }
