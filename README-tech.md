@@ -14,7 +14,7 @@ The CLARIAH WP3 VRE consists of the following components:
 
 See component readme's for more information.
 
-See [vre-model.svg](vre-model.svg) for an overview of the VRE.
+See [vre-model.svg](./documentation/vre-model.svg) for an overview of the VRE.
 
 Using:
 - Java 11
