@@ -28,5 +28,4 @@ public class ObjectsRecordDto {
   public String filesize = "";
   public String metadataid = "";
   public boolean deleted = false;
-  public List<String> semanticTypes = "";
 }

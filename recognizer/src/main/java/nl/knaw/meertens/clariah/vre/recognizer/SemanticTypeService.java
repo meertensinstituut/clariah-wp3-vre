@@ -1,5 +1,7 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
 import nl.knaw.meertens.clariah.vre.recognizer.semantics.SemanticTypePlugin;
@@ -20,7 +22,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 // - create table for semantic types
 // - save semantic type records
 // - delete semantic type records on update
-// - test detection of semantic types
 // - test creation of semantic types (request)
 // - test deletion of semantic types on update(request)
 
@@ -41,7 +42,7 @@ public class SemanticTypeService {
   public List<String> detectSemanticTypes(String mimetype, Path originalFile) {
     var semanticTypePlugin = semanticTypePlugins
       .get(mimetype);
-    if(semanticTypePlugin == null) {
+    if (semanticTypePlugin == null) {
       return new ArrayList<>();
     }
     return semanticTypePlugin
@@ -51,9 +52,10 @@ public class SemanticTypeService {
   private HashMap<String, SemanticTypePlugin> getPlugins(List<XdmItem> mimetypeNodes) {
     HashMap<String, SemanticTypePlugin> result = new HashMap<>();
     for (var mimetypeNode : mimetypeNodes) {
+      logger.info("mimetype: " + mimetypeNode.getStringValue());
       try {
-        var mimetype = xpath2string(mimetypeNode, "/mimetype/semantics/@class");
-        var className = xpath2string(mimetypeNode, "/mimetype/@value");
+        var mimetype = xpath2string(mimetypeNode, "//mimetype/@value");
+        var className = xpath2string(mimetypeNode, "//mimetype/semantics/@class");
         if (!isBlank(className)) {
           var semanticTypePlugin = Class.forName(className).asSubclass(SemanticTypePlugin.class);
           var pluginInstance = intantiateClass(semanticTypePlugin);

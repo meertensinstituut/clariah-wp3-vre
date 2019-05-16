@@ -1,5 +1,7 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRecordDto;
 import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -15,7 +17,7 @@ import java.io.IOException;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.*;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_TABLE;
 import static org.apache.commons.codec.Charsets.UTF_8;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
@@ -39,7 +41,8 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
       new SemanticTypeService(mimetypeService),
       mockUrl,
       "",
-      OBJECT_TABLE
+      OBJECT_TABLE,
+      RecognizerService.getObjectMapper()
     );
   }
 
@@ -54,7 +57,9 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
     report.setUser(expectedUser);
     report.setXml(testFitsXml);
 
-    var result = objectsRepositoryService.createObjectRecordJson(report);
+    String result = RecognizerService.getObjectMapper().writeValueAsString(
+      objectsRepositoryService.createObjectRecordDto(report)
+    );
 
     assertThatJson(result).node("time_created").matches(
       containsString(now().format(ofPattern("yyyy-MM-dd'T'HH"))));

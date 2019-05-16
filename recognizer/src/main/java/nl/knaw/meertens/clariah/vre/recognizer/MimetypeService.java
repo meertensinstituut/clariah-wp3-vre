@@ -28,7 +28,7 @@ import static nl.mpi.tla.util.Saxon.xpathList;
  * - fits xml report
  * - original file
  * Rules to assert mimetypes are defined in:
- *   fits-mimetypes.xml
+ * fits-mimetypes.xml
  */
 public class MimetypeService {
 
@@ -37,6 +37,7 @@ public class MimetypeService {
   private final Map<String, String> namespaces = new LinkedHashMap<>();
 
   private final List<XdmItem> mimetypes;
+
   public MimetypeService() {
     this.mimetypes = getMimetypesFromResources();
 

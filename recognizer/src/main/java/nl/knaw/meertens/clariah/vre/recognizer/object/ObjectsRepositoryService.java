@@ -38,6 +38,7 @@ public class ObjectsRepositoryService {
   private final String objectsDbKey;
   private final String objectTable;
   private final ParseContext jsonPath;
+
   private final ObjectMapper mapper;
   private final MimetypeService mimetypeService;
   private final SemanticTypeService semanticTypeService;
@@ -47,7 +48,8 @@ public class ObjectsRepositoryService {
     SemanticTypeService semanticTypeService,
     String objectsDbUrl,
     String objectsDbKey,
-    String objectTable
+    String objectTable,
+    ObjectMapper mapper
   ) {
 
     this.mimetypeService = mimetypeService;
@@ -56,6 +58,7 @@ public class ObjectsRepositoryService {
     this.objectsDbUrl = objectsDbUrl;
     this.objectsDbKey = objectsDbKey;
     this.objectTable = objectTable;
+    this.mapper = mapper;
 
     var conf = Configuration
       .builder()
@@ -63,10 +66,6 @@ public class ObjectsRepositoryService {
       .options(Option.SUPPRESS_EXCEPTIONS)
       .build();
     jsonPath = JsonPath.using(conf);
-
-    mapper = new ObjectMapper();
-    mapper.registerModule(new JavaTimeModule());
-    mapper.disable(WRITE_DATES_AS_TIMESTAMPS);
   }
 
   /**
@@ -76,10 +75,6 @@ public class ObjectsRepositoryService {
    */
   public Long create(Report report) {
     var objectRecord = createObjectRecordDto(report);
-    objectRecord.mimetype = mimetypeService.getMimetype(
-      report.getXml(),
-      Paths.get(report.getPath())
-    );
 
     var persistResult = persistRecord(objectRecord, null);
     var objectRecordId = jsonPath
@@ -292,21 +287,25 @@ public class ObjectsRepositoryService {
     return response.getStatus() / 100 == 2;
   }
 
-  private ObjectsRecordDto createObjectRecordDto(Report report) {
-    var msg = new ObjectsRecordDto();
-    msg.filepath = report.getPath();
-    msg.fits = report.getXml();
+  public ObjectsRecordDto createObjectRecordDto(Report report) {
+    var objectRecord = new ObjectsRecordDto();
+    objectRecord.filepath = report.getPath();
+    objectRecord.fits = report.getXml();
 
-    Path originalFile = Path.of(report.getPath());
+    objectRecord.format = FitsService.getIdentity(report.getFits()).getFormat();
 
-    msg.format = FitsService.getIdentity(report.getFits()).getFormat();
+    objectRecord.timeChanged = LocalDateTime.now();
+    objectRecord.timeCreated = LocalDateTime.now();
+    objectRecord.userId = report.getUser();
+    objectRecord.type = "object";
+    objectRecord.deleted = false;
 
-    msg.timeChanged = LocalDateTime.now();
-    msg.timeCreated = LocalDateTime.now();
-    msg.userId = report.getUser();
-    msg.type = "object";
-    msg.deleted = false;
-    return msg;
+    objectRecord.mimetype = mimetypeService.getMimetype(
+      report.getXml(),
+      Paths.get(report.getPath())
+    );
+
+    return objectRecord;
   }
 
   private boolean hasAllObjectsDbDetails() {
@@ -340,4 +339,5 @@ public class ObjectsRepositoryService {
       ));
     }
   }
+
 }

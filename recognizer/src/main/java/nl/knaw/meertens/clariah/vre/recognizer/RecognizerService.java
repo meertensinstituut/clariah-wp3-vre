@@ -1,6 +1,7 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaProducerService;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.ACTIONS_TO_PERSIST;
@@ -35,8 +37,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class RecognizerService {
 
+  private static final ObjectMapper objectMapper;
+
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  private final ObjectMapper objectMapper = new ObjectMapper();
 
   private final KafkaConsumerService nextcloudConsumerService = new KafkaConsumerService(
     KAFKA_SERVER,
@@ -60,8 +63,15 @@ public class RecognizerService {
     semanticTypeService,
     OBJECTS_DB_URL,
     OBJECTS_DB_KEY,
-    OBJECT_TABLE
+    OBJECT_TABLE,
+    objectMapper
   );
+
+  static {
+    objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
+    objectMapper.disable(WRITE_DATES_AS_TIMESTAMPS);
+  }
 
   public void consumeOwncloud() {
     nextcloudConsumerService.consumeWith((String json) -> {
@@ -87,6 +97,10 @@ public class RecognizerService {
         logger.error(String.format("Could not process kafka message [%s]", json), e);
       }
     });
+  }
+
+  static ObjectMapper getObjectMapper() {
+    return objectMapper;
   }
 
   private Report mapToReport(OwncloudKafkaDto msg) {
