@@ -21,7 +21,7 @@ RUN php -r "copy('https://getcomposer.org/installer', '/tmp/composer-setup.php')
     
 EXPOSE 80
 
-RUN git clone -b 2.11.1 https://github.com/dreamfactorysoftware/dreamfactory.git /opt/dreamfactory
+RUN git clone -b 2.12.0 https://github.com/dreamfactorysoftware/dreamfactory.git /opt/dreamfactory
 
 WORKDIR /opt/dreamfactory
 
