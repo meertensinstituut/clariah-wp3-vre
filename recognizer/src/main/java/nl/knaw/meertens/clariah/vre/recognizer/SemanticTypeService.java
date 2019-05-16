@@ -26,7 +26,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 /**
  * Detect semantic types which are more specific then mimetypes.
  *
- * Allows the VRE to determine if a file meets additional requirements
+ * <p>Allows the VRE to determine if a file meets additional requirements
  * of a service that cannot be determined by mimetype alone
  */
 public class SemanticTypeService {

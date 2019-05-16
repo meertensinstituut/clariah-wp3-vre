@@ -2,7 +2,6 @@ package nl.knaw.meertens.clariah.vre.recognizer.object;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
@@ -12,8 +11,8 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
-import nl.knaw.meertens.clariah.vre.recognizer.Report;
 import nl.knaw.meertens.clariah.vre.recognizer.MimetypeService;
+import nl.knaw.meertens.clariah.vre.recognizer.Report;
 import nl.knaw.meertens.clariah.vre.recognizer.SemanticTypeService;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import org.slf4j.Logger;
@@ -21,27 +20,22 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_KEY;
 import static org.apache.commons.lang3.StringUtils.abbreviate;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class ObjectsRepositoryService {
+public class ObjectsRepositoryService extends AbstractDreamfactoryRepository {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  private final String objectsDbUrl;
-  private final String objectsDbKey;
   private final String objectTable;
-  private final ParseContext jsonPath;
 
-  private final ObjectMapper mapper;
   private final MimetypeService mimetypeService;
   private final SemanticTypeService semanticTypeService;
+  private final ObjectSemanticTypeRepository objectSemanticTypeRepository;
 
   public ObjectsRepositoryService(
     MimetypeService mimetypeService,
@@ -49,23 +43,17 @@ public class ObjectsRepositoryService {
     String objectsDbUrl,
     String objectsDbKey,
     String objectTable,
+    ObjectSemanticTypeRepository objectSemanticTypeRepository,
     ObjectMapper mapper
   ) {
 
+    super(objectsDbUrl, objectsDbKey, mapper);
     this.mimetypeService = mimetypeService;
     this.semanticTypeService = semanticTypeService;
 
-    this.objectsDbUrl = objectsDbUrl;
-    this.objectsDbKey = objectsDbKey;
     this.objectTable = objectTable;
-    this.mapper = mapper;
 
-    var conf = Configuration
-      .builder()
-      .options(Option.DEFAULT_PATH_LEAF_TO_NULL)
-      .options(Option.SUPPRESS_EXCEPTIONS)
-      .build();
-    jsonPath = JsonPath.using(conf);
+    this.objectSemanticTypeRepository = objectSemanticTypeRepository;
   }
 
   /**
@@ -86,6 +74,7 @@ public class ObjectsRepositoryService {
       objectRecord.mimetype,
       Paths.get(report.getPath())
     );
+    objectSemanticTypeRepository.postSemanticTypes(objectRecordId, semanticTypes);
 
     return objectRecordId;
   }
@@ -97,12 +86,20 @@ public class ObjectsRepositoryService {
    */
   public Long update(Report report) {
     var id = getObjectIdByPath(report.getPath());
-    var recordJson = createObjectRecordDto(report);
-    var persistResult = persistRecord(recordJson, id);
-    return Long.valueOf(jsonPath
+    var objectRecord = createObjectRecordDto(report);
+    var persistResult = persistRecord(objectRecord, id);
+    var objectRecordId = Long.valueOf(jsonPath
       .parse(persistResult)
       .read("$.id", String.class)
     );
+    var semanticTypes = semanticTypeService.detectSemanticTypes(
+      objectRecord.mimetype,
+      Paths.get(report.getPath())
+    );
+    objectSemanticTypeRepository.deleteSemanticTypes(objectRecordId);
+    objectSemanticTypeRepository.postSemanticTypes(objectRecordId, semanticTypes);
+
+    return objectRecordId;
   }
 
   /**
@@ -318,26 +315,6 @@ public class ObjectsRepositoryService {
       return false;
     }
     return true;
-  }
-
-  /**
-   * Source: technicaladvices.com/2012/02/20/java-encoding-similiar-to-javascript-encodeuricomponent/
-   */
-  private String encodeUriComponent(String filter) {
-    try {
-      return URLEncoder
-        .encode(filter, "UTF-8")
-        .replaceAll("\\%28", "(")
-        .replaceAll("\\%29", ")")
-        .replaceAll("\\+", "%20")
-        .replaceAll("\\%27", "'")
-        .replaceAll("\\%21", "!")
-        .replaceAll("\\%7E", "~");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(String.format(
-        "Could not create url from filter %s", filter
-      ));
-    }
   }
 
 }

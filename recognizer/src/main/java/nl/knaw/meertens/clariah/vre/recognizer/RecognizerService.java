@@ -7,6 +7,7 @@ import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.OwncloudKafkaDto;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.RecognizerKafkaProducer;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectSemanticTypeRepository;
 import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import static nl.knaw.meertens.clariah.vre.recognizer.Config.NEXTCLOUD_GROUP_NAM
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.NEXTCLOUD_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_KEY;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_URL;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_SEMANTIC_TYPE_TABLE;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_TABLE;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.RECOGNIZER_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.CREATE;
@@ -58,12 +60,21 @@ public class RecognizerService {
   private final MimetypeService mimetypeService = new MimetypeService();
   private final SemanticTypeService semanticTypeService = new SemanticTypeService(mimetypeService);
 
+
+  private final ObjectSemanticTypeRepository objectSemanticTypeRepository = new ObjectSemanticTypeRepository(
+    OBJECTS_DB_URL,
+    OBJECTS_DB_KEY,
+    OBJECT_SEMANTIC_TYPE_TABLE,
+    objectMapper
+  );
+
   private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(
     mimetypeService,
     semanticTypeService,
     OBJECTS_DB_URL,
     OBJECTS_DB_KEY,
     OBJECT_TABLE,
+    objectSemanticTypeRepository,
     objectMapper
   );
 
@@ -99,7 +110,7 @@ public class RecognizerService {
     });
   }
 
-  static ObjectMapper getObjectMapper() {
+  public static ObjectMapper getObjectMapper() {
     return objectMapper;
   }
 

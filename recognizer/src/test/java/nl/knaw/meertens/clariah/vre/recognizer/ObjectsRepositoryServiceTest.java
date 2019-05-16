@@ -1,7 +1,6 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRecordDto;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectSemanticTypeRepository;
 import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_SEMANTIC_TYPE_TABLE;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_TABLE;
 import static org.apache.commons.codec.Charsets.UTF_8;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -33,7 +33,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
 
   @Before
   public void setup() {
-    setupAbstract();
+    setupMockServer();
     MimetypeService mimetypeService = new MimetypeService();
 
     objectsRepositoryService = new ObjectsRepositoryService(
@@ -42,6 +42,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
       mockUrl,
       "",
       OBJECT_TABLE,
+      new ObjectSemanticTypeRepository(mockUrl, "", OBJECT_SEMANTIC_TYPE_TABLE, RecognizerService.getObjectMapper()),
       RecognizerService.getObjectMapper()
     );
   }

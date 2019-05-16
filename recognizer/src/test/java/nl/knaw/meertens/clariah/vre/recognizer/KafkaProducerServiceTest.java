@@ -33,7 +33,7 @@ public class KafkaProducerServiceTest extends AbstractRecognizerTest {
 
   @Before
   public void setup() {
-    setupAbstract();
+    setupMockServer();
     underTest = new KafkaProducerService(mockRecognizerProducer, "testtopic");
   }
 

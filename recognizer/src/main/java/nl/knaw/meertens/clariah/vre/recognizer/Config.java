@@ -18,6 +18,7 @@ public class Config {
   public static final String OBJECTS_DB_URL = "http://dreamfactory/api/v2/objects";
   public static final String OBJECTS_DB_KEY = System.getenv("APP_KEY_OBJECTS");
   public static final String OBJECT_TABLE = "/_table/object";
+  public static final String OBJECT_SEMANTIC_TYPE_TABLE = "/_table/object_semantic_type";
   public static final List<String> ACTIONS_TO_PERSIST = newArrayList(
     CREATE.msgValue(),
     UPDATE.msgValue(),
