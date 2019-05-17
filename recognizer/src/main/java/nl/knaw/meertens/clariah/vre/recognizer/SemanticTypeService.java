@@ -2,7 +2,7 @@ package nl.knaw.meertens.clariah.vre.recognizer;
 
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmItem;
-import nl.knaw.meertens.clariah.vre.recognizer.semantics.SemanticTypePlugin;
+import nl.knaw.meertens.clariah.vre.recognizer.semantictype.SemanticTypePlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,13 +15,6 @@ import java.util.List;
 import static java.lang.String.format;
 import static nl.mpi.tla.util.Saxon.xpath2string;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-
-// TODO:
-// - create table for semantic types
-// - save semantic type records
-// - delete semantic type records on update
-// - test creation of semantic types (request)
-// - test deletion of semantic types on update(request)
 
 /**
  * Detect semantic types which are more specific then mimetypes.

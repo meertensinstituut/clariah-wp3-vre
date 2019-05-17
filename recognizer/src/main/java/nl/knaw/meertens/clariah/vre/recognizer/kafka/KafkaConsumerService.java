@@ -27,11 +27,7 @@ public class KafkaConsumerService {
   private KafkaConsumer<String, String> configureConsumer(String server, String groupName) {
     var props = new Properties();
     props.put("bootstrap.servers", server);
-    props.put("advertised.host.name", "kafka");
-    props.put("advertised.port", 9092);
     props.put("group.id", groupName);
-    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
     props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
     props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 

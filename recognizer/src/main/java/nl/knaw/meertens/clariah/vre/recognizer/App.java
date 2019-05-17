@@ -87,10 +87,11 @@ public class App {
     );
 
     objectsService = new ObjectsService(
-      mimetypeService,
+      FITS_FILES_ROOT,
       semanticTypeService,
       objectRepository,
-      objectSemanticTypeRepository
+      objectSemanticTypeRepository,
+      mimetypeService
     );
 
     recognizerService = new RecognizerService(

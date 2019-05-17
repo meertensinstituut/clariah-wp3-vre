@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.recognizer.semantics;
+package nl.knaw.meertens.clariah.vre.recognizer.semantictype;
 
 import java.nio.file.Path;
 import java.util.List;

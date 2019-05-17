@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.recognizer.object;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -34,19 +36,44 @@ public class ObjectSemanticTypeRepository extends AbstractDreamfactoryRepository
    */
   public void createSemanticTypes(long objectRecordId, List<String> semanticTypes) {
     if (semanticTypes.isEmpty()) {
-      logger.info(format("No semantic types for [%s], skip request", objectRecordId));
+      logger.info(format("No semantic types for [%s], skip response", objectRecordId));
       return;
     }
-    HttpResponse<String> request = null;
+    HttpResponse<String> response;
     try {
-      request = Unirest
+
+      class ObjectSemanticType {
+        @JsonProperty("object_id")
+        public Long objectId;
+
+        @JsonProperty("semantic_type")
+        public String semanticType;
+
+        private ObjectSemanticType(Long objectId, String semanticType) {
+          this.objectId = objectId;
+          this.semanticType = semanticType;
+        }
+      }
+
+      var objectSemanticTypes = semanticTypes
+        .stream()
+        .map((st) -> new ObjectSemanticType(objectRecordId, st))
+        .collect(Collectors.toList());
+
+      var requestBody = format("{\"resource\" : %s}", mapper.writeValueAsString(objectSemanticTypes));
+      response = Unirest
         .post(objectsDbUrl + objectSemanticTypeTable)
         .header("Content-Type", "application/json")
         .header("X-DreamFactory-Api-Key", objectsDbKey)
-        .body(format("{\"resource\" : [%s]}", mapper.writeValueAsString(semanticTypes)))
+        .body(requestBody)
         .asString();
-      if (request.getStatus() != 200) {
-        throw new IllegalStateException(format("Expected status 200 but was [%d]", request.getStatus()));
+
+      if (response.getStatus() != 200) {
+        throw new IllegalStateException(format(
+          "Expected status 200 but was [%d][%s]",
+          response.getStatus(),
+          response.getBody()
+        ));
       }
     } catch (IllegalStateException | JsonProcessingException | UnirestException e) {
       logger.error(format("Could not persist semantic types of [%d]", objectRecordId), e);

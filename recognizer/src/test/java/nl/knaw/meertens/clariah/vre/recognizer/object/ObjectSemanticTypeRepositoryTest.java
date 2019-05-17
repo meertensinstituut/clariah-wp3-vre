@@ -46,9 +46,9 @@ public class ObjectSemanticTypeRepositoryTest extends AbstractRecognizerTest {
 
   @Test
   public void createSemanticTypes_shouldPost() {
-    startPostObjectSemanticTypeMock("{\"resource\" : [[\"txt.ultimate\",\"txt.v2.0\",\"txt.waterproof\"]]}", 3L);
+    startPostObjectSemanticTypeMock("{\"resource\" : [{\"object_id\":3, \"semantic_type\":\"txt.ultimate\"}]}");
 
-    List<String> semanticTypes = newArrayList("txt.ultimate", "txt.v2.0", "txt.waterproof");
+    List<String> semanticTypes = newArrayList("txt.ultimate");
     repository.createSemanticTypes(3L, semanticTypes);
 
     mockServer.verify(request()
@@ -60,7 +60,7 @@ public class ObjectSemanticTypeRepositoryTest extends AbstractRecognizerTest {
 
   @Test
     public void createSemanticTypes_shouldNotPost_whenEmpty() {
-    startPostObjectSemanticTypeMock("{\"resource\" : []]}", 3L);
+    startPostObjectSemanticTypeMock("{\"resource\" : []]}");
 
     List<String> semanticTypes = new ArrayList<>();
     repository.createSemanticTypes(3L, semanticTypes);
@@ -86,7 +86,7 @@ public class ObjectSemanticTypeRepositoryTest extends AbstractRecognizerTest {
     );
   }
 
-  private void startPostObjectSemanticTypeMock(String content, Long id) {
+  private void startPostObjectSemanticTypeMock(String content) {
     mockServer
       .when(request()
           .withMethod("POST")

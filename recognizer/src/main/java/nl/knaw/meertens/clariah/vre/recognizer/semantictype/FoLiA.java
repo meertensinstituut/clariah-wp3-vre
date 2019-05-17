@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.recognizer.semantics;
+package nl.knaw.meertens.clariah.vre.recognizer.semantictype;
 
 import net.sf.saxon.s9api.SaxonApiException;
 import nl.mpi.tla.util.Saxon;

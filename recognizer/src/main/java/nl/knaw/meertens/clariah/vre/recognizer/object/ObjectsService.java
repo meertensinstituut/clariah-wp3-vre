@@ -14,12 +14,14 @@ public class ObjectsService {
   private final SemanticTypeService semanticTypeService;
   private final ObjectRepository objectRepository;
   private final ObjectSemanticTypeRepository objectSemanticTypeRepository;
+  private String fitsFilesRoot;
 
   public ObjectsService(
-    MimetypeService mimetypeService,
+    String fitsFilesRoot,
     SemanticTypeService semanticTypeService,
     ObjectRepository objectRepository,
-    ObjectSemanticTypeRepository objectSemanticTypeRepository
+    ObjectSemanticTypeRepository objectSemanticTypeRepository,
+    MimetypeService mimetypeService
   ) {
 
     this.mimetypeService = mimetypeService;
@@ -28,6 +30,7 @@ public class ObjectsService {
     this.objectRepository = objectRepository;
 
     this.objectSemanticTypeRepository = objectSemanticTypeRepository;
+    this.fitsFilesRoot = fitsFilesRoot;
   }
 
   /**
@@ -42,7 +45,7 @@ public class ObjectsService {
 
     var semanticTypes = semanticTypeService.detectSemanticTypes(
       objectRecord.mimetype,
-      Paths.get(report.getPath())
+      Paths.get(fitsFilesRoot, report.getPath())
     );
     objectSemanticTypeRepository.createSemanticTypes(objectRecordId, semanticTypes);
 
@@ -60,7 +63,7 @@ public class ObjectsService {
     var objectRecordId = objectRepository.persistObject(objectRecord, id);
     var semanticTypes = semanticTypeService.detectSemanticTypes(
       objectRecord.mimetype,
-      Paths.get(report.getPath())
+      Paths.get(fitsFilesRoot, report.getPath())
     );
     objectSemanticTypeRepository.deleteSemanticTypes(objectRecordId);
     objectSemanticTypeRepository.createSemanticTypes(objectRecordId, semanticTypes);

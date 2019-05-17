@@ -17,6 +17,7 @@ import java.io.IOException;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.FITS_FILES_ROOT;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_SEMANTIC_TYPE_TABLE;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_TABLE;
 import static org.apache.commons.codec.Charsets.UTF_8;
@@ -38,10 +39,11 @@ public class ObjectsServiceTest extends AbstractRecognizerTest {
     var mimetypeService = new MimetypeService();
 
     objectsService = new ObjectsService(
-      mimetypeService,
+      FITS_FILES_ROOT,
       new SemanticTypeService(mimetypeService),
       new ObjectRepository(mockUrl, "", OBJECT_TABLE, ObjectMapperFactory.getInstance()),
-      new ObjectSemanticTypeRepository(mockUrl, "", OBJECT_SEMANTIC_TYPE_TABLE, ObjectMapperFactory.getInstance())
+      new ObjectSemanticTypeRepository(mockUrl, "", OBJECT_SEMANTIC_TYPE_TABLE, ObjectMapperFactory.getInstance()),
+      mimetypeService
     );
   }
 
