@@ -28,13 +28,14 @@ import static nl.mpi.tla.util.Saxon.xpathList;
  * - fits xml report
  * - original file
  * Rules to assert mimetypes are defined in:
- *   fits-mimetypes.xml
+ * fits-mimetypes.xml
  */
 public class MimetypeService {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   private final Map<String, String> namespaces = new LinkedHashMap<>();
+
   private final List<XdmItem> mimetypes;
 
   public MimetypeService() {
@@ -64,6 +65,24 @@ public class MimetypeService {
     } catch (SaxonApiException e) {
       throw new RuntimeException("Could not determine mimetype", e);
     }
+  }
+
+  public List<XdmItem> getMimetypesFromResources() {
+    var filename = FITS_MIMETYPES_RESOURCE;
+    try {
+      return xpathList(buildDocument(new StreamSource(Thread
+        .currentThread()
+        .getContextClassLoader()
+        .getResourceAsStream(filename)
+      )), "/mimetypes/mimetype", null, namespaces);
+    } catch (SaxonApiException e) {
+      throw new RuntimeException(format("Could not load [%s]", filename), e);
+    }
+
+  }
+
+  public Map<String, String> getNamespaces() {
+    return namespaces;
   }
 
   private String getMimetypeFoundByFits(XdmNode fitsDoc) throws SaxonApiException {
@@ -132,17 +151,4 @@ public class MimetypeService {
     return xpath2boolean(doc, assertionXpath, vars, namespaces);
   }
 
-  private List<XdmItem> getMimetypesFromResources() {
-    var filename = FITS_MIMETYPES_RESOURCE;
-    try {
-      return xpathList(buildDocument(new StreamSource(Thread
-        .currentThread()
-        .getContextClassLoader()
-        .getResourceAsStream(filename)
-      )), "/mimetypes/mimetype", null, namespaces);
-    } catch (SaxonApiException e) {
-      throw new RuntimeException(format("Could not load [%s]", filename), e);
-    }
-
-  }
 }

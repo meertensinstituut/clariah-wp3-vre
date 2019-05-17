@@ -14,8 +14,8 @@ public abstract class AbstractRecognizerTest {
 
 
   private static final int mockPort = 1080;
-  static final String mockUrl = "http://localhost:" + mockPort;
-  static ClientAndServer mockServer;
+  protected static final String mockUrl = "http://localhost:" + mockPort;
+  protected static ClientAndServer mockServer;
   private static boolean isSetUp;
   FitsService fitsService;
   String testFitsXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -76,7 +76,7 @@ public abstract class AbstractRecognizerTest {
     "  </statistics>\n" +
     "</fits>\n";
 
-  public void setupAbstract() {
+  public void setupMockServer() {
     fitsService = new FitsService("http://someurl/", FITS_FILES_ROOT);
 
     if (isSetUp) {

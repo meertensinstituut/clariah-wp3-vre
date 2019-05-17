@@ -101,7 +101,8 @@
                             <cmdp:Parameter>
                                 <cmdp:Name>foliatokoutput</cmdp:Name>
                                 <cmdp:Description>Tokenised Text Document (FoLiA XML)</cmdp:Description>
-                                <cmdp:MIMEType>text/xml</cmdp:MIMEType>
+                                <cmdp:MIMEType>text/folia+xml</cmdp:MIMEType>
+                                <cmdp:SemanticType>folia.token</cmdp:SemanticType>                                
                                 <cmdp:MinimumCardinality>1</cmdp:MinimumCardinality>
                                 <cmdp:MaximumCardinality>*</cmdp:MaximumCardinality>
                             </cmdp:Parameter>

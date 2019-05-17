@@ -3,5 +3,6 @@
     <assertions>
       <assertion xpath="exists(doc($file)/*[namespace-uri()='http://ilk.uvt.nl/folia' and local-name()='FoLiA'])"/>
     </assertions>
+    <semantics class="nl.knaw.meertens.clariah.vre.recognizer.semantictype.FoLiA"/>
   </mimetype>
 </mimetypes>
