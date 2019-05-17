@@ -24,7 +24,7 @@ public class ObjectUtils {
   }
 
   static long getObjectIdFromRegistry(String inputFile) {
-    String query = "select * from object WHERE filepath LIKE '%" + inputFile + "%' LIMIT 1;";
+    var query = "select * from object WHERE filepath LIKE '%" + inputFile + "%' LIMIT 1;";
     // must be semi final:
     final long[] id = {0};
     try {
@@ -41,12 +41,12 @@ public class ObjectUtils {
   }
 
   public static boolean fileExistsInRegistry(String expectedFilename, String mimeType, String fileFormat) {
-    String query = "select * from object WHERE filepath LIKE '%" + expectedFilename + "%' LIMIT 1;";
+    var query = "select * from object WHERE filepath LIKE '%" + expectedFilename + "%' LIMIT 1;";
     try {
       return objectsRepositoryService.processQueryWithFunction(query, (ResultSet rs) -> {
-        boolean fileExists = false;
+        var fileExists = false;
         while (rs.next()) {
-          int id = rs.getInt("id");
+          var id = rs.getInt("id");
           fileExists = id != 0 &&
             rs.getString("filepath").contains(expectedFilename) &&
             rs.getString("format").equals(fileFormat) &&

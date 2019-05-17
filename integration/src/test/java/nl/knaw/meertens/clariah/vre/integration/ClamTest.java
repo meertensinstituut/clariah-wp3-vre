@@ -26,6 +26,30 @@ import static org.awaitility.Awaitility.await;
 public class ClamTest extends AbstractIntegrationTest {
   private static Logger logger = LoggerFactory.getLogger(ClamTest.class);
 
+  @Test
+  public void canRunUctoProject() throws UnirestException {
+    String deploymentTestFile = "deployment-test.txt";
+    String testFileContent = getTestFileContent(deploymentTestFile);
+    String testFilename = uploadTestFile(testFileContent);
+
+    await().until(() -> fileHasContent(testFilename, testFileContent));
+    await().until(() -> fileExistsInRegistry(testFilename, "text/plain", "Plain text"));
+    long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(testFilename));
+    logger.info(String.format("input file has object id [%d]", inputFileId));
+
+    String workDir = canCreateAndRunUctoProject(inputFileId);
+    logger.info(String.format("workDir is [%s]", workDir));
+    String resultFile = awaitAndGet(() -> deploymentIsFinished(workDir, testFilename));
+
+    awaitOcc();
+    String resultFileContent = "<w xml:id=\"untitled.p.1.s.1.w.1\" class=\"WORD\">\n" +
+      "          <t>En</t>\n" +
+      "        </w>";
+
+    logger.info(String.format("result file [%s] has content [%s]", resultFile, resultFileContent));
+    await().until(() -> resultFileCanBeDownloaded(resultFile, resultFileContent));
+  }
+
   private static String deploymentIsFinished(String workDir, String testFileName) {
     logger.info(String.format("check deployment [%s] is finished", workDir));
     HttpResponse<String> statusResponse = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
@@ -50,30 +74,6 @@ public class ClamTest extends AbstractIntegrationTest {
     HttpResponse<String> downloadResult = downloadFile(inputFile);
     return downloadResult.getBody().contains(someContent)
       && downloadResult.getStatus() == 200;
-  }
-
-  @Test
-  public void canRunUctoProject() throws UnirestException {
-    String deploymentTestFile = "deployment-test.txt";
-    String testFileContent = getTestFileContent(deploymentTestFile);
-    String testFilename = uploadTestFile(testFileContent);
-
-    await().until(() -> fileHasContent(testFilename, testFileContent));
-    await().until(() -> fileExistsInRegistry(testFilename, "text/plain", "Plain text"));
-    long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(testFilename));
-    logger.info(String.format("input file has object id [%d]", inputFileId));
-
-    String workDir = canCreateAndRunUctoProject(inputFileId);
-    logger.info(String.format("workDir is [%s]", workDir));
-    String resultFile = awaitAndGet(() -> deploymentIsFinished(workDir, testFilename));
-
-    awaitOcc();
-    String resultFileContent = "<w xml:id=\"untitled.p.1.s.1.w.1\" class=\"WORD\">\n" +
-      "          <t>En</t>\n" +
-      "        </w>";
-
-    logger.info(String.format("result file [%s] has content [%s]", resultFile, resultFileContent));
-    await().until(() -> resultFileCanBeDownloaded(resultFile, resultFileContent));
   }
 
   private String canCreateAndRunUctoProject(long inputFileId) throws UnirestException {

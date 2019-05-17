@@ -10,7 +10,9 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.Header;
+import org.mockserver.verify.VerificationTimes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -43,7 +45,7 @@ public class ObjectSemanticTypeRepositoryTest extends AbstractRecognizerTest {
   }
 
   @Test
-  public void postSemanticTypes_shouldPost() {
+  public void createSemanticTypes_shouldPost() {
     startPostObjectSemanticTypeMock("{\"resource\" : [[\"txt.ultimate\",\"txt.v2.0\",\"txt.waterproof\"]]}", 3L);
 
     List<String> semanticTypes = newArrayList("txt.ultimate", "txt.v2.0", "txt.waterproof");
@@ -53,6 +55,20 @@ public class ObjectSemanticTypeRepositoryTest extends AbstractRecognizerTest {
       .withMethod("POST")
       .withPath("/_table/object_semantic_type"),
       exactly(1)
+    );
+  }
+
+  @Test
+    public void createSemanticTypes_shouldNotPost_whenEmpty() {
+    startPostObjectSemanticTypeMock("{\"resource\" : []]}", 3L);
+
+    List<String> semanticTypes = new ArrayList<>();
+    repository.createSemanticTypes(3L, semanticTypes);
+
+    mockServer.verify(request()
+      .withMethod("POST")
+      .withPath("/_table/object_semantic_type"),
+      VerificationTimes.exactly(0)
     );
   }
 

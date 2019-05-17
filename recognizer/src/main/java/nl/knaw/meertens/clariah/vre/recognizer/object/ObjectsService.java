@@ -38,7 +38,7 @@ public class ObjectsService {
   public Long create(Report report) {
     var objectRecord = createObjectRecordDto(report);
 
-    var objectRecordId = objectRepository.persistRecord(objectRecord, null);
+    var objectRecordId = objectRepository.persistObject(objectRecord, null);
 
     var semanticTypes = semanticTypeService.detectSemanticTypes(
       objectRecord.mimetype,
@@ -57,7 +57,7 @@ public class ObjectsService {
   public Long update(Report report) {
     var id = objectRepository.getObjectIdByPath(report.getPath());
     var objectRecord = createObjectRecordDto(report);
-    var objectRecordId = objectRepository.persistRecord(objectRecord, id);
+    var objectRecordId = objectRepository.persistObject(objectRecord, id);
     var semanticTypes = semanticTypeService.detectSemanticTypes(
       objectRecord.mimetype,
       Paths.get(report.getPath())

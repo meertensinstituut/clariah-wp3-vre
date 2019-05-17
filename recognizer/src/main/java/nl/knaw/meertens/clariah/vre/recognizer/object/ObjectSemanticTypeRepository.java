@@ -33,6 +33,10 @@ public class ObjectSemanticTypeRepository extends AbstractDreamfactoryRepository
    * <p>Does not check if semantic types already exist for object
    */
   public void createSemanticTypes(long objectRecordId, List<String> semanticTypes) {
+    if (semanticTypes.isEmpty()) {
+      logger.info(format("No semantic types for [%s], skip request", objectRecordId));
+      return;
+    }
     HttpResponse<String> request = null;
     try {
       request = Unirest

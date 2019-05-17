@@ -148,7 +148,7 @@ public class ObjectRepository extends AbstractDreamfactoryRepository {
   /**
    * Update or create record
    */
-  public Long persistRecord(ObjectsRecordDto dto, Long id) {
+  public Long persistObject(ObjectsRecordDto dto, Long id) {
     if (!hasAllObjectsDbDetails()) {
       return null;
     }
@@ -170,18 +170,31 @@ public class ObjectRepository extends AbstractDreamfactoryRepository {
       ), e);
     }
 
+    String body = response.getBody();
     if (isSuccess(response)) {
       logger.info("Persisted record in objects registry");
-      return Long.valueOf(jsonPath
-        .parse(response.getBody())
-        .read("$.id", String.class)
-      );
+      logger.info("persisted object response:" + body);
+      return getIdFromPersistedObject(body);
     } else {
       throw new RuntimeException(format(
         "Could not add [%s]: [%s]",
-        recordJson, response.getBody()
+        recordJson, body
       ));
     }
+  }
+
+  private Long getIdFromPersistedObject(String body) {
+    var id = jsonPath
+      .parse(body)
+      .read("$.id", String.class);
+
+    if (id == null) {
+      id = jsonPath
+        .parse(body)
+        .read("$.resource[0].id", String.class);
+    }
+
+    return Long.valueOf(id);
   }
 
   /**

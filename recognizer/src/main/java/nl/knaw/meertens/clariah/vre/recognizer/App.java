@@ -50,13 +50,6 @@ public class App {
   static {
     objectMapper = ObjectMapperFactory.getInstance();
 
-    logger.info(format(
-      "KAFKA_SERVER, NEXTCLOUD_TOPIC_NAME, NEXTCLOUD_GROUP_NAME: [%s][%s][%s]",
-      KAFKA_SERVER,
-      NEXTCLOUD_TOPIC_NAME,
-      NEXTCLOUD_GROUP_NAME
-    ));
-
     nextcloudConsumerService = new KafkaConsumerService(
       KAFKA_SERVER,
       NEXTCLOUD_TOPIC_NAME,
