@@ -1,7 +1,8 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectRepository;
 import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectSemanticTypeRepository;
-import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsService;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,23 +28,20 @@ import static org.mockserver.model.HttpResponse.response;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
+public class ObjectsServiceTest extends AbstractRecognizerTest {
 
-  private ObjectsRepositoryService objectsRepositoryService;
+  private ObjectsService objectsService;
 
   @Before
   public void setup() {
     setupMockServer();
-    MimetypeService mimetypeService = new MimetypeService();
+    var mimetypeService = new MimetypeService();
 
-    objectsRepositoryService = new ObjectsRepositoryService(
+    objectsService = new ObjectsService(
       mimetypeService,
       new SemanticTypeService(mimetypeService),
-      mockUrl,
-      "",
-      OBJECT_TABLE,
-      new ObjectSemanticTypeRepository(mockUrl, "", OBJECT_SEMANTIC_TYPE_TABLE, RecognizerService.getObjectMapper()),
-      RecognizerService.getObjectMapper()
+      new ObjectRepository(mockUrl, "", OBJECT_TABLE, ObjectMapperFactory.getInstance()),
+      new ObjectSemanticTypeRepository(mockUrl, "", OBJECT_SEMANTIC_TYPE_TABLE, ObjectMapperFactory.getInstance())
     );
   }
 
@@ -58,8 +56,8 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
     report.setUser(expectedUser);
     report.setXml(testFitsXml);
 
-    String result = RecognizerService.getObjectMapper().writeValueAsString(
-      objectsRepositoryService.createObjectRecordDto(report)
+    var result = ObjectMapperFactory.getInstance().writeValueAsString(
+      objectsService.createObjectRecordDto(report)
     );
 
     assertThatJson(result).node("time_created").matches(
@@ -82,7 +80,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
       "(filepath='" + annotatedBanana + "') AND (deleted='0')"
     );
     startObjectsPatchRegistryMock("soft-delete-object.json", expectedId);
-    Long deletedId = objectsRepositoryService.softDelete(annotatedBanana);
+    Long deletedId = objectsService.softDelete(annotatedBanana);
     assertThat(deletedId).isEqualTo(expectedId);
   }
 

@@ -1,14 +1,11 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaConsumerService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.KafkaProducerService;
 import nl.knaw.meertens.clariah.vre.recognizer.kafka.OwncloudKafkaDto;
-import nl.knaw.meertens.clariah.vre.recognizer.kafka.RecognizerKafkaProducer;
-import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectSemanticTypeRepository;
-import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,20 +14,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.ACTIONS_TO_PERSIST;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.FITS_FILES_ROOT;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.FITS_URL;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.KAFKA_SERVER;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.NEXTCLOUD_GROUP_NAME;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.NEXTCLOUD_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_KEY;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_URL;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_SEMANTIC_TYPE_TABLE;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_TABLE;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.RECOGNIZER_TOPIC_NAME;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.CREATE;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.DELETE;
 import static nl.knaw.meertens.clariah.vre.recognizer.FileAction.RENAME;
@@ -39,49 +25,28 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class RecognizerService {
 
-  private static final ObjectMapper objectMapper;
-
+  private final ObjectMapper objectMapper;
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private KafkaConsumerService nextcloudConsumerService;
+  private ObjectsService objectsService;
+  private MimetypeService mimetypeService;
+  private FitsService fitsService;
+  private KafkaProducerService kafkaProducerService;
 
-  private final KafkaConsumerService nextcloudConsumerService = new KafkaConsumerService(
-    KAFKA_SERVER,
-    NEXTCLOUD_TOPIC_NAME,
-    NEXTCLOUD_GROUP_NAME
-  );
-  private final KafkaProducerService kafkaProducer = new KafkaProducerService(
-    new RecognizerKafkaProducer(KAFKA_SERVER),
-    RECOGNIZER_TOPIC_NAME
-  );
-  private final FitsService fitsService = new FitsService(
-    FITS_URL,
-    FITS_FILES_ROOT
-  );
-
-  private final MimetypeService mimetypeService = new MimetypeService();
-  private final SemanticTypeService semanticTypeService = new SemanticTypeService(mimetypeService);
-
-
-  private final ObjectSemanticTypeRepository objectSemanticTypeRepository = new ObjectSemanticTypeRepository(
-    OBJECTS_DB_URL,
-    OBJECTS_DB_KEY,
-    OBJECT_SEMANTIC_TYPE_TABLE,
-    objectMapper
-  );
-
-  private final ObjectsRepositoryService objectsRepository = new ObjectsRepositoryService(
-    mimetypeService,
-    semanticTypeService,
-    OBJECTS_DB_URL,
-    OBJECTS_DB_KEY,
-    OBJECT_TABLE,
-    objectSemanticTypeRepository,
-    objectMapper
-  );
-
-  static {
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-    objectMapper.disable(WRITE_DATES_AS_TIMESTAMPS);
+  public RecognizerService(
+    ObjectMapper objectMapper,
+    KafkaConsumerService nextcloudConsumerService,
+    ObjectsService objectsService,
+    MimetypeService mimetypeService,
+    FitsService fitsService,
+    KafkaProducerService kafkaProducerService
+  ) {
+    this.objectMapper = objectMapper;
+    this.nextcloudConsumerService = nextcloudConsumerService;
+    this.objectsService = objectsService;
+    this.mimetypeService = mimetypeService;
+    this.fitsService = fitsService;
+    this.kafkaProducerService = kafkaProducerService;
   }
 
   public void consumeOwncloud() {
@@ -103,14 +68,14 @@ public class RecognizerService {
         }
         var report = mapToReport(msg);
         handleFileActions(action, report);
-        kafkaProducer.produceToRecognizerTopic(report);
+        kafkaProducerService.produceToRecognizerTopic(report);
       } catch (Exception e) {
         logger.error(String.format("Could not process kafka message [%s]", json), e);
       }
     });
   }
 
-  public static ObjectMapper getObjectMapper() {
+  public ObjectMapper getObjectMapper() {
     return objectMapper;
   }
 
@@ -130,15 +95,15 @@ public class RecognizerService {
     if (action.equals(CREATE)) {
       requestFileType(report);
       checkFileType(report);
-      report.setObjectId(objectsRepository.create(report));
+      report.setObjectId(objectsService.create(report));
     } else if (action.equals(UPDATE)) {
       requestFileType(report);
       checkFileType(report);
-      report.setObjectId(objectsRepository.update(report));
+      report.setObjectId(objectsService.update(report));
     } else if (action.equals(RENAME)) {
-      report.setObjectId(objectsRepository.updatePath(report.getOldPath(), report.getPath()));
+      report.setObjectId(objectsService.updatePath(report.getOldPath(), report.getPath()));
     } else if (action.equals(DELETE)) {
-      report.setObjectId(objectsRepository.softDelete(report.getPath()));
+      report.setObjectId(objectsService.softDelete(report.getPath()));
     }
   }
 

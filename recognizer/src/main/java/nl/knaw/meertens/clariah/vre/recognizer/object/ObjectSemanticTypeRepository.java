@@ -32,7 +32,7 @@ public class ObjectSemanticTypeRepository extends AbstractDreamfactoryRepository
    *
    * <p>Does not check if semantic types already exist for object
    */
-  public void postSemanticTypes(long objectRecordId, List<String> semanticTypes) {
+  public void createSemanticTypes(long objectRecordId, List<String> semanticTypes) {
     HttpResponse<String> request = null;
     try {
       request = Unirest

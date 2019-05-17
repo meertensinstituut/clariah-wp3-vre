@@ -2,104 +2,33 @@ package nl.knaw.meertens.clariah.vre.recognizer.object;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.ParseContext;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
-import nl.knaw.meertens.clariah.vre.recognizer.MimetypeService;
-import nl.knaw.meertens.clariah.vre.recognizer.Report;
-import nl.knaw.meertens.clariah.vre.recognizer.SemanticTypeService;
-import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
 
 import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_KEY;
 import static org.apache.commons.lang3.StringUtils.abbreviate;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class ObjectsRepositoryService extends AbstractDreamfactoryRepository {
+public class ObjectRepository extends AbstractDreamfactoryRepository {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  private final String objectTable;
 
-  private final MimetypeService mimetypeService;
-  private final SemanticTypeService semanticTypeService;
-  private final ObjectSemanticTypeRepository objectSemanticTypeRepository;
+  private String objectTable;
 
-  public ObjectsRepositoryService(
-    MimetypeService mimetypeService,
-    SemanticTypeService semanticTypeService,
+  public ObjectRepository(
     String objectsDbUrl,
     String objectsDbKey,
     String objectTable,
-    ObjectSemanticTypeRepository objectSemanticTypeRepository,
     ObjectMapper mapper
   ) {
-
     super(objectsDbUrl, objectsDbKey, mapper);
-    this.mimetypeService = mimetypeService;
-    this.semanticTypeService = semanticTypeService;
-
     this.objectTable = objectTable;
-
-    this.objectSemanticTypeRepository = objectSemanticTypeRepository;
-  }
-
-  /**
-   * Create new object in object registry
-   *
-   * @return objectId
-   */
-  public Long create(Report report) {
-    var objectRecord = createObjectRecordDto(report);
-
-    var persistResult = persistRecord(objectRecord, null);
-    var objectRecordId = jsonPath
-      .parse(persistResult)
-      .read("$.resource[0].id", Integer.class)
-      .longValue();
-
-    var semanticTypes = semanticTypeService.detectSemanticTypes(
-      objectRecord.mimetype,
-      Paths.get(report.getPath())
-    );
-    objectSemanticTypeRepository.postSemanticTypes(objectRecordId, semanticTypes);
-
-    return objectRecordId;
-  }
-
-  /**
-   * Update object by path
-   *
-   * @return objectId
-   */
-  public Long update(Report report) {
-    var id = getObjectIdByPath(report.getPath());
-    var objectRecord = createObjectRecordDto(report);
-    var persistResult = persistRecord(objectRecord, id);
-    var objectRecordId = Long.valueOf(jsonPath
-      .parse(persistResult)
-      .read("$.id", String.class)
-    );
-    var semanticTypes = semanticTypeService.detectSemanticTypes(
-      objectRecord.mimetype,
-      Paths.get(report.getPath())
-    );
-    objectSemanticTypeRepository.deleteSemanticTypes(objectRecordId);
-    objectSemanticTypeRepository.postSemanticTypes(objectRecordId, semanticTypes);
-
-    return objectRecordId;
   }
 
   /**
@@ -155,6 +84,9 @@ public class ObjectsRepositoryService extends AbstractDreamfactoryRepository {
     return id;
   }
 
+  /**
+   * Patch object
+   */
   private HttpResponse<String> patch(Long id, String patch) {
     var urlToPatch = getObjectUrl(id);
 
@@ -174,21 +106,12 @@ public class ObjectsRepositoryService extends AbstractDreamfactoryRepository {
     return patchResponse;
   }
 
-  private String getObjectUrl(Long id) {
-    return new StringBuilder()
-      .append(objectsDbUrl)
-      .append(objectTable)
-      .append("/")
-      .append(id)
-      .toString();
-  }
-
   /**
    * Find path of object that has not been deleted
    * Filter in dreamfactory by:
    * (filepath='{path}') AND (deleted='0')
    */
-  private Long getObjectIdByPath(String path) {
+  public Long getObjectIdByPath(String path) {
     var filter = "(filepath='" + path + "') AND (deleted='0')";
     var getObjectByPath = objectsDbUrl +
       objectTable +
@@ -225,7 +148,7 @@ public class ObjectsRepositoryService extends AbstractDreamfactoryRepository {
   /**
    * Update or create record
    */
-  private String persistRecord(ObjectsRecordDto dto, Long id) {
+  public Long persistRecord(ObjectsRecordDto dto, Long id) {
     if (!hasAllObjectsDbDetails()) {
       return null;
     }
@@ -249,7 +172,10 @@ public class ObjectsRepositoryService extends AbstractDreamfactoryRepository {
 
     if (isSuccess(response)) {
       logger.info("Persisted record in objects registry");
-      return response.getBody();
+      return Long.valueOf(jsonPath
+        .parse(response.getBody())
+        .read("$.id", String.class)
+      );
     } else {
       throw new RuntimeException(format(
         "Could not add [%s]: [%s]",
@@ -280,29 +206,15 @@ public class ObjectsRepositoryService extends AbstractDreamfactoryRepository {
       .body(recordJson);
   }
 
-  private boolean isSuccess(HttpResponse<String> response) {
-    return response.getStatus() / 100 == 2;
+  private String getObjectUrl(Long id) {
+    return objectsDbUrl +
+      objectTable +
+      "/" +
+      id;
   }
 
-  public ObjectsRecordDto createObjectRecordDto(Report report) {
-    var objectRecord = new ObjectsRecordDto();
-    objectRecord.filepath = report.getPath();
-    objectRecord.fits = report.getXml();
-
-    objectRecord.format = FitsService.getIdentity(report.getFits()).getFormat();
-
-    objectRecord.timeChanged = LocalDateTime.now();
-    objectRecord.timeCreated = LocalDateTime.now();
-    objectRecord.userId = report.getUser();
-    objectRecord.type = "object";
-    objectRecord.deleted = false;
-
-    objectRecord.mimetype = mimetypeService.getMimetype(
-      report.getXml(),
-      Paths.get(report.getPath())
-    );
-
-    return objectRecord;
+  private boolean isSuccess(HttpResponse<String> response) {
+    return response.getStatus() / 100 == 2;
   }
 
   private boolean hasAllObjectsDbDetails() {

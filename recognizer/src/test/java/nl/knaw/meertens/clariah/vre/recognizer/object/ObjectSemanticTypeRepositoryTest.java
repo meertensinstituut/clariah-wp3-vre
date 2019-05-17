@@ -2,7 +2,7 @@ package nl.knaw.meertens.clariah.vre.recognizer.object;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.meertens.clariah.vre.recognizer.AbstractRecognizerTest;
-import nl.knaw.meertens.clariah.vre.recognizer.RecognizerService;
+import nl.knaw.meertens.clariah.vre.recognizer.ObjectMapperFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import static org.mockserver.verify.VerificationTimes.exactly;
 public class ObjectSemanticTypeRepositoryTest extends AbstractRecognizerTest {
 
   private ObjectSemanticTypeRepository repository;
-  private static ObjectMapper mapper = RecognizerService.getObjectMapper();
+  private static ObjectMapper mapper = ObjectMapperFactory.getInstance();
 
   @Before
   public void setUp() {
@@ -47,9 +47,13 @@ public class ObjectSemanticTypeRepositoryTest extends AbstractRecognizerTest {
     startPostObjectSemanticTypeMock("{\"resource\" : [[\"txt.ultimate\",\"txt.v2.0\",\"txt.waterproof\"]]}", 3L);
 
     List<String> semanticTypes = newArrayList("txt.ultimate", "txt.v2.0", "txt.waterproof");
-    repository.postSemanticTypes(3L, semanticTypes);
+    repository.createSemanticTypes(3L, semanticTypes);
 
-    mockServer.verify(request().withMethod("POST").withPath("/_table/object_semantic_type"), exactly(1));
+    mockServer.verify(request()
+      .withMethod("POST")
+      .withPath("/_table/object_semantic_type"),
+      exactly(1)
+    );
   }
 
   @Test
