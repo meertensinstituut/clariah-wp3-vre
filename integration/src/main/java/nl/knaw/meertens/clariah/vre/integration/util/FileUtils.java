@@ -28,14 +28,20 @@ public class FileUtils {
 
   private static Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
-  public static boolean fileHasContent(String inputFile, String someContent) {
-    logger.info(format("check file [%s] can be downloaded", inputFile));
-    HttpResponse<String> downloadResult = downloadFile(inputFile);
+  public static boolean fileInNextcloudHasContent(String inputFile, String someContent) {
+    var downloadResult = downloadFile(inputFile);
     return downloadResult.getStatus() == 200 &&
       downloadResult.getBody().equals(someContent);
   }
 
+  public static boolean fileInNextcloudContainsContent(String inputFile, String someContent) {
+    var downloadResult = downloadFile(inputFile);
+    return downloadResult.getBody().contains(someContent) &&
+      downloadResult.getStatus() == 200;
+  }
+
   public static HttpResponse<String> downloadFile(String inputFile) {
+    logger.info(format("check file [%s] can be downloaded", inputFile));
     try {
       return Unirest
         .get(NEXTCLOUD_ENDPOINT + inputFile)

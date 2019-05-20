@@ -13,9 +13,9 @@ import java.util.List;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentHasStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.filesAreUnlocked;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.resultWhenDeploymentFinished;
-import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startDeploymentWithInputFileId;
+import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.startTestDeploymentWithInputFileId;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.awaitOcc;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileHasContent;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileInNextcloudHasContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileIsLocked;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.getTestFileContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newObjectIsAdded;
@@ -42,31 +42,31 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
   @Test
   public void testDeployment_locksFiles_movesOutput_unlocksFiles() throws Exception {
-    String testFileContent = getTestFileContent(deploymentTestFile);
-    String testFilename = uploadTestFile(testFileContent);
+    var testFileContent = getTestFileContent(deploymentTestFile);
+    var testFilename = uploadTestFile(testFileContent);
 
-    await().until(() -> fileHasContent(testFilename, testFileContent));
+    await().until(() -> fileInNextcloudHasContent(testFilename, testFileContent));
     await().until(() -> fileExistsInRegistry(testFilename, "text/plain", "Plain text"));
     long inputFileId = awaitAndGet(() -> getNonNullObjectIdFromRegistry(testFilename));
     logger.info(String.format("input file has object id [%d]", inputFileId));
 
-    String workDir = startDeploymentWithInputFileId(inputFileId);
+    var workDir = startTestDeploymentWithInputFileId(inputFileId);
     logger.info(String.format("deployment has workdir [%s]", workDir));
 
     await().until(() -> deploymentHasStatus(workDir, "RUNNING"));
 
     awaitOcc();
 
-    await().until(() -> fileHasContent(testFilename, testFileContent));
+    await().until(() -> fileInNextcloudHasContent(testFilename, testFileContent));
     await().until(() -> fileIsLocked(testFilename));
 
-    String newInputFile = uploadTestFile(testFileContent);
+    var newInputFile = uploadTestFile(testFileContent);
 
     await().until(() -> newObjectIsAdded(newInputFile));
 
-    String resultFile = awaitAndGet(() -> resultWhenDeploymentFinished(workDir));
+    var resultFile = awaitAndGet(() -> resultWhenDeploymentFinished(workDir));
 
-    await().until(() -> fileHasContent(resultFile, getTestFileContent("test-result.txt")));
+    await().until(() -> fileInNextcloudHasContent(resultFile, getTestFileContent("test-result.txt")));
 
     awaitOcc();
 
@@ -74,7 +74,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
 
     checkKafkaMsgsAreCreatedForOutputFiles(resultFile);
 
-    String secondNewInputFile = uploadTestFile(testFileContent);
+    var secondNewInputFile = uploadTestFile(testFileContent);
 
     await().until(() -> newObjectIsAdded(secondNewInputFile));
 
@@ -97,7 +97,7 @@ public class DeployServiceTest extends AbstractIntegrationTest {
   }
 
   private KafkaConsumerService getNextcloudTopic() {
-    KafkaConsumerService recognizerKafkaConsumer = new KafkaConsumerService(
+    var recognizerKafkaConsumer = new KafkaConsumerService(
       Config.KAFKA_ENDPOINT, Config.NEXTCLOUD_TOPIC_NAME, getRandomGroupName()
     );
     recognizerKafkaConsumer.subscribe();

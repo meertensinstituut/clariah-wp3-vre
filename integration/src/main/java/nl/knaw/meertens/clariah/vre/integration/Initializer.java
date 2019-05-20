@@ -41,7 +41,7 @@ public class Initializer {
   private void awaitNextcloud() {
     try {
       String testFilename = FileUtils.uploadTestFile(onIntegration);
-      Poller.awaitAndGet(() -> FileUtils.fileHasContent(testFilename, onIntegration));
+      Poller.awaitAndGet(() -> FileUtils.fileInNextcloudHasContent(testFilename, onIntegration));
     } catch (UnirestException e) {
       logger.error("Could not upload a test file", e);
     }

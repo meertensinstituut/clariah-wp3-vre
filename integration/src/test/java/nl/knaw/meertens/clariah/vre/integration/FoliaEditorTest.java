@@ -15,7 +15,7 @@ import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deployme
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.deploymentWithStatus;
 import static nl.knaw.meertens.clariah.vre.integration.util.DeployUtils.filesAreUnlockedAfterEdit;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.awaitOcc;
-import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileHasContent;
+import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.fileInNextcloudHasContent;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.newObjectIsAdded;
 import static nl.knaw.meertens.clariah.vre.integration.util.FileUtils.uploadTestFile;
 import static nl.knaw.meertens.clariah.vre.integration.util.ObjectUtils.fileExistsInRegistry;
@@ -38,7 +38,7 @@ public class FoliaEditorTest extends AbstractIntegrationTest {
     // BasicFileAttributes attr = Files.readAttributes(uploadedFile, BasicFileAttributes.class);
     // logger.info("lastModifiedTime: " + attr.lastModifiedTime());
 
-    await().until(() -> fileHasContent(testFilename, foliaContent));
+    await().until(() -> fileInNextcloudHasContent(testFilename, foliaContent));
     logger.info(String.format("Test file name is [%s]", testFilename));
     await().until(() -> fileExistsInRegistry(testFilename, "text/folia+xml", "Extensible Markup Language"));
 

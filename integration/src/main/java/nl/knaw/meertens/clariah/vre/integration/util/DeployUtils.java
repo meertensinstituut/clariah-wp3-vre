@@ -38,9 +38,9 @@ public class DeployUtils {
     String workDir,
     String status
   ) {
-    logger.info(format("Check status is [%s] of [%s]", status, workDir));
-    boolean httpStatusSuccess = false;
-    boolean deploymentStatusFound = false;
+    logger.info(format("Check that deployment [%s] has status [%s]", workDir, status));
+    var httpStatusSuccess = false;
+    var deploymentStatusFound = false;
     HttpResponse<String> deploymentStatusResponse = null;
     deploymentStatusResponse = getDeploymentStatus(workDir);
     String body = deploymentStatusResponse.getBody();
@@ -59,7 +59,7 @@ public class DeployUtils {
       httpStatusSuccess = true;
     }
 
-    String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
+    var deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
     if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {
       deploymentStatusFound = true;
     }
@@ -79,12 +79,12 @@ public class DeployUtils {
     String status
   ) {
     logger.info(format("Check status is [%s] of [%s]", status, workDir));
-    boolean httpStatusSuccess = false;
-    boolean deploymentStatusFound = false;
+    var httpStatusSuccess = false;
+    var deploymentStatusFound = false;
     HttpResponse<String> deploymentStatusResponse = null;
     deploymentStatusResponse = getDeploymentStatus(workDir);
-    String body = deploymentStatusResponse.getBody();
-    int responseStatus = deploymentStatusResponse.getStatus();
+    var body = deploymentStatusResponse.getBody();
+    var responseStatus = deploymentStatusResponse.getStatus();
     logger.info(format("Http status was [%s] and response body was [%s]",
       responseStatus, body
     ));
@@ -98,39 +98,46 @@ public class DeployUtils {
     if (asList(success).contains(responseStatus)) {
       httpStatusSuccess = true;
     }
-    String deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
+    var deploymentStatus = jsonPath.parse(body).read("$.status", String.class);
     if (!isNull(deploymentStatus) && deploymentStatus.contains(status)) {
       deploymentStatusFound = true;
     }
     return httpStatusSuccess && deploymentStatusFound;
   }
 
-  public static String startDeploymentWithInputFileId(Long expectedFilename) throws UnirestException {
-    HttpResponse<String> result = Unirest
-      .post(Config.SWITCHBOARD_ENDPOINT + "/exec/TEST")
+  public static String startTestDeploymentWithInputFileId(Long expectedFilename) throws UnirestException {
+    var serviceName = "TEST";
+    var serviceConfig = "{\"params\":[{\"name\":\"untokinput\",\"type\":\"file\",\"value\":\"" + expectedFilename +
+      "\",\"params\":[{\"name\":\"language\", \"value\":\"eng\"},{\"name\":\"author\", \"value\":\"J. Jansen\"}]}]}";
+    return startDeployment(serviceName, serviceConfig);
+  }
+
+  public static String startDeployment(String serviceName, String serviceConfig) throws UnirestException {
+    var result = Unirest
+      .post(Config.SWITCHBOARD_ENDPOINT + "/exec/" + serviceName)
       .header("Content-Type", "application/json; charset=UTF-8")
-      .body("{\"params\":[{\"name\":\"untokinput\",\"type\":\"file\",\"value\":\"" + expectedFilename +
-        "\",\"params\":[{\"name\":\"language\", \"value\":\"eng\"},{\"name\":\"author\", \"value\":\"J. Jansen\"}]}]}")
+      .body(serviceConfig)
       .asString();
 
     assertThat(result.getStatus()).isIn(200, 201, 202);
-    return JsonPath.parse(result.getBody()).read("$.workDir");
+    String workDir = JsonPath.parse(result.getBody()).read("$.workDir");
+    logger.info(format("deployment has workdir [%s]", workDir));
+    return workDir;
   }
 
   public static String resultWhenDeploymentFinished(String workDir) {
     logger.info(format("check deployment [%s] is finished", workDir));
-    HttpResponse<String> statusResponse = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
-    String outputFilePath = getOutputFilePath(statusResponse);
+    var statusResponse = awaitAndGet(() -> deploymentWithStatus(workDir, "FINISHED"));
+    var outputFilePath = getOutputFilePath(statusResponse, "result.txt");
     logger.info(format("deployment has result file [%s]", outputFilePath));
     return outputFilePath;
   }
 
-  private static String getOutputFilePath(HttpResponse<String> finishedDeployment) {
+  public static String getOutputFilePath(HttpResponse<String> finishedDeployment, String resultFileName) {
     String outputDir = JsonPath.parse(finishedDeployment.getBody()).read("$.outputDir");
     var pathAbsolute = Paths.get(outputDir);
     var pathBase = Paths.get("admin/files/");
     var pathRelative = pathBase.relativize(pathAbsolute);
-    var resultFileName = "result.txt";
     var outputPath = Paths.get(pathRelative.toString(), resultFileName).toString();
     logger.info(format("output file path is [%s]", outputPath));
     return outputPath;
