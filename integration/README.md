@@ -1,17 +1,22 @@
 # Integration
-Integrate VRE components and test components with integration tests
+The intregration application does two things:
+- initialize VRE components 
+- test components with integration tests
 
-## Initialization
+## 1. Initialization
 - Wait for components to have started.
 - Initialize kafka queues
 - Upload a test file
 - Initialization code is in `./src` 
-- See also: `./docker-initialize.sh`
+- See also: 
+  - `./src/main/java` 
+  - `./docker-initialize.sh`
 
-## Testing
+## 2. Integration testing
 - Test code is in `./src/test`
-- See also: `./docker-run-integration-tests.sh`
-
+- See also: 
+  - `./src/main/test` 
+  - `./docker-test.sh`
 
 ## Manually run integration
 When all components are started, run `./start-integration.sh`

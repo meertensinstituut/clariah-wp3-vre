@@ -1,8 +1,7 @@
 version: '3.4'
 
-#
+##
 # Should not be run stand-alone: needs the other vre-components
-#
 
 services:
   integration:

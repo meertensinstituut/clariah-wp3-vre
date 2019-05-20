@@ -3,7 +3,7 @@ version: '3.4'
 ##
 # Root docker-compose file:
 # - Overrides volume and build paths of custom vre components
-# - Add external components
+# - Adds external components
 #
 # See also: ./merge-containers.sh
 
