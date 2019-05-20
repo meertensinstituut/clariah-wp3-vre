@@ -11,7 +11,6 @@ import nl.knaw.meertens.clariah.vre.integration.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -128,11 +127,11 @@ public class DeployUtils {
 
   private static String getOutputFilePath(HttpResponse<String> finishedDeployment) {
     String outputDir = JsonPath.parse(finishedDeployment.getBody()).read("$.outputDir");
-    Path pathAbsolute = Paths.get(outputDir);
-    Path pathBase = Paths.get("admin/files/");
-    Path pathRelative = pathBase.relativize(pathAbsolute);
-    String resultFileName = "result.txt";
-    String outputPath = Paths.get(pathRelative.toString(), resultFileName).toString();
+    var pathAbsolute = Paths.get(outputDir);
+    var pathBase = Paths.get("admin/files/");
+    var pathRelative = pathBase.relativize(pathAbsolute);
+    var resultFileName = "result.txt";
+    var outputPath = Paths.get(pathRelative.toString(), resultFileName).toString();
     logger.info(format("output file path is [%s]", outputPath));
     return outputPath;
   }

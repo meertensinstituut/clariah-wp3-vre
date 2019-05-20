@@ -120,8 +120,12 @@ public class FileUtils {
   }
 
   public static String getTestFileContent(String fileName) {
+    return getTestFileContent(fileName, App.class);
+  }
+
+  public static String getTestFileContent(String fileName, Class packageClass) {
     try {
-      return IOUtils.toString(App.class.getResource(fileName).toURI(), UTF_8);
+      return IOUtils.toString(packageClass.getResource(fileName).toURI(), UTF_8);
     } catch (IOException | URISyntaxException e) {
       throw new RuntimeException(format("Could not get content of [%s]", fileName), e);
     }

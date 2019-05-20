@@ -32,7 +32,6 @@ public class ClamTest extends AbstractIntegrationTest {
     Config.DB_OBJECTS_DATABASE, Config.DB_OBJECTS_USER, Config.DB_OBJECTS_PASSWORD
   );
 
-
   @Test
   public void canRunUctoProject() throws UnirestException, SQLException {
     var resourceFileName = "deployment-test.txt";

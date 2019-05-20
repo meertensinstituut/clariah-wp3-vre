@@ -13,7 +13,6 @@ import java.util.function.Consumer;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
-import static nl.knaw.meertens.clariah.vre.integration.util.Poller.awaitAndGet;
 
 public class KafkaConsumerService {
 
@@ -42,7 +41,7 @@ public class KafkaConsumerService {
   public void consumeAll(Consumer<ArrayList<ConsumerRecord<String, String>>> function) {
     logger.info("Start consuming all msgs from topic " + topic);
     ArrayList<ConsumerRecord<String, String>> list = newArrayList();
-    awaitAndGet(() -> findNewMessagesAndCheckIfAny(function, list));
+    Poller.awaitCheck(() -> findNewMessagesAndCheckIfAny(function, list));
   }
 
   private void findNewMessagesAndCheckIfAny(

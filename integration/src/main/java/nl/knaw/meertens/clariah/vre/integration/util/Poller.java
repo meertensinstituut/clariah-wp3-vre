@@ -4,6 +4,7 @@ import nl.knaw.meertens.clariah.vre.integration.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -13,18 +14,25 @@ public class Poller {
 
   private static Logger logger = LoggerFactory.getLogger(Poller.class);
 
-  public static void awaitAndGet(Procedure check) {
+  public static void awaitCheck(Procedure check) {
     awaitAndGet(() -> {
       check.execute();
       return null;
     });
   }
 
-  public static <T> T awaitAndGet(Supplier<T> check) {
-    return awaitAndGetUntil(check, Config.MAX_POLLING_PERIOD);
+  public static void awaitCheckFor(Procedure check, Duration maxPolled) {
+    awaitAndGetFor(() -> {
+      check.execute();
+      return null;
+    }, maxPolled);
   }
 
-  private static <T> T awaitAndGetUntil(Supplier<T> check, int maxPolled) {
+  public static <T> T awaitAndGet(Supplier<T> check) {
+    return awaitAndGetFor(check, Config.MAX_POLLING_PERIOD);
+  }
+
+  public static <T> T awaitAndGetFor(Supplier<T> check, Duration maxPolled) {
     T result = null;
     int polled = 0;
     AssertionError checkError;
@@ -43,7 +51,7 @@ public class Poller {
         logger.info(String.format("Polling for %d seconds", polled));
       }
 
-      if (polled > maxPolled) {
+      if (polled > maxPolled.toSeconds()) {
         throw new AssertionError(String.format("Timed out at [%d seconds] with assertion error", polled), checkError);
       }
       waitASecond();

@@ -1,5 +1,7 @@
 package nl.knaw.meertens.clariah.vre.integration;
 
+import java.time.Duration;
+
 public class Config {
   public static final String KAFKA_ENDPOINT = "kafka:" + System.getenv("KAFKA_PORT");
   public static final String NEXTCLOUD_ENDPOINT = "http://nextcloud:80/remote.php/webdav/";
@@ -13,5 +15,5 @@ public class Config {
   public static final String DB_OBJECTS_PASSWORD = System.getenv("DB_OBJECTS_PASSWORD");
   public static final String DB_OBJECTS_DATABASE = System.getenv("DB_OBJECTS_DATABASE");
   public static final String SWITCHBOARD_ENDPOINT = "http://switchboard:8080/switchboard/rest";
-  public static final int MAX_POLLING_PERIOD = 30;
+  public static final Duration MAX_POLLING_PERIOD = Duration.ofSeconds(30);
 }
