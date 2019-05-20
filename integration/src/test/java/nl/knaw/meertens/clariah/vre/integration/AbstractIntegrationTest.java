@@ -24,7 +24,8 @@ public abstract class AbstractIntegrationTest {
     Awaitility.setDefaultTimeout(maxPollPeriod, SECONDS);
   }
 
-  private Logger logger = LoggerFactory.getLogger(UploadingNewFileTest.class);
+  private Logger logger = LoggerFactory.getLogger(this.getClass());
+
   @Rule
   public TestRule watcher = new TestWatcher() {
     protected void starting(Description description) {
