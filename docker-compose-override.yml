@@ -1,27 +1,61 @@
 version: '3.4'
 
-# Root compose file of components to override relative volumes and build paths
-# - see ./merge-containers.sh
+##
+# Root docker-compose file:
+# - Overrides volume and build paths of custom vre components
+# - Add external components
+#
+# See also: ./merge-containers.sh
 
 services:
+  deployment:
+    build:
+      context: ./deployment-service
+    volumes:
+    - ./deployment-service/conf:/conf
+    - ./deployment-service/:/tmp/deployment
+    - deployment-volume:/tmp/wd/
+    - data-volume:/usr/local/nextcloud
+    depends_on:
+    - dreamfactory
+    - tika
+    - lamachine
+    environment:
+      USER_SERVICES_EMAIL: ${USER_SERVICES_EMAIL}
+      USER_SERVICES_PASSWORD: ${USER_SERVICES_PASSWORD}
+      APP_KEY_SERVICES: ${APP_KEY_SERVICES}
+    ports:
+    - 9999:8080
+  dreamfactory:
+    build: ./registry/dreamfactory
+    volumes:
+    - ./registry/dreamfactory/config/postgres:/postgres
+  fits:
+    container_name: vre_fits_1
+    build: ./recognizer/fits
+    volumes:
+    - data-volume:/tmp/recognizer
+  indexer:
+    build: ./indexer/indexer
+    volumes:
+    - ./indexer:/usr/local/indexer
+    depends_on:
+    - dreamfactory
+    environment:
+      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
+      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
+      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
   integration:
     build: ./integration
     volumes:
       - ./integration:/usr/local/integration
-
-  tagger:
-    build:
-      context: ./tagger
-
-  switchboard:
-    build:
-      context: ./switchboard
-    volumes:
-      - ./switchboard:/usr/local/switchboard
-    depends_on:
-      - dreamfactory
-      - deployment
-
+  lamachine:
+    container_name: vre_lamachine_1
+    build: ./lamachine
+    tty: true
+    command: /start-web.sh
+    ports:
+    - 9998:80
   nextcloud:
     build: ./nextcloud
     volumes:
@@ -30,7 +64,9 @@ services:
       default:
         aliases:
           - nextcloud
-
+  postgres:
+    container_name: vre_postgres_1
+    build: ./registry/postgres
   recognizer:
     build:
       context: ./recognizer
@@ -38,81 +74,35 @@ services:
       - data-volume:/tmp/recognizer
     depends_on:
       - dreamfactory
-
-  fits:
-    container_name: vre_fits_1
-    build: ./recognizer/fits
-    volumes:
-      - data-volume:/tmp/recognizer
-
-  dreamfactory:
-    build: ./registry/dreamfactory
-    volumes:
-     - ./registry/dreamfactory/config/postgres:/postgres
-
-  postgres:
-    container_name: vre_postgres_1
-    build: ./registry/postgres
-
-  trifecta:
-    container_name: vre_trifecta_1
-    image: janschultecom/docker-trifecta
-    ports:
-      - 9000:9000
-    environment:
-      ZK_HOST: zookeeper:2181
-    depends_on:
-      - zookeeper
-
-  zookeeper:
-    image: zookeeper:3.4
-
-  deployment:
-    build:
-      context: ./deployment-service
-    volumes:
-      - ./deployment-service/conf:/conf
-      - ./deployment-service/:/tmp/deployment
-      - deployment-volume:/tmp/wd/
-      - data-volume:/usr/local/nextcloud
-    depends_on:
-      - dreamfactory
-      - tika
-      - lamachine
-    environment:
-      USER_SERVICES_EMAIL: ${USER_SERVICES_EMAIL}
-      USER_SERVICES_PASSWORD: ${USER_SERVICES_PASSWORD}
-      APP_KEY_SERVICES: ${APP_KEY_SERVICES}
-    ports:
-      - 9999:8080
-
-  indexer:
-    build: ./indexer/indexer
-    volumes:
-      - ./indexer:/usr/local/indexer
-    depends_on:
-      - dreamfactory
-    environment:
-      USER_OBJECTS_EMAIL: ${USER_OBJECTS_EMAIL}
-      USER_OBJECTS_PASSWORD: ${USER_OBJECTS_PASSWORD}
-      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
-      
   solr:
     container_name: vre_solr_1
     build: ./indexer/solr
     volumes:
-      - data-volume:/storage      
-  
-  lamachine:
-    container_name: vre_lamachine_1
-    build: ./lamachine
-    tty: true
-    command: /start-web.sh
-    ports:
-      - 9998:80
-
+    - data-volume:/storage
+  switchboard:
+    build:
+      context: ./switchboard
+    volumes:
+    - ./switchboard:/usr/local/switchboard
+    depends_on:
+    - dreamfactory
+    - deployment
+  tagger:
+    build:
+      context: ./tagger
   tika:
     image: logicalspark/docker-tikaserver:1.20
+  trifecta:
+    container_name: vre_trifecta_1
+    image: janschultecom/docker-trifecta
+    ports:
+    - 9000:9000
+    environment:
+      ZK_HOST: zookeeper:2181
+    depends_on:
+    - zookeeper
+  zookeeper:
+    image: zookeeper:3.4
 
 volumes:
   data-volume:
