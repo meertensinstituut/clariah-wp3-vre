@@ -42,26 +42,30 @@ public class LargeFileTest extends AbstractIntegrationTest {
     "\"params\":[{\"name\":\"language\",\"type\":\"enumeration\",\"value\":\"eng\"},{\"name\":\"author\"," +
     "\"type\":\"string\",\"value\":\"Willem S\"}]}],\"valid\":true}";
 
-  private String resultFoliaPart = "<w xml:id=\"untitled.p.1.s.1.w.1\" class=\"WORD\">\n" +
-    "          <t>The</t>\n" +
+  private String resultFoliaPart = "" +
+    "        <w xml:id=\"untitled.p.4364.s.1.w.2\" class=\"WORD\" space=\"no\">\n" +
+    "          <t>O</t>\n" +
     "        </w>\n" +
-    "        <w xml:id=\"untitled.p.1.s.1.w.2\" class=\"WORD\">\n" +
-    "          <t>Project</t>\n" +
+    "        <w xml:id=\"untitled.p.4364.s.1.w.3\" class=\"PUNCTUATION\">\n" +
+    "          <t>,</t>\n" +
     "        </w>\n" +
-    "        <w xml:id=\"untitled.p.1.s.1.w.3\" class=\"WORD\">\n" +
-    "          <t>Gutenberg</t>\n" +
+    "        <w xml:id=\"untitled.p.4364.s.1.w.4\" class=\"WORD\">\n" +
+    "          <t>spreek</t>\n" +
     "        </w>\n" +
-    "        <w xml:id=\"untitled.p.1.s.1.w.4\" class=\"WORD\">\n" +
-    "          <t>EBook</t>\n" +
+    "        <w xml:id=\"untitled.p.4364.s.1.w.5\" class=\"WORD\">\n" +
+    "          <t>niet</t>\n" +
     "        </w>\n" +
-    "        <w xml:id=\"untitled.p.1.s.1.w.5\" class=\"WORD\">\n" +
-    "          <t>of</t>\n" +
+    "        <w xml:id=\"untitled.p.4364.s.1.w.6\" class=\"WORD\">\n" +
+    "          <t>over</t>\n" +
     "        </w>\n" +
-    "        <w xml:id=\"untitled.p.1.s.1.w.6\" class=\"WORD\">\n" +
-    "          <t>Eline</t>\n" +
+    "        <w xml:id=\"untitled.p.4364.s.1.w.7\" class=\"WORD\">\n" +
+    "          <t>een</t>\n" +
     "        </w>\n" +
-    "        <w xml:id=\"untitled.p.1.s.1.w.7\" class=\"WORD\" space=\"no\">\n" +
-    "          <t>Vere</t>\n" +
+    "        <w xml:id=\"untitled.p.4364.s.1.w.8\" class=\"WORD\" space=\"no\">\n" +
+    "          <t>noodlot</t>\n" +
+    "        </w>\n" +
+    "        <w xml:id=\"untitled.p.4364.s.1.w.9\" class=\"PUNCTUATION\">\n" +
+    "          <t>.</t>\n" +
     "        </w>";
 
   private static Logger logger = LoggerFactory.getLogger(LargeFileTest.class);
@@ -117,7 +121,7 @@ public class LargeFileTest extends AbstractIntegrationTest {
 
     logger.info(format(
       "Creating FoLiA [%s] from [%s, %s] took [%d] seconds",
-      downloadSize, testFilename, txtFileSize, duration.getSeconds()
+      downloadSize, resourceFileName, txtFileSize, duration.getSeconds()
     ));
 
   }
