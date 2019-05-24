@@ -1,0 +1,4 @@
+{
+  "ksql": "LIST TOPICS;",
+  "streamsProperties": {}
+}

@@ -18,5 +18,6 @@ docker-compose \
   -f ./indexer/docker-compose.yml \
   -f ./deployment-service/docker-compose.yml \
   -f ./tagger/docker-compose.yml \
+  -f ./tracker/docker-compose.yml \
   -f ./docker-compose-override.yml \
   config >> docker-compose.yml
