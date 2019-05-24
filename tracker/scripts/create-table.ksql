@@ -1,3 +1,7 @@
+# Set allowed memory size across all threads to 1gb:
+SET 'cache.max.bytes.buffering'='1000000000';
+
+# Set stream offsets to start of kafka log:
 SET 'auto.offset.reset'='earliest';
 
 CREATE STREAM recognizer_original (
