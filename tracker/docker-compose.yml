@@ -8,6 +8,9 @@ services:
     - ksql-server
     entrypoint: /bin/sh
     tty: true
+    volumes:
+    - ./scripts:/scripts
+
 
   ksql-server:
     image: "confluentinc/cp-ksql-server:5.2.1"

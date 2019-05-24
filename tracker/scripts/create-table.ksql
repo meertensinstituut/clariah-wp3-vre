@@ -1,0 +1,13 @@
+SET 'auto.offset.reset'='earliest';
+
+CREATE STREAM recognizer_original (
+  objectId bigint,
+  path varchar,
+  action varchar,
+  fitsFormat varchar,
+  fitsMimetype varchar,
+  fitsFullResult varchar
+) WITH (
+  kafka_topic='vre_recognizer_topic',
+  value_format='JSON'
+);

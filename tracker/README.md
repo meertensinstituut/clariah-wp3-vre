@@ -6,9 +6,8 @@ Uses:
 - KSQL
 
 # Use KSQL CLI:
-```
-docker exec -ti vre_ksql-cli_1 ksql http://ksql-server:8088
-```
+- Run: `./start-ksql-cli.sh`
+- In cli: `run script /scripts/create-table.ksql`
 
 Test:
 ```
@@ -23,3 +22,5 @@ curl -X "POST" "http://localhost:8090/ksql" \
 Bronnen:
 - https://docs.confluent.io/current/ksql/docs/tutorials/basics-docker.html
 - https://docs.confluent.io/current/ksql/docs/developer-guide/api.html
+- https://github.com/confluentinc/demo-scene/blob/master/community-components-only/docker-compose.yml
+

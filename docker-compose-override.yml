@@ -49,6 +49,9 @@ services:
     build: ./integration
     volumes:
       - ./integration:/usr/local/integration
+  ksql-cli:
+    volumes:
+    - ./tracker/scripts:/scripts
   lamachine:
     container_name: vre_lamachine_1
     build: ./lamachine
