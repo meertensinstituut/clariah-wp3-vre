@@ -1,58 +1,53 @@
 version: '3.4'
 
 services:
-
-  ksql-cli:
-    image: confluentinc/cp-ksql-cli:5.2.1
-    depends_on:
-    - ksql-server
-    entrypoint: /bin/sh
-    tty: true
-    volumes:
-    - ./scripts:/scripts
-
-  ksql-server:
-    image: "confluentinc/cp-ksql-server:5.2.1"
-    ports:
-    - 8090:8088
+  tracker:
+    container_name: vre_tracker_1
+    image: knawhuc/clariah-wp3-vre-tracker:latest
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+      args:
+        KAFKA_PORT: ${KAFKA_PORT}
+        RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}
+        RECOGNIZER_GROUP_NAME: ${RECOGNIZER_GROUP_NAME}
+        TAGGER_TOPIC_NAME: ${TAGGER_TOPIC_NAME}
+        TAGGER_GROUP_NAME: ${TAGGER_TOPIC_NAME}
+        APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+        TEST_USER: ${TEST_USER}
+        TEST_PASSWORD: ${TEST_PASSWORD}
+    expose:
+    - 80
     depends_on:
     - kafka
-    - schema-registry
+    extra_hosts:
+    - moby:127.0.0.1
     environment:
-      KSQL_BOOTSTRAP_SERVERS: kafka:9092
-      KSQL_LISTENERS: http://0.0.0.0:8088
-      KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      KAFKA_PORT: ${KAFKA_PORT}
+      RECOGNIZER_TOPIC_NAME: ${RECOGNIZER_TOPIC_NAME}
+      RECOGNIZER_GROUP_NAME: ${RECOGNIZER_GROUP_NAME}
+      TAGGER_TOPIC_NAME: ${TAGGER_TOPIC_NAME}
+      TAGGER_GROUP_NAME: ${TAGGER_TOPIC_NAME}
+      APP_KEY_OBJECTS: ${APP_KEY_OBJECTS}
+      TEST_USER: ${TEST_USER}
+      TEST_PASSWORD: ${TEST_PASSWORD}
 
   kafka:
-    container_name: vre_kafka_1
+    image: wurstmeister/kafka:2.12-2.2.0
     depends_on:
     - zookeeper
     environment:
-      KAFKA_ADVERTISED_LISTENERS: DEFAULT_LISTENER://kafka:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 1200000
-      KAFKA_INTER_BROKER_LISTENER_NAME: DEFAULT_LISTENER
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 1200000
+      KAFKA_ADVERTISED_LISTENERS: DEFAULT_LISTENER://kafka:9092
       KAFKA_LISTENERS: DEFAULT_LISTENER://kafka:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DEFAULT_LISTENER:PLAINTEXT
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 1200000
+      KAFKA_INTER_BROKER_LISTENER_NAME: DEFAULT_LISTENER
     extra_hosts:
-      moby: 127.0.0.1
-    image: wurstmeister/kafka:2.12-2.2.0
+    - moby:127.0.0.1
     ports:
-    - target: 9092
+    - ${KAFKA_PORT}
 
   zookeeper:
-    image: "confluentinc/cp-zookeeper:5.2.1"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 32181
-      ZOOKEEPER_TICK_TIME: 2000
-
-  schema-registry:
-    image: "confluentinc/cp-schema-registry:5.2.1"
-    depends_on:
-    - zookeeper
-    - kafka
-    environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:32181
-
+    image: zookeeper:3.4

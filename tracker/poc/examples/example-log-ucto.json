@@ -1,0 +1,7 @@
+{
+  "date": 1559127666650,
+  "input": [1],
+  "action": {"type": "process", "service": "ucto"},
+  "output": [2]
+}
+
