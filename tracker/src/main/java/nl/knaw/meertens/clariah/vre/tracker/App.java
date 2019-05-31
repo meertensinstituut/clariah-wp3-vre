@@ -3,8 +3,8 @@ package nl.knaw.meertens.clariah.vre.tracker;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.meertens.clariah.vre.tracker.kafka.KafkaConsumerService;
-import nl.knaw.meertens.clariah.vre.tracker.kafka.KafkaProducerService;
-import nl.knaw.meertens.clariah.vre.tracker.kafka.KafkaProducerServiceImpl;
+import org.openprovenance.prov.interop.InteropFramework;
+import org.openprovenance.prov.model.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +13,6 @@ import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS
 import static nl.knaw.meertens.clariah.vre.tracker.Config.KAFKA_SERVER;
 import static nl.knaw.meertens.clariah.vre.tracker.Config.RECOGNIZER_GROUP_NAME;
 import static nl.knaw.meertens.clariah.vre.tracker.Config.RECOGNIZER_TOPIC_NAME;
-import static nl.knaw.meertens.clariah.vre.tracker.Config.TAGGER_TOPIC_NAME;
 
 public class App {
   private static Logger logger = LoggerFactory.getLogger(App.class);
@@ -25,11 +24,8 @@ public class App {
     RECOGNIZER_TOPIC_NAME,
     RECOGNIZER_GROUP_NAME
   );
-  private KafkaProducerService kafkaProducer = new KafkaProducerServiceImpl(
-    TAGGER_TOPIC_NAME,
-    KAFKA_SERVER,
-    objectMapper
-  );
+
+  private ProvService provService = new ProvService(InteropFramework.newXMLProvFactory());
 
   private App() {
 
@@ -39,6 +35,14 @@ public class App {
 
     logger.info("Tracker app started");
 
+    var document = provService.createProv();
+    doConversions(document, "/tmp/my-prov.json");
+  }
+
+  public void doConversions(Document document, String file) {
+    var interopFramework = new InteropFramework();
+    interopFramework.writeDocument(file, document);
+    interopFramework.writeDocument(System.out, InteropFramework.ProvFormat.JSON, document);
   }
 
   public static void main(String[] args) {

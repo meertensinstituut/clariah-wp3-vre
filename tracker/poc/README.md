@@ -1,9 +1,4 @@
-# Tracker
-Creates provenance using kafka logs.
-
-Uses:
-- Kafka
-- KSQL
+# POC
 
 ## Use KSQL CLI:
 - Run: `./start-ksql-cli.sh`

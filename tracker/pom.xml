@@ -37,6 +37,19 @@
     </repository>
   </repositories>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.openprovenance.prov</groupId>
+      <artifactId>prov-model</artifactId>
+      <version>0.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openprovenance.prov</groupId>
+      <artifactId>prov-interop</artifactId>
+      <version>0.7.0</version>
+    </dependency>
+  </dependencies>
+
   <build>
     <pluginManagement>
       <plugins>

@@ -18,4 +18,4 @@ RUN mvn clean install
 FROM openjdk:11-jre-slim-stretch
 COPY --from=builder /usr/local/tracker/target/tracker-0.1-SNAPSHOT-jar-with-dependencies.jar /usr/local/tracker/tracker.jar
 
-CMD java -jar /usr/local/tracker/tracker.jar
+CMD java -jar /usr/local/tracker/tracker.jar && tail -f /dev/null

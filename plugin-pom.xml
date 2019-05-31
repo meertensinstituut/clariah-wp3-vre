@@ -1,0 +1,65 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>tagger</artifactId>
+  <packaging>jar</packaging>
+  <version>0.1-SNAPSHOT</version>
+  <name>tagger</name>
+  <url>http://maven.apache.org</url>
+
+  <parent>
+    <groupId>nl.knaw.meertens.clariah.vre</groupId>
+    <artifactId>clariah-wp3-vre</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <!-- repositories containing parent pom -->
+  <repositories>
+    <repository>
+      <id>CLARIN</id>
+      <name>CLARIN Repository</name>
+      <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>CLARIN-Snapshot</id>
+      <name>CLARIN Snapshot Repository</name>
+      <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <!-- Add plugins to download them while building knawhuc/clariah-wp3-vre-builder: -->
+  <!-- (`mvn dependency:go-offline` does not take plugins into account) -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-jar-plugin</artifactId>
+      <version>${maven-jar-plugin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-assembly-plugin</artifactId>
+      <version>${maven-assembly-plugin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>${maven-surefire-plugin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>${maven-compiler-plugin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>jaxb2-maven-plugin</artifactId>
+      <version>${jaxb2-maven-plugin.version}</version>
+    </dependency>
+  </dependencies>
+</project>

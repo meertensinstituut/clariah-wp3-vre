@@ -50,6 +50,8 @@ Each component runs in its own container. The images of switchboard, recognizer,
 ### Builder image
 To use the builder image, make sure pom of new component is added to `./Dockefile.buildfile`
 
+To update builder image locally, run: `docker build -f Dockerfile.buildfile . -t knawhuc/clariah-wp3-vre-builder`
+
 Demo
 ---
 
