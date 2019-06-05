@@ -2,10 +2,9 @@ package nl.knaw.meertens.deployment.lib.handler;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.DockerCmdExecFactory;
 import com.github.dockerjava.api.command.PullImageCmd;
-import com.github.dockerjava.api.model.Info;
+import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.SearchItem;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
@@ -54,12 +53,12 @@ public class Docker implements HandlerPlugin {
     }
 
     logger.info("#### succeed in docker client ####");
-    Info info = dockerClient.infoCmd().exec();
+    var info = dockerClient.infoCmd().exec();
     logger.info(String.format("Docker info [%s]", info.toString()));
     logger.info("initialized!");
   }
 
-  public void setDockerClient(DockerClient dockerClient) {
+  public Docker(DockerClient dockerClient) {
     this.dockerClient = dockerClient;
   }
 
@@ -73,17 +72,13 @@ public class Docker implements HandlerPlugin {
     matcher = pattern.matcher(serviceLocation);
     if (matcher.matches()) {
 
-      String dockerRepo = matcher.group(1); // vre-repository
-      String dockerImg = matcher.group(2); // lamachine
-      String dockerTag = matcher.group(3); // tag-1.0
+      var dockerRepo = matcher.group(1); // vre-repository
+      var dockerImg = matcher.group(2); // lamachine
+      var dockerTag = matcher.group(3); // tag-1.0
 
       logger.info(String.format("Repo is: [%s]", dockerRepo));
       logger.info(String.format("Image is: [%s]", dockerImg));
       logger.info(String.format("Tag is: [%s]", dockerTag));
-
-      logger.debug(String.format("dockerClient is [%s]", dockerClient));
-      List<SearchItem> dockerSearch = dockerClient.searchImagesCmd(dockerImg).exec();
-      logger.info(String.format("Docker search on the container: [%s]", dockerSearch.toString()));
 
       logger.info("Pulling");
       PullImageCmd pullImageCmd;
@@ -107,14 +102,15 @@ public class Docker implements HandlerPlugin {
 
       logger.info("Image pulled; Running container; ls command will be running");
 
-      CreateContainerResponse container = dockerClient.createContainerCmd(dockerImg)
-                                                      .withCmd("ls")
-                                                      .withHostName(dockerHostName)
-                                                      .withName(dockerHostName)
-                                                      .exec();
+      var container = dockerClient.createContainerCmd(dockerImg)
+                                  .withCmd("ls")
+                                  .withHostName(dockerHostName)
+                                  .withName(dockerHostName)
+                                  .exec();
 
       this.dockerId = container.getId();
-      dockerClient.startContainerCmd(this.dockerId).exec();
+      StartContainerCmd aa = dockerClient.startContainerCmd(this.dockerId);
+      aa.exec();
       logger.info("#### container running ####");
 
       return true;
@@ -129,7 +125,7 @@ public class Docker implements HandlerPlugin {
 
     this.runDockerContainer(serviceLocation, handlers);
 
-    String remainder = matcher.group(4);// nl.knaw.meertens.deployment.lib.handler.http://{docker-container-ip}/frog
+    var remainder = matcher.group(4);// nl.knaw.meertens.deployment.lib.handler.http://{docker-container-ip}/frog
     if (remainder.trim().length() > 0) {
       // replace variables
       remainder = remainder.replace("{docker-container-ip}", dockerHostName);
@@ -181,8 +177,8 @@ public class Docker implements HandlerPlugin {
         .withMaxPerRouteConnections(10);
 
     try {
-      DockerClient dockerClient;
-      dockerClient = DockerClientBuilder.getInstance(config).withDockerCmdExecFactory(dockerCmdExecFactory).build();
+      DockerClient dockerClient =
+          DockerClientBuilder.getInstance(config).withDockerCmdExecFactory(dockerCmdExecFactory).build();
       if (isNull(dockerClient)) {
         throw new DockerException("Failure when getting docker client, dockerClient is null");
       } else {

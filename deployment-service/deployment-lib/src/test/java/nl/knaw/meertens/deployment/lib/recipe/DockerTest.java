@@ -1,30 +1,32 @@
 package nl.knaw.meertens.deployment.lib.recipe;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.PullImageCmd;
+import com.github.dockerjava.api.command.StartContainerCmd;
+import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 import nl.knaw.meertens.deployment.lib.AbstractDeploymentTest;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
 import nl.knaw.meertens.deployment.lib.DockerException;
-import nl.knaw.meertens.deployment.lib.FileUtil;
 import nl.knaw.meertens.deployment.lib.HandlerPlugin;
 import nl.knaw.meertens.deployment.lib.HandlerPluginException;
-import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.handler.Docker;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Stack;
 
-import static nl.knaw.meertens.deployment.lib.FileUtil.createFile;
-import static nl.knaw.meertens.deployment.lib.SystemConf.ROOT_WORK_DIR;
-import static nl.knaw.meertens.deployment.lib.SystemConf.USER_CONF_FILE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 public class DockerTest extends AbstractDeploymentTest {
 
@@ -36,7 +38,7 @@ public class DockerTest extends AbstractDeploymentTest {
   public void docker_containerShouldRunAndStop() throws HandlerPluginException, DockerException {
     Docker docker;
     Stack<HandlerPlugin> handlers = new Stack<>();
-    boolean init_ok = false;
+    var init_ok = false;
 
     try {
       docker = new Docker();
@@ -64,7 +66,32 @@ public class DockerTest extends AbstractDeploymentTest {
   public void testRunDockerContainer()
       throws Exception {
 
-    Docker docker = new Docker();
+    var dockerClient = Mockito.mock(DockerClient.class);
+    var pullImageResponse = Mockito.mock(PullImageCmd.class);
+
+
+    when(dockerClient.pullImageCmd(anyString())).thenReturn(pullImageResponse);
+    when(pullImageResponse.withTag(anyString())).thenReturn(pullImageResponse);
+    when(pullImageResponse.withAuthConfig(any())).thenReturn(pullImageResponse);
+    var execResult = Mockito.mock(PullImageResultCallback.class);
+    when(pullImageResponse.exec(any())).thenReturn(execResult);
+    when(execResult.awaitCompletion()).thenReturn(execResult);
+
+    var container = Mockito.mock(CreateContainerResponse.class);
+    var createContainerCmd = Mockito.mock(CreateContainerCmd.class);
+    when(dockerClient.createContainerCmd(anyString())).thenReturn(createContainerCmd);
+    when(createContainerCmd.withCmd(anyString())).thenReturn(createContainerCmd);
+    when(createContainerCmd.withName(anyString())).thenReturn(createContainerCmd);
+    when(createContainerCmd.withHostName(anyString())).thenReturn(createContainerCmd);
+    when(createContainerCmd.exec()).thenReturn(container);
+    when(container.getId()).thenReturn("abc");
+
+    var startContainerCmd = Mockito.mock(StartContainerCmd.class);
+    when(dockerClient.startContainerCmd(anyString())).thenReturn(startContainerCmd);
+    // doNothing().when(startContainerCmd.exec());
+
+
+    var docker = new Docker(dockerClient);
     var handlers = new Stack<HandlerPlugin>();
     String serviceLocation = "Docker:_/busybox/latest/Http://{docker-container-ip}/test";
     logger.debug(String.format("docker obj is: [%s]", docker));

@@ -109,6 +109,7 @@ public class Initializer {
       } catch (UnirestException exception) {
         logger.error("Could not check health of lamachine", exception);
       }
+      // TODO: make the status message below print right during the first run; getting not up but status is 200 now.
       logger.info(String.format("[%d] Lamachine [%s] not up yet...; status is [%d]", MAX_WAITING_PERIOD - waited,
         Config.LAMACHINE_ENDPOINT, status));
     } while (status != 200 && waited < MAX_WAITING_PERIOD);
