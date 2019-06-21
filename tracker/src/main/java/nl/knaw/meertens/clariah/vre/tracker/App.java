@@ -3,6 +3,7 @@ package nl.knaw.meertens.clariah.vre.tracker;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.knaw.meertens.clariah.vre.tracker.kafka.KafkaConsumerService;
+import nl.knaw.meertens.clariah.vre.tracker.prov.ProvService;
 import org.openprovenance.prov.interop.InteropFramework;
 import org.openprovenance.prov.model.Document;
 import org.slf4j.Logger;

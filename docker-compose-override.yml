@@ -49,7 +49,7 @@ services:
     build: ./integration
     volumes:
       - ./integration:/usr/local/integration
-  ksql-cli:
+  tracker:
     volumes:
     - ./tracker/scripts:/scripts
   lamachine:

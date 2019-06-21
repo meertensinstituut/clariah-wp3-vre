@@ -40,7 +40,7 @@ Using:
 - Add new component: 
   - Environment variables can be added to `./.env`.
   - Expand docker-compose command in `./start-vre.sh`.
-  - References to component files and volumes in `./<component>/docker-compose.yml` should be overwritten in `./docker-compose.yml`
+  - Paths to component files and volumes in `./<component>/docker-compose.yml` should be overridden in `./docker-compose-override.yml`
   - Integration tests can be added to java app in `./integation`
 
 ## Docker containers

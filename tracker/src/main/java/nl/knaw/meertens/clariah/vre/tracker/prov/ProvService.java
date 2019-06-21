@@ -1,4 +1,4 @@
-package nl.knaw.meertens.clariah.vre.tracker;
+package nl.knaw.meertens.clariah.vre.tracker.prov;
 
 import org.openprovenance.prov.model.Document;
 import org.openprovenance.prov.model.Namespace;
