@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static java.lang.String.format;
+
 public class Queue {
 
   private static Logger logger = LoggerFactory.getLogger(Queue.class);
@@ -27,23 +29,23 @@ public class Queue {
     }
   };
 
-  public static ObjectNode push(String key, RecipePlugin plugin) {
+  public static ObjectNode push(String workdir, RecipePlugin plugin) {
     ObjectNode json = jsonFactory.objectNode();
-    json.put("id", key);
+    json.put("id", workdir);
 
-    if (!(key == null || plugin == null || executed == null) && !(executed.containsKey(key))) {
-      executed.put(key, plugin);
+    if (!(workdir == null || plugin == null || executed == null) && !(executed.containsKey(workdir))) {
+      executed.put(workdir, plugin);
       new Thread(() -> {
         try {
           plugin.execute();
         } catch (RecipePluginException ex) {
-          logger.error(String.format("Could not execute plugin [%s]", plugin), ex);
+          logger.error(format("Could not execute plugin [%s] for workdir [%s]", plugin, workdir), ex);
         }
       }).start();
       json.put("status", 202);
       json.put("message", "running");
       return json;
-    } else if (executed.containsKey(key)) {
+    } else if (executed.containsKey(workdir)) {
       json.put("status", 403);
       json.put("message", "Put to queue failed. Task is still running.");
     } else {

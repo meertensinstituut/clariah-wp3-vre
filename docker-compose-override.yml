@@ -20,6 +20,7 @@ services:
     - dreamfactory
     - tika
     - lamachine
+    - textstats
     environment:
       USER_SERVICES_EMAIL: ${USER_SERVICES_EMAIL}
       USER_SERVICES_PASSWORD: ${USER_SERVICES_PASSWORD}
@@ -103,6 +104,8 @@ services:
     - zookeeper
   zookeeper:
     image: zookeeper:3.4
+  textstats:
+    image: eigenraam/textstats
 
 volumes:
   data-volume:

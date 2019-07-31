@@ -15,7 +15,7 @@ public class AbstractDeploymentTest {
   private static ClientAndServer mockServer;
 
   static Integer mockPort = 1080;
-  static final String mockHostName = "http://localhost:" + mockPort;
+
   @BeforeClass
   public static void setUpClass() {
     if (isSetUp) {

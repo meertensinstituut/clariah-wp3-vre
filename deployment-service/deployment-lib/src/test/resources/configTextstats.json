@@ -1,0 +1,22 @@
+{
+  "params": [
+    {
+      "name": "input",
+      "type": "file",
+      "value": "inputTextstats.xml",
+      "params": []
+    },
+    {
+      "name": "layer",
+      "type": "string",
+      "value": "original",
+      "params": []
+    },
+    {
+      "name": "output",
+      "type": "string",
+      "value": "outputTextstats.json",
+      "params": []
+    }
+  ]
+}

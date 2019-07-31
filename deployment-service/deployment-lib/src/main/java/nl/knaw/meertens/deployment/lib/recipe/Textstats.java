@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.lib.recipe;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import nl.knaw.meertens.deployment.lib.DeploymentLib;
@@ -24,26 +25,29 @@ import static nl.knaw.meertens.deployment.lib.DeploymentLib.buildOutputFilePath;
 import static nl.knaw.meertens.deployment.lib.DeploymentLib.createOutputFolder;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.FINISHED;
 import static nl.knaw.meertens.deployment.lib.DeploymentStatus.RUNNING;
-import static nl.knaw.meertens.deployment.lib.recipe.Demo.OUTPUT_FILENAME;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class Tika extends RecipePluginImpl {
-  private static Logger logger = LoggerFactory.getLogger(Tika.class);
-
-  private static final String SERVICE_URL = "http://tika:9998/tika/main";
+public class Textstats extends RecipePluginImpl {
+  private static Logger logger = LoggerFactory.getLogger(Textstats.class);
 
   private String workDir;
   private Service service;
   private DeploymentStatus status;
+  private String serviceLocation;
+  private JsonNode params;
 
   @Override
   public void init(String workDir, Service service, String serviceLocation, Stack<HandlerPlugin> handlers)
-      throws RecipePluginException {
+    throws RecipePluginException {
     super.init(workDir, service, serviceLocation, handlers);
     logger.info(format("init [%s]", workDir));
     this.workDir = workDir;
     this.service = service;
     this.status = DeploymentStatus.CREATED;
+
+    this.serviceLocation = isBlank(serviceLocation) ? "http://textstats:5000" : serviceLocation;
+    this.params = DeploymentLib.parseUserConfig(workDir).get("params");
   }
 
   @Override
@@ -59,14 +63,17 @@ public class Tika extends RecipePluginImpl {
     return status.toResponse();
   }
 
-  private void runProject(String projectName) throws RecipePluginException {
+  private void runProject(String workDir) throws RecipePluginException {
     String body;
     try {
-      var inputContent = retrieveInputContent(projectName);
+      var inputContent = retrieveInputContent(workDir);
+      var layer = getParamValueByName(params, "layer");
+
       var response = Unirest
-        .put(SERVICE_URL)
+        .post(serviceLocation)
         .header("Accept", "text/plain")
-        .header("Content-Type","text/html")
+        .header("Content-Type", "text/xml")
+        .field("layer", layer)
         .field("file", inputContent.toFile())
         .asString();
 
@@ -76,9 +83,11 @@ public class Tika extends RecipePluginImpl {
 
       body = response.getBody();
     } catch (IllegalStateException | UnirestException ex) {
-      throw new RecipePluginException(format("request to [%s] failed", SERVICE_URL), ex);
+      throw new RecipePluginException(format("request to [%s] failed", serviceLocation), ex);
     }
-    var outputFile = buildOutputFilePath(workDir, OUTPUT_FILENAME);
+
+    var outputFilename = getParamValueByName(params, "output");
+    var outputFile = buildOutputFilePath(this.workDir, outputFilename);
     createOutputFolder(outputFile);
 
     try {
@@ -91,11 +100,18 @@ public class Tika extends RecipePluginImpl {
   }
 
   private Path retrieveInputContent(String projectName) throws RecipePluginException {
-    var userConfig = DeploymentLib.parseUserConfig(projectName);
-    var params = userConfig.get("params");
-    var inputFilename = params.get(0).get("value").asText();
+    var inputFilename = getParamValueByName(params, "input");
     var inputPath = buildInputPath(projectName, inputFilename);
     return Paths.get(inputPath);
+  }
+
+  private String getParamValueByName(JsonNode params, String name) throws RecipePluginException {
+    for (var i = 0; i < params.size(); i++) {
+      if (name.equals(params.get(i).get("name").asText())) {
+        return params.get(i).get("value").asText();
+      }
+    }
+    throw new RecipePluginException("Could not find input filename in config");
   }
 
 }

@@ -48,7 +48,7 @@ public class Demo extends RecipePluginImpl {
 
   private static final String SERVICE_URL = "https://tools.digitalmethods.net/beta/deduplicate/";
   private static final String RESULT_TAG = "result";
-  static final String OUTPUT_FILENAME = "result.txt";
+  static final String OUTPUT_FILENAME = "result.json";
 
   private String workDir;
   private Service service;
