@@ -1,5 +1,6 @@
 package nl.knaw.meertens.deployment.lib.recipe;
 
+import nl.knaw.meertens.deployment.lib.AbstractDeploymentTest;
 import nl.knaw.meertens.deployment.lib.RecipePluginException;
 import nl.knaw.meertens.deployment.lib.Service;
 import org.junit.Before;
@@ -21,18 +22,10 @@ import static org.mockserver.matchers.Times.exactly;
 import static org.mockserver.model.HttpClassCallback.callback;
 import static org.mockserver.model.HttpRequest.request;
 
-public class TextstatsTest {
-
-  private ClientAndServer mockServer;
-  private int port = 1080;
-
-  @Before
-  public void setUp() {
-    mockServer = ClientAndServer.startClientAndServer(port);
-  }
+public class TextstatsTest extends AbstractDeploymentTest {
 
   @Test
-  public void executeShouldSendPostRequest() throws RecipePluginException, IOException {
+  public void executeShouldSendPostRequest() throws Exception {
     // 1. Arrange:
     var workDir = UUID.randomUUID().toString();
 
@@ -44,24 +37,23 @@ public class TextstatsTest {
 
     // create service object
     var recipe = new Textstats();
-    recipe.init(workDir, new Service(), "http://localhost:" + port, null);
+    recipe.init(workDir, new Service(), "http://localhost:" + mockPort, null);
 
     // create service mock
-    createTextstatsServiceMock(workDir);
+    createTextstatsServiceMock();
 
     // 2. Act:
     recipe.execute();
 
     // 3. Assert:
-    var outputFilename = "outputTextstats.json";
+    var outputFilename = "result.json";
     var outputFile = Paths.get(ROOT_WORK_DIR, workDir, OUTPUT_DIR, outputFilename);
     assertThat(outputFile.toFile()).exists();
-    var testFileContentString = getTestFileContent(outputFilename);
-    assertThat(outputFile.toFile()).hasContent(testFileContentString);
+    assertThat(outputFile.toFile()).hasContent(getTestFileContent("outputTextstats.json"));
   }
 
-  private void createTextstatsServiceMock(String workDir) {
-    this.mockServer
+  private void createTextstatsServiceMock() {
+    getMockServer()
       .when(
         request()
           .withMethod("POST"),

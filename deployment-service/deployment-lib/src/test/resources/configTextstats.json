@@ -11,12 +11,6 @@
       "type": "string",
       "value": "original",
       "params": []
-    },
-    {
-      "name": "output",
-      "type": "string",
-      "value": "outputTextstats.json",
-      "params": []
     }
   ]
 }

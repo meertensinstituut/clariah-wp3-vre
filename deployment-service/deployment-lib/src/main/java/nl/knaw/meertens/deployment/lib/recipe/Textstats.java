@@ -72,7 +72,6 @@ public class Textstats extends RecipePluginImpl {
       var response = Unirest
         .post(serviceLocation)
         .header("Accept", "text/plain")
-        .header("Content-Type", "text/xml")
         .field("layer", layer)
         .field("file", inputContent.toFile())
         .asString();
@@ -83,11 +82,10 @@ public class Textstats extends RecipePluginImpl {
 
       body = response.getBody();
     } catch (IllegalStateException | UnirestException ex) {
-      throw new RecipePluginException(format("request to [%s] failed", serviceLocation), ex);
+      throw new RecipePluginException(format("could not request service [%s]", serviceLocation), ex);
     }
 
-    var outputFilename = getParamValueByName(params, "output");
-    var outputFile = buildOutputFilePath(this.workDir, outputFilename);
+    var outputFile = buildOutputFilePath(this.workDir, "result.json");
     createOutputFolder(outputFile);
 
     try {
@@ -111,7 +109,7 @@ public class Textstats extends RecipePluginImpl {
         return params.get(i).get("value").asText();
       }
     }
-    throw new RecipePluginException("Could not find input filename in config");
+    throw new RecipePluginException(format("Could not find param value by name [%s] in [%s]", name, params));
   }
 
 }

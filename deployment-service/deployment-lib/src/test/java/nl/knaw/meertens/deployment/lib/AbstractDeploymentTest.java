@@ -14,7 +14,7 @@ public class AbstractDeploymentTest {
 
   private static ClientAndServer mockServer;
 
-  static Integer mockPort = 1080;
+  protected static Integer mockPort = 1080;
 
   @BeforeClass
   public static void setUpClass() {
