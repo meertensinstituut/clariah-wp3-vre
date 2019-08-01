@@ -106,7 +106,7 @@ public class MimetypeService {
     var assertionListList = xpathList(mimetype, "assertions", null, namespaces);
 
     for (var assertionList : assertionListList) {
-      if (checkAssertions(fitsDoc, assertionList)) {
+      if (checkAssertions(fitsDoc, assertionList, xpathVars)) {
         return true;
       }
     }
@@ -128,15 +128,16 @@ public class MimetypeService {
 
   private boolean checkAssertions(
     XdmNode fitsDoc,
-    XdmItem assertionsListNode
+    XdmItem assertionsListNode,
+    HashMap<String, XdmValue> xpathVars
   ) throws SaxonApiException {
-    var assertionList = xpathList(assertionsListNode, "assert", null, namespaces);
+    var assertionList = xpathList(assertionsListNode, "assertion", null, namespaces);
     for (var assertion : assertionList) {
       var assertionXpath = xpath2string(assertion, "normalize-space(@xpath)");
       if (assertionXpath.isEmpty()) {
         throw new RuntimeException(format("No xpath available in assertion [%s]", assertion));
       }
-      if (!isValidDoc(fitsDoc, assertionXpath, null)) {
+      if (!isValidDoc(fitsDoc, assertionXpath, xpathVars)) {
         return false;
       }
     }
