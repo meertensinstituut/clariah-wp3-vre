@@ -8,3 +8,4 @@ echo "remove containers"
 docker rm $VRE_CONTAINERS
 
 docker ps -a
+
