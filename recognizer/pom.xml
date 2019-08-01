@@ -71,6 +71,9 @@
           <!-- java modules -->
           <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --illegal-access=permit</argLine>
           <forkMode>once</forkMode>
+          <environmentVariables>
+            <FITS_FILES_ROOT>${user.dir}</FITS_FILES_ROOT>
+          </environmentVariables>
         </configuration>
       </plugin>
 

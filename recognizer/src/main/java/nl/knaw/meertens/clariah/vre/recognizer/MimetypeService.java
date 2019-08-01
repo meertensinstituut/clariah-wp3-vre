@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,12 +47,11 @@ public class MimetypeService {
 
   }
 
-  public String getMimetype(String fits, Path originalFile) {
+  public String getMimetype(String fits, String originalFile) {
     try {
       var fitsDoc = buildDocument(new StreamSource(new StringReader(fits)));
-
       var xpathVars = new HashMap<String, XdmValue>();
-      xpathVars.put("file", new XdmAtomicValue(originalFile.toString()));
+      xpathVars.put("file", new XdmAtomicValue(FitsPath.of(originalFile).toString()));
 
       for (var mimetype : mimetypes) {
         var mimetypeValue = xpath2string(mimetype, "normalize-space(@value)");

@@ -39,7 +39,6 @@ public class ObjectsServiceTest extends AbstractRecognizerTest {
     var mimetypeService = new MimetypeService();
 
     objectsService = new ObjectsService(
-      FITS_FILES_ROOT,
       new SemanticTypeService(mimetypeService),
       new ObjectRepository(mockUrl, "", OBJECT_TABLE, ObjectMapperFactory.getInstance()),
       new ObjectSemanticTypeRepository(mockUrl, "", OBJECT_SEMANTIC_TYPE_TABLE, ObjectMapperFactory.getInstance()),

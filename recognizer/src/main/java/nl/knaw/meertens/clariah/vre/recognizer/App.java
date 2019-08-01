@@ -62,8 +62,7 @@ public class App {
     );
 
     fitsService = new FitsService(
-      FITS_URL,
-      FITS_FILES_ROOT
+      FITS_URL
     );
 
     objectSemanticTypeRepository = new ObjectSemanticTypeRepository(
@@ -87,7 +86,6 @@ public class App {
     );
 
     objectsService = new ObjectsService(
-      FITS_FILES_ROOT,
       semanticTypeService,
       objectRepository,
       objectSemanticTypeRepository,

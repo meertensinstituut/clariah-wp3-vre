@@ -31,7 +31,7 @@ public class SemanticTypeService {
     this.semanticTypePlugins = this.getPlugins(mimetypeService.getMimetypesFromResources());
   }
 
-  public List<String> detectSemanticTypes(String mimetype, Path originalFile) {
+  public List<String> detectSemanticTypes(String mimetype, String originalFile) {
     var semanticTypePlugin = semanticTypePlugins.get(mimetype);
 
     if (semanticTypePlugin == null) {

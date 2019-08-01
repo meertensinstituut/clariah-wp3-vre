@@ -77,7 +77,7 @@ public abstract class AbstractRecognizerTest {
     "</fits>\n";
 
   public void setupMockServer() {
-    fitsService = new FitsService("http://someurl/", FITS_FILES_ROOT);
+    fitsService = new FitsService("http://someurl/");
 
     if (isSetUp) {
       return;

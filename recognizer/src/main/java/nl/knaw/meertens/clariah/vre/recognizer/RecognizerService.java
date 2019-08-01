@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static java.lang.String.format;
@@ -108,7 +107,11 @@ public class RecognizerService {
   }
 
   private void checkFileType(Report report) throws IllegalArgumentException {
-    if (mimetypeService.getMimetype(report.getXml(), Path.of(report.getPath())).equals("inode/directory")) {
+    var mimetype = mimetypeService.getMimetype(
+      report.getXml(),
+      report.getPath()
+    );
+    if (mimetype.equals("inode/directory")) {
       throw new IllegalArgumentException("File is a directory");
     }
   }

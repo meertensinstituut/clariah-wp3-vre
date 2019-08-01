@@ -1,5 +1,6 @@
 package nl.knaw.meertens.clariah.vre.recognizer.fits;
 
+import nl.knaw.meertens.clariah.vre.recognizer.FitsPath;
 import nl.knaw.meertens.clariah.vre.recognizer.generated.fits.output.Fits;
 import nl.knaw.meertens.clariah.vre.recognizer.generated.fits.output.IdentificationType;
 import nl.knaw.meertens.clariah.vre.recognizer.generated.fits.output.ObjectFactory;
@@ -27,12 +28,10 @@ import static java.util.Objects.isNull;
 public class FitsService {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  private final String fitsFilesRoot;
   private URL fitsUrl;
   private Unmarshaller unmarshaller;
 
-  public FitsService(String fitsUrl, String fitsFilesRoot) {
-    this.fitsFilesRoot = fitsFilesRoot;
+  public FitsService(String fitsUrl) {
 
     try {
       this.fitsUrl = new URL(fitsUrl);
@@ -47,11 +46,11 @@ public class FitsService {
     return fits.getIdentification().getIdentity().get(0);
   }
 
-  public FitsResult checkFile(String path) throws IOException, JAXBException {
-    var fitsPath = Paths.get(fitsFilesRoot, path);
+  public FitsResult checkFile(String objectPath) throws IOException, JAXBException {
+    var fitsPath = FitsPath.of(objectPath);
 
-    if (!fitsPath.toFile().exists()) {
-      waitUntilFileIsUploaded(fitsPath);
+    if (!fitsPath.toPath().toFile().exists()) {
+      waitUntilFileIsUploaded(fitsPath.toPath());
     }
 
     var fitsXmlResult = askFits(fitsPath.toString());

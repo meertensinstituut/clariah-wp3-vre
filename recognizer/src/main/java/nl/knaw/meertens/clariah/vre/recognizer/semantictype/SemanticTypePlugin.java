@@ -5,6 +5,6 @@ import java.util.List;
 
 public interface SemanticTypePlugin {
 
-  List<String> detect(Path object);
+  List<String> detect(String objectPath);
 
 }

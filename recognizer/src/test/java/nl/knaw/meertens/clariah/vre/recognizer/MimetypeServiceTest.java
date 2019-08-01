@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.FITS_FILES_ROOT;
 import static nl.knaw.meertens.clariah.vre.recognizer.util.FileUtil.getTestFileContent;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -18,10 +19,11 @@ public class MimetypeServiceTest {
     var service = new MimetypeService();
     var fitsFoliaReport = getTestFileContent("fits-folia-report.xml");
     var folia = getTestFileContent("folia.xml");
-    var foliaTestPath = Path.of("/tmp/folia-" + UUID.randomUUID() + ".xml");
-    FileUtils.writeStringToFile(foliaTestPath.toFile(), folia, UTF_8);
+    var objectPath = "/tmp/xml-" + UUID.randomUUID() + ".xml";
+    var testPath = Path.of(FITS_FILES_ROOT, objectPath);
+    FileUtils.writeStringToFile(testPath.toFile(), folia, UTF_8);
 
-    var result = service.getMimetype(fitsFoliaReport, foliaTestPath);
+    var result = service.getMimetype(fitsFoliaReport, objectPath);
 
     assertThat(result).isEqualTo("text/folia+xml");
   }
@@ -31,10 +33,11 @@ public class MimetypeServiceTest {
     var service = new MimetypeService();
     var fitsReport = getTestFileContent("fits-tei-report.xml");
     var fileContent = getTestFileContent("tei.xml");
-    var testPath = Path.of("/tmp/xml-" + UUID.randomUUID() + ".xml");
+    var objectPath = "/tmp/xml-" + UUID.randomUUID() + ".xml";
+    var testPath = Path.of(FITS_FILES_ROOT, objectPath);
     FileUtils.writeStringToFile(testPath.toFile(), fileContent, UTF_8);
 
-    var result = service.getMimetype(fitsReport, testPath);
+    var result = service.getMimetype(fitsReport, objectPath);
 
     assertThat(result).isEqualTo("text/xml");
   }
@@ -44,10 +47,11 @@ public class MimetypeServiceTest {
     var service = new MimetypeService();
     var fitsTextReport = getTestFileContent("fits-text-report.xml");
     var text = getTestFileContent("text.txt");
-    var textTestPath = Path.of("/tmp/folia-" + UUID.randomUUID() + ".xml");
+    var objectPath = "/tmp/xml-" + UUID.randomUUID() + ".xml";
+    var textTestPath = Path.of(FITS_FILES_ROOT, objectPath);
     FileUtils.writeStringToFile(textTestPath.toFile(), text, UTF_8);
 
-    var result = service.getMimetype(fitsTextReport, textTestPath);
+    var result = service.getMimetype(fitsTextReport, objectPath);
 
     assertThat(result).isEqualTo("text/plain");
   }
@@ -58,10 +62,11 @@ public class MimetypeServiceTest {
     var service = new MimetypeService();
     var fitsTextReport = getTestFileContent("fits-html-report-with-conflict.xml");
     var text = getTestFileContent("test.html");
-    var textTestPath = Path.of("/tmp/folia-" + UUID.randomUUID() + ".html");
-    FileUtils.writeStringToFile(textTestPath.toFile(), text, UTF_8);
+    var objectPath = "/tmp/xml-" + UUID.randomUUID() + ".xml";
+    var testPath = Path.of(FITS_FILES_ROOT, objectPath);
+    FileUtils.writeStringToFile(testPath.toFile(), text, UTF_8);
 
-    var result = service.getMimetype(fitsTextReport, textTestPath);
+    var result = service.getMimetype(fitsTextReport, objectPath);
 
     assertThat(result).isEqualTo("text/html");
   }

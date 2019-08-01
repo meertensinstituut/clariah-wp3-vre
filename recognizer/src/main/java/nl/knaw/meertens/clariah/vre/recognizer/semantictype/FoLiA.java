@@ -1,6 +1,10 @@
 package nl.knaw.meertens.clariah.vre.recognizer.semantictype;
 
 import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XdmAtomicValue;
+import net.sf.saxon.s9api.XdmValue;
+import nl.knaw.meertens.clariah.vre.recognizer.Config;
+import nl.knaw.meertens.clariah.vre.recognizer.FitsPath;
 import nl.mpi.tla.util.Saxon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,13 +29,15 @@ public class FoLiA implements SemanticTypePlugin {
   }
 
   @Override
-  public List<String> detect(Path object) {
+  public List<String> detect(String objectPath) {
     var types = new ArrayList<String>();
     try {
-      var folia = Saxon.buildDocument(new StreamSource(object.toFile()));
+      var folia = Saxon.buildDocument(new StreamSource(FitsPath.of(objectPath).toPath().toFile()));
+      var xpathVars = new HashMap<String, XdmValue>();
+      xpathVars.put("file", new XdmAtomicValue(FitsPath.of(objectPath).toString()));
 
       var xpathToTokenDefinition = "/folia:FoLiA/folia:metadata/folia:annotations/folia:token-annotation";
-      if (xpath2boolean(folia, "exists(" + xpathToTokenDefinition + ")", null, NAMESPACES)) {
+      if (xpath2boolean(folia, "exists(" + xpathToTokenDefinition + ")", xpathVars, NAMESPACES)) {
         types.add("folia.token");
       }
 
