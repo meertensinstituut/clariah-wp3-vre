@@ -256,12 +256,13 @@
 
   <distributionManagement>
     <snapshotRepository>
-      <id>CLARIN-Snapshot</id>
-      <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+      <id>Huygens-snapshots</id>
+      <url>${parent-pom-repo}</url>
+      <uniqueVersion>false</uniqueVersion>
     </snapshotRepository>
     <repository>
-      <id>CLARIN</id>
-      <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
+      <id>Huygens</id>
+      <url>${parent-pom-repo}</url>
     </repository>
   </distributionManagement>
 
@@ -296,6 +297,15 @@
       </plugin>
 
     </plugins>
+
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh</artifactId>
+        <version>3.0.0</version>
+      </extension>
+    </extensions>
+
   </build>
 
 </project>
