@@ -19,9 +19,10 @@
     <module>deployment-api</module>
   </modules>
 
+  <!-- Repositories containing parent pom and saxon utils -->
   <repositories>
     <repository>
-      <id>CLARIN</id>
+      <id>clarin-repository</id>
       <name>CLARIN Repository</name>
       <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
       <snapshots>
@@ -29,9 +30,17 @@
       </snapshots>
     </repository>
     <repository>
-      <id>CLARIN-Snapshot</id>
+      <id>clarin-snapshot-repository</id>
       <name>CLARIN Snapshot Repository</name>
       <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>huygens-repository</id>
+      <name>Huygens Repository</name>
+      <url>http://maven.huygens.knaw.nl/repository</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
