@@ -31,3 +31,4 @@ docker exec vre_integration_1 ./docker-initialize.sh
 
 echo "run integration tests"
 docker exec vre_integration_1 ./docker-test.sh
+
