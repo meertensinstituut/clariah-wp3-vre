@@ -256,19 +256,19 @@
 
   <distributionManagement>
     <snapshotRepository>
-      <id>Huygens-snapshots</id>
+      <id>huygens-repository</id>
       <url>${parent-pom-repo}</url>
       <uniqueVersion>false</uniqueVersion>
     </snapshotRepository>
     <repository>
-      <id>Huygens</id>
+      <id>huygens-repository</id>
       <url>${parent-pom-repo}</url>
+      <uniqueVersion>false</uniqueVersion>
     </repository>
   </distributionManagement>
 
   <build>
     <plugins>
-
       <!-- checkstyle -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -295,7 +295,6 @@
           <excludes>**/generated-sources/**/*</excludes>
         </configuration>
       </plugin>
-
     </plugins>
 
     <extensions>
@@ -307,5 +306,4 @@
     </extensions>
 
   </build>
-
 </project>

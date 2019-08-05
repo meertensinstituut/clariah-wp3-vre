@@ -17,6 +17,6 @@ RUN mvn dependency:go-offline -f ./recognizer/pom.xml
 RUN mvn dependency:go-offline -f ./switchboard/pom.xml
 RUN mvn dependency:go-offline -f ./tagger/pom.xml
 
-# use go-offline-maven-plugin to prevent failure on not finding deployment-lib-jar:
+# use go-offline-maven-plugin to prevent failure on not finding deployment-lib jar:
 RUN cd deployment-service && mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 

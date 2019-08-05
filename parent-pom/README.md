@@ -3,5 +3,5 @@
 Parent pom used by all VRE java projects
 
 ## Release
-Define `parent-pom-repo` in your settings.xml.
-Run: `mvn deploy -DcreateChecksum=true`
+Define (active) profile property `parent-pom-repository` in your settings.xml.
+Run: `mvn deploy`

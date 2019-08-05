@@ -20,17 +20,9 @@
   <!-- repositories containing parent pom -->
   <repositories>
     <repository>
-      <id>CLARIN</id>
-      <name>CLARIN Repository</name>
-      <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>CLARIN-Snapshot</id>
-      <name>CLARIN Snapshot Repository</name>
-      <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+      <id>huygens-repository</id>
+      <name>Huygens Repository</name>
+      <url>http://maven.huygens.knaw.nl/repository</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
