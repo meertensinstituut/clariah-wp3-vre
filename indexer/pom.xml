@@ -23,7 +23,7 @@
         <assertj-core.version>3.9.0</assertj-core.version>
         <unirest-java.version>1.4.9</unirest-java.version>
         <log4j.version>2.7</log4j.version>
-        <guava.version>23.6-jre</guava.version>
+        <guava.version>24.1.1-jre</guava.version>
         <powermock.version>1.7.1</powermock.version>
         <json-path.version>2.3.0</json-path.version>
         <json-unit-fluent.version>1.28.1</json-unit-fluent.version>
