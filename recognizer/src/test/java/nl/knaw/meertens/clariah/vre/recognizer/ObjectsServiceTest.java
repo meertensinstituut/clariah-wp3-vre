@@ -1,6 +1,8 @@
 package nl.knaw.meertens.clariah.vre.recognizer;
 
-import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsRepositoryService;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectRepository;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectSemanticTypeRepository;
+import nl.knaw.meertens.clariah.vre.recognizer.object.ObjectsService;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +17,9 @@ import java.io.IOException;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
-import static nl.knaw.meertens.clariah.vre.recognizer.Config.*;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.FITS_FILES_ROOT;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_SEMANTIC_TYPE_TABLE;
+import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECT_TABLE;
 import static org.apache.commons.codec.Charsets.UTF_8;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
@@ -25,18 +29,21 @@ import static org.mockserver.model.HttpResponse.response;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
+public class ObjectsServiceTest extends AbstractRecognizerTest {
 
-  private ObjectsRepositoryService objectsRepositoryService;
+  private ObjectsService objectsService;
 
   @Before
   public void setup() {
-    setupAbstract();
-    objectsRepositoryService = new ObjectsRepositoryService(
-      new MimetypeService(),
-      mockUrl,
-      "",
-      OBJECT_TABLE
+    setupMockServer();
+    var mimetypeService = new MimetypeService();
+
+    objectsService = new ObjectsService(
+      FITS_FILES_ROOT,
+      new SemanticTypeService(mimetypeService),
+      new ObjectRepository(mockUrl, "", OBJECT_TABLE, ObjectMapperFactory.getInstance()),
+      new ObjectSemanticTypeRepository(mockUrl, "", OBJECT_SEMANTIC_TYPE_TABLE, ObjectMapperFactory.getInstance()),
+      mimetypeService
     );
   }
 
@@ -51,7 +58,9 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
     report.setUser(expectedUser);
     report.setXml(testFitsXml);
 
-    var result = objectsRepositoryService.createObjectRecordJson(report);
+    var result = ObjectMapperFactory.getInstance().writeValueAsString(
+      objectsService.createObjectRecordDto(report)
+    );
 
     assertThatJson(result).node("time_created").matches(
       containsString(now().format(ofPattern("yyyy-MM-dd'T'HH"))));
@@ -73,7 +82,7 @@ public class ObjectsRepositoryServiceTest extends AbstractRecognizerTest {
       "(filepath='" + annotatedBanana + "') AND (deleted='0')"
     );
     startObjectsPatchRegistryMock("soft-delete-object.json", expectedId);
-    Long deletedId = objectsRepositoryService.softDelete(annotatedBanana);
+    Long deletedId = objectsService.softDelete(annotatedBanana);
     assertThat(deletedId).isEqualTo(expectedId);
   }
 

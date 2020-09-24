@@ -138,7 +138,7 @@ $BODY$
 LANGUAGE plpgsql;
 
 -- view object with full tags:
-CREATE VIEW object_full_tag AS
+CREATE OR REPLACE VIEW object_full_tag AS
   SELECT
     object_tag.object,
     object_tag.tag,
@@ -149,3 +149,13 @@ CREATE VIEW object_full_tag AS
   FROM object_tag
     LEFT JOIN tag ON tag.id = object_tag.tag;
 
+-- object and its semantic types:
+-- tag:
+CREATE TABLE IF NOT EXISTS object_semantic_type (
+  id bigserial PRIMARY KEY,
+  object_id bigserial,
+  semantic_type character varying(255),
+  unique (object_id, semantic_type)
+);
+CREATE INDEX IF NOT EXISTS INDEX_OBJECT_SEMANTIC_TYPE_OBJECT_ID ON object_semantic_type (object_id);
+CREATE INDEX IF NOT EXISTS INDEX_OBJECT_SEMANTIC_TYPE_SEMANTIC_TYPE ON object_semantic_type (semantic_type);

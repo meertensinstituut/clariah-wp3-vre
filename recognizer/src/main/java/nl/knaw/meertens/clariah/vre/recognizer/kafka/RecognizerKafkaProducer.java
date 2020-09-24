@@ -14,8 +14,6 @@ public class RecognizerKafkaProducer {
   public RecognizerKafkaProducer(String server) {
     Properties props = new Properties();
     props.put("bootstrap.servers", server);
-    props.put("advertised.host.name", "kafka");
-    props.put("advertised.port", 9092);
     props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
     kafkaProducer = new KafkaProducer<>(props);

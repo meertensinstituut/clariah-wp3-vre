@@ -30,13 +30,13 @@ public class KafkaProducerService {
   }
 
   public void produceToRecognizerTopic(Report report) throws IOException {
-    RecognizerKafkaDto kafkaMsg = createKafkaMsg(report);
+    var kafkaMsg = createKafkaMsg(report);
     producer.getKafkaProducer().send(new ProducerRecord<>(topic, "key", mapper.writeValueAsString(kafkaMsg)));
     logger.info("Message sent successfully");
   }
 
   private RecognizerKafkaDto createKafkaMsg(Report report) {
-    RecognizerKafkaDto result = new RecognizerKafkaDto();
+    var result = new RecognizerKafkaDto();
     result.objectId = report.getObjectId();
     result.path = report.getPath();
     result.action = report.getAction();

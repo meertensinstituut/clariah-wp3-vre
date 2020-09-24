@@ -2,93 +2,33 @@ package nl.knaw.meertens.clariah.vre.recognizer.object;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.Option;
-import com.jayway.jsonpath.ParseContext;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequestWithBody;
 import com.mashape.unirest.request.body.RequestBodyEntity;
-import nl.knaw.meertens.clariah.vre.recognizer.Report;
-import nl.knaw.meertens.clariah.vre.recognizer.MimetypeService;
-import nl.knaw.meertens.clariah.vre.recognizer.fits.FitsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static java.lang.String.format;
 import static nl.knaw.meertens.clariah.vre.recognizer.Config.OBJECTS_DB_KEY;
 import static org.apache.commons.lang3.StringUtils.abbreviate;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class ObjectsRepositoryService {
+public class ObjectRepository extends AbstractDreamfactoryRepository {
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
-  private final String objectsDbUrl;
-  private final String objectsDbKey;
-  private final String objectTable;
-  private final ParseContext jsonPath;
-  private final ObjectMapper mapper;
-  private final MimetypeService mimetypeService;
 
-  public ObjectsRepositoryService(
-    MimetypeService mimetypeService,
+  private String objectTable;
+
+  public ObjectRepository(
     String objectsDbUrl,
     String objectsDbKey,
-    String objectTable
+    String objectTable,
+    ObjectMapper mapper
   ) {
-    this.mimetypeService = mimetypeService;
-    this.objectsDbUrl = objectsDbUrl;
-    this.objectsDbKey = objectsDbKey;
+    super(objectsDbUrl, objectsDbKey, mapper);
     this.objectTable = objectTable;
-
-    var conf = Configuration
-      .builder()
-      .options(Option.DEFAULT_PATH_LEAF_TO_NULL)
-      .options(Option.SUPPRESS_EXCEPTIONS)
-      .build();
-    jsonPath = JsonPath.using(conf);
-
-    mapper = new ObjectMapper();
-    mapper.registerModule(new JavaTimeModule());
-    mapper.disable(WRITE_DATES_AS_TIMESTAMPS);
-  }
-
-  /**
-   * Create new object in object registry
-   *
-   * @return objectId
-   */
-  public Long create(Report report) {
-    var recordJson = createObjectRecordJson(report);
-    var persistResult = persistRecord(recordJson, null);
-    return jsonPath
-      .parse(persistResult)
-      .read("$.resource[0].id", Integer.class)
-      .longValue();
-  }
-
-  /**
-   * Update object by path
-   *
-   * @return objectId
-   */
-  public Long update(Report report) {
-    var id = getObjectIdByPath(report.getPath());
-    var recordJson = createObjectRecordJson(report);
-    var persistResult = persistRecord(recordJson, id);
-    return Long.valueOf(jsonPath
-      .parse(persistResult)
-      .read("$.id", String.class)
-    );
   }
 
   /**
@@ -144,6 +84,9 @@ public class ObjectsRepositoryService {
     return id;
   }
 
+  /**
+   * Patch object
+   */
   private HttpResponse<String> patch(Long id, String patch) {
     var urlToPatch = getObjectUrl(id);
 
@@ -163,21 +106,12 @@ public class ObjectsRepositoryService {
     return patchResponse;
   }
 
-  private String getObjectUrl(Long id) {
-    return new StringBuilder()
-      .append(objectsDbUrl)
-      .append(objectTable)
-      .append("/")
-      .append(id)
-      .toString();
-  }
-
   /**
    * Find path of object that has not been deleted
    * Filter in dreamfactory by:
    * (filepath='{path}') AND (deleted='0')
    */
-  private Long getObjectIdByPath(String path) {
+  public Long getObjectIdByPath(String path) {
     var filter = "(filepath='" + path + "') AND (deleted='0')";
     var getObjectByPath = objectsDbUrl +
       objectTable +
@@ -211,22 +145,20 @@ public class ObjectsRepositoryService {
     }
   }
 
-  public String createObjectRecordJson(Report report) {
-    var record = createObjectsRecordDto(report);
-    try {
-      return mapper.writeValueAsString(record);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(format("Could not create json from [%s]", report.getPath()), e);
-    }
-  }
-
   /**
    * Update or create record
    */
-  private String persistRecord(String recordJson, Long id) {
+  public Long persistObject(ObjectsRecordDto dto, Long id) {
     if (!hasAllObjectsDbDetails()) {
       return null;
     }
+    var recordJson = "";
+    try {
+      recordJson = mapper.writeValueAsString(dto);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(format("Could not create record json for [%s]", dto.filepath), e);
+    }
+
     HttpResponse<String> response;
     try {
       var body = createPostOrPut(recordJson, id);
@@ -238,15 +170,31 @@ public class ObjectsRepositoryService {
       ), e);
     }
 
+    String body = response.getBody();
     if (isSuccess(response)) {
       logger.info("Persisted record in objects registry");
-      return response.getBody();
+      logger.info("persisted object response:" + body);
+      return getIdFromPersistedObject(body);
     } else {
       throw new RuntimeException(format(
         "Could not add [%s]: [%s]",
-        recordJson, response.getBody()
+        recordJson, body
       ));
     }
+  }
+
+  private Long getIdFromPersistedObject(String body) {
+    var id = jsonPath
+      .parse(body)
+      .read("$.id", String.class);
+
+    if (id == null) {
+      id = jsonPath
+        .parse(body)
+        .read("$.resource[0].id", String.class);
+    }
+
+    return Long.valueOf(id);
   }
 
   /**
@@ -271,24 +219,15 @@ public class ObjectsRepositoryService {
       .body(recordJson);
   }
 
-  private boolean isSuccess(HttpResponse<String> response) {
-    return response.getStatus() / 100 == 2;
+  private String getObjectUrl(Long id) {
+    return objectsDbUrl +
+      objectTable +
+      "/" +
+      id;
   }
 
-  private ObjectsRecordDto createObjectsRecordDto(Report report) {
-    var msg = new ObjectsRecordDto();
-    msg.filepath = report.getPath();
-    msg.fits = report.getXml();
-
-    msg.mimetype = mimetypeService.getMimetype(report.getXml(), Path.of(report.getPath()));
-    msg.format = FitsService.getIdentity(report.getFits()).getFormat();
-
-    msg.timeChanged = LocalDateTime.now();
-    msg.timeCreated = LocalDateTime.now();
-    msg.userId = report.getUser();
-    msg.type = "object";
-    msg.deleted = false;
-    return msg;
+  private boolean isSuccess(HttpResponse<String> response) {
+    return response.getStatus() / 100 == 2;
   }
 
   private boolean hasAllObjectsDbDetails() {
@@ -303,23 +242,4 @@ public class ObjectsRepositoryService {
     return true;
   }
 
-  /**
-   * Source: technicaladvices.com/2012/02/20/java-encoding-similiar-to-javascript-encodeuricomponent/
-   */
-  private String encodeUriComponent(String filter) {
-    try {
-      return URLEncoder
-        .encode(filter, "UTF-8")
-        .replaceAll("\\%28", "(")
-        .replaceAll("\\%29", ")")
-        .replaceAll("\\+", "%20")
-        .replaceAll("\\%27", "'")
-        .replaceAll("\\%21", "!")
-        .replaceAll("\\%7E", "~");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(String.format(
-        "Could not create url from filter %s", filter
-      ));
-    }
-  }
 }
