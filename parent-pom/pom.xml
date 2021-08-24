@@ -31,7 +31,7 @@
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-lang.version>3.7</commons-lang.version>
-    <guava.version>23.6-jre</guava.version>
+    <guava.version>29.0-jre</guava.version>
     <httpclient.version>4.5.2</httpclient.version>
     <jackson-databind.version>2.9.9</jackson-databind.version>
     <javax.activation.version>1.1.1</javax.activation.version>
