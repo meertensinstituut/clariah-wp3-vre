@@ -14,7 +14,7 @@
   </parent>
 
   <properties>
-    <jsoup.version>1.14.2</jsoup.version>
+    <jsoup.version>1.15.3</jsoup.version>
     <SaxonUtils.version>1.0-SNAPSHOT</SaxonUtils.version>
   </properties>
 
